@@ -1,0 +1,544 @@
+#' @title
+#' Maximum Pairwise Standardized Mean Difference
+#'
+#' @param x named (`list`)\cr
+#' Where each list element is a vector corresponding to the observations of the variable of interest
+#' for that particular strata (corresponding to the name). See example for how this can be constructed.
+#'
+#' @param name (`character`)\cr
+#' Unused variable that is required to be supported by `extra.col` in [table1::table1()].
+#'
+#' @param round_to (`numeric`)\cr
+#' How many digits to round the standardized mean difference to.
+#'
+#' @return (`numeric`)\cr
+#' The maximum pairwise standardized mean difference between all strata for a particular variable.
+#'
+#' @note
+#' The implementation with the `stddiff` package is more fragile, than with the `smd` package.
+#' However, the `smd` package uses the *population variance* to calculate the SMD as opposed to the *sample variance*.
+#' This can cause small inaccuracies in the final result. Therefore we elect to implement with `stddiff`.
+#' Another consideration is that `stddiff` can be maximally precise to only 3 decimal places.
+#'
+#' @import stddiff
+#' @export
+#'
+#' @examples
+#' max_pairwise_smd(split(mtcars$disp, mtcars$am))
+#'
+max_pairwise_smd <- function(x, name, round_to = 3, ...) {
+  x[["overall"]] <- NULL # remove overall category if exists
+
+  x <- reshape2::melt(x)
+  x$L1 <- as.numeric(as.factor(x$L1)) - 1 # needs to start at 0 for stddiff
+  pairs <- unique(x$L1) %>% combn(2, simplify = FALSE)
+
+  vartype <- class(x$value)
+
+  fn <- if (vartype == "numeric") {
+    stddiff.numeric
+  } else if (vartype == "logical") {
+    stddiff.binary
+  } else if (vartype %in% c("factor", "character")) {
+    stddiff.category
+  }
+
+  max_smd <- 0
+
+  for (pair in pairs) {
+
+    current_smd <- max(
+      fn(x %>% dplyr::filter(L1 %in% pair), 2, 1) %>% .[[1, "stddiff"]] # alternate reference group through every group
+    )
+
+    if (is.na(current_smd)) {
+      warning("Some pairwise SMDs could not be calculated. Please investigate.", .call = FALSE)
+      max_smd <- current_smd
+
+    } else if ((current_smd > max_smd) || is.na(max_smd)) {
+      max_smd <- current_smd
+    }
+  }
+
+  return(round(max_smd, round_to))
+}
+
+
+#' @title
+#' Render Cell Suppression (Default)
+#'
+#' @description
+#' This is a wrapper around the render functions for each type of variable.
+#'
+#' @param x (`vector`)\cr
+#' A vector of numeric, factor, character or logical values.
+#'
+#' @param name (`character`)\cr
+#' Name of the variable to be rendered (ignored).
+#'
+#' @param missing (`logical`)\cr
+#' Should missing values be included?
+#'
+#' @param transpose (`logical`)\cr
+#' Logical indicating whether on not the table is transposed.
+#'
+#' @param render.empty (`character`)\cr
+#' A character to return when x is empty.
+#'
+#' @param render.continuous (`function`)\cr
+#' A function to render continuous (i.e. numeric) values. Can also be a character string,
+#' in which case it is passed to `table1:::parse.abbrev.render.code()`.
+#'
+#' @param render.categorical (`function`)\cr
+#' A function to render categorical (i.e. factor, character or logical) values. Can also be a character string,
+#' in which case it is passed to `table1:::parse.abbrev.render.code()`.
+#'
+#' @param render.missing (`function`)\cr
+#' A function to render missing (i.e. NA) values. Can also be a character string,
+#' in which case it is passed to `table1:::parse.abbrev.render.code()`. Set to `NULL` to ignore missing values.
+#'
+#' @param ... \cr
+#' Further arguments, passed to `table1:::stats.apply.rounding()`.
+#'
+#' @return (`character`)\cr
+#' Summary of variable as a character vector with cell suppression applied.
+#'
+#' @import table1
+#' @export
+#'
+render_cell_suppression.default <- function(
+    x,
+    name,
+    missing = any(is.na(x)),
+    transpose = FALSE,
+    render.empty = "NA",
+    render.continuous = render_cell_suppression.continuous,
+    render.categorical = render_cell_suppression.categorical,
+    render.missing = render_cell_suppression.missing,
+    ...) {
+  args <- list(...)
+
+  if (length(x) == 0) {
+    return(render.empty)
+  }
+
+  if (is.logical(x)) x <- factor(x, levels = c(T, F), labels = c("Yes", "No"))
+
+  if (is.factor(x) || is.character(x)) {
+    r <- do.call(render.categorical, list(x = x))
+
+  } else if (is.numeric(x)) {
+
+    if (!is.null(args$continuous_fn) && args$continuous_fn == "median") {
+      render.continuous <- render_median.continuous
+    } else {
+      render.continuous <- render_mean.continuous
+    }
+
+    r <- do.call(render.continuous, c(list(x = x), list(...)))
+
+  } else {
+
+    stop(paste("Unrecognized variable type:", class(x)))
+  }
+
+  if (missing && !is.null(render.missing)) {
+    r <- c(r, do.call(render.missing, list(x = x)))
+  }
+
+  if (transpose) {
+    if (!is.null(names(r))) {
+      r <- paste0(sprintf("%s: %s", names(r), r), collapse = "<br/>")
+    } else {
+      r <- paste0(r, collapse = "<br/>")
+    }
+  }
+
+  return(r)
+}
+
+
+#' @title
+#' Render Cell Suppression (Categorical)
+#'
+#' @description
+#' This is a custom render for `table1` categorical variables which performs GEMINI
+#' "cell suppression" for any variable levels which contain fewer than 6 observations.
+#'
+#' If the total number of these variable levels with fewer than 6 observations is less
+#' than 6, *all* cells for all levels of the variable must be censored (because it is
+#' possible to indirectly deduce the missing counts otherwise).
+#'
+#' @param x (`character` or `factor`)\cr
+#' A categorical variable to summarize.
+#'
+#' @return named (`character`)\cr
+#' Concatenated with `""` to shift values down one row for proper alignment.
+#'
+#' @importFrom table1 stats.default
+#' @export
+#'
+#' @examples
+#' x <- factor(c(rep("a", times = nrow(mtcars)), "b"), levels = c("a", "b"))
+#' render_cell_suppression.categorical(x)
+#'
+#' x2 <- factor(c(rep("a", times = nrow(mtcars))), levels = c("a", "b"))
+#' render_cell_suppression.categorical(x2)
+#'
+#' y <- factor(
+#'   c(rep("a", times = nrow(mtcars)), "b", "c", "d", "e", "f", "g"),
+#'   levels = c("a", "b", "c", "d", "e", "f", "g")
+#' )
+#' render_cell_suppression.categorical(y)
+#'
+#' z <- factor(
+#'   c(
+#'     rep("a", times = 100),
+#'     rep("b", times = 50),
+#'     rep("c", times = 7),
+#'     rep("d", times = 2)
+#'   ),
+#'   levels = c("a", "b", "c", "d", "e")
+#' )
+#'
+#' render_cell_suppression.categorical(z)
+#'
+render_cell_suppression.categorical <- function(x) {
+  contents <- vapply(
+    stats.default(x),
+    function(y) with(y, c(frequency = FREQ, pct = PCT)),
+    numeric(2)
+  ) %>%
+    t() %>%
+    as.data.frame()
+  # if there are > 6 observations between levels that are < 6 within levels,
+  # these can be displayed
+  levels_w_fewer_than_6_obs <- contents %>%
+    dplyr::filter(frequency < 6 & frequency != 0) %>% # no need to suppress true 0s
+    select(frequency) %>%
+    nrow()
+
+  if (levels_w_fewer_than_6_obs >= 6) {
+    contents <- contents %>%
+      transmute(
+        summary = ifelse(
+          frequency < 6 & frequency != 0, "< 6 obs. (suppressed)",
+          sprintf("%d (%0.0f %%)", frequency, pct)
+        )
+      )
+  } else if (levels_w_fewer_than_6_obs > 0) {
+    # suppress enough such that the suppressed values cannot be derived with reasonable precision (within 6)
+    contents <- contents %>%
+      mutate(id = row_number()) %>%
+      arrange(-frequency) %>%
+      mutate(remainder = sum(frequency) - cumsum(frequency)) %>%
+      mutate(summary = ifelse(((frequency < 6) | (remainder < 6)) & frequency != 0, "(suppressed)", sprintf("%d (%0.0f %%)", frequency, pct))) %>%
+      arrange(id) %>%
+      select(summary)
+  } else {
+    contents <- contents %>%
+      transmute(summary = sprintf("%d (%0.0f %%)", frequency, pct))
+  }
+
+  res <- t(contents) %>% as.character()
+  names(res) <- colnames(t(contents))
+
+  return(c("", res))
+}
+
+
+#' @title
+#' Render Strict Cell Suppression (Categorical)
+#'
+#' @description
+#' Strictly suppress any counts that are less than 6 with message. This differs
+#' from the more conservative logic of [GEMINIpkg::render_cell_suppression.categorical()].
+#'
+#' @param x (`character` or `factor`)\cr
+#' A categorical variable to summarize.
+#'
+#' @return named (`character`)\cr
+#' Concatenated with `""` to shift values down one row for proper alignment.
+#'
+#' @export
+#'
+#' @examples
+#' x <- factor(c(rep("a", times = nrow(mtcars)), "b"), levels = c("a", "b"))
+#' render_strict_cell_suppression.categorical(x)
+#'
+#' x2 <- factor(c(rep("a", times = nrow(mtcars))), levels = c("a", "b"))
+#' render_strict_cell_suppression.categorical(x2)
+#'
+#' y <- factor(
+#'   c(rep("a", times = nrow(mtcars)), "b", "c", "d", "e", "f", "g"),
+#'   levels = c("a", "b", "c", "d", "e", "f", "g")
+#' )
+#' render_strict_cell_suppression.categorical(y)
+#'
+#' z <- factor(
+#'   c(
+#'     rep("a", times = 100),
+#'     rep("b", times = 50),
+#'     rep("c", times = 7),
+#'     rep("d", times = 2)
+#'   ),
+#'   levels = c("a", "b", "c", "d", "e")
+#' )
+#'
+#' render_strict_cell_suppression.categorical(z)
+#'
+render_strict_cell_suppression.categorical <- function(x) {
+  contents <- vapply(
+    stats.default(x),
+    function(y) with(y, c(frequency = FREQ, pct = PCT)),
+    numeric(2)
+  ) %>%
+    t() %>%
+    as.data.frame()
+
+  contents <- contents %>%
+    transmute(
+      summary = ifelse(
+        (frequency < 6) & (frequency != 0), "< 6 obs. (suppressed)",
+        sprintf("%d (%0.0f %%)", frequency, pct)
+      )
+    )
+
+  res <- t(contents) %>% as.character()
+  names(res) <- colnames(t(contents))
+
+  return(c("", res))
+}
+
+
+#' @title
+#' Render Mean (Continuous)
+#'
+#' @description
+#' This is the default renderer for continuous variables in the `table1` package. It will
+#' generate a formatted mean and standard deviation for each level of the variable.
+#'
+#' @param x (`character` or `factor`)\cr
+#' A continuous variable to summarize.
+#'
+#' @return named (`character`)\cr
+#' Concatenated with `""` to shift values down one row for proper alignment.
+#'
+#' @param round_to (`numeric`)\cr
+#' How many digits to round the standardized mean difference to.
+#'
+#' @importFrom table1 stats.default
+#' @export
+#'
+#' @examples
+#' render_mean.continuous(mtcars$disp)
+#'
+render_mean.continuous <- function(x, ...) {
+  with(
+    stats.apply.rounding(stats.default(x, ...), rounding.fn = round_pad, ...),
+    c("", "Mean (SD)" = sprintf("%s (&plusmn; %s)", MEAN, SD))
+  )
+}
+
+
+#' @title
+#' Render Median (Continuous)
+#'
+#' @description
+#' This is the default renderer for continuous variables in the `table1` package. It will
+#' generate a formatted median with first and third quartiles for each level of the variable.
+#'
+#' @param x (`character` or `factor`)\cr
+#' A continuous variable to summarize.
+#'
+#' @return named (`character`)\cr
+#' Concatenated with `""` to shift values down one row for proper alignment.
+#'
+#' @importFrom table1 stats.default
+#' @export
+#'
+#' @examples
+#' render_median.continuous(mtcars$disp)
+#'
+render_median.continuous <- function(x, ...) {
+  with(
+    stats.apply.rounding(stats.default(x, ...), rounding.fn = round_pad, ...),
+    c("", "Median [Q1, Q3]" = sprintf("%s [%s, %s]", MEDIAN, Q1, Q3))
+  )
+}
+
+
+#' @title
+#' Render Cell Suppression (Continuous)
+#'
+#' @description
+#' This is a custom renderer for `table1` continuous variables which performs GEMINI
+#' "cell suppression" for any variable levels which contain fewer than 6 observations.
+#'
+#' @param x (`numeric`)\cr
+#' A continuous variable to summarize.
+#'
+#' @return named (`character`)\cr
+#' Concatenated with `""` to shift values down one row for proper alignment.
+#'
+#' @export
+#'
+#' @examples
+#' x <- 1:6
+#' render_cell_suppression.continuous(x)
+#'
+#' y <- 1:2
+#' render_cell_suppression.continuous(y)
+#'
+render_cell_suppression.continuous <- function(x, ...) {
+  args <- list(...)
+  if (is.null(args$continuous_fn)) args$continuous_fn <- "mean"
+
+  if (length(x) < 6) {
+    if (args$continuous_fn == "median") {
+      c("", `Median [Q1, Q3]` = "< 6 obs. (suppressed)")
+    } else {
+      c("", `Mean (SD)` = "< 6 obs. (suppressed)")
+    }
+  } else {
+    if (args$continuous_fn == "median") {
+      render_median.continuous(x, ...)
+    } else {
+      render_mean.continuous(x, ...)
+    }
+  }
+}
+
+
+#' @title
+#' Render Cell Suppression (Strata)
+#'
+#' @description
+#' This is a custom render for `table1` stratification variables which performs GEMINI
+#' "cell suppression" for any levels which contain fewer than 6 observations.
+#'
+#' Note that even with strata variable cell suppression, it is possible to reverse-calculate
+#' the total given the overall column. Therefore it is recommended to also hide the "Overall"
+#' column in the call to [table1::table1()].
+#'
+#' @param x (`character` or `factor`)\cr
+#' A categorical stratification variable to summarize.
+#'
+#' @return named (`character`)\cr
+#' Concatenated with `""` to shift values down one row for proper alignment.
+#'
+#' @export
+#'
+render_cell_suppression.strat <- function(label, n, transpose = F) {
+  sprintf(
+    ifelse(
+      is.na(n),
+      "<span class='stratlabel'>%s</span>",
+      ifelse(
+        as.numeric(n) < 6,
+        "<span class='stratlabel'>%s<br><span class='stratn'>(N< 6 obs. (suppressed))</span></span>",
+        "<span class='stratlabel'>%s<br><span class='stratn'>(N=%s)</span></span>"
+      )
+    ), label, n
+  )
+}
+
+
+#' @title
+#' Render Default (Discrete)
+#'
+#' @description
+#' This is the default render for discrete variables in the `table1` package. It will
+#' generate a sum for each level of the variable.
+#'
+#' @param x (`character` or `factor`)\cr
+#' A discrete variable to summarize.
+#'
+#' @return named (`character`)\cr
+#' Concatenated with `""` to shift values down one row for proper alignment.
+#'
+#' @importFrom table1 stats.default
+#' @export
+#'
+#' @examples
+#' render_default.discrete(mtcars$vs)
+#'
+render_default.discrete <- function(x) {
+  with(
+    stats.default(x),
+    c("", Sum = sprintf("%s", SUM))
+  )
+}
+
+#' @title
+#' Render Cell Suppression (Discrete)
+#'
+#' @description
+#' This is a custom render for `table1` discrete variables which performs GEMINI
+#' "cell suppression" for any variable levels which contain fewer than 6 observations.
+#'
+#' This is useful when you have an indicator variable for example, and you would like to
+#' count the total number of events. `[table1::render.default.categorical()]` will break
+#' down the indicator variable into its components first (0 and 1) and then give you individual
+#' counts. This will simply count 1s (for example).
+#'
+#' @param x (`character` or `factor`)\cr
+#' A discrete variable to summarize.
+#'
+#' @return named (`character`)\cr
+#' Concatenated with `""` to shift values down one row for proper alignment.
+#'
+#' @importFrom table1 stats.default
+#' @export
+#'
+#' @examples
+#' x <- 1:6
+#' render_cell_suppression.discrete(x)
+#'
+#' y <- 1:2
+#' render_cell_suppression.discrete(y)
+#'
+render_cell_suppression.discrete <- function(x) {
+  if (sum(x) < 6) {
+    c("", Sum = "< 6 obs. (suppressed)")
+  } else {
+    render_default.discrete(x)
+  }
+}
+
+#' @title
+#' Render Cell Suppression (Missing)
+#'
+#' @description
+#' This is a custom render for `table1` missing variables which performs GEMINI
+#' "cell suppression" for any variable levels which contain fewer than 6 observations.
+#'
+#' This is useful when you have an indicator variable for example, and you would like to
+#' count the total number of events. `[table1::render.default.categorical()]` will break
+#' down the indicator variable into its components first (0 and 1) and then give you individual
+#' counts. This will simply count 1s (for example).
+#'
+#' @param x (`character` or `factor`)\cr
+#' A variable with missing values to summarize.
+#'
+#' @return named (`character`)\cr
+#' Concatenated with `""` to shift values down one row for proper alignment.
+#'
+#' @importFrom table1 render.missing.default
+#' @export
+#'
+#' @examples
+#' x <- factor(sample(0:1, 99, replace = TRUE), labels = c("Female", "Male"))
+#' x[1:3] <- NA
+#' render_cell_suppression.missing(x)
+#'
+#' x[5:10] <- NA
+#' render_cell_suppression.missing(x)
+#'
+render_cell_suppression.missing <- function(x) {
+  if (sum(is.na(x)) < 6) {
+    c("", Missing = "< 6 obs. (suppressed)")
+  } else {
+    render.missing.default(x)
+  }
+}
