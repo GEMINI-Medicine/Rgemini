@@ -239,7 +239,7 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
 
 
   #######  Prepare data  #######
-  cohort <- coerce_to_datatable(copy(cohort))
+  cohort <- coerce_to_datatable(cohort)
   cohort[, hospital_num := as.factor(hospital_num)]
 
   ## make sure dates are in correct format
