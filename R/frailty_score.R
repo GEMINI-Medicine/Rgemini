@@ -66,9 +66,9 @@
 #' April 26. http://dx.doi.org/10.1016/S0140-6736(18)30668-8.
 #'
 #' @export
-compute_frailty_score <- function(ipadmdad,
-                                  ipdiagnosis,
-                                  eddiagnosis) {
+frailty_score <- function(ipadmdad,
+                          ipdiagnosis,
+                          eddiagnosis) {
 
   ## Ensure user inputs are in data.table format before proceeding
   ipadmdad <- coerce_to_datatable(ipadmdad)
