@@ -16,7 +16,8 @@ diagnoses_at_admission(ipdiag, erdiag)
 \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.}
 }
 \value{
-
+(\code{data.table})\cr
+All encounters by \code{genc_id} with \code{diagnosis_type} and \code{diagnosis_code} for all diagnoses at admission.
 }
 \description{
 See CIHI's \href{https://www.cihi.ca/sites/default/files/document/hospital-standardized-mortality-ratio-meth-notes-en.pdf}{HSMR Methodology}.
