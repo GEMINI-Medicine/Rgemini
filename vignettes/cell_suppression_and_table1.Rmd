@@ -1,0 +1,363 @@
+---
+title: "Cell Suppression and Table 1"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{Cell Suppression and Table 1}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(collapse = T, comment = "#>", message = FALSE, warning = FALSE)
+options(tibble.print_min = 4, tibble.print_max = 4)
+```
+
+# Introduction
+
+Cell suppression is a technique to withhold or "suppress" confidential or identifying data in tabular formats. 
+
+It is common practice in clinical and epidemiological research to present a table of baseline patient characteristics in the study population. This is commonly referred to as **Table 1**. 
+
+In order to preserve patient privacy and reduce the risk of re-identification, GEMINI employs a cell suppression strategy for any Table 1 that is published or shared externally.
+
+**The general rule is to hide any subgroup with fewer than 6 patients (<= 5)**. There are some special cases which will be discussed in detail below.
+
+Note that there exists a variety of methods to produce a Table 1. Below are some examples:
+
+* [`table1` by Benjamin Rich](https://cran.r-project.org/web/packages/table1/vignettes/table1-examples.html)
+* [`tableone` by Kazuki Yoshida](https://cran.r-project.org/web/packages/tableone/vignettes/introduction.html)
+
+Both packages provide their own functionality, but neither implement cell suppression. Due to the design of `table1`, it was chosen as a candidate for this added functionality, implemented in various functions described below.
+
+# Setup
+
+## Dummy data
+
+For this vignette, we will create a dummy dataset to summarize:
+
+```{r}
+set.seed(3)
+
+gender <- c(sample(c("M", "F"), size = 95, replace = TRUE), rep(NA, times = 5))
+
+exposure <- sample(
+  c("pre-pandemic", "pandemic", "post-pandemic"), 
+  size = 100, replace = TRUE
+  )
+
+age <- rnorm(100, mean = 70, sd = 5)
+
+condition <- sample(
+  c("DVT", "CVD", "DM", "Pneumonia", "Dementia"), 
+  size = 100, replace = TRUE, prob = c(0.01, 0.19, 0.4, 0.35, 0.05)
+  )
+
+data <- data.frame(gender = gender, exposure = exposure, age = age, condition = condition)
+```
+
+## Using `table1`
+
+Although the vignette linked above provides an in-depth exploration off all `table1` functionality, we will review the function with a very simple example below. We summarize all available patient characteristics, stratifying by the exposure variable:
+
+```{r}
+library(table1)
+
+table1(~ gender + age + condition | exposure, data = data)
+```
+
+Note that patients with particular conditions can be easily identified, sometimes to the precision of the exact patient (such as the patient with DVT pre-pandemic). The goal of this vignette is to show how to protect these patients' privacy.
+
+# Cell suppression {.tabset}
+
+Important conceptual notes
+
+1. **True zeros are not suppressed.**
+
+True zeros risk identifying no patient, and therefore we do not hide valuable information that does not bring with it the risk of re-identification.
+
+2. **Cells that originally had 6 or more patients are also suppressed.**
+
+Consider the group of patients in the pandemic subgroup. Note that patients with CVD post-pandemic were suppressed even though there were originally six patients in that subgroup. Had we only suppressed patients with Dementia (two patients), knowing the total number of patients during the pandemic (34), we could have reverse-calculated the number of patients with Dementia. 
+
+Therefore the algorithm is designed to continue suppressing successively larger groups until the total number of suppressed patients is six or more, such that they cannot be reverse-calculated with reasonable precision. The default option shows the desired behaviour and the most conservative with respect to patient privacy.
+
+
+## Default
+
+In order to perform cell suppression with `table1()`, *Rgemini* exports `render_cell_suppression.default()`.
+
+```{r}
+library(Rgemini)
+
+table1(
+  ~ gender + age + condition | exposure, 
+  data = data, 
+  render = Rgemini::render_cell_suppression.default
+  )
+```
+
+## Customizing output for continuous variables - change to medians
+
+We can specify whether to use a median or mean for continuous variables by specifying a `continuous_fn`.
+
+```{r}
+table1(
+  ~ gender + age + condition | exposure, 
+  data = data, 
+  render = Rgemini::render_cell_suppression.default, 
+  continuous_fn = 'median'
+  )
+```
+
+Or we can do this directly by specifying a render function:
+
+```{r}
+table1(
+  ~ gender + age + condition | exposure, 
+  data = data, 
+  render.continuous = render_cell_suppression.continuous, 
+  continuous_fn = 'median'
+  )
+```
+
+## Customizing output for continuous variables - change number of digits
+
+We can also specify the number of digits to round means or medians to using the `digits` argument.
+
+```{r}
+table1(
+  ~ gender + age + condition | exposure, 
+  data = data, 
+  render = render_cell_suppression.default, 
+  digits = 2
+  )
+```
+
+## Finer control {.tabset}
+
+`render_cell_suppression.default` is a wrapper around individual *render* functions for each covariate datatype. For finer control, use the primary cell suppression functionality as implemented in the following render functions:
+
+* `render_cell_suppression.categorical()`
+* `render_cell_suppression.continuous()`
+* `render_cell_suppression.discrete()`
+* `render_cell_suppression.missing()`
+* `render_cell_suppression.strata()`
+
+We can apply cell suppression directly to covariates of particular data types by supplying these custom renderer functions.
+
+### Suppress categorical variables only
+
+```{r}
+table1(
+  ~ gender + age + condition | exposure, 
+  data = data, 
+  render.categorical = render_cell_suppression.categorical
+  )
+```
+
+### Suppress cells with counts fewer than six only
+
+Although the default option shows the desired behaviour, *Rgemini* can export a function that will simply suppress those cells with counts fewer than six as needed.
+
+```{r}
+table1(
+  ~ gender + age + condition | exposure, 
+  data = data, 
+  render.categorical = render_strict_cell_suppression.categorical
+  )
+```
+
+### Suppress missing values 
+
+Note that to suppress missing values, we use the `render_cell_suppression.missing()` function:
+
+```{r}
+table1(
+  ~ gender + age + condition | exposure, 
+  data = data, 
+  render.categorical = render_strict_cell_suppression.categorical,
+  render.missing = render_cell_suppression.missing
+  )
+```
+
+### strategies to suppress continuous variables {.tabset}
+
+It is also possible to suppress continuous variables if desired. See the example below.
+
+#### Set up
+
+```{r}
+set.seed(1)
+
+continuous_data <- data.frame(
+  "age" = rnorm(100, mean = 70, sd = 10),
+  "laps" = abs(rnorm(100, mean = 1, sd = 1)),
+  "nobel" = sample(c("nobel prize won", "nobel prize not won"), 100, replace = TRUE, prob = c(0.01, 0.99))
+)
+
+table1(~ age + laps | nobel, data = continuous_data)
+```
+
+#### Suppress continuous variables
+
+We use `render_cell_suppression.continuous` to suppress any summary statistics for groups with a size smaller than six.
+
+```{r}
+table1(
+  ~ age + laps | nobel, 
+  data = continuous_data, 
+  render.continuous = render_cell_suppression.continuous
+  )
+```
+
+Note in this case however, using the strata totals we can reverse-calculate the number of patients, so we suppress the counts in the strata as well using `render_cell_suppression.strat`.
+
+#### Suppress counts in the strata
+
+```{r}
+table1(
+  ~ age + laps | nobel, 
+  data = continuous_data, 
+  render.continuous = render_cell_suppression.continuous,
+  render.strat = render_cell_suppression.strat
+  )
+```
+
+#### Suppress "Overall" count
+
+We encounter a similar issue where we can reverse calculate the strata total using the overall count. Therefore in this scenario we could consider removing the "Overall" count:
+
+```{r}
+table1(
+  ~ age + laps | nobel, 
+  data = continuous_data, 
+  render.continuous = render_cell_suppression.continuous,
+  render.strat = render_cell_suppression.strat,
+  overall = FALSE
+  )
+```
+
+Important conceptual notes:
+
+We don't employ the same strategy for stratification variables as we do for categorical variables, where we successively suppress additional strata until the total number of suppressed individuals is six or more. This is because any categorical variable with six or more observations in each category will indirectly provide the total for that strata. Therefore it is safest to apply strict suppression on the strata totals, and remove the "Overall" column as shown above.
+
+# Calculating standardized mean differences
+
+One primary difference between `tableone` and `table1` is the ability to compute and display standardized mean differences (SMDs). To enable this, `Rgemini` exports `max_pairwise_smd()`. 
+
+Note that for a stratification variable with two levels, this corresponds to the absolute value of the SMD (no directionality). For a stratification with more than two levels, this is the maximum pairwise SMD.
+
+It can be supplied to `table1` through the `extra.col` argument, which takes a named list of extra columns to append to the table. Usage is as follows:
+
+```{r}
+table1(~ gender + age + condition | exposure, data = data, extra.col = list("Maximum Standardized Mean Difference" = max_pairwise_smd))
+```
+
+# Replicating `table1` functionality
+
+Note that since these extensions are passed as arguments to `table1`, the entire original API for `table1` is still exposed. Therefore we replicate some of the same examples here.
+
+## Labelling {.tabset}
+
+### Change row labels
+
+We change both row labels below. In order to do this, we need to use the default (i.e. "non-formula") interface to `table1`:
+
+```{r}
+labels <- list(
+  variables=list(age="Age (years)", gender="Sex", condition="MRDx")
+  )
+
+strata <- split(data, data$exposure)
+table1(strata, labels = labels)
+```
+
+### Change strata labels
+
+Next we change the strata labels. To change strata labels we change the names of the levels of the factor variable corresponding to the strata
+
+```{r}
+levels(data$exposure) <- c("During Pandemic", "After Pandemic", "Before Pandemic")
+strata <- split(data, data$exposure)
+
+table1(strata, labels = labels)
+```
+
+### Add grouping to strata and standardized mean differences
+
+Next we also add grouping to the strata variable, specifying group names in the `labels` list, as well as a `groupspan` which is used span a label over multiple groups in the `table1` call. We also add standardized mean differences using `extra.col` to put it all together.
+
+```{r}
+labels$groups <- list("After COVID", "")
+
+extra_col <- list()
+extra_col$`SMD` <- max_pairwise_smd
+
+table1(strata, labels = labels, groupspan = c(2, 1), extra.col = extra_col)
+```
+
+# Putting it all together
+
+Now we perform custom labeling, cell suppression, and adding a column of standardized mean differences as follows:
+
+
+```{r}
+table1(
+  strata, 
+  labels = labels,
+  groupspan = c(2, 2),
+  render.categorical = render_strict_cell_suppression.categorical,
+  render.continuous = render_cell_suppression.continuous,
+  render.missing = render_cell_suppression.missing,
+  render.strat = render_cell_suppression.strat,
+  extra.col = list("SMD" = max_pairwise_smd)
+  )
+```
+
+# Customization and extending functionality
+
+Note that `table1` offers much for flexibility than what is briefly described above with respect to labeling. There is even the possibility to fine tune the table's appearance with CSS. See more examples in the [vignette here](https://cran.r-project.org/web/packages/table1/vignettes/table1-examples.html).
+
+There is also the possibility to define new render functions and new extra columns.
+
+## Creating render functions
+
+Note that render functions must be designed to take as input a single argument corresponding to a vector (`numeric` or `factor`), and output a named `character` vector, where the first element is unnamed and always `""`. See the examples below for how the output should be formatted:
+
+```{r}
+library(dplyr)
+
+x <- mtcars$am %>% as.factor()
+render_cell_suppression.categorical(as.factor(mtcars$am))
+```
+
+```{r}
+render_cell_suppression.continuous(1:20)
+```
+
+```{r}
+render_cell_suppression.missing(c(1:19, NA))
+```
+
+## Creating extra columns
+
+Note that functions defined for extra columns must always take a named list as the first argument, and ellipses (`...`) as the last. The named list corresponds to a variable in the data split by the stratifying variable, such as in the example below:
+
+```{r}
+x <- split(mtcars$disp, mtcars$am)
+
+my_max_col <- function(x, ...) {
+  lapply(x, max) %>% unlist() %>% max()
+}
+
+my_max_col(x)
+```
+
+Now this newly defined function can be added as an extra column.
+
+```{r}
+table1(~ disp | am, data = mtcars, extra.col = list("My Max" = my_max_col))
+```

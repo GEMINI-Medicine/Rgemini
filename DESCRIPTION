@@ -15,6 +15,7 @@ Imports:
     dplyr, 
     janitor, 
     lubridate, 
+    reshape2,
     RPostgreSQL,
     stddiff, 
     stringi, 
@@ -23,6 +24,8 @@ Imports:
     tidyr, 
     timeDate
 Suggests: 
+    ggplot2,
+    kableExtra,
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)
@@ -32,3 +35,4 @@ Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr
 Depends: 
     R (>= 2.10)
+URL: https://gemini-medicine.github.io/Rgemini/

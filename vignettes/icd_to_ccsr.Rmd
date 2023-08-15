@@ -1,5 +1,5 @@
 ---
-title: "icd_to_ccsr"
+title: "ICD to CCSR"
 date: "`r Sys.Date()`"
 output:
   html_vignette:
@@ -8,25 +8,11 @@ output:
     dfprint: kable
 
 vignette: >
-  %\VignetteIndexEntry{icd_to_ccsr}
+  %\VignetteIndexEntry{ICD to CCSR}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 
 ---
-
-
-<style type="text/css">
-
-body, td {
-   font-size: 14px;
-}
-code.r{
-  font-size: 12px;
-}
-pre {
-  font-size: 5px
-}
-</style>
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
@@ -372,129 +358,3 @@ In addition to that, the official CCSR tool assigns default categories based on 
 ## Initial vs. subsequent encounters
 
 For some diagnoses (e.g., injuries or poisoning), the US ICD-10 codes contain a suffix that differentiates between initial vs. subsequent encounters. As a result, some CCSR categories make that same distinction. For example: INJ018 = "Crushing injury, initial encounter", whereas INJ055 = "Crushing injury, subsequent encounter". However, Canadian ICD-10 codes do not differentiate between initial vs. subsequent encounters. Therefore, ICD-10-CA codes were mapped to "initial encounter" by default. If researchers are interested in analyzing patients' medical history, they **should not rely on the CCSR description to differentiate between initial vs. subsequent encounters**, and instead, should look at the encounter history of a given patient within the database. More generally, it means that any CCSR description of "initial" or "subsequent" encounter in the GEMINI database should be ignored (i.e., INJ018 = INJ055 = "Crushing injury").
-
-
-<!-- styling HTML Workflow -->
-
-<div class="tocify-extend-page" data-unique="tocify-extend-page" style="height: ;"></div>
-
-<style type="text/css">
-.main-container {
-  max-width: 1800px !important;
-  margin-left: auto;
-  margin-right: auto;
-}
-h1, .h1, h2, .h2, h3, .h3 { /* Margin */
-  margin-top: 42px;
-}
-code {
-  color: inherit;
-  background-color: rgba(0, 0, 0, 0.04);
-}
-img {
-  max-width:100%;
-  height: auto;
-}
-.tabbed-pane {
-  padding-top: 12px;
-}
-button.code-folding-btn:focus {
-  outline: none;
-}
-h1.title {
-  margin-top: auto;
-}
-body{ /* Normal  */
-  font-size: 14px;
-  font-family: "Georgia", serif;
-  padding: 10px;
-  }
-td {  /* Table  */
-  font-size: 13px;
-  font-family: "Georgia", serif;
-}
-h1.title { /* Title */
-  text-align: center;
-  font-size: 28px;
-  font-weight: bold;
-  color: white;
-  background-color: #6B7A8F;
-  border-radius: 2px;
-  padding: 30px;
-  font-family: "Georgia", serif;
-}
-h4.author { /* Header 4 - Author Header */
-  text-align: center;
-  color: black;
-  font-weight: bold;
-  font-family: "Georgia", serif;
-}
-h1 { /* Header 1 */
-  font-size: 20px;
-  font-weight: bold;
-  color: Black;
-  font-family: "Georgia", serif;
-  border-radius: 2px;
-  padding: 10px;
-  background-color: #DCC7AA;
-}
-h2 { /* Header 2 */
-  font-size: 18px;
-  color: Black;
-  font-family: "Georgia", serif;
-  border-radius: 2px;
-  padding: 5px;
-}
-h3 { /* Header 3 */
-  font-size: 18px;
-  font-family: "Georgia", serif;
-  color: Black;
-}
-code.r{ /* Code block */
-  font-size: 14px;
-  font-family: "Georgia", serif;
-}
-pre { /* Code block - determines code spacing between lines */
-  font-size: 14px;
-  font-family: "Georgia", serif;
-}
-
-
-
-/* Below options to control the word wrap for the display of source code and output */
-pre { /* Code block - determines code spacing between lines */
-    font-size: 13px;
-	overflow-x: auto; 
-}
-pre code {
-  word-wrap: normal;
-  white-space: pre;
-}
-/* End */
-
-/* button to collapse the source code and output chunks */
-.showopt {
-  background-color: #004c93;
-  color: #FFFFFF; 
-  width: 100px;
-  height: 20px;
-  text-align: center;
-  vertical-align: middle !important;
-  float: right;
-  font-family: sans-serif;
-  border-radius: 8px;
-}
-
-.showopt:hover {
-    background-color: #dfe4f2;
-    color: #004c93;
-}
-
-pre.plot {
-  background-color: white !important;
-}
-/* End */
-
-
-</style>
-
