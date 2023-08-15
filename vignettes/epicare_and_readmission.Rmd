@@ -14,20 +14,6 @@ vignette: >
 
 ---
 
-
-<style type="text/css">
-
-body, td {
-   font-size: 14px;
-}
-code.r{
-  font-size: 12px;
-}
-pre {
-  font-size: 5px
-}
-</style>
-
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -60,13 +46,13 @@ The function **`episodes_of_care()`** links together hospitalizations with acute
 > The flowchart below shows how epicares are built:
 
 ```{r, echo=FALSE, out.width = "90%", fig.align = "center"}
-knitr::include_graphics("../inst/figures/epicare_flow_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_flow_2.png", dpi = 100)
 ```
 
 > Example output of `episodes_of_care(db)` (mock data for illustration purposes, not real data):
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center"}
-knitr::include_graphics("../inst/figures/epicare_out_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_out_2.png", dpi = 100)
 ```
 
 
@@ -83,7 +69,7 @@ By default, all records in the `admdad` table are used to calculate readmission.
 > Mock example output of `readmission(db)` (mock data for illustration purposes, not real data. patient_id added to facilitate interpretation):
 
 ```{r, echo=FALSE, out.width = "70%", fig.align = "center"}
-knitr::include_graphics("../inst/figures/readmission_out_2.png", dpi = 100)
+knitr::include_graphics("figures/readmission_out_2.png", dpi = 100)
 ```
 
 
@@ -140,7 +126,7 @@ readmission_7d_derived <- mean( readm$readmit7, na.rm=T )
 > Hypothetical example of special readmission attribution (compare colored entries in genc_id 103 vs 301, and genc_id 105 vs 201, and see how readmit7 is affected):
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center"}
-knitr::include_graphics("../inst/figures/attribution_2.png", dpi = 100)
+knitr::include_graphics("figures/attribution_2.png", dpi = 100)
 ```
 <br>
 
@@ -163,7 +149,7 @@ knitr::include_graphics("../inst/figures/attribution_2.png", dpi = 100)
 > Hypothetical example of how buffer period affects 7-day readmission of a patient:
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center"}
-knitr::include_graphics("../inst/figures/buffer_2.png", dpi = 100)
+knitr::include_graphics("figures/buffer_2.png", dpi = 100)
 ```
 
 
@@ -208,7 +194,7 @@ readmission_30d_derived_cihi = mean( res$readmit30, na.rm=T)
 > There are 8 CIHI flags, each of which can be set to TRUE or FALSE. Elective admission and death flags are active by default. Activating a given flag (e.g., chemo and/or self sign-out flag) results in removal from numerator and/or denominator as illustrated in the flow chart below. Note that some flags (mental & palliative) result in the removal from both numerator and denominator:
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center"}
-knitr::include_graphics("../inst/figures/flags_diagram_2.png", dpi = 100)
+knitr::include_graphics("figures/flags_diagram_2.png", dpi = 100)
 ```
 
 
@@ -221,7 +207,7 @@ knitr::include_graphics("../inst/figures/flags_diagram_2.png", dpi = 100)
 - An episode with elective admissions is removed from the numerator
 
 ```{r, echo=FALSE, out.width = "65%", fig.align = "center"}
-knitr::include_graphics("../inst/figures/elective_2.png", dpi = 100)
+knitr::include_graphics("figures/elective_2.png", dpi = 100)
 ```
 
 
@@ -230,7 +216,7 @@ knitr::include_graphics("../inst/figures/elective_2.png", dpi = 100)
 - If the index admission results in death, there cannot be any readmission. Therefore, episodes of care with death are excluded from the denominator (reamitX=NA)
 
 ```{r, echo=FALSE, out.width = "65%", fig.align = "center"}
-knitr::include_graphics("../inst/figures/death_2.png", dpi = 100)
+knitr::include_graphics("figures/death_2.png", dpi = 100)
 ```
 
 
@@ -242,7 +228,7 @@ knitr::include_graphics("../inst/figures/death_2.png", dpi = 100)
 - Note: If death = T, the epicare with MAID (which results in death) is additionally removed from the denominator. If death = F, the epicare with MAID is kept in the denominator. The general recommendation is to set death to T if MAID is T.
 
 ```{r, echo=FALSE, out.width = "65%", fig.align = "center"}
-knitr::include_graphics("../inst/figures/maid_2.png", dpi = 100)
+knitr::include_graphics("figures/maid_2.png", dpi = 100)
 ```
 
 ### self sign-out / LAMA flag
@@ -252,7 +238,7 @@ knitr::include_graphics("../inst/figures/maid_2.png", dpi = 100)
 
 
 ```{r, echo=FALSE, out.width = "65%", fig.align = "center"}
-knitr::include_graphics("../inst/figures/sign-out_2.png", dpi = 100)
+knitr::include_graphics("figures/sign-out_2.png", dpi = 100)
 ```
 
 
@@ -290,7 +276,7 @@ knitr::include_graphics("../inst/figures/sign-out_2.png", dpi = 100)
 > This flow chart provides an overview of how readmission calculations can be customized for different research purposes. Depending on the research context, you may be able to use the derived readmission variables in the DB (see [*Section 3.1*](#sectionderived)). Alternatively, you can run the readmission function with customized CIHI flags ([*Section 3.2*](#sectioncustomCIHI)), customized readmission window ([*Section 3.3*](#sectionrewin)), and/or a restricted readmission cohort ([*Section 3.4*](#sectionrecohort)):
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center"}
-knitr::include_graphics("../inst/figures/customReadm_fig3.png", dpi = 100)
+knitr::include_graphics("figures/customReadm_fig3.png", dpi = 100)
 ```
 
 
@@ -500,128 +486,3 @@ There may be more complex scenarios where the inclusion criteria for index admis
 5) Calculate readmission rates: Filter the output of the `readmission` function based on your index admissions (cohort created in step 1) in order to get readmission rates of surgery patients to GIM. This step is important to avoid that any admissions following GIM epicares (e.g., GIM to GIM readmissions or GIM to surgery readmissions) are included in the readmission rates. 
 
 These steps are meant as a general guideline, but you may need to consider additional aspects for a given research project. Please make sure you carefully consider the implications of the decisions you make when building your `restricted_cohort`. You will also need to consider if any additional REB restrictions apply, in which case the `restricted_cohort` should be filtered based on REB considerations first before applying any additional inclusion steps.  
-
-
-<!-- styling HTML Workflow -->
-
-<div class="tocify-extend-page" data-unique="tocify-extend-page" style="height: ;"></div>
-
-<style type="text/css">
-.main-container {
-  max-width: 1800px !important;
-  margin-left: auto;
-  margin-right: auto;
-}
-h1, .h1, h2, .h2, h3, .h3 { /* Margin */
-  margin-top: 42px;
-}
-code {
-  color: inherit;
-  background-color: rgba(0, 0, 0, 0.04);
-}
-img {
-  max-width:100%;
-  height: auto;
-}
-.tabbed-pane {
-  padding-top: 12px;
-}
-button.code-folding-btn:focus {
-  outline: none;
-}
-h1.title {
-  margin-top: auto;
-}
-body{ /* Normal  */
-  font-size: 14px;
-  font-family: "Georgia", serif;
-  padding: 10px;
-  }
-td {  /* Table  */
-  font-size: 13px;
-  font-family: "Georgia", serif;
-}
-h1.title { /* Title */
-  text-align: center;
-  font-size: 28px;
-  font-weight: bold;
-  color: white;
-  background-color: #6B7A8F;
-  border-radius: 2px;
-  padding: 30px;
-  font-family: "Georgia", serif;
-}
-h4.author { /* Header 4 - Author Header */
-  text-align: center;
-  color: black;
-  font-weight: bold;
-  font-family: "Georgia", serif;
-}
-h1 { /* Header 1 */
-  font-size: 20px;
-  font-weight: bold;
-  color: Black;
-  font-family: "Georgia", serif;
-  border-radius: 2px;
-  padding: 10px;
-  background-color: #DCC7AA;
-}
-h2 { /* Header 2 */
-  font-size: 18px;
-  color: Black;
-  font-family: "Georgia", serif;
-  border-radius: 2px;
-  padding: 5px;
-}
-h3 { /* Header 3 */
-  font-size: 18px;
-  font-family: "Georgia", serif;
-  color: Black;
-}
-code.r{ /* Code block */
-  font-size: 14px;
-  font-family: "Georgia", serif;
-}
-pre { /* Code block - determines code spacing between lines */
-  font-size: 14px;
-  font-family: "Georgia", serif;
-}
-
-
-
-/* Below options to control the word wrap for the display of source code and output */
-pre { /* Code block - determines code spacing between lines */
-    font-size: 13px;
-	overflow-x: auto; 
-}
-pre code {
-  word-wrap: normal;
-  white-space: pre;
-}
-/* End */
-
-/* button to collapse the source code and output chunks */
-.showopt {
-  background-color: #004c93;
-  color: #FFFFFF; 
-  width: 100px;
-  height: 20px;
-  text-align: center;
-  vertical-align: middle !important;
-  float: right;
-  font-family: sans-serif;
-  border-radius: 8px;
-}
-
-.showopt:hover {
-    background-color: #dfe4f2;
-    color: #004c93;
-}
-
-pre.plot {
-  background-color: white !important;
-}
-/* End */
-
-
-</style>

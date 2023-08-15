@@ -14,7 +14,9 @@
 #' `erdiagnosis` table as defined in the
 #' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
 #'
-#' @return
+#' @return (`data.table`)\cr
+#' All encounters by `genc_id` with `diagnosis_type` and `diagnosis_code` for all diagnoses at admission.
+#'
 #' @export
 #'
 diagnoses_at_admission <- function(ipdiag, erdiag) {

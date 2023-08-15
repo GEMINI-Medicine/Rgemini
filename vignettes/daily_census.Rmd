@@ -1,5 +1,5 @@
 ---
-title: "daily_census"
+title: "Daily Census"
 date: "`r Sys.Date()`"
 output:
   html_vignette:
@@ -8,25 +8,11 @@ output:
     dfprint: kable
 
 vignette: >
-  %\VignetteIndexEntry{daily_census}
+  %\VignetteIndexEntry{Daily Census}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 
 ---
-
-
-<style type="text/css">
-
-body, td {
-   font-size: 14px;
-}
-code.r{
-  font-size: 12px;
-}
-pre {
-  font-size: 5px
-}
-</style>
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
@@ -55,7 +41,6 @@ Here is an example of how to load the relevant data and run the `daily_census` f
 library(RPostgreSQL)
 library(DBI)
 library(getPass)
-library(Rgemini)
 
 # Establish database connection
 db <- DBI::dbConnect(drv,
@@ -274,129 +259,3 @@ census_output[ , capacity_ratio_yoy := census/median(census), by = c("hospital_n
 ```
 
 Similarly, users could define other indicators of typical occupancy that are currently not supported by the function (e.g., trimmed means).
-
-
-
-<!-- styling HTML Workflow -->
-
-<div class="tocify-extend-page" data-unique="tocify-extend-page" style="height: ;"></div>
-
-<style type="text/css">
-.main-container {
-  max-width: 1800px !important;
-  margin-left: auto;
-  margin-right: auto;
-}
-h1, .h1, h2, .h2, h3, .h3 { /* Margin */
-  margin-top: 42px;
-}
-code {
-  color: inherit;
-  background-color: rgba(0, 0, 0, 0.04);
-}
-img {
-  max-width:100%;
-  height: auto;
-}
-.tabbed-pane {
-  padding-top: 12px;
-}
-button.code-folding-btn:focus {
-  outline: none;
-}
-h1.title {
-  margin-top: auto;
-}
-body{ /* Normal  */
-  font-size: 14px;
-  font-family: "Georgia", serif;
-  padding: 10px;
-  }
-td {  /* Table  */
-  font-size: 13px;
-  font-family: "Georgia", serif;
-}
-h1.title { /* Title */
-  text-align: center;
-  font-size: 28px;
-  font-weight: bold;
-  color: white;
-  background-color: #6B7A8F;
-  border-radius: 2px;
-  padding: 30px;
-  font-family: "Georgia", serif;
-}
-h4.author { /* Header 4 - Author Header */
-  text-align: center;
-  color: black;
-  font-weight: bold;
-  font-family: "Georgia", serif;
-}
-h1 { /* Header 1 */
-  font-size: 20px;
-  font-weight: bold;
-  color: Black;
-  font-family: "Georgia", serif;
-  border-radius: 2px;
-  padding: 10px;
-  background-color: #DCC7AA;
-}
-h2 { /* Header 2 */
-  font-size: 18px;
-  color: Black;
-  font-family: "Georgia", serif;
-  border-radius: 2px;
-  padding: 5px;
-}
-h3 { /* Header 3 */
-  font-size: 18px;
-  font-family: "Georgia", serif;
-  color: Black;
-}
-code.r{ /* Code block */
-  font-size: 14px;
-  font-family: "Georgia", serif;
-}
-pre { /* Code block - determines code spacing between lines */
-  font-size: 14px;
-  font-family: "Georgia", serif;
-}
-
-
-
-/* Below options to control the word wrap for the display of source code and output */
-pre { /* Code block - determines code spacing between lines */
-    font-size: 13px;
-	overflow-x: auto; 
-}
-pre code {
-  word-wrap: normal;
-  white-space: pre;
-}
-/* End */
-
-/* button to collapse the source code and output chunks */
-.showopt {
-  background-color: #004c93;
-  color: #FFFFFF; 
-  width: 100px;
-  height: 20px;
-  text-align: center;
-  vertical-align: middle !important;
-  float: right;
-  font-family: sans-serif;
-  border-radius: 8px;
-}
-
-.showopt:hover {
-    background-color: #dfe4f2;
-    color: #004c93;
-}
-
-pre.plot {
-  background-color: white !important;
-}
-/* End */
-
-
-</style>
