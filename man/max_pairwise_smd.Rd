@@ -16,6 +16,9 @@ Unused variable that is required to be supported by \code{extra.col} in \code{\l
 
 \item{round_to}{(\code{numeric})\cr
 How many digits to round the standardized mean difference to.}
+
+\item{...}{\cr
+Additional arguments passed on to \code{\link[table1:table1]{table1::table1()}}.}
 }
 \value{
 (\code{numeric})\cr

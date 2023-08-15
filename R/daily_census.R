@@ -102,7 +102,7 @@
 #' Dates within the time period of interest where no data were available at a given site are not included in the output.
 #' For any dates inside the buffer period, `census` and `capacity_ratio` are returned as `NA`.
 #'
-#' @seealso \code{\link[Vignettes-Rgemini]{daily_census}}
+#' @seealso `vignette("daily_census", package = "Rgemini")`
 #'
 #' @importFrom tidyr crossing
 #' @importFrom dplyr anti_join

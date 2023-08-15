@@ -139,6 +139,9 @@ diagnoses_at_admission <- function(ipdiag, erdiag) {
 #' @param raw_comorbidities (`logical`)\cr
 #' Whether to output a `data.table` of raw comorbidities as opposed to pre-computed charlson scores.
 #'
+#' @param at_admission (`logical`)\cr
+#' Whether to calculate the charlson score for all comorbidities or for only pre-admit comorbidities.
+#'
 #' @return (`data.table`)\cr
 #' By default, for each encounter, outputs the Charlson comorbidity index. If `raw_comorbidities` is `TRUE`,
 #' outputs a wide `data.table` with a column for each comorbidity for each encounter.

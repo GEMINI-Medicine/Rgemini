@@ -8,19 +8,16 @@ compute_frailty_score(ipadmdad, ipdiagnosis, eddiagnosis)
 }
 \arguments{
 \item{ipadmdad}{(\code{data.table})
-\code{ipadmdad} table as defined in the \link{GEMINI Data Repository Dictionary}
-(https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+\code{ipadmdad} table as defined in the \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
 This table must contain the \code{genc_id} field}
 
 \item{ipdiagnosis}{(\code{data.table})
-\code{ipdiagnosis} table as defined in the \link{GEMINI Data Repository Dictionary}
-(https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+\code{ipdiagnosis} table as defined in the \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
 This table must contain the \code{genc_id} and \code{diagnosis_code} (as ICD-10-CA) fields in long format table only.
 The diagnosis codes must be free from any punctuation or special characters.}
 
 \item{eddiagnosis}{(\code{data.table})
-\code{eddaignosis} table as defined in the \link{GEMINI Data Repository Dictionary}
-(https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+\code{eddaignosis} table as defined in the \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
 This table must contain the \code{genc_id} and \code{er_diagnosis_code} (as ICD-10-CA) fields in long format table only.
 The diagnosis codes must be free from any punctuation or special characters.}
 }

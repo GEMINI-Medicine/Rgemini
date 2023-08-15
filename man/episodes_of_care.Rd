@@ -92,5 +92,5 @@ epicare_table <- episodes_of_care(db)
 \url{https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital}
 }
 \seealso{
-\code{\link[Vignettes-Rgemini]{Epicare_and_Readmission}}
+\code{vignette("epicare_and_readmission", package = "Rgemini")}
 }

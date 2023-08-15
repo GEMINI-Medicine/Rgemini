@@ -26,6 +26,9 @@ all_charlson_derived(ipdiag, erdiag)
 \code{erdiagnosis} table as defined in the
 \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.}
 
+\item{at_admission}{(\code{logical})\cr
+Whether to calculate the charlson score for all comorbidities or for only pre-admit comorbidities.}
+
 \item{raw_comorbidities}{(\code{logical})\cr
 Whether to output a \code{data.table} of raw comorbidities as opposed to pre-computed charlson scores.}
 }

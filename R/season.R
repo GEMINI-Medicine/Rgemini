@@ -3,7 +3,7 @@
 #' @description
 #' Given a date, return the named season.
 #'
-#' @param date(`Date`)\cr
+#' @param date (`Date`)\cr
 #'
 #' @return (`character`)\cr
 #' One of "Spring", "Summer", "Fall", "Winter".

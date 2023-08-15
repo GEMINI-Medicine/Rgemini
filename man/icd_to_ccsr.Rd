@@ -19,7 +19,7 @@ RPostgres connection to database}
 \item{dxtable}{(\code{data.frame} | \code{data.table})
 Table containing ICD-10-CA diagnosis codes of interest. Typically, this refers to the \code{ipdiagnosis} table, which
 contains the CIHI in-patient diagnoses for each encounter (see
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI database schema}.
+\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI database schema}).
 
 If a different type of diagnosis table is provided as input (e.g., \code{erdiagnosis}), please make sure the table
 contains a column named \code{diagnosis_code} (\code{character}) where each row refers to a single, alphanumeric diagnosis
@@ -94,8 +94,8 @@ The full mapping procedure is described \href{https://www.medrxiv.org/content/10
 This function returns the GEMINI-derived CCSR mapping for each ICD-10-CA diagnosis in the \code{diagnosis_table} input.
 
 By default, the function will only return the CCSR category(s) for the most responsible discharge diagnosis (MRDx).
-This typically refers to type-M diagnoses, unless a patient has a type-6 diagnosis (see \link{CIHI definition of MRDx}
-(https://www.cihi.ca/sites/default/files/document/hospital-standardized-mortality-ratio-meth-notes-en.pdf);
+This typically refers to type-M diagnoses, unless a patient has a type-6 diagnosis (see
+\href{https://www.cihi.ca/sites/default/files/document/hospital-standardized-mortality-ratio-meth-notes-en.pdf}{CIHI definition of MRDx}
 page 13). Users can choose to obtain CCSR categories for all diagnosis types by setting
 \code{type_mrdx} to \code{FALSE}.
 }
@@ -126,7 +126,7 @@ icd_to_ccsr(db, ipdiagnosis)
 }
 }
 \seealso{
-\code{\link[Vignettes-Rgemini]{icd_to_ccsr}}
+\code{vignette("icd_to_ccsr", package = "Rgemini")}
 The vignette provides further context and some example code illustrating how to use CCSR categories in analyses.
 }
 \concept{diagnoses, CCSR, ICD-10}

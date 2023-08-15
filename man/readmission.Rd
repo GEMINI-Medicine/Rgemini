@@ -80,7 +80,7 @@ readmission window(s) of interest, in days (by default: \code{readm_win = c(7,30
 }
 \value{
 This function returns a \code{data.table} containing \code{genc_id}, \code{AT_in_occurred}, \code{AT_out_occurred}, \code{epicare}
-(see \code{\link[GEMINIpkg:episodes_of_care]{GEMINIpkg::episodes_of_care()}}), \code{readmit7} (default), and \code{readmit30} (default). \code{readmit7} and \code{readmit30}
+(see \code{\link[=episodes_of_care]{episodes_of_care()}}), \code{readmit7} (default), and \code{readmit30} (default). \code{readmit7} and \code{readmit30}
 are logical variables indicating whether or not an episode of care was followed by a readmission. Note that
 readmissions are attributed to the last encounter of each episode of care. Episodes of care where the last encounter
 has \code{readmitX = NA} have been removed from the denominator.
@@ -116,10 +116,9 @@ of care. When conducting readmission calculations using the function output, the
 \code{readmission == TRUE} is the numerator, and the number of eligible episodes of care (where \code{readmission != NA})
 is the denominator. For example, 7-day readmission rate can be calculated by \code{mean(readmit7, na.rm=TRUE)}, where
 \code{readmit7} is the variable returned by the \code{readmission()} function. This function is designed to be consistent
-with \link{CIHI guidelines for readmission calculations}
-(https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital). Please carefully review this reference
-before applying the function for research purposes. Users may choose to deviate from the CIHI definition of
-readmission by setting any of the CIHI flags (see above) to \code{FALSE}.
+with \href{https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital}{CIHI guidelines for readmission calculations}.
+Please carefully review this reference before applying the function for research purposes. Users may choose to deviate from
+the CIHI definition of readmission by setting any of the CIHI flags (see above) to \code{FALSE}.
 }
 \section{Warning}{
 
@@ -158,5 +157,5 @@ readmission(db, elective_admit = TRUE, death = TRUE, MAID = TRUE, palliative = T
 \href{https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital}{CIHI readmission guidelines}
 }
 \seealso{
-\code{\link[Vignettes-GEMINIpkg]{Epicare_and_Readmission}}
+\code{vignette("epicare_and_readmission", package = "Rgemini")}
 }

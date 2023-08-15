@@ -7,46 +7,44 @@
 in_hospital_mortality(ipadmdad, suicide = FALSE)
 }
 \arguments{
-\item{ipadmdad}{a data.table object equivalent of DRM table "ipadmdad".
-Table must contain two fields:
-admission id and discharge disposition}
+\item{ipadmdad}{(\code{data.frame} | \code{data.table})\cr
+a table equivalent to DRM table "ipadmdad" (see
+\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI database schema}).
+Must contain two fields: \code{genc_id} and \code{discharge_disposition}}
 
-\item{suicide}{a TRUE/FALSE argument indicating whether suicides in facility
-should be factored in the calculation.}
-
-\item{id}{a character string of label for admission id
-in "ipadmdad" table}
-
-\item{dischvar}{a character string of label equivalent to
-CIHI-defined "discharge disposition".}
+\item{suicide}{(\code{logical})\cr
+a TRUE/FALSE argument indicating whether suicides in facility
+should be counted towards in-hospital mortality rate or not.}
 }
 \value{
-data.table with the same number of rows with input "ipadmdad" with additional
-derived boolean field labelled as
-"in_hospital_mortality_derived". Possible values are TRUE, FALSE or NA
+\code{data.table} with the same number of rows as input \code{ipadmdad}, with
+additional derived boolean field labelled as \code{in_hospital_mortality_derived}.
+Possible values are \code{TRUE}, \code{FALSE} or \code{NA}, where \code{NA} indicates missing
+discharge disposition.
 }
 \description{
-\code{in_hospital_mortality} returns whether patient has deceased
-in hospital based on the CIHI DAD field
+\code{in_hospital_mortality} returns whether a patient has deceased
+in hospital based on the CIHI DAD field discharge disposition
 }
 \details{
-This function takes the CIHI DAD "discharge disposition"
-field (Group 05, Field 05 As of 19/20 CIHI DAD) and generate
-boolean field indicating whether the patient has deceased during hospital stay.
+This function takes the CIHI DAD "discharge disposition" field
+(Group 05, Field 05 As of 19/20 CIHI DAD) and generates a boolean
+variable indicating whether the patient has deceased during hospital stay.
 
 The current version of the function captures the four possible
-values indicating patient has deceased in hospital:
+values indicating that a patient has deceased in hospital:
 
 \itemize{
 \item{7 :  }{Died (Deprecated post 2017)}
 \item{72 : }{Died in Facility}
 \item{73 : }{Medical Assistance in Dying}
-\item{74 : }{Suicide in Facility (Excluded in calculation by default; can be included in argument)}
+\item{74 : }{Suicide in Facility (Excluded in calculation by default;
+can be included by setting \code{suicide} argument to \code{TRUE})}
 }
 }
 \section{Warning}{
 
-NA values in returned data.table indicates missing
+\code{NA} values in returned data.table indicate missing
 discharge disposition field values.
 }
 

@@ -105,7 +105,6 @@
 #' @export
 covid_flag <- function(ipadmdad,
                                diagnosis) {
-  library(data.table)
 
   ## remap variable names in case field names change in the database
   res <- coerce_to_datatable(ipadmdad)[, .(genc_id)]

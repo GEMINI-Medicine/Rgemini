@@ -11,6 +11,9 @@
 #' @param round_to (`numeric`)\cr
 #' How many digits to round the standardized mean difference to.
 #'
+#' @param ... \cr
+#' Additional arguments passed on to [table1::table1()].
+#'
 #' @return (`numeric`)\cr
 #' The maximum pairwise standardized mean difference between all strata for a particular variable.
 #'
@@ -252,7 +255,7 @@ render_cell_suppression.categorical <- function(x) {
 #'
 #' @description
 #' Strictly suppress any counts that are less than 6 with message. This differs
-#' from the more conservative logic of [GEMINIpkg::render_cell_suppression.categorical()].
+#' from the more conservative logic of [Rgemini::render_cell_suppression.categorical()].
 #'
 #' @param x (`character` or `factor`)\cr
 #' A categorical variable to summarize.
@@ -321,11 +324,11 @@ render_strict_cell_suppression.categorical <- function(x) {
 #' @param x (`character` or `factor`)\cr
 #' A continuous variable to summarize.
 #'
+#' @param ... \cr
+#' Further arguments, passed to `table1:::stats.apply.rounding()`.
+#'
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
-#'
-#' @param round_to (`numeric`)\cr
-#' How many digits to round the standardized mean difference to.
 #'
 #' @importFrom table1 stats.default
 #' @export
@@ -350,6 +353,9 @@ render_mean.continuous <- function(x, ...) {
 #'
 #' @param x (`character` or `factor`)\cr
 #' A continuous variable to summarize.
+#'
+#' @param ... \cr
+#' Further arguments, passed to `table1:::stats.apply.rounding()`.
 #'
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
@@ -377,6 +383,9 @@ render_median.continuous <- function(x, ...) {
 #'
 #' @param x (`numeric`)\cr
 #' A continuous variable to summarize.
+#'
+#' @param ... \cr
+#' Further arguments, passed to `table1:::stats.apply.rounding()`.
 #'
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
@@ -421,15 +430,25 @@ render_cell_suppression.continuous <- function(x, ...) {
 #' the total given the overall column. Therefore it is recommended to also hide the "Overall"
 #' column in the call to [table1::table1()].
 #'
-#' @param x (`character` or `factor`)\cr
-#' A categorical stratification variable to summarize.
+#' @param label (`character`)\cr
+#' A character vector containing the labels.
+#'
+#' @param n (`numeric` or `character`)\cr
+#' A numeric vector containing the sizes.
+#'
+#' @param transpose (`logical`)\cr
+#' Used internally by [table1::table1()].
 #'
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
 #'
+#' @note
+#' Arguments from this function should not be passed directly and are defined here
+#' to work internally with [table1::table1()].
+#'
 #' @export
 #'
-render_cell_suppression.strat <- function(label, n, transpose = F) {
+render_cell_suppression.strat <- function(label, n, transpose = FALSE) {
   sprintf(
     ifelse(
       is.na(n),

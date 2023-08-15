@@ -67,7 +67,7 @@
 #' Please review the function documentation & vignette carefully. A comprehensive understanding of the following
 #' concepts is needed for proper use of the function: transfer coded vs. transfer occurred, episode of care definition.
 #'
-#' @seealso \code{\link[Vignettes-Rgemini]{Epicare_and_Readmission}}
+#' @seealso `vignette("epicare_and_readmission", package = "Rgemini")`
 #'
 #' @references
 #' [https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital](https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital)
