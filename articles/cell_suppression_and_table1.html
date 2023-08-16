@@ -243,6 +243,7 @@ characteristics, stratifying by the exposure variable:</p>
 </tr>
 </tbody>
 </table></div>
+<p> </p>
 <p>Note that patients with particular conditions can be easily
 identified, sometimes to the precision of the exact patient (such as the
 patient with DVT pre-pandemic). The goal of this vignette is to show how
@@ -368,6 +369,7 @@ to protect these patients’ privacy.</p>
 </tr>
 </tbody>
 </table></div>
+<p> </p>
 </div>
 <div class="section level3">
 <h3 id="customizing-output-for-continuous-variables---change-to-medians">Customizing output for continuous variables - change to medians<a class="anchor" aria-label="anchor" href="#customizing-output-for-continuous-variables---change-to-medians"></a>
@@ -483,6 +485,29 @@ variables by specifying a <code>continuous_fn</code>.</p>
 </tr>
 </tbody>
 </table></div>
+<p> </p>
+<p>Important conceptual notes:</p>
+<ol style="list-style-type: decimal">
+<li><strong>True zeros are not suppressed.</strong></li>
+</ol>
+<p>True zeros risk identifying no patient, and therefore we do not hide
+valuable information that does not bring with it the risk of
+re-identification.</p>
+<ol start="2" style="list-style-type: decimal">
+<li><strong>Cells that originally had 6 or more patients are also
+suppressed.</strong></li>
+</ol>
+<p>Consider the group of patients in the pandemic subgroup. Note that
+patients with CVD post-pandemic were suppressed even though there were
+originally six patients in that subgroup. Had we only suppressed
+patients with Dementia (two patients), knowing the total number of
+patients during the pandemic (34), we could have reverse-calculated the
+number of patients with Dementia.</p>
+<p>Therefore the algorithm is designed to continue suppressing
+successively larger groups until the total number of suppressed patients
+is six or more, such that they cannot be reverse-calculated with
+reasonable precision. The default option shows the desired behaviour and
+the most conservative with respect to patient privacy.</p>
 <p>Or we can do this directly by specifying a render function:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
@@ -586,28 +611,7 @@ variables by specifying a <code>continuous_fn</code>.</p>
 </tr>
 </tbody>
 </table></div>
-<p>Important conceptual notes</p>
-<ol style="list-style-type: decimal">
-<li><strong>True zeros are not suppressed.</strong></li>
-</ol>
-<p>True zeros risk identifying no patient, and therefore we do not hide
-valuable information that does not bring with it the risk of
-re-identification.</p>
-<ol start="2" style="list-style-type: decimal">
-<li><strong>Cells that originally had 6 or more patients are also
-suppressed.</strong></li>
-</ol>
-<p>Consider the group of patients in the pandemic subgroup. Note that
-patients with CVD post-pandemic were suppressed even though there were
-originally six patients in that subgroup. Had we only suppressed
-patients with Dementia (two patients), knowing the total number of
-patients during the pandemic (34), we could have reverse-calculated the
-number of patients with Dementia.</p>
-<p>Therefore the algorithm is designed to continue suppressing
-successively larger groups until the total number of suppressed patients
-is six or more, such that they cannot be reverse-calculated with
-reasonable precision. The default option shows the desired behaviour and
-the most conservative with respect to patient privacy.</p>
+<p> </p>
 </div>
 <div class="section level3">
 <h3 id="customizing-output-for-continuous-variables---change-number-of-digits">Customizing output for continuous variables - change number of
@@ -724,6 +728,7 @@ using the <code>digits</code> argument.</p>
 </tr>
 </tbody>
 </table></div>
+<p> </p>
 </div>
 <div class="section level3">
 <h3 class="tabset" id="finer-control">Finer control<a class="anchor" aria-label="anchor" href="#finer-control"></a>
@@ -737,7 +742,7 @@ implemented in the following render functions:</p>
 <li><code><a href="../reference/render_cell_suppression.continuous.html">render_cell_suppression.continuous()</a></code></li>
 <li><code><a href="../reference/render_cell_suppression.discrete.html">render_cell_suppression.discrete()</a></code></li>
 <li><code><a href="../reference/render_cell_suppression.missing.html">render_cell_suppression.missing()</a></code></li>
-<li><code>render_cell_suppression.strata()</code></li>
+<li><code><a href="../reference/render_cell_suppression.strat.html">render_cell_suppression.strat()</a></code></li>
 </ul>
 <p>We can apply cell suppression directly to covariates of particular
 data types by supplying these custom renderer functions.</p>
@@ -852,6 +857,7 @@ data types by supplying these custom renderer functions.</p>
 </tr>
 </tbody>
 </table></div>
+<p> </p>
 </div>
 <div class="section level4">
 <h4 id="suppress-cells-with-counts-fewer-than-six-only">Suppress cells with counts fewer than six only<a class="anchor" aria-label="anchor" href="#suppress-cells-with-counts-fewer-than-six-only"></a>
@@ -967,6 +973,7 @@ cells with counts fewer than six as needed.</p>
 </tr>
 </tbody>
 </table></div>
+<p> </p>
 </div>
 <div class="section level4">
 <h4 id="suppress-missing-values">Suppress missing values<a class="anchor" aria-label="anchor" href="#suppress-missing-values"></a>
@@ -1089,9 +1096,10 @@ cells with counts fewer than six as needed.</p>
 </tr>
 </tbody>
 </table></div>
+<p> </p>
 </div>
 <div class="section level4">
-<h4 class="tabset" id="strategies-to-suppress-continuous-variables">strategies to suppress continuous variables<a class="anchor" aria-label="anchor" href="#strategies-to-suppress-continuous-variables"></a>
+<h4 class="tabset" id="strategies-to-suppress-continuous-variables">Strategies to suppress continuous variables<a class="anchor" aria-label="anchor" href="#strategies-to-suppress-continuous-variables"></a>
 </h4>
 <p>It is also possible to suppress continuous variables if desired. See
 the example below.</p>
@@ -1154,6 +1162,7 @@ the example below.</p>
 </tr>
 </tbody>
 </table></div>
+<p> </p>
 </div>
 <div class="section level5">
 <h5 id="suppress-continuous-variables">Suppress continuous variables<a class="anchor" aria-label="anchor" href="#suppress-continuous-variables"></a>
@@ -1200,6 +1209,7 @@ any summary statistics for groups with a size smaller than six.</p>
 </tr>
 </tbody>
 </table></div>
+<p> </p>
 <p>Note in this case however, using the strata totals we can
 reverse-calculate the number of patients, so we suppress the counts in
 the strata as well using <code>render_cell_suppression.strat</code>.</p>
@@ -1248,6 +1258,7 @@ the strata as well using <code>render_cell_suppression.strat</code>.</p>
 </tr>
 </tbody>
 </table></div>
+<p> </p>
 </div>
 <div class="section level5">
 <h5 id="suppress-overall-count">Suppress “Overall” count<a class="anchor" aria-label="anchor" href="#suppress-overall-count"></a>
@@ -1292,6 +1303,7 @@ could consider removing the “Overall” count:</p>
 </tr>
 </tbody>
 </table></div>
+<p> </p>
 <p>Important conceptual notes:</p>
 <p>We don’t employ the same strategy for stratification variables as we
 do for categorical variables, where we successively suppress additional
@@ -1436,6 +1448,7 @@ columns to append to the table. Usage is as follows:</p>
 </tr>
 </tbody>
 </table></div>
+<p> </p>
 </div>
 <div class="section level2">
 <h2 id="replicating-table1-functionality">Replicating <code>table1</code> functionality<a class="anchor" aria-label="anchor" href="#replicating-table1-functionality"></a>
@@ -1547,6 +1560,7 @@ the default (i.e. “non-formula”) interface to <code>table1</code>:</p>
 </tr>
 </tbody>
 </table></div>
+<p> </p>
 </div>
 <div class="section level4">
 <h4 id="change-strata-labels">Change strata labels<a class="anchor" aria-label="anchor" href="#change-strata-labels"></a>
@@ -1647,6 +1661,7 @@ strata</p>
 </tr>
 </tbody>
 </table></div>
+<p> </p>
 </div>
 <div class="section level4">
 <h4 id="add-grouping-to-strata-and-standardized-mean-differences">Add grouping to strata and standardized mean differences<a class="anchor" aria-label="anchor" href="#add-grouping-to-strata-and-standardized-mean-differences"></a>
@@ -1772,6 +1787,7 @@ differences using <code>extra.col</code> to put it all together.</p>
 </tr>
 </tbody>
 </table></div>
+<p> </p>
 </div>
 </div>
 </div>
@@ -1900,6 +1916,7 @@ of standardized mean differences as follows:</p>
 </tr>
 </tbody>
 </table></div>
+<p> </p>
 </div>
 <div class="section level2">
 <h2 id="customization-and-extending-functionality">Customization and extending functionality<a class="anchor" aria-label="anchor" href="#customization-and-extending-functionality"></a>
