@@ -496,7 +496,7 @@ variables by specifying a <code>continuous_fn</code>.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">data</span>, </span>
-<span>  render.continuous <span class="op">=</span> <span class="va">render_cell_suppression.continuous</span>, </span>
+<span>  render.continuous <span class="op">=</span> <span class="fu">Rgemini</span><span class="fu">::</span><span class="va"><a href="../reference/render_cell_suppression.continuous.html">render_cell_suppression.continuous</a></span>, </span>
 <span>  continuous_fn <span class="op">=</span> <span class="st">'median'</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
@@ -760,7 +760,7 @@ data types by supplying these custom renderer functions.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">data</span>, </span>
-<span>  render.categorical <span class="op">=</span> <span class="va">render_cell_suppression.categorical</span></span>
+<span>  render.categorical <span class="op">=</span> <span class="fu">Rgemini</span><span class="fu">::</span><span class="va"><a href="../reference/render_cell_suppression.categorical.html">render_cell_suppression.categorical</a></span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
