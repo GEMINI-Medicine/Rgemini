@@ -42,7 +42,7 @@
 #' This table must contain the `genc_id` and `diagnosis_code` (as ICD-10-CA) fields in long format table only.
 #' The diagnosis codes must be free from any punctuation or special characters.
 #' @param eddiagnosis (`data.table`)
-#' `eddaignosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' `eddiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
 #' This table must contain the `genc_id` and `er_diagnosis_code` (as ICD-10-CA) fields in long format table only.
 #' The diagnosis codes must be free from any punctuation or special characters.
 #'
