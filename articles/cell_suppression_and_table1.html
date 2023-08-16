@@ -47,6 +47,9 @@
     <a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a>
   </div>
 </li>
+<li class="nav-item">
+  <a class="nav-link" href="../news/index.html">Changelog</a>
+</li>
       </ul>
 <form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off">
@@ -131,7 +134,7 @@ various functions described below.</p>
 <h3 id="using-table1">Using <code>table1</code><a class="anchor" aria-label="anchor" href="#using-table1"></a>
 </h3>
 <p>Although the vignette linked above provides an in-depth exploration
-off all <code>table1</code> functionality, we will review the function
+of all <code>table1</code> functionality, we will review the function
 with a very simple example below. We summarize all available patient
 characteristics, stratifying by the exposure variable:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -249,28 +252,6 @@ to protect these patients’ privacy.</p>
 <div class="section level2">
 <h2 class="tabset" id="cell-suppression">Cell suppression<a class="anchor" aria-label="anchor" href="#cell-suppression"></a>
 </h2>
-<p>Important conceptual notes</p>
-<ol style="list-style-type: decimal">
-<li><strong>True zeros are not suppressed.</strong></li>
-</ol>
-<p>True zeros risk identifying no patient, and therefore we do not hide
-valuable information that does not bring with it the risk of
-re-identification.</p>
-<ol start="2" style="list-style-type: decimal">
-<li><strong>Cells that originally had 6 or more patients are also
-suppressed.</strong></li>
-</ol>
-<p>Consider the group of patients in the pandemic subgroup. Note that
-patients with CVD post-pandemic were suppressed even though there were
-originally six patients in that subgroup. Had we only suppressed
-patients with Dementia (two patients), knowing the total number of
-patients during the pandemic (34), we could have reverse-calculated the
-number of patients with Dementia.</p>
-<p>Therefore the algorithm is designed to continue suppressing
-successively larger groups until the total number of suppressed patients
-is six or more, such that they cannot be reverse-calculated with
-reasonable precision. The default option shows the desired behaviour and
-the most conservative with respect to patient privacy.</p>
 <div class="section level3">
 <h3 id="default">Default<a class="anchor" aria-label="anchor" href="#default"></a>
 </h3>
@@ -283,7 +264,7 @@ the most conservative with respect to patient privacy.</p>
 <span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">data</span>, </span>
-<span>  render <span class="op">=</span> <span class="fu">Rgemini</span><span class="fu">::</span><span class="va"><a href="../reference/render_cell_suppression.default.html">render_cell_suppression.default</a></span></span>
+<span>  render <span class="op">=</span> <span class="va">render_cell_suppression.default</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
@@ -401,7 +382,7 @@ variables by specifying a <code>continuous_fn</code>.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">data</span>, </span>
-<span>  render <span class="op">=</span> <span class="fu">Rgemini</span><span class="fu">::</span><span class="va"><a href="../reference/render_cell_suppression.default.html">render_cell_suppression.default</a></span>, </span>
+<span>  render <span class="op">=</span> <span class="va">render_cell_suppression.default</span>, </span>
 <span>  continuous_fn <span class="op">=</span> <span class="st">'median'</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
@@ -613,6 +594,28 @@ variables by specifying a <code>continuous_fn</code>.</p>
 </tr>
 </tbody>
 </table></div>
+<p>Important conceptual notes</p>
+<ol style="list-style-type: decimal">
+<li><strong>True zeros are not suppressed.</strong></li>
+</ol>
+<p>True zeros risk identifying no patient, and therefore we do not hide
+valuable information that does not bring with it the risk of
+re-identification.</p>
+<ol start="2" style="list-style-type: decimal">
+<li><strong>Cells that originally had 6 or more patients are also
+suppressed.</strong></li>
+</ol>
+<p>Consider the group of patients in the pandemic subgroup. Note that
+patients with CVD post-pandemic were suppressed even though there were
+originally six patients in that subgroup. Had we only suppressed
+patients with Dementia (two patients), knowing the total number of
+patients during the pandemic (34), we could have reverse-calculated the
+number of patients with Dementia.</p>
+<p>Therefore the algorithm is designed to continue suppressing
+successively larger groups until the total number of suppressed patients
+is six or more, such that they cannot be reverse-calculated with
+reasonable precision. The default option shows the desired behaviour and
+the most conservative with respect to patient privacy.</p>
 </div>
 <div class="section level3">
 <h3 id="customizing-output-for-continuous-variables---change-number-of-digits">Customizing output for continuous variables - change number of
@@ -1967,17 +1970,17 @@ examples below for how the output should be formatted:</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">mtcars</span><span class="op">$</span><span class="va">am</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/render_cell_suppression.categorical.html">render_cell_suppression.categorical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">$</span><span class="va">am</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                       0           1 </span></span>
-<span><span class="co">#&gt;          "" "19 (59 %)" "13 (41 %)"</span></span></code></pre></div>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/render_cell_suppression.continuous.html">render_cell_suppression.continuous</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                                           Mean (SD) </span></span>
-<span><span class="co">#&gt;                        "" "10.500 (&amp;plusmn; 5.916)"</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/render_cell_suppression.categorical.html">render_cell_suppression.categorical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">$</span><span class="va">am</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##                       0           1 </span></span>
+<span><span class="co">##          "" "19 (59 %)" "13 (41 %)"</span></span></code></pre>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/render_cell_suppression.missing.html">render_cell_suppression.missing</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">19</span>, <span class="cn">NA</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                                         Missing </span></span>
-<span><span class="co">#&gt;                      "" "&lt; 6 obs. (suppressed)"</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/render_cell_suppression.continuous.html">render_cell_suppression.continuous</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##                                           Mean (SD) </span></span>
+<span><span class="co">##                        "" "10.500 (&amp;plusmn; 5.916)"</span></span></code></pre>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/render_cell_suppression.missing.html">render_cell_suppression.missing</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">19</span>, <span class="cn">NA</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##                                         Missing </span></span>
+<span><span class="co">##                      "" "&lt; 6 obs. (suppressed)"</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="creating-extra-columns">Creating extra columns<a class="anchor" aria-label="anchor" href="#creating-extra-columns"></a>
@@ -1986,17 +1989,17 @@ examples below for how the output should be formatted:</p>
 named list as the first argument, and ellipses (<code>...</code>) as the
 last. The named list corresponds to a variable in the data split by the
 stratifying variable, such as in the example below:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html" class="external-link">split</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">$</span><span class="va">disp</span>, <span class="va">mtcars</span><span class="op">$</span><span class="va">am</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">my_max_col</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">max</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="fu">my_max_col</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 472</span></span></code></pre></div>
+<span><span class="fu">my_max_col</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] 472</span></span></code></pre>
 <p>Now this newly defined function can be added as an extra column.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span><span class="op">~</span> <span class="va">disp</span> <span class="op">|</span> <span class="va">am</span>, data <span class="op">=</span> <span class="va">mtcars</span>, extra.col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"My Max"</span> <span class="op">=</span> <span class="va">my_max_col</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>

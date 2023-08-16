@@ -38,6 +38,9 @@ column in the call to table1::table1().'><!-- mathjax --><script src="https://cd
     <a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a>
   </div>
 </li>
+<li class="nav-item">
+  <a class="nav-link" href="../news/index.html">Changelog</a>
+</li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
 
@@ -63,14 +66,24 @@ column in the call to <code><a href="https://rdrr.io/pkg/table1/man/table1.html"
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">render_cell_suppression.strat</span><span class="op">(</span><span class="va">label</span>, <span class="va">n</span>, transpose <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">render_cell_suppression.strat</span><span class="op">(</span><span class="va">label</span>, <span class="va">n</span>, transpose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>x</dt>
-<dd><p>(<code>character</code> or <code>factor</code>)<br>
-A categorical stratification variable to summarize.</p></dd>
+    <dl><dt>label</dt>
+<dd><p>(<code>character</code>)<br>
+A character vector containing the labels.</p></dd>
+
+
+<dt>n</dt>
+<dd><p>(<code>numeric</code> or <code>character</code>)<br>
+A numeric vector containing the sizes.</p></dd>
+
+
+<dt>transpose</dt>
+<dd><p>(<code>logical</code>)<br>
+Used internally by <code><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1::table1()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -81,6 +94,11 @@ A categorical stratification variable to summarize.</p></dd>
 
 
 <p>Concatenated with <code>""</code> to shift values down one row for proper alignment.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
+    <p>Arguments from this function should not be passed directly and are defined here
+to work internally with <code><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1::table1()</a></code>.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

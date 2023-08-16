@@ -42,6 +42,9 @@ or for the entire patient encounter. The default is to compute comorbidity at ad
     <a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a>
   </div>
 </li>
+<li class="nav-item">
+  <a class="nav-link" href="../news/index.html">Changelog</a>
+</li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
 
@@ -91,6 +94,11 @@ or for the entire patient encounter. The default is to compute comorbidity at ad
 <dt>erdiag</dt>
 <dd><p>(<code>data.table</code>)<br><code>erdiagnosis</code> table as defined in the
 <a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>.</p></dd>
+
+
+<dt>at_admission</dt>
+<dd><p>(<code>logical</code>)<br>
+Whether to calculate the charlson score for all comorbidities or for only pre-admit comorbidities.</p></dd>
 
 
 <dt>raw_comorbidities</dt>

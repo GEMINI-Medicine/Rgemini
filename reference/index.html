@@ -30,6 +30,9 @@
     <a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a>
   </div>
 </li>
+<li class="nav-item">
+  <a class="nav-link" href="../news/index.html">Changelog</a>
+</li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
 
@@ -44,7 +47,7 @@
     </div>
 
     <div class="section level2">
-      <h2 id="all-functions">All functions<a class="anchor" aria-label="anchor" href="#all-functions"></a></h2>
+      <h2 id="derived-variables">Derived Variables<a class="anchor" aria-label="anchor" href="#derived-variables"></a></h2>
       
       
 
@@ -61,21 +64,6 @@
         <dd>Compute Charlson comorbidity index (CCI) score</dd>
       </dl><dl><dt>
           
-          <code><a href="coerce_to_datatable.html">coerce_to_datatable()</a></code> 
-        </dt>
-        <dd>Coerce to <code>data.table</code></dd>
-      </dl><dl><dt>
-          
-          <code><a href="compute_frailty_score.html">compute_frailty_score()</a></code> 
-        </dt>
-        <dd>Compute frailty score using ICD-10-CA</dd>
-      </dl><dl><dt>
-          
-          <code><a href="count_missing.html">count_missing()</a></code> 
-        </dt>
-        <dd>Count missing</dd>
-      </dl><dl><dt>
-          
           <code><a href="covid_flag.html">covid_flag()</a></code> 
         </dt>
         <dd>COVID Flag</dd>
@@ -86,34 +74,14 @@
         <dd>Compute daily census</dd>
       </dl><dl><dt>
           
+          <code><a href="frailty_score.html">frailty_score()</a></code> 
+        </dt>
+        <dd>Compute frailty score using ICD-10-CA</dd>
+      </dl><dl><dt>
+          
           <code><a href="day_time_of_admission.html">day_time_of_admission()</a></code> 
         </dt>
         <dd>Compute day &amp; time of hospital admissions</dd>
-      </dl><dl><dt>
-          
-          <code><a href="diagnoses_at_admission.html">diagnoses_at_admission()</a></code> 
-        </dt>
-        <dd>Determine Diagnoses at Admission</dd>
-      </dl><dl><dt>
-          
-          <code><a href="dummy_diag.html">dummy_diag()</a></code> 
-        </dt>
-        <dd>Generate Simulated Diagnosis Data Table</dd>
-      </dl><dl><dt>
-          
-          <code><a href="episodes_of_care.html">episodes_of_care()</a></code> 
-        </dt>
-        <dd>Identify episodes of care</dd>
-      </dl><dl><dt>
-          
-          <code><a href="find_db_tablename.html">find_db_tablename()</a></code> 
-        </dt>
-        <dd>Find DB table name using regex search.</dd>
-      </dl><dl><dt>
-          
-          <code><a href="grapes-ni-grapes.html">`%ni%`</a></code> 
-        </dt>
-        <dd>Not In</dd>
       </dl><dl><dt>
           
           <code><a href="hospital_fiscal_year.html">hospital_fiscal_year()</a></code> 
@@ -121,9 +89,24 @@
         <dd>Get hospital fiscal year</dd>
       </dl><dl><dt>
           
-          <code><a href="icd_to_ccsr.html">icd_to_ccsr()</a></code> 
+          <code><a href="season.html">season()</a></code> 
         </dt>
-        <dd>Identify CCSR categories for ICD-10-CA diagnosis codes</dd>
+        <dd>Get Season</dd>
+      </dl><dl><dt>
+          
+          <code><a href="stat_holidays_ON.html">stat_holidays_ON()</a></code> 
+        </dt>
+        <dd>Flag statutory holidays in Ontario</dd>
+      </dl><dl><dt>
+          
+          <code><a href="readmission.html">readmission()</a></code> 
+        </dt>
+        <dd>Compute readmission and episodes of care.</dd>
+      </dl><dl><dt>
+          
+          <code><a href="episodes_of_care.html">episodes_of_care()</a></code> 
+        </dt>
+        <dd>Identify episodes of care</dd>
       </dl><dl><dt>
           
           <code><a href="icu_entry.html">icu_entry()</a></code> <code><a href="icu_entry.html">compute_icu_entry()</a></code> 
@@ -146,16 +129,6 @@
         <dd>Compute hospital Length of Stay  (LoS)</dd>
       </dl><dl><dt>
           
-          <code><a href="lunique.html">lunique()</a></code> 
-        </dt>
-        <dd>Returns number of unique values</dd>
-      </dl><dl><dt>
-          
-          <code><a href="max_pairwise_smd.html">max_pairwise_smd()</a></code> 
-        </dt>
-        <dd>Maximum Pairwise Standardized Mean Difference</dd>
-      </dl><dl><dt>
-          
           <code><a href="n_imaging.html">n_imaging()</a></code> 
         </dt>
         <dd>Compute the number of radiology tests</dd>
@@ -169,12 +142,39 @@
           <code><a href="rbc_transfusions.html">rbc_transfusions()</a></code> 
         </dt>
         <dd>Count the number Red Blood Cell Transfusions per encounter</dd>
+      </dl></div><div class="section level2">
+      <h2 id="data-transformation">Data Transformation<a class="anchor" aria-label="anchor" href="#data-transformation"></a></h2>
+      
+      <p class="section-desc"></p><p>These functions aid in querying the data, either by applying filters or mapping values.</p>
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="diagnoses_at_admission.html">diagnoses_at_admission()</a></code> 
+        </dt>
+        <dd>Determine Diagnoses at Admission</dd>
       </dl><dl><dt>
           
-          <code><a href="readmission.html">readmission()</a></code> 
+          <code><a href="icd_to_ccsr.html">icd_to_ccsr()</a></code> 
         </dt>
-        <dd>Compute readmission and episodes of care.</dd>
-      </dl><dl><dt>
+        <dd>Identify CCSR categories for ICD-10-CA diagnosis codes</dd>
+      </dl></div><div class="section level2">
+      <h2 id="cell-suppression">Cell Suppression<a class="anchor" aria-label="anchor" href="#cell-suppression"></a></h2>
+      
+      <p class="section-desc"></p><p>This includes all helper functions associated with producing a Table 1.</p>
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
           
           <code><a href="render_cell_suppression.categorical.html">render_cell_suppression.categorical()</a></code> 
         </dt>
@@ -226,21 +226,84 @@
         <dd>Render Strict Cell Suppression (Categorical)</dd>
       </dl><dl><dt>
           
+          <code><a href="max_pairwise_smd.html">max_pairwise_smd()</a></code> 
+        </dt>
+        <dd>Maximum Pairwise Standardized Mean Difference</dd>
+      </dl></div><div class="section level2">
+      <h2 id="dummy-data">Dummy Data<a class="anchor" aria-label="anchor" href="#dummy-data"></a></h2>
+      
+      <p class="section-desc"></p><p>Helper functions designed to produce sample data.</p>
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="dummy_ccsr.html">dummy_ccsr</a></code> 
+        </dt>
+        <dd>Dummy CCSR data</dd>
+      </dl><dl><dt>
+          
+          <code><a href="dummy_census.html">dummy_census</a></code> 
+        </dt>
+        <dd>Dummy daily census data</dd>
+      </dl><dl><dt>
+          
+          <code><a href="dummy_diag.html">dummy_diag()</a></code> 
+        </dt>
+        <dd>Generate Simulated Diagnosis Data Table</dd>
+      </dl><dl><dt>
+          
+          <code><a href="dummy_ipdiagnosis.html">dummy_ipdiagnosis</a></code> 
+        </dt>
+        <dd>Dummy ipdiagnosis data</dd>
+      </dl><dl><dt>
+          
           <code><a href="sample_icd.html">sample_icd()</a></code> 
         </dt>
         <dd>Simulate ICD-10 Diagnosis Codes</dd>
+      </dl></div><div class="section level2">
+      <h2 id="utility-functions">Utility Functions<a class="anchor" aria-label="anchor" href="#utility-functions"></a></h2>
+      
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="lunique.html">lunique()</a></code> 
+        </dt>
+        <dd>Returns number of unique values</dd>
       </dl><dl><dt>
           
-          <code><a href="season.html">season()</a></code> 
+          <code><a href="grapes-ni-grapes.html">`%ni%`</a></code> 
         </dt>
-        <dd>Get Season</dd>
+        <dd>Not In</dd>
       </dl><dl><dt>
           
-          <code><a href="stat_holidays_ON.html">stat_holidays_ON()</a></code> 
+          <code><a href="find_db_tablename.html">find_db_tablename()</a></code> 
         </dt>
-        <dd>Flag statuatory holidays in Ontario</dd>
+        <dd>Find DB table name using regex search.</dd>
+      </dl><dl><dt>
+          
+          <code><a href="coerce_to_datatable.html">coerce_to_datatable()</a></code> 
+        </dt>
+        <dd>Coerce to <code>data.table</code></dd>
+      </dl><dl><dt>
+          
+          <code><a href="count_missing.html">count_missing()</a></code> 
+        </dt>
+        <dd>Count missing</dd>
       </dl></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

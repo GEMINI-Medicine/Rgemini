@@ -32,6 +32,9 @@ during a hospital stay using CIHI Discharge Abstract Database (DAD) fields"><!--
     <a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a>
   </div>
 </li>
+<li class="nav-item">
+  <a class="nav-link" href="../news/index.html">Changelog</a>
+</li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
 
@@ -76,6 +79,14 @@ GEMINI Encounter ID (<code>genc_id</code>),
 SCU admission time (<code>scu_admit_date_time</code> in "yyyy-mm-dd hh:mm" format),
 SCU discharge time (<code>scu_discharge_date_time</code> in "yyyy-mm-dd hh:mm" format),
 and SCU number (<code>scu_unit_number</code>).</p></dd>
+
+
+<dt>ipadmdad</dt>
+<dd><p>(<code>data.table</code>, <code>data.frame</code>)<br>
+Table equivalent to the <code>admdad</code> table defined in the
+<a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>.
+Table must contain fields:
+GEMINI Encounter ID (<code>genc_id</code>) and admission time (<code>admission_date_time</code>).</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -58,6 +58,9 @@ the patient was discharged before readmission."><!-- mathjax --><script src="htt
     <a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a>
   </div>
 </li>
+<li class="nav-item">
+  <a class="nav-link" href="../news/index.html">Changelog</a>
+</li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
 
@@ -197,7 +200,7 @@ readmission window(s) of interest, in days (by default: <code>readm_win = c(7,30
 <p>This function returns a <code>data.table</code> containing <code>genc_id</code>, <code>AT_in_occurred</code>, <code>AT_out_occurred</code>, <code>epicare</code></p>
 
 
-<p>(see <code>GEMINIpkg::episodes_of_care()</code>), <code>readmit7</code> (default), and <code>readmit30</code> (default). <code>readmit7</code> and <code>readmit30</code></p>
+<p>(see <code><a href="episodes_of_care.html">episodes_of_care()</a></code>), <code>readmit7</code> (default), and <code>readmit30</code> (default). <code>readmit7</code> and <code>readmit30</code></p>
 
 
 <p>are logical variables indicating whether or not an episode of care was followed by a readmission. Note that
@@ -217,10 +220,9 @@ of care. When conducting readmission calculations using the function output, the
 <code>readmission == TRUE</code> is the numerator, and the number of eligible episodes of care (where <code>readmission != NA</code>)
 is the denominator. For example, 7-day readmission rate can be calculated by <code>mean(readmit7, na.rm=TRUE)</code>, where
 <code>readmit7</code> is the variable returned by the <code>readmission()</code> function. This function is designed to be consistent
-with CIHI guidelines for readmission calculations
-(https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital). Please carefully review this reference
-before applying the function for research purposes. Users may choose to deviate from the CIHI definition of
-readmission by setting any of the CIHI flags (see above) to <code>FALSE</code>.</p>
+with <a href="https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital" class="external-link">CIHI guidelines for readmission calculations</a>.
+Please carefully review this reference before applying the function for research purposes. Users may choose to deviate from
+the CIHI definition of readmission by setting any of the CIHI flags (see above) to <code>FALSE</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="warning">Warning<a class="anchor" aria-label="anchor" href="#warning"></a></h2>
@@ -236,7 +238,7 @@ readmission by setting any of the CIHI flags (see above) to <code>FALSE</code>.<
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code>Epicare_and_Readmission</code></p></div>
+    <div class="dont-index"><p><code><a href="../articles/epicare_and_readmission.html">vignette("epicare_and_readmission", package = "Rgemini")</a></code></p></div>
     </div>
 
     <div class="section level2">

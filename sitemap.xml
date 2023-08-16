@@ -31,13 +31,13 @@
     <loc>https://gemini-medicine.github.io/Rgemini/index.html</loc>
   </url>
   <url>
+    <loc>https://gemini-medicine.github.io/Rgemini/news/index.html</loc>
+  </url>
+  <url>
     <loc>https://gemini-medicine.github.io/Rgemini/reference/charlson_comorbidity_index.html</loc>
   </url>
   <url>
     <loc>https://gemini-medicine.github.io/Rgemini/reference/coerce_to_datatable.html</loc>
-  </url>
-  <url>
-    <loc>https://gemini-medicine.github.io/Rgemini/reference/compute_frailty_score.html</loc>
   </url>
   <url>
     <loc>https://gemini-medicine.github.io/Rgemini/reference/count_missing.html</loc>
@@ -55,13 +55,25 @@
     <loc>https://gemini-medicine.github.io/Rgemini/reference/diagnoses_at_admission.html</loc>
   </url>
   <url>
+    <loc>https://gemini-medicine.github.io/Rgemini/reference/dummy_ccsr.html</loc>
+  </url>
+  <url>
+    <loc>https://gemini-medicine.github.io/Rgemini/reference/dummy_census.html</loc>
+  </url>
+  <url>
     <loc>https://gemini-medicine.github.io/Rgemini/reference/dummy_diag.html</loc>
+  </url>
+  <url>
+    <loc>https://gemini-medicine.github.io/Rgemini/reference/dummy_ipdiagnosis.html</loc>
   </url>
   <url>
     <loc>https://gemini-medicine.github.io/Rgemini/reference/episodes_of_care.html</loc>
   </url>
   <url>
     <loc>https://gemini-medicine.github.io/Rgemini/reference/find_db_tablename.html</loc>
+  </url>
+  <url>
+    <loc>https://gemini-medicine.github.io/Rgemini/reference/frailty_score.html</loc>
   </url>
   <url>
     <loc>https://gemini-medicine.github.io/Rgemini/reference/grapes-ni-grapes.html</loc>
