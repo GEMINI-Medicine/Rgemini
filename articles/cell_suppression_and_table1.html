@@ -125,7 +125,7 @@ various functions described below.</p>
 <span></span>
 <span><span class="va">condition</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DVT"</span>, <span class="st">"CVD"</span>, <span class="st">"DM"</span>, <span class="st">"Pneumonia"</span>, <span class="st">"Dementia"</span><span class="op">)</span>, </span>
-<span>  size <span class="op">=</span> <span class="fl">100</span>, replace <span class="op">=</span> <span class="cn">TRUE</span>, prob <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.01</span>, <span class="fl">0.19</span>, <span class="fl">0.4</span>, <span class="fl">0.35</span>, <span class="fl">0.05</span><span class="op">)</span></span>
+<span>  size <span class="op">=</span> <span class="fl">100</span>, replace <span class="op">=</span> <span class="cn">TRUE</span>, prob <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.01</span>, <span class="fl">0.20</span>, <span class="fl">0.4</span>, <span class="fl">0.35</span>, <span class="fl">0.05</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>gender <span class="op">=</span> <span class="va">gender</span>, exposure <span class="op">=</span> <span class="va">exposure</span>, age <span class="op">=</span> <span class="va">age</span>, condition <span class="op">=</span> <span class="va">condition</span><span class="op">)</span></span></code></pre></div>
@@ -209,9 +209,9 @@ characteristics, stratifying by the exposure variable:</p>
 <tr>
 <td class="rowlabel">CVD</td>
 <td>5 (14.7%)</td>
-<td>6 (20.7%)</td>
-<td>5 (13.5%)</td>
-<td>16 (16.0%)</td>
+<td>7 (24.1%)</td>
+<td>7 (18.9%)</td>
+<td>19 (19.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">Dementia</td>
@@ -224,15 +224,15 @@ characteristics, stratifying by the exposure variable:</p>
 <td class="rowlabel">DM</td>
 <td>15 (44.1%)</td>
 <td>7 (24.1%)</td>
-<td>16 (43.2%)</td>
-<td>38 (38.0%)</td>
+<td>15 (40.5%)</td>
+<td>37 (37.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
 <td>12 (35.3%)</td>
-<td>12 (41.4%)</td>
-<td>15 (40.5%)</td>
-<td>39 (39.0%)</td>
+<td>11 (37.9%)</td>
+<td>14 (37.8%)</td>
+<td>37 (37.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">DVT</td>
@@ -335,9 +335,9 @@ to protect these patients’ privacy.</p>
 <tr>
 <td class="rowlabel">CVD</td>
 <td>(suppressed)</td>
+<td>7 (24 %)</td>
 <td>(suppressed)</td>
-<td>(suppressed)</td>
-<td>16 (16 %)</td>
+<td>19 (19 %)</td>
 </tr>
 <tr>
 <td class="rowlabel">Dementia</td>
@@ -349,16 +349,16 @@ to protect these patients’ privacy.</p>
 <tr>
 <td class="rowlabel">DM</td>
 <td>15 (44 %)</td>
-<td>7 (24 %)</td>
-<td>16 (43 %)</td>
-<td>38 (38 %)</td>
+<td>(suppressed)</td>
+<td>15 (41 %)</td>
+<td>37 (37 %)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
 <td>12 (35 %)</td>
-<td>12 (41 %)</td>
-<td>15 (41 %)</td>
-<td>39 (39 %)</td>
+<td>11 (38 %)</td>
+<td>14 (38 %)</td>
+<td>37 (37 %)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">DVT</td>
@@ -370,6 +370,28 @@ to protect these patients’ privacy.</p>
 </tbody>
 </table></div>
 <p> </p>
+<p>Important conceptual notes:</p>
+<ol style="list-style-type: decimal">
+<li><strong>True zeros are not suppressed.</strong></li>
+</ol>
+<p>True zeros risk identifying no patient, and therefore we do not hide
+valuable information that does not bring with it the risk of
+re-identification.</p>
+<ol start="2" style="list-style-type: decimal">
+<li><strong>Cells that originally had 6 or more patients are also
+suppressed.</strong></li>
+</ol>
+<p>Consider the group of patients in the post-pandemic subgroup. Note
+that patients with CVD post-pandemic were suppressed even though there
+were originally seven patients in that subgroup. Why is that? Had we
+only suppressed patients with DVT (one patient), knowing the total
+number of patients post-pandemic (37), we could have reverse-calculated
+the number of patients with DVT (with reasonable precision).</p>
+<p>Therefore the algorithm is designed to continue suppressing
+successively larger groups until the total number of suppressed patients
+is six or more, such that they cannot be reverse-calculated with
+reasonable precision. The default option shows the desired behaviour and
+the most conservative with respect to patient privacy.</p>
 </div>
 <div class="section level3">
 <h3 id="customizing-output-for-continuous-variables---change-to-medians">Customizing output for continuous variables - change to medians<a class="anchor" aria-label="anchor" href="#customizing-output-for-continuous-variables---change-to-medians"></a>
@@ -451,9 +473,9 @@ variables by specifying a <code>continuous_fn</code>.</p>
 <tr>
 <td class="rowlabel">CVD</td>
 <td>(suppressed)</td>
+<td>7 (24 %)</td>
 <td>(suppressed)</td>
-<td>(suppressed)</td>
-<td>16 (16 %)</td>
+<td>19 (19 %)</td>
 </tr>
 <tr>
 <td class="rowlabel">Dementia</td>
@@ -465,16 +487,16 @@ variables by specifying a <code>continuous_fn</code>.</p>
 <tr>
 <td class="rowlabel">DM</td>
 <td>15 (44 %)</td>
-<td>7 (24 %)</td>
-<td>16 (43 %)</td>
-<td>38 (38 %)</td>
+<td>(suppressed)</td>
+<td>15 (41 %)</td>
+<td>37 (37 %)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
 <td>12 (35 %)</td>
-<td>12 (41 %)</td>
-<td>15 (41 %)</td>
-<td>39 (39 %)</td>
+<td>11 (38 %)</td>
+<td>14 (38 %)</td>
+<td>37 (37 %)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">DVT</td>
@@ -486,29 +508,8 @@ variables by specifying a <code>continuous_fn</code>.</p>
 </tbody>
 </table></div>
 <p> </p>
-<p>Important conceptual notes:</p>
-<ol style="list-style-type: decimal">
-<li><strong>True zeros are not suppressed.</strong></li>
-</ol>
-<p>True zeros risk identifying no patient, and therefore we do not hide
-valuable information that does not bring with it the risk of
-re-identification.</p>
-<ol start="2" style="list-style-type: decimal">
-<li><strong>Cells that originally had 6 or more patients are also
-suppressed.</strong></li>
-</ol>
-<p>Consider the group of patients in the pandemic subgroup. Note that
-patients with CVD post-pandemic were suppressed even though there were
-originally six patients in that subgroup. Had we only suppressed
-patients with Dementia (two patients), knowing the total number of
-patients during the pandemic (34), we could have reverse-calculated the
-number of patients with Dementia.</p>
-<p>Therefore the algorithm is designed to continue suppressing
-successively larger groups until the total number of suppressed patients
-is six or more, such that they cannot be reverse-calculated with
-reasonable precision. The default option shows the desired behaviour and
-the most conservative with respect to patient privacy.</p>
-<p>Or we can do this directly by specifying a render function:</p>
+<p>We can also specify a render function only for a particular variable
+type:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
@@ -577,9 +578,9 @@ the most conservative with respect to patient privacy.</p>
 <tr>
 <td class="rowlabel">CVD</td>
 <td>5 (14.7%)</td>
-<td>6 (20.7%)</td>
-<td>5 (13.5%)</td>
-<td>16 (16.0%)</td>
+<td>7 (24.1%)</td>
+<td>7 (18.9%)</td>
+<td>19 (19.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">Dementia</td>
@@ -592,15 +593,15 @@ the most conservative with respect to patient privacy.</p>
 <td class="rowlabel">DM</td>
 <td>15 (44.1%)</td>
 <td>7 (24.1%)</td>
-<td>16 (43.2%)</td>
-<td>38 (38.0%)</td>
+<td>15 (40.5%)</td>
+<td>37 (37.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
 <td>12 (35.3%)</td>
-<td>12 (41.4%)</td>
-<td>15 (40.5%)</td>
-<td>39 (39.0%)</td>
+<td>11 (37.9%)</td>
+<td>14 (37.8%)</td>
+<td>37 (37.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">DVT</td>
@@ -694,9 +695,9 @@ using the <code>digits</code> argument.</p>
 <tr>
 <td class="rowlabel">CVD</td>
 <td>(suppressed)</td>
+<td>7 (24 %)</td>
 <td>(suppressed)</td>
-<td>(suppressed)</td>
-<td>16 (16 %)</td>
+<td>19 (19 %)</td>
 </tr>
 <tr>
 <td class="rowlabel">Dementia</td>
@@ -708,16 +709,16 @@ using the <code>digits</code> argument.</p>
 <tr>
 <td class="rowlabel">DM</td>
 <td>15 (44 %)</td>
-<td>7 (24 %)</td>
-<td>16 (43 %)</td>
-<td>38 (38 %)</td>
+<td>(suppressed)</td>
+<td>15 (41 %)</td>
+<td>37 (37 %)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
 <td>12 (35 %)</td>
-<td>12 (41 %)</td>
-<td>15 (41 %)</td>
-<td>39 (39 %)</td>
+<td>11 (38 %)</td>
+<td>14 (38 %)</td>
+<td>37 (37 %)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">DVT</td>
@@ -823,9 +824,9 @@ data types by supplying these custom renderer functions.</p>
 <tr>
 <td class="rowlabel">CVD</td>
 <td>(suppressed)</td>
+<td>7 (24 %)</td>
 <td>(suppressed)</td>
-<td>(suppressed)</td>
-<td>16 (16 %)</td>
+<td>19 (19 %)</td>
 </tr>
 <tr>
 <td class="rowlabel">Dementia</td>
@@ -837,16 +838,16 @@ data types by supplying these custom renderer functions.</p>
 <tr>
 <td class="rowlabel">DM</td>
 <td>15 (44 %)</td>
-<td>7 (24 %)</td>
-<td>16 (43 %)</td>
-<td>38 (38 %)</td>
+<td>(suppressed)</td>
+<td>15 (41 %)</td>
+<td>37 (37 %)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
 <td>12 (35 %)</td>
-<td>12 (41 %)</td>
-<td>15 (41 %)</td>
-<td>39 (39 %)</td>
+<td>11 (38 %)</td>
+<td>14 (38 %)</td>
+<td>37 (37 %)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">DVT</td>
@@ -939,9 +940,9 @@ cells with counts fewer than six as needed.</p>
 <tr>
 <td class="rowlabel">CVD</td>
 <td>&lt; 6 obs. (suppressed)</td>
-<td>6 (21 %)</td>
-<td>&lt; 6 obs. (suppressed)</td>
-<td>16 (16 %)</td>
+<td>7 (24 %)</td>
+<td>7 (19 %)</td>
+<td>19 (19 %)</td>
 </tr>
 <tr>
 <td class="rowlabel">Dementia</td>
@@ -954,15 +955,15 @@ cells with counts fewer than six as needed.</p>
 <td class="rowlabel">DM</td>
 <td>15 (44 %)</td>
 <td>7 (24 %)</td>
-<td>16 (43 %)</td>
-<td>38 (38 %)</td>
+<td>15 (41 %)</td>
+<td>37 (37 %)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
 <td>12 (35 %)</td>
-<td>12 (41 %)</td>
-<td>15 (41 %)</td>
-<td>39 (39 %)</td>
+<td>11 (38 %)</td>
+<td>14 (38 %)</td>
+<td>37 (37 %)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">DVT</td>
@@ -1062,9 +1063,9 @@ cells with counts fewer than six as needed.</p>
 <tr>
 <td class="rowlabel">CVD</td>
 <td>&lt; 6 obs. (suppressed)</td>
-<td>6 (21 %)</td>
-<td>&lt; 6 obs. (suppressed)</td>
-<td>16 (16 %)</td>
+<td>7 (24 %)</td>
+<td>7 (19 %)</td>
+<td>19 (19 %)</td>
 </tr>
 <tr>
 <td class="rowlabel">Dementia</td>
@@ -1077,15 +1078,15 @@ cells with counts fewer than six as needed.</p>
 <td class="rowlabel">DM</td>
 <td>15 (44 %)</td>
 <td>7 (24 %)</td>
-<td>16 (43 %)</td>
-<td>38 (38 %)</td>
+<td>15 (41 %)</td>
+<td>37 (37 %)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
 <td>12 (35 %)</td>
-<td>12 (41 %)</td>
-<td>15 (41 %)</td>
-<td>39 (39 %)</td>
+<td>11 (38 %)</td>
+<td>14 (38 %)</td>
+<td>37 (37 %)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">DVT</td>
@@ -1404,14 +1405,14 @@ columns to append to the table. Usage is as follows:</p>
 <td class="firstrow"></td>
 <td class="firstrow"></td>
 <td class="firstrow"></td>
-<td class="firstrow">0.583</td>
+<td class="firstrow">0.574</td>
 </tr>
 <tr>
 <td class="rowlabel">CVD</td>
 <td>5 (14.7%)</td>
-<td>6 (20.7%)</td>
-<td>5 (13.5%)</td>
-<td>16 (16.0%)</td>
+<td>7 (24.1%)</td>
+<td>7 (18.9%)</td>
+<td>19 (19.0%)</td>
 <td></td>
 </tr>
 <tr>
@@ -1426,16 +1427,16 @@ columns to append to the table. Usage is as follows:</p>
 <td class="rowlabel">DM</td>
 <td>15 (44.1%)</td>
 <td>7 (24.1%)</td>
-<td>16 (43.2%)</td>
-<td>38 (38.0%)</td>
+<td>15 (40.5%)</td>
+<td>37 (37.0%)</td>
 <td></td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
 <td>12 (35.3%)</td>
-<td>12 (41.4%)</td>
-<td>15 (40.5%)</td>
-<td>39 (39.0%)</td>
+<td>11 (37.9%)</td>
+<td>14 (37.8%)</td>
+<td>37 (37.0%)</td>
 <td></td>
 </tr>
 <tr>
@@ -1531,8 +1532,8 @@ the default (i.e. “non-formula”) interface to <code>table1</code>:</p>
 <tr>
 <td class="rowlabel">CVD</td>
 <td>5 (14.7%)</td>
-<td>6 (20.7%)</td>
-<td>5 (13.5%)</td>
+<td>7 (24.1%)</td>
+<td>7 (18.9%)</td>
 </tr>
 <tr>
 <td class="rowlabel">Dementia</td>
@@ -1544,13 +1545,13 @@ the default (i.e. “non-formula”) interface to <code>table1</code>:</p>
 <td class="rowlabel">DM</td>
 <td>15 (44.1%)</td>
 <td>7 (24.1%)</td>
-<td>16 (43.2%)</td>
+<td>15 (40.5%)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
 <td>12 (35.3%)</td>
-<td>12 (41.4%)</td>
-<td>15 (40.5%)</td>
+<td>11 (37.9%)</td>
+<td>14 (37.8%)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">DVT</td>
@@ -1632,8 +1633,8 @@ strata</p>
 <tr>
 <td class="rowlabel">CVD</td>
 <td>5 (14.7%)</td>
-<td>6 (20.7%)</td>
-<td>5 (13.5%)</td>
+<td>7 (24.1%)</td>
+<td>7 (18.9%)</td>
 </tr>
 <tr>
 <td class="rowlabel">Dementia</td>
@@ -1645,13 +1646,13 @@ strata</p>
 <td class="rowlabel">DM</td>
 <td>15 (44.1%)</td>
 <td>7 (24.1%)</td>
-<td>16 (43.2%)</td>
+<td>15 (40.5%)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
 <td>12 (35.3%)</td>
-<td>12 (41.4%)</td>
-<td>15 (40.5%)</td>
+<td>11 (37.9%)</td>
+<td>14 (37.8%)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">DVT</td>
@@ -1748,13 +1749,13 @@ differences using <code>extra.col</code> to put it all together.</p>
 <td class="firstrow"></td>
 <td class="firstrow"></td>
 <td class="firstrow"></td>
-<td class="firstrow">0.583</td>
+<td class="firstrow">0.574</td>
 </tr>
 <tr>
 <td class="rowlabel">CVD</td>
 <td>5 (14.7%)</td>
-<td>6 (20.7%)</td>
-<td>5 (13.5%)</td>
+<td>7 (24.1%)</td>
+<td>7 (18.9%)</td>
 <td></td>
 </tr>
 <tr>
@@ -1768,14 +1769,14 @@ differences using <code>extra.col</code> to put it all together.</p>
 <td class="rowlabel">DM</td>
 <td>15 (44.1%)</td>
 <td>7 (24.1%)</td>
-<td>16 (43.2%)</td>
+<td>15 (40.5%)</td>
 <td></td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
 <td>12 (35.3%)</td>
-<td>12 (41.4%)</td>
-<td>15 (40.5%)</td>
+<td>11 (37.9%)</td>
+<td>14 (37.8%)</td>
 <td></td>
 </tr>
 <tr>
@@ -1877,13 +1878,13 @@ of standardized mean differences as follows:</p>
 <td class="firstrow"></td>
 <td class="firstrow"></td>
 <td class="firstrow"></td>
-<td class="firstrow">0.583</td>
+<td class="firstrow">0.574</td>
 </tr>
 <tr>
 <td class="rowlabel">CVD</td>
 <td>&lt; 6 obs. (suppressed)</td>
-<td>6 (21 %)</td>
-<td>&lt; 6 obs. (suppressed)</td>
+<td>7 (24 %)</td>
+<td>7 (19 %)</td>
 <td></td>
 </tr>
 <tr>
@@ -1897,14 +1898,14 @@ of standardized mean differences as follows:</p>
 <td class="rowlabel">DM</td>
 <td>15 (44 %)</td>
 <td>7 (24 %)</td>
-<td>16 (43 %)</td>
+<td>15 (41 %)</td>
 <td></td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
 <td>12 (35 %)</td>
-<td>12 (41 %)</td>
-<td>15 (41 %)</td>
+<td>11 (38 %)</td>
+<td>14 (38 %)</td>
 <td></td>
 </tr>
 <tr>
