@@ -74,7 +74,7 @@ icu_entry <- function(ipadmdad, ipscu, window = c(24, 48, 72)) {
   }
 
   if (!any(class(ipscu) %in% c("data.frame", "data.table"))) {
-    stop("Invalid user input for ipscu Please provide a data.frame or a data.table.")
+    stop("Invalid user input for ipscu. Please provide a data.frame or a data.table.")
   }
 
   ## table contains required fields
@@ -99,9 +99,9 @@ icu_entry <- function(ipadmdad, ipscu, window = c(24, 48, 72)) {
   ipscu <- ipscu[, .(genc_id, scu_admit_date_time = lubridate::ymd_hm(scu_admit_date_time), scu_unit_number)]
 
   ## filter out step-down units as they are not considered as icus, and merge in admission date time
+  ipscu[is.character(ipscu) == ""] <- NA
   ipscu <-
     ipscu %>%
-    dplyr::mutate(across(where(is.character), na_if, "")) %>%
     .[!trimws(as.character(scu_unit_number)) %in% c("90", "93", "95", "99")] %>%
     .[, .(genc_id, scu_admit_date_time)] %>%
     dplyr::left_join(res, by = "genc_id")

@@ -88,9 +88,9 @@ icu_los <- function(cohort, ipscu) {
   ipscu <- coerce_to_datatable(ipscu)
 
   ## prepare data and filter out step-down units from ipscu
+  ipscu[is.na(as.character(ipscu)) == ""] <- NA
   ipscu <- ipscu %>%
     .[, .(genc_id, scu_admit_date_time, scu_discharge_date_time, scu_unit_number)] %>%
-    dplyr::mutate(across(where(is.character), na_if, "")) %>%
     .[!trimws(as.character(scu_unit_number)) %in% c("90", "93", "95", "99")] %>%
     .[, ":="(
       scu_admit_date_time = lubridate::ymd_hm(scu_admit_date_time),
