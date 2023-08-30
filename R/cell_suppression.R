@@ -11,6 +11,9 @@
 #' @param round_to (`numeric`)\cr
 #' How many digits to round the standardized mean difference to.
 #'
+#' @param ... \cr
+#' Additional arguments passed on to [table1::table1()].
+#'
 #' @return (`numeric`)\cr
 #' The maximum pairwise standardized mean difference between all strata for a particular variable.
 #'
@@ -19,6 +22,11 @@
 #' However, the `smd` package uses the *population variance* to calculate the SMD as opposed to the *sample variance*.
 #' This can cause small inaccuracies in the final result. Therefore we elect to implement with `stddiff`.
 #' Another consideration is that `stddiff` can be maximally precise to only 3 decimal places.
+#'
+#' Additionally, for very large cohorts, standardized mean differences calculated on categorical variables using the
+#' `stddiff` package may throw `In n[1] * n[2] : NAs produced by integer overflow`. This is an implementation issue
+#' in `stddiff` in the calculation of the standard errors for the standardized mean differences. However, since these
+#' standard errors are not used in the final output, they can be safely ignored.
 #'
 #' @import stddiff
 #' @export
@@ -35,7 +43,7 @@ max_pairwise_smd <- function(x, name, round_to = 3, ...) {
 
   vartype <- class(x$value)
 
-  fn <- if (vartype == "numeric") {
+  fn <- if ((vartype == "numeric") || is.integer(x$value)) {
     stddiff.numeric
   } else if (vartype == "logical") {
     stddiff.binary
@@ -222,7 +230,7 @@ render_cell_suppression.categorical <- function(x) {
     contents <- contents %>%
       transmute(
         summary = ifelse(
-          frequency < 6 & frequency != 0, "< 6 obs. (suppressed)",
+          frequency < 6 & frequency != 0, "&lt; 6 obs. (suppressed)",
           sprintf("%d (%0.0f %%)", frequency, pct)
         )
       )
@@ -252,7 +260,7 @@ render_cell_suppression.categorical <- function(x) {
 #'
 #' @description
 #' Strictly suppress any counts that are less than 6 with message. This differs
-#' from the more conservative logic of [GEMINIpkg::render_cell_suppression.categorical()].
+#' from the more conservative logic of [Rgemini::render_cell_suppression.categorical()].
 #'
 #' @param x (`character` or `factor`)\cr
 #' A categorical variable to summarize.
@@ -299,7 +307,7 @@ render_strict_cell_suppression.categorical <- function(x) {
   contents <- contents %>%
     transmute(
       summary = ifelse(
-        (frequency < 6) & (frequency != 0), "< 6 obs. (suppressed)",
+        (frequency < 6) & (frequency != 0), "&lt; 6 obs. (suppressed)",
         sprintf("%d (%0.0f %%)", frequency, pct)
       )
     )
@@ -321,13 +329,13 @@ render_strict_cell_suppression.categorical <- function(x) {
 #' @param x (`character` or `factor`)\cr
 #' A continuous variable to summarize.
 #'
+#' @param ... \cr
+#' Further arguments, passed to `table1:::stats.apply.rounding()`.
+#'
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
 #'
-#' @param round_to (`numeric`)\cr
-#' How many digits to round the standardized mean difference to.
-#'
-#' @importFrom table1 stats.default
+#' @importFrom table1 stats.apply.rounding
 #' @export
 #'
 #' @examples
@@ -351,10 +359,13 @@ render_mean.continuous <- function(x, ...) {
 #' @param x (`character` or `factor`)\cr
 #' A continuous variable to summarize.
 #'
+#' @param ... \cr
+#' Further arguments, passed to `table1:::stats.apply.rounding()`.
+#'
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
 #'
-#' @importFrom table1 stats.default
+#' @importFrom table1 stats.apply.rounding
 #' @export
 #'
 #' @examples
@@ -378,6 +389,9 @@ render_median.continuous <- function(x, ...) {
 #' @param x (`numeric`)\cr
 #' A continuous variable to summarize.
 #'
+#' @param ... \cr
+#' Further arguments, passed to `table1:::stats.apply.rounding()`.
+#'
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
 #'
@@ -396,9 +410,9 @@ render_cell_suppression.continuous <- function(x, ...) {
 
   if (length(x) < 6) {
     if (args$continuous_fn == "median") {
-      c("", `Median [Q1, Q3]` = "< 6 obs. (suppressed)")
+      c("", `Median [Q1, Q3]` = "&lt; 6 obs. (suppressed)")
     } else {
-      c("", `Mean (SD)` = "< 6 obs. (suppressed)")
+      c("", `Mean (SD)` = "&lt; 6 obs. (suppressed)")
     }
   } else {
     if (args$continuous_fn == "median") {
@@ -421,22 +435,32 @@ render_cell_suppression.continuous <- function(x, ...) {
 #' the total given the overall column. Therefore it is recommended to also hide the "Overall"
 #' column in the call to [table1::table1()].
 #'
-#' @param x (`character` or `factor`)\cr
-#' A categorical stratification variable to summarize.
+#' @param label (`character`)\cr
+#' A character vector containing the labels.
+#'
+#' @param n (`numeric` or `character`)\cr
+#' A numeric vector containing the sizes.
+#'
+#' @param transpose (`logical`)\cr
+#' Used internally by [table1::table1()].
 #'
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
 #'
+#' @note
+#' Arguments from this function should not be passed directly and are defined here
+#' to work internally with [table1::table1()].
+#'
 #' @export
 #'
-render_cell_suppression.strat <- function(label, n, transpose = F) {
+render_cell_suppression.strat <- function(label, n, transpose = FALSE) {
   sprintf(
     ifelse(
       is.na(n),
       "<span class='stratlabel'>%s</span>",
       ifelse(
         as.numeric(n) < 6,
-        "<span class='stratlabel'>%s<br><span class='stratn'>(N< 6 obs. (suppressed))</span></span>",
+        "<span class='stratlabel'>%s<br><span class='stratn'>(N&lt; 6 obs. (suppressed))</span></span>",
         "<span class='stratlabel'>%s<br><span class='stratn'>(N=%s)</span></span>"
       )
     ), label, n
@@ -500,7 +524,7 @@ render_default.discrete <- function(x) {
 #'
 render_cell_suppression.discrete <- function(x) {
   if (sum(x) < 6) {
-    c("", Sum = "< 6 obs. (suppressed)")
+    c("", Sum = "&lt; 6 obs. (suppressed)")
   } else {
     render_default.discrete(x)
   }
@@ -537,7 +561,7 @@ render_cell_suppression.discrete <- function(x) {
 #'
 render_cell_suppression.missing <- function(x) {
   if (sum(is.na(x)) < 6) {
-    c("", Missing = "< 6 obs. (suppressed)")
+    c("", Missing = "&lt; 6 obs. (suppressed)")
   } else {
     render.missing.default(x)
   }

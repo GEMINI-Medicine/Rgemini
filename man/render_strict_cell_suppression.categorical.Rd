@@ -16,7 +16,7 @@ Concatenated with \code{""} to shift values down one row for proper alignment.
 }
 \description{
 Strictly suppress any counts that are less than 6 with message. This differs
-from the more conservative logic of \code{\link[GEMINIpkg:render_cell_suppression.categorical]{GEMINIpkg::render_cell_suppression.categorical()}}.
+from the more conservative logic of \code{\link[=render_cell_suppression.categorical]{render_cell_suppression.categorical()}}.
 }
 \examples{
 x <- factor(c(rep("a", times = nrow(mtcars)), "b"), levels = c("a", "b"))

@@ -10,8 +10,8 @@
 #' This function returns the GEMINI-derived CCSR mapping for each ICD-10-CA diagnosis in the `diagnosis_table` input.
 #'
 #' By default, the function will only return the CCSR category(s) for the most responsible discharge diagnosis (MRDx).
-#' This typically refers to type-M diagnoses, unless a patient has a type-6 diagnosis (see [CIHI definition of MRDx]
-#' (https://www.cihi.ca/sites/default/files/document/hospital-standardized-mortality-ratio-meth-notes-en.pdf);
+#' This typically refers to type-M diagnoses, unless a patient has a type-6 diagnosis (see
+#' [CIHI definition of MRDx](https://www.cihi.ca/sites/default/files/document/hospital-standardized-mortality-ratio-meth-notes-en.pdf)
 #' page 13). Users can choose to obtain CCSR categories for all diagnosis types by setting
 #' `type_mrdx` to `FALSE`.
 #'
@@ -23,7 +23,7 @@
 #' @param dxtable (`data.frame` | `data.table`)
 #' Table containing ICD-10-CA diagnosis codes of interest. Typically, this refers to the `ipdiagnosis` table, which
 #' contains the CIHI in-patient diagnoses for each encounter (see
-#' [GEMINI database schema](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' [GEMINI database schema](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
 #'
 #' If a different type of diagnosis table is provided as input (e.g., `erdiagnosis`), please make sure the table
 #' contains a column named `diagnosis_code` (`character`) where each row refers to a single, alphanumeric diagnosis
@@ -105,7 +105,7 @@
 #' categories might not be meaningful. Therefore, by default, `replace_invalidpdx` is set to `TRUE`. However, please
 #' carefully read the documentation to understand how exactly invalid PDX categories are replaced within this function.
 #'
-#' @seealso \code{\link[Vignettes-Rgemini]{icd_to_ccsr}}
+#' @seealso `vignette("icd_to_ccsr", package = "Rgemini")`
 #' The vignette provides further context and some example code illustrating how to use CCSR categories in analyses.
 #'
 #'

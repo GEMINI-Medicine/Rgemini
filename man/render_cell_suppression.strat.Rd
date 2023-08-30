@@ -4,11 +4,17 @@
 \alias{render_cell_suppression.strat}
 \title{Render Cell Suppression (Strata)}
 \usage{
-render_cell_suppression.strat(label, n, transpose = F)
+render_cell_suppression.strat(label, n, transpose = FALSE)
 }
 \arguments{
-\item{x}{(\code{character} or \code{factor})\cr
-A categorical stratification variable to summarize.}
+\item{label}{(\code{character})\cr
+A character vector containing the labels.}
+
+\item{n}{(\code{numeric} or \code{character})\cr
+A numeric vector containing the sizes.}
+
+\item{transpose}{(\code{logical})\cr
+Used internally by \code{\link[table1:table1]{table1::table1()}}.}
 }
 \value{
 named (\code{character})\cr
@@ -21,4 +27,8 @@ This is a custom render for \code{table1} stratification variables which perform
 Note that even with strata variable cell suppression, it is possible to reverse-calculate
 the total given the overall column. Therefore it is recommended to also hide the "Overall"
 column in the call to \code{\link[table1:table1]{table1::table1()}}.
+}
+\note{
+Arguments from this function should not be passed directly and are defined here
+to work internally with \code{\link[table1:table1]{table1::table1()}}.
 }

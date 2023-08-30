@@ -7,7 +7,7 @@
 count_missing(x)
 }
 \arguments{
-\item{(`vector`)}{}
+\item{x}{(\code{vector})}
 }
 \description{
 This function checks the number of missingness in a vector, returns the results in the exact number (percentage)

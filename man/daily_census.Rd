@@ -128,5 +128,5 @@ admdad_census <- daily_census(admdad)
 
 }
 \seealso{
-\code{\link[Vignettes-Rgemini]{daily_census}}
+\code{vignette("daily_census", package = "Rgemini")}
 }

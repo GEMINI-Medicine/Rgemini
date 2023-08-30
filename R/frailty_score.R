@@ -5,17 +5,17 @@
 #' `frailty_score` returns frailty risk score for hospital admissions calculated based on ICD-10-CA diagnoses codes.
 #'
 #' @details
-#' This function takes a list of ICD-10-CA and generates a numeric field corresponding to frailty risk 
+#' This function takes a list of ICD-10-CA and generates a numeric field corresponding to frailty risk
 #' score for each admission.
 #' This function can take any `data.table` with ICD-10-CA codes.
 #' Historically, scores have been calculated based on partition of ICD-10-CA codes.
 #'
-#' Researchers may want to focus on frailty risk scores based on in-patient (IP) diagnoses because 
-#' emergency department (ED) diagnoses have lower sensitivity/specificity for certain conditions and 
-#' are less reliably filled compared to IP diagnoses. In general, there will be overlap between IP and 
-#' ED diagnoses codes. ED diagnoses codes to compute frailty risk score can be used to evaluate frailty 
+#' Researchers may want to focus on frailty risk scores based on in-patient (IP) diagnoses because
+#' emergency department (ED) diagnoses have lower sensitivity/specificity for certain conditions and
+#' are less reliably filled compared to IP diagnoses. In general, there will be overlap between IP and
+#' ED diagnoses codes. ED diagnoses codes to compute frailty risk score can be used to evaluate frailty
 #' risk upon admission to IP services.
-#' 
+#'
 #' This function does not differentiate between diagnosis types.
 #'
 #' @note
@@ -26,32 +26,29 @@
 #' Please refer to the references in this page for more details.
 #'
 #' @section Warning:
-#' This function returns a `data.table` with `genc_id` and three numeric fields. 
+#' This function returns a `data.table` with `genc_id` and three numeric fields.
 #' The function will return NA values if `genc_id` in the `ipadmdad` table is not found
-#' in the `ipdiagnosis` or `eddiagnosis` tables. 
-#' 
+#' in the `ipdiagnosis` or `eddiagnosis` tables.
+#'
 #' `frailty_score_derived` is NA if either `ip_frailty_score_derived` or `er_frailty_score_derived` are NA.
 #' When one tries to left-join the output of this function with another table (another list of admissions in the left),
 #' make sure list of admissions (or patient ids) aligns in both tables.
 #'
-#' @param ipadmdad (`data.table`) 
-#' `ipadmdad` table as defined in the [GEMINI Data Repository Dictionary]
-#' (https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' @param ipadmdad (`data.table`)
+#' `ipadmdad` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
 #' This table must contain the `genc_id` field
 #' @param ipdiagnosis (`data.table`)
-#' `ipdiagnosis` table as defined in the [GEMINI Data Repository Dictionary]
-#' (https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' `ipdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
 #' This table must contain the `genc_id` and `diagnosis_code` (as ICD-10-CA) fields in long format table only.
 #' The diagnosis codes must be free from any punctuation or special characters.
 #' @param eddiagnosis (`data.table`)
-#' `eddaignosis` table as defined in the [GEMINI Data Repository Dictionary]
-#' (https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' `eddiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
 #' This table must contain the `genc_id` and `er_diagnosis_code` (as ICD-10-CA) fields in long format table only.
 #' The diagnosis codes must be free from any punctuation or special characters.
 #'
 #' @return `data.table`
 #' This function returns a table with encounters identified by the `ipadmdad` table input and
-#' additional derived numeric fields for `ip_frailty_score_derived`, `er_frailty_score_derived` 
+#' additional derived numeric fields for `ip_frailty_score_derived`, `er_frailty_score_derived`
 #' and `frailty_score_derived`
 #' \itemize{
 #'  \item{ip_frailty_score_derived : }{Frailty risk score calculated only using IP diagnoses codes from `ipdiagnosis` table}
@@ -69,15 +66,15 @@
 #' April 26. http://dx.doi.org/10.1016/S0140-6736(18)30668-8.
 #'
 #' @export
-compute_frailty_score <- function(ipadmdad,
-                                  ipdiagnosis,
-                                  eddiagnosis) {
-  
-  ## Ensure user inputs are in data.table format before proceeding 
+frailty_score <- function(ipadmdad,
+                          ipdiagnosis,
+                          eddiagnosis) {
+
+  ## Ensure user inputs are in data.table format before proceeding
   ipadmdad <- coerce_to_datatable(ipadmdad)
   ipdiagnosis <- coerce_to_datatable(ipdiagnosis)
   eddiagnosis <- coerce_to_datatable(eddiagnosis)
-  
+
   ## remap variable names in case field names change in the database
   res <- ipadmdad[, .(idvar1 = genc_id)]
 

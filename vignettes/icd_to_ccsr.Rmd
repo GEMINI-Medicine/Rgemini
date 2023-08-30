@@ -1,6 +1,5 @@
 ---
 title: "ICD to CCSR"
-date: "`r Sys.Date()`"
 output:
   html_vignette:
     number_sections: true

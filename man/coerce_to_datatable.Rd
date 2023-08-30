@@ -7,7 +7,7 @@
 coerce_to_datatable(data)
 }
 \arguments{
-\item{data(`data.frame`}{or \code{data.table})\cr
+\item{data}{(\code{data.frame} or \code{data.table})\cr
 The data to check class of and coerce to \code{data.table} if necessary.}
 }
 \value{

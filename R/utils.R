@@ -39,7 +39,7 @@ NULL
 #' @description
 #' This function checks the number of missingness in a vector, returns the results in the exact number (percentage)
 #'
-#' @param (`vector`)
+#' @param x (`vector`)
 #'
 #' @export
 count_missing <- function(x) {
@@ -71,7 +71,7 @@ lunique <- function(x){
 #' in `data.table` format. If it  is not, coerce with message to ensure the function logic
 #' works without breaking.
 #'
-#' @param data(`data.frame` or `data.table`)\cr
+#' @param data (`data.frame` or `data.table`)\cr
 #' The data to check class of and coerce to `data.table` if necessary.
 #'
 #' @return (`data.table`)\cr

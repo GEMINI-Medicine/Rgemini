@@ -2,3 +2,44 @@ url: https://gemini-medicine.github.io/Rgemini/
 template:
   bootstrap: 5
 
+reference:
+- title: Derived Variables
+- contents:
+  - matches("charlson")
+  - covid_flag
+  - daily_census
+  - frailty_score
+  - day_time_of_admission
+  - hospital_fiscal_year
+  - season
+  - stat_holidays_ON
+  - readmission
+  - episodes_of_care
+  - matches("icu")
+  - in_hospital_mortality
+  - length_of_stay
+  - n_imaging
+  - n_routine_bloodwork
+  - rbc_transfusions
+- title: Data Transformation
+  desc: These functions aid in querying the data, either by applying filters or mapping values.
+- contents:
+  - diagnoses_at_admission
+  - icd_to_ccsr
+- title: Cell Suppression
+  desc: This includes all helper functions associated with producing a Table 1.
+- contents:
+  - starts_with("render")
+  - max_pairwise_smd
+- title: Dummy Data
+  desc: Helper functions designed to produce sample data.
+- contents:
+  - dummy_diag
+  - sample_icd
+- title: Utility Functions
+- contents:
+  - lunique
+  - matches("ni")
+  - find_db_tablename
+  - coerce_to_datatable
+  - count_missing

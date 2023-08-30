@@ -10,8 +10,8 @@ render_mean.continuous(x, ...)
 \item{x}{(\code{character} or \code{factor})\cr
 A continuous variable to summarize.}
 
-\item{round_to}{(\code{numeric})\cr
-How many digits to round the standardized mean difference to.}
+\item{...}{\cr
+Further arguments, passed to \code{table1:::stats.apply.rounding()}.}
 }
 \value{
 named (\code{character})\cr

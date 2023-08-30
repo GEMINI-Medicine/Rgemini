@@ -82,14 +82,13 @@
 #' `readmission == TRUE` is the numerator, and the number of eligible episodes of care (where `readmission != NA`)
 #' is the denominator. For example, 7-day readmission rate can be calculated by `mean(readmit7, na.rm=TRUE)`, where
 #' `readmit7` is the variable returned by the `readmission()` function. This function is designed to be consistent
-#' with [CIHI guidelines for readmission calculations]
-#' (https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital). Please carefully review this reference
-#' before applying the function for research purposes. Users may choose to deviate from the CIHI definition of
-#' readmission by setting any of the CIHI flags (see above) to `FALSE`.
+#' with [CIHI guidelines for readmission calculations](https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital).
+#' Please carefully review this reference before applying the function for research purposes. Users may choose to deviate from
+#' the CIHI definition of readmission by setting any of the CIHI flags (see above) to `FALSE`.
 #'
 #' @return
 #' This function returns a `data.table` containing `genc_id`, `AT_in_occurred`, `AT_out_occurred`, `epicare`
-#' (see [GEMINIpkg::episodes_of_care()]), `readmit7` (default), and `readmit30` (default). `readmit7` and `readmit30`
+#' (see [Rgemini::episodes_of_care()]), `readmit7` (default), and `readmit30` (default). `readmit7` and `readmit30`
 #' are logical variables indicating whether or not an episode of care was followed by a readmission. Note that
 #' readmissions are attributed to the last encounter of each episode of care. Episodes of care where the last encounter
 #' has `readmitX = NA` have been removed from the denominator.
@@ -99,7 +98,7 @@
 #' denominator (`readmit(n) = NA`). This is to avoid inaccurate attribution of a potential readmission to
 #' the hospital associated with the intermediate (i.e., not the last) encounter of that episode of care.
 #'
-#' @seealso \code{\link[Vignettes-GEMINIpkg]{Epicare_and_Readmission}}
+#' @seealso `vignette("epicare_and_readmission", package = "Rgemini")`
 #'
 #' @references
 #' [CIHI readmission guidelines](https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital)

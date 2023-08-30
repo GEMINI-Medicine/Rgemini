@@ -9,6 +9,9 @@ render_median.continuous(x, ...)
 \arguments{
 \item{x}{(\code{character} or \code{factor})\cr
 A continuous variable to summarize.}
+
+\item{...}{\cr
+Further arguments, passed to \code{table1:::stats.apply.rounding()}.}
 }
 \value{
 named (\code{character})\cr

@@ -16,6 +16,9 @@ Unused variable that is required to be supported by \code{extra.col} in \code{\l
 
 \item{round_to}{(\code{numeric})\cr
 How many digits to round the standardized mean difference to.}
+
+\item{...}{\cr
+Additional arguments passed on to \code{\link[table1:table1]{table1::table1()}}.}
 }
 \value{
 (\code{numeric})\cr
@@ -29,6 +32,11 @@ The implementation with the \code{stddiff} package is more fragile, than with th
 However, the \code{smd} package uses the \emph{population variance} to calculate the SMD as opposed to the \emph{sample variance}.
 This can cause small inaccuracies in the final result. Therefore we elect to implement with \code{stddiff}.
 Another consideration is that \code{stddiff} can be maximally precise to only 3 decimal places.
+
+Additionally, for very large cohorts, standardized mean differences calculated on categorical variables using the
+\code{stddiff} package may throw \verb{In n[1] * n[2] : NAs produced by integer overflow}. This is an implementation issue
+in \code{stddiff} in the calculation of the standard errors for the standardized mean differences. However, since these
+standard errors are not used in the final output, they can be safely ignored.
 }
 \examples{
 max_pairwise_smd(split(mtcars$disp, mtcars$am))

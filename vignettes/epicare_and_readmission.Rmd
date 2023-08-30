@@ -1,6 +1,5 @@
 ---
 title: "Episodes of care and Readmission"
-date: "`r Sys.Date()`"
 output:
   html_vignette:
     number_sections: true
