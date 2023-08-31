@@ -12,8 +12,8 @@
 #' A confirmed COVID-19 diagnosis (U071) is coded when
 #' there is a positive COVID-19 test regardless of the the test type.
 #'
-#' A suspected COVID-19 diagnosis (U072) is coded when a
-#' n encounter is clinically or epidemiological diagnosed
+#' A suspected COVID-19 diagnosis (U072) is coded when an
+#' encounter is clinically or epidemiological diagnosed
 #' but the associated COVID-19 tests are inconclusive,
 #' not available, or not performed.
 #'
@@ -53,8 +53,8 @@
 #'
 #' @section Warning:
 #' Function returns data.table with id field and two boolen fields. NA value in
-#' the output indicates id in the first table is not
-#' included in the second table.
+#' the output indicates that the encounter did not have any entry in the
+#' diagnosis table.
 #' When one tries to left-join the output of this function with another table
 #' (another list of admissions in the left),
 #' make sure list of admissions (or patient) aligns in both tables.
@@ -79,24 +79,25 @@
 #' in diagnosis table
 #'
 #' @examples
-#'\dontrun{
+#' \dontrun{
 #' db_driver <- "PostgreSQL"
 #' db_password <- getPass::getPass
 #' db_host <- "172.XX.XX.XXX"
 #' db_port <- 1234
 #'
 #' db <- DBI::dbConnect(DBI::dbDriver(db_driver),
-#'                     dbname = "db",
-#'                     host = db_host,
-#'                     port = db_port,
-#'                     user = db_password("Enter DB credential username"),
-#'                     password = db_password("Enter DB credential password"))
+#'   dbname = "db",
+#'   host = db_host,
+#'   port = db_port,
+#'   user = db_password("Enter DB credential username"),
+#'   password = db_password("Enter DB credential password")
+#' )
 #'
-#' ipadm <- dbGetQuery(db, "select * from admdad") %>%  data.table
+#' ipadm <- dbGetQuery(db, "select * from admdad") %>% data.table()
 #'
-#' dx <- dbGetQuery(db, "select * from ipdiagnosis") %>%  data.table
+#' dx <- dbGetQuery(db, "select * from ipdiagnosis") %>% data.table()
 #'
-#' covid <- covid_flag(ipadmdad=ipadm,diagnosis = dx)
+#' covid <- covid_flag(ipadmdad = ipadm, diagnosis = dx)
 #' }
 #'
 #' @references
@@ -104,8 +105,7 @@
 #'
 #' @export
 covid_flag <- function(ipadmdad,
-                               diagnosis) {
-
+                       diagnosis) {
   ## remap variable names in case field names change in the database
   res <- coerce_to_datatable(ipadmdad)[, .(genc_id)]
   res2 <- coerce_to_datatable(diagnosis)[, .(genc_id, diagnosis_code)]
@@ -114,13 +114,17 @@ covid_flag <- function(ipadmdad,
   confirmed <- res2[grep("U071", diagnosis_code), genc_id]
   suspected <- res2[grep("U072", diagnosis_code), genc_id]
 
-  res[, ':='(covid_icd_confirmed_flag = ifelse(!genc_id %in% res2$genc_id, NA,
-                                               ifelse(genc_id %in% confirmed,
-                                                      TRUE, FALSE)),
+  res[, ":="(covid_icd_confirmed_flag = ifelse(!genc_id %in% res2$genc_id, NA,
+    ifelse(genc_id %in% confirmed,
+      TRUE, FALSE
+    )
+  ),
 
-             covid_icd_suspected_flag = ifelse(!genc_id %in% res2$genc_id, NA,
-                                               ifelse(genc_id %in% suspected,
-                                                      TRUE, FALSE)))][]
+  covid_icd_suspected_flag = ifelse(!genc_id %in% res2$genc_id, NA,
+    ifelse(genc_id %in% suspected,
+      TRUE, FALSE
+    )
+  ))][]
 
   return(res)
 }
