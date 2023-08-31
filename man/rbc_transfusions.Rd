@@ -17,7 +17,7 @@ Database connection to any GEMINI database}
 \value{
 \code{data.table}
 It includes three columns. It includes genc_id,
-n_app_rbc_transfusion_derived , and n_rbc_transfusion_derived.
+n_app_rbc_transfusion_derived, and n_rbc_transfusion_derived.
 It will include all rows from the ipadmdad parameter. Any encounter without a
 transfusion will get a 0.
 }

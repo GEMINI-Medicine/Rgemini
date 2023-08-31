@@ -6,34 +6,33 @@
 \usage{
 length_of_stay(
   admdad,
-  idvar1 = "genc_id",
   admvar1 = "admission_date_time",
   disvar1 = "discharge_date_time"
 )
 }
 \arguments{
-\item{admdad}{(\code{data.table})\cr
-\code{admdad} table as defined in the
+\item{admdad}{(\code{data.table} or \code{data.frame})\cr
+Table equivalent to DRM table "ipadmdad" as defined in the
 \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+Table must contain three fields: encounter ID (\code{genc_id}), and two date-time
+variables corresponding to admission and discharge (typically
+\code{admission_date_time} and \code{discharge_date_time}).}
 
-admdad is a data.table object equivalent of DRM table "admdad".
-Table must contain three fields:
-admission id, admission date and time and discharge date time.}
+\item{admvar1}{(\code{character})\cr
+a character string equivalent to "admission date time".
+Must be in "yyyy-mm-dd hh:mm" format.}
 
-\item{idvar1}{a character string of label for primary key of "admdad" table, ideally as admission id}
-
-\item{admvar1}{a character string of label equivalent to "admission date time".
-Its value must be in "yyyy-mm-dd hh:mm" format}
-
-\item{disvar1}{a character string of label equivalent to "discharge date time".
-Its value must be in "yyyy-mm-dd hh:mm" format}
+\item{disvar1}{(\code{character})\cr
+a character string equivalent to "discharge date time".
+Must be in "yyyy-mm-dd hh:mm" format.}
 }
 \value{
-data.table with the same number of rows with input "admdad" with addtional
+data.table with the same number of rows as input "admdad", with additional
 derived numeric fields labelled as "los_hrs_derived" and "los_days_derived".
 }
 \description{
-\code{length_of_stay} returns Length of Stay for hospital admissions in unit of hours and days
+\code{length_of_stay} returns Length of Stay for hospital admissions in unit of
+hours and days.
 }
 \details{
 Length of Stay is defined as the duration of hospital in-patient stay,
@@ -43,20 +42,20 @@ and one of the physician performance indicators in MyPracticeReport.
 Researchers might consider a few modifications to this metric.
 One example will be adjusting for patient who receives palliative care.
 If transfer to palliative unit within the hospital is trackable
-(e.g. through room transfer data),
-then it might be good idea to re-define discharge point to the palliative unit entrance.
-This will reduce bias in metric since patient care under palliative order is very different.
+(e.g. through room transfer data), then it might be good idea to re-define
+discharge point to the palliative unit entrance. This will reduce bias in
+metric since patient care under palliative order is very different.
 }
 \section{Warning}{
 
-NA values in returned data.table indicates either missing admission/discharge date and time or
-its format is incorrect
+NA values in returned data.table indicates either missing admission/discharge
+date and time or its format is incorrect.
 }
 
 \section{Note}{
 
-Function takes required fields labels as input, this was intended not to hardcode variable names
-within the function. When field labels change in database, there is no need to go through the lines to change
-the hardcoded variable names
+The function takes two optional input arguments defining the admission and
+discharge date-time variables of interest (by default \code{admission_date_time}
+and \code{discharge_date_time}).
 }
 

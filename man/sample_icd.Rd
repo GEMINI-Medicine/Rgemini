@@ -27,9 +27,6 @@ desired pattern that the returned ICD codes should be matched with.}
 \description{
 This function simulates ICD-10 diagnosis codes at random or by user specified pattern.
 }
-\details{
-
-}
 \examples{
 ### Simulate 100 ICD-10 codes based on the 2011 version.
 \dontrun{ sample_icd(100, source="comorbidity") }

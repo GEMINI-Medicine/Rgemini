@@ -17,7 +17,7 @@ This table must contain the \code{genc_id} and \code{diagnosis_code} (as ICD-10-
 The diagnosis codes must be free from any punctuation or special characters.}
 
 \item{eddiagnosis}{(\code{data.table})
-\code{eddaignosis} table as defined in the \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+\code{eddiagnosis} table as defined in the \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
 This table must contain the \code{genc_id} and \code{er_diagnosis_code} (as ICD-10-CA) fields in long format table only.
 The diagnosis codes must be free from any punctuation or special characters.}
 }
@@ -47,7 +47,7 @@ Historically, scores have been calculated based on partition of ICD-10-CA codes.
 Researchers may want to focus on frailty risk scores based on in-patient (IP) diagnoses because
 emergency department (ED) diagnoses have lower sensitivity/specificity for certain conditions and
 are less reliably filled compared to IP diagnoses. In general, there will be overlap between IP and
-ED diagnoses codes. ED diagnoses codes to compute frailty risk score can be used to evaluate frailty
+ED diagnosis codes. ED diagnosis codes to compute frailty risk score can be used to evaluate frailty
 risk upon admission to IP services.
 
 This function does not differentiate between diagnosis types.

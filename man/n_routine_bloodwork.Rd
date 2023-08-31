@@ -2,63 +2,62 @@
 % Please edit documentation in R/n_routine_bloodwork.r
 \name{n_routine_bloodwork}
 \alias{n_routine_bloodwork}
-\title{Compute the number of routine bloodwork tests for a admission}
+\title{Compute the number of routine bloodwork tests per encounter}
 \usage{
-n_routine_bloodwork(
-  ipadmdad,
-  lab,
-  idvar1 = "genc_id",
-  idvar2 = "genc_id",
-  valvar2 = "result_value",
-  mapvar2 = "test_type_mapped"
-)
+n_routine_bloodwork(con, ipadmdad, lab_table = "lab")
 }
 \arguments{
-\item{ipadmdad}{a data.table object equivalent of DRM table "ipadmdad". Table must contain admission id}
+\item{con}{(\code{DBIConnection})\cr
+A database connection to any GEMINI Database}
 
-\item{lab}{a data.table object equivalent of DRM table "lab". Table must contain three fields,
-admission id, test result value and a field that standardizes types of lab tests}
+\item{ipadmdad}{(\code{data.table} or \code{data.frame})\cr
+Table equivalent to DRM table "ipadmdad". Must contain \code{genc_id}.}
 
-\item{idvar1}{a character string of label for admission id in "ipadmdad" table}
-
-\item{idvar2}{a character string of label for admission id in "lab" table}
-
-\item{valvar2}{a character string of label equivalent to "test result value" in "lab" table}
-
-\item{mapvar2}{a character string of label that standardizes types of lab tests}
+\item{lab_table}{(\code{character})\cr
+Name of table corresponding to DRM lab table (typically "lab" or
+"lab_subset")}
 }
 \value{
-data.table with the same number of rows with input "ipadmdad" with addtional derived numeric field labelled as
-"n_routine_bloodwork_derived"
+data.table object with the same number of rows as input "ipadmdad", with
+additional derived numeric field labelled as "n_routine_bloodwork_derived"
 }
 \description{
-\code{n_routine_bloodwork} returns the number of routine bloodwork (Sodium and Hemoglobin tests) for hospital admission.
+\code{n_routine_bloodwork} returns the number of routine bloodwork (Sodium and
+Hemoglobin tests) for each hospital admission. Sodium and Heamoglobin tests
+are defined by OMOP codes. Sodium is the code 3019550. Hemoglobin is 3000963.
 }
 \details{
-This function takes a list of admissions and DRM table equivalent of lab table to generate
-numeric fields counting the number of Sodium and Hemoglobin tests for each admission.
+This function takes a list of admissions and DRM table equivalent of lab
+table (see
+\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary})
+to generate numeric fields counting the number of Sodium and Hemoglobin tests
+for each admission.
 
-Lab table in the database should include field that classifies each test into a few different categories.
-Therefore, this function should be run after some standardization efforts on lab table.
-Currently, the number of routine bloodwork tests is one of the performance metrics in MyPracticeReport.
+Lab table in the database should include field that classifies each test into
+a few different categories. Therefore, this function should be run after some
+standardization efforts on lab table (performed by GEMINI). Currently, the
+number of routine bloodwork tests is one of the performance metrics in
+MyPracticeReport.
 
-Function automatically removes tests without valid numeric result value. Exceptions are boundary result value (e.g. ">120" mmol/L), and these
+Function automatically removes tests without valid numeric result value.
+Exceptions are boundary result value (e.g. ">120" mmol/L), and these
 are still counted as valid tests.
 
 Any tests being performed in both ED and in-patient settings will be counted.
 }
 \section{Warning}{
 
-Function returns data.table with id field and one numeric field. By design, function will not return any NA values.
-If id in the "ipadmdad" is not captured in "lab" table, admission gets assigned 0 number of tests.
-When one tries to left-join the output of this function with another table (another list of admissions in the left),
-make sure list of admissions (or patient) aligns in both tables
-}
+Function returns data.table with id field \code{genc_id} and one numeric field
+indicating the number of bloodwork tests per encounter. By design,
+function will not return any NA values. If a \code{genc_id} does not have any
+entries in the "lab" table, the admission gets assigned 0 number of tests.
+When one tries to left-join the output of this function with another table
+(another list of admissions in the left), make sure list of admissions (or
+patient) aligns in both tables
 
-\section{Note}{
-
-Function takes required fields labels as input, this was intended not to hardcode variable names
-within the function. When field labels change in database, there is no need to go through the lines to change
-the hardcoded variable names.
+This function requires mappings by a Subject Matter Expert to ensure that all
+tests are mapped to
+3019550 - Sodium \link{Moles/volume} in Serum or Plasma, and
+3000963 - Hemoglobin \link{Mass/volume} in Blood
 }
 
