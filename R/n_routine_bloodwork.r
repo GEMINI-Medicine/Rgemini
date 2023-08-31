@@ -47,7 +47,7 @@
 #' Name of table corresponding to DRM lab table (typically "lab" or
 #' "lab_subset")
 #'
-#' @import DBI
+#' @import RPostgreSQL
 #' @return
 #' data.table object with the same number of rows as input "ipadmdad", with
 #' additional derived numeric field labelled as "n_routine_bloodwork_derived"
@@ -58,11 +58,9 @@ n_routine_bloodwork <- function(con,
                                 lab_table = "lab") {
   ipadmdad <- coerce_to_datatable(ipadmdad)
 
-  warning("The output of this function is based on manual mapping
-          of Sodium and Heamoglobin tests by a GEMINI Subject Matter Expert.
-          Sodium and Hemoglobin are prioritized and mapped for all encounters.
-          However, please carefully check mapping coverage for your cohort of interest,
-          or contact the GEMINI team if you require additional support.")
+  cat("\n***Note:***
+  The output of this function is based on manual mapping of Sodium and Heamoglobin tests by a GEMINI Subject Matter Expert.
+  Sodium and Hemoglobin are prioritized and mapped for all encounters. However, please carefully check mapping coverage for your cohort of interest, or contact the GEMINI team if you require additional support.\n")
 
   startwith.any <- function(x, prefix) {
     mat <- matrix(0, nrow = length(x), ncol = length(prefix))

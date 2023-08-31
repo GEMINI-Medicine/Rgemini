@@ -69,6 +69,10 @@ n_imaging <- function(ipadmdad,
                       dtvar = "performed_date_time",
                       mapvar = "modality_mapped") {
   
+  cat("\n***Note:***
+  The output of this function is based on manual mapping of imaging modalities by a GEMINI Subject Matter Expert.
+  Please carefully check mapping coverage for your cohort of interest, or contact the GEMINI team if you require additional support.\n")
+  
   ## remap variable names in case field names change in the database
   ipadmdad <- coerce_to_datatable(ipadmdad)
   imaging <- coerce_to_datatable(imaging)
