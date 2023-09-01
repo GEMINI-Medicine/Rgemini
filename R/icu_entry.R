@@ -124,11 +124,3 @@ icu_entry <- function(ipadmdad, ipscu, window = c(24, 48, 72)) {
 
   return(res)
 }
-
-
-#' @rdname icu_entry
-#' @export
-#'
-compute_icu_entry <- function(ipadmdad, ipscu) {
-  icu_entry(ipadmdad, ipscu, window = c(24, 48, 72))
-}

@@ -116,18 +116,3 @@ icu_los <- function(cohort, ipscu) {
 
   return(res)
 }
-
-
-#' @rdname icu_los
-#'
-#' @param ipadmdad (`data.table`, `data.frame`)\cr
-#' Table equivalent to the `admdad` table defined in the
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
-#' Table must contain fields:
-#' GEMINI Encounter ID (`genc_id`) and admission time (`admission_date_time`).
-#'
-#' @export
-#'
-compute_icu_los <- function(ipadmdad, ipscu) {
-  icu_los(cohort=ipadmdad, ipscu)
-}

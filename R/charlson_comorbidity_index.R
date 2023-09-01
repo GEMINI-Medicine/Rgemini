@@ -192,19 +192,3 @@ charlson_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_
 
   return(res)
 }
-
-
-#' @rdname charlson_comorbidity_index
-#' @export
-#'
-admit_charlson_derived <- function(ipdiag, erdiag) {
-  charlson_comorbidity_index(ipdiag, erdiag, at_admission = TRUE)
-}
-
-
-#' @rdname charlson_comorbidity_index
-#' @export
-#'
-all_charlson_derived <- function(ipdiag, erdiag) {
-  charlson_comorbidity_index(ipdiag, erdiag, at_admission = FALSE)
-}
