@@ -27,16 +27,17 @@
 #'
 #' @section Warning:
 #' This function returns a `data.table` with `genc_id` and three numeric fields.
-#' The function will return NA values if `genc_id` in the `ipadmdad` table is not found
+#' The function will return NA values if `genc_id` in the `cohort` table is not found
 #' in the `ipdiagnosis` or `eddiagnosis` tables.
 #'
 #' `frailty_score_derived` is NA if either `ip_frailty_score_derived` or `er_frailty_score_derived` are NA.
 #' When one tries to left-join the output of this function with another table (another list of admissions in the left),
 #' make sure list of admissions (or patient ids) aligns in both tables.
 #'
-#' @param ipadmdad (`data.table`)
-#' `ipadmdad` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
-#' This table must contain the `genc_id` field
+#' @param cohort (`data.frame` or `data.table`)
+#' Cohort table with all relevant encounters of interest, where each row
+#' corresponds to a single encounter. Must contain GEMINI Encounter ID
+#' (`genc_id`).
 #' @param ipdiagnosis (`data.table`)
 #' `ipdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
 #' This table must contain the `genc_id` and `diagnosis_code` (as ICD-10-CA) fields in long format table only.
@@ -47,7 +48,7 @@
 #' The diagnosis codes must be free from any punctuation or special characters.
 #'
 #' @return `data.table`
-#' This function returns a table with encounters identified by the `ipadmdad` table input and
+#' This function returns a table with all encounters identified by the `cohort` table input and
 #' additional derived numeric fields for `ip_frailty_score_derived`, `er_frailty_score_derived`
 #' and `frailty_score_derived`
 #' \itemize{
@@ -66,17 +67,17 @@
 #' April 26. http://dx.doi.org/10.1016/S0140-6736(18)30668-8.
 #'
 #' @export
-frailty_score <- function(ipadmdad,
+frailty_score <- function(cohort,
                           ipdiagnosis,
                           eddiagnosis) {
 
   ## Ensure user inputs are in data.table format before proceeding
-  ipadmdad <- coerce_to_datatable(ipadmdad)
+  cohort <- coerce_to_datatable(cohort)
   ipdiagnosis <- coerce_to_datatable(ipdiagnosis)
   eddiagnosis <- coerce_to_datatable(eddiagnosis)
 
   ## remap variable names in case field names change in the database
-  res <- ipadmdad[, .(idvar1 = genc_id)]
+  res <- cohort[, .(idvar1 = genc_id)]
 
   ipdiag <- ipdiagnosis[, .(id = genc_id,
                             diagcode = diagnosis_code)]

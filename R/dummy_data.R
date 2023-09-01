@@ -12,7 +12,8 @@
 #' `lookup_icd10_ca_description` table in the GEMINI database,
 #' see details in [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
 #'
-#' @param db RPostgres DB connection Required when `source` is `icd_lookup`.
+#' @param dbcon (`DBIConnection`)\cr
+#' A database connection to any GEMINI database. Required when `source` is `icd_lookup`.
 #'
 #' @param pattern (`string`)\cr A valid regex expression that specifies the
 #' desired pattern that the returned ICD codes should be matched with.
@@ -31,16 +32,16 @@
 #' ### Simulate 50 ICD-10-CA codes based on codes found in the `lookup_icd10_ca_description` table
 #' \dontrun{
 #' drv <- dbDriver("PostgreSQL")
-#' db <- DBI::dbConnect(drv,
-#'                           dbname = "db",
-#'                           host = "172.XX.XX.XXX",
-#'                           port = 1234,
-#'                           user = getPass("Enter user:"),
-#'                           password = getPass("password"))
-#' sample_icd(50, source="icd_lookup", db=db)
+#' dbcon <- DBI::dbConnect(drv,
+#'                         dbname = "db",
+#'                         host = "172.XX.XX.XXX",
+#'                         port = 1234,
+#'                         user = getPass("Enter user:"),
+#'                         password = getPass("password"))
+#' sample_icd(50, source="icd_lookup", dbcon=dbcon)
 #' }
 #'
-sample_icd <- function(n = 1, source = "comorbidity", db = NULL, pattern = NULL) {
+sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NULL) {
   switch(source,
          comorbidity = {
            comorb <- comorbidity::icd10_2011 %>% as.data.table()
@@ -54,8 +55,8 @@ sample_icd <- function(n = 1, source = "comorbidity", db = NULL, pattern = NULL)
            }
          },
          icd_lookup = {
-           if (!is.null(db)) {
-             lookup <- RPostgreSQL::dbGetQuery(db, "SELECT diagnosis_code  FROM lookup_icd10_ca_description where type != 'category'") %>% as.data.table()
+           if (!is.null(dbcon)) {
+             lookup <- RPostgreSQL::dbGetQuery(dbcon, "SELECT diagnosis_code  FROM lookup_icd10_ca_description where type != 'category'") %>% as.data.table()
 
              if (!is.null(pattern)) {
                lookup <- lookup[grepl(toupper(pattern), diagnosis_code)]
@@ -67,7 +68,7 @@ sample_icd <- function(n = 1, source = "comorbidity", db = NULL, pattern = NULL)
                stop("No matching diagnoses found for the specified pattern")
              }
            } else {
-             stop("Invalid input for 'db' argument. Database connection is required for sampling from `lookup_icd10_ca_to_ccsr` table\n")
+             stop("Invalid input for 'dbcon' argument. Database connection is required for sampling from `lookup_icd10_ca_to_ccsr` table\n")
            }
          }
   )
@@ -144,16 +145,16 @@ sample_icd <- function(n = 1, source = "comorbidity", db = NULL, pattern = NULL)
 #'
 #' ### Simulate a ipdiagnosis table with ICD-10-CA codes:
 #' \dontrun{
-#'  drv <- dbDriver("PostgreSQL")
-#'  db <- DBI::dbConnect(drv,
-#'                           dbname = "db",
-#'                           host = "172.XX.XX.XXX",
-#'                           port = 1234,
-#'                           user = getPass("Enter user:"),
-#'                           password = getPass("password"))
+#' drv <- dbDriver("PostgreSQL")
+#' dbcon <- DBI::dbConnect(drv,
+#'                         dbname = "db",
+#'                         host = "172.XX.XX.XXX",
+#'                         port = 1234,
+#'                         user = getPass("Enter user:"),
+#'                         password = getPass("password"))
 #'
-#'  set.seed(1)
-#'  ipdiag <- dummy_diag(nid=5, nrow=20, ipdiagnosis=T, db=db, source="icd_lookup")}
+#' set.seed(1)
+#' ipdiag <- dummy_diag(nid=5, nrow=20, ipdiagnosis=T, dbcon=dbcon, source="icd_lookup")}
 #'
 
 dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = NULL, ...) {

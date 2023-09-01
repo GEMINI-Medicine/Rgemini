@@ -13,13 +13,13 @@
 #' are filtered/grouped based on patient characteristics (e.g., diagnosis, age etc.), this indicator simply reflects
 #' a standardized measure of patient counts, rather than a measure of true capacity limitations of medical wards.
 #'
-#' @param cohort (`data.frame` | `data.table`)
-#' Table containing all encounters of the cohort of interest, including their admission and discharge date-time.
-#' Needs to contain the following columns:
+#' @param cohort (`data.frame` or `data.table`)
+#' Cohort table with all relevant encounters of interest, where each row corresponds to a single encounter.
+#' Must contain the following columns:
 #' - `genc_id` (`integer`): GEMINI encounter ID
-#' - `hospital_num` or `hospital_id` (`integer` | `character`): Hospital ID
-#' - `admission_date_time` (`character`): Date-time of admission of encounter in YYYY-MM-DD HH:MM format
-#' - `discharge_date_time` (`character`): Date-time of discharge of encounter in YYYY-MM-DD HH:MM format
+#' - `hospital_num` or `hospital_id` (`integer` or `character`): Hospital ID
+#' - `admission_date_time` (`character`): Date-time of admission in YYYY-MM-DD HH:MM format
+#' - `discharge_date_time` (`character`): Date-time of discharge in YYYY-MM-DD HH:MM format
 #'
 #' If a `group_var` is specified (see below), this should be included in the `cohort` table as well.
 #'
@@ -111,8 +111,20 @@
 #' @export
 #'
 #' @examples
+#'
+#' ## calculate census of all in-patient admissions (ipadm):
 #' \dontrun{
-#' admdad_census <- daily_census(admdad)
+#' drv <- dbDriver("PostgreSQL")
+#' dbcon <- DBI::dbConnect(drv,
+#'                         dbname = "db",
+#'                         host = "172.XX.XX.XXX",
+#'                         port = 1234,
+#'                         user = getPass("Enter user:"),
+#'                         password = getPass("password"))
+#'
+#' ipadm <- dbGetQuery(dbcon, "select * from admdad") %>% data.table()
+#'
+#' ipadm_census <- daily_census(ipadm)
 #' }
 #'
 

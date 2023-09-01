@@ -33,17 +33,16 @@
 #' @examples
 #' \dontrun{
 #' drv <- dbDriver("PostgreSQL")
-#' db <- DBI::dbConnect(drv,
-#'   dbname = "DB_name",
-#'   host = "172.XX.XX.XXX",
-#'   port = 1234,
-#'   user = getPass("Enter user:"),
-#'   password = getPass("Enter Password:")
-#' )
+#' dbcon <- DBI::dbConnect(drv,
+#'                         dbname = "db",
+#'                         host = "172.XX.XX.XXX",
+#'                         port = 1234,
+#'                         user = getPass("Enter user:"),
+#'                         password = getPass("password"))
 #'
 #' # derive which encounters were discharged on a holiday
-#' admdad <- dbGetQuery(db, "SELECT discharge_date_time FROM admdad;")
-#' holidays <- stat_holidays_ON(admdad, "discharge_date_time")
+#' ipadm <- dbGetQuery(db, "SELECT discharge_date_time FROM admdad;")
+#' holidays <- stat_holidays_ON(ipadm, "discharge_date_time")
 #' }
 #'
 #' @export
@@ -61,10 +60,10 @@ stat_holidays_ON <- function(data,
       stop("Invalid user input. Please provide dates in 'YYY-MM-DD' format.")
     }
   )
-  
+
   years <- 2000:2100
   count <- length(years)
-  
+
   ## list relevant holiday names as they are called in timeDate::holiday()
   # note: Family day is not included in package, is calculated separately below
   holiday_names <- c(
@@ -73,16 +72,16 @@ stat_holidays_ON <- function(data,
     "CALabourDay", "CAThanksgivingDay", "CaRemembranceDay",
     "ChristmasDay", "BoxingDay"
   )
-  
+
   # repeat each holiday entry for each year
   holidays_all <- rep(holiday_names, each = count)
-  
+
   ts <- timeSequence(
     from = paste0(years[1], "-01-01"),
     to = paste0(years[length(years)], "-12-31"),
     by = "month"
   )
-  
+
   ## Derive Family Day
   # Family Day is not included in holiday() function of timeDate package
   # calculate it separately here: is on the 3rd Monday (nday = 1) in February
@@ -92,7 +91,7 @@ stat_holidays_ON <- function(data,
   ))
   family_day <- as.Date(family_day[stri_detect_fixed(family_day, "-02-")])
   family_weekday <- weekdays(family_day)
-  
+
   ## Create data frame with all holidays across all years
   holiday <- data.table(date = c(
     family_day,
@@ -104,8 +103,8 @@ stat_holidays_ON <- function(data,
     holidays_all
   )
   holiday$holiday_weekday <- weekdays(holiday$date)
-  
-  
+
+
   # rename holidays
   holiday$holiday_name <- str_replace_all(
     holiday$holiday_name, c(
@@ -122,28 +121,28 @@ stat_holidays_ON <- function(data,
       "BoxingDay" = "Boxing Day"
     )
   )
-  
+
   # Merge holiday table with data input
   data <- merge(data, holiday, by = "date", all.x = TRUE) %>%
     data.table()
-  
+
   # holiday flag should be either FALSE/TRUE
   data[holiday != TRUE | is.na(holiday), holiday := FALSE]
-  
+
   ### OBSERVED HOLIDAYS ###
   # add as separate columns
   if (include_observed_holidays) {
     # If a holiday falls on a Saturday, the observed holiday is on the following
     # Monday (+ 2 days)
     holiday[holiday_weekday == "Saturday", observed_date := date + 2]
-    
+
     # If Boxing Day falls on a Sunday, the observed holiday is the following
     # Tuesday (+ 2 days)
     holiday[
       holiday_name == "Boxing Day" & holiday_weekday == "Sunday",
       observed_date := date + 2
     ]
-    
+
     # If a holiday falls on a Sunday, the observed holiday is on the following
     # Monday (+ 1 day), except for Boxing Day (is moved to Tuesday, see above)
     # and Christmas Day (doesn't move, because if it falls on a Sunday the
@@ -151,26 +150,26 @@ stat_holidays_ON <- function(data,
     # doesn't get assigned 2 different holidays)
     holiday[!holiday_name %in% c("Boxing Day", "Christmas Day") &
               holiday_weekday == "Sunday", observed_date := date + 1]
-    
+
     # For all other holidays, observed date = actual holiday data
     holiday[is.na(observed_date), observed_date := date]
-    
+
     # add observed weekday & flag
     holiday[, observed_holiday_weekday := weekdays(observed_date)]
     holiday[, observed_holiday := TRUE]
-    
+
     setnames(holiday, "holiday_name", "observed_holiday_name")
-    
+
     # Merge holiday table with data input by OBSERVED date
     data <- merge(data, holiday[, .(observed_date, observed_holiday, observed_holiday_name, observed_holiday_weekday)],
                   by.x = "date", by.y = "observed_date", all.x = TRUE
     ) %>%
       data.table()
-    
+
     # observed_holiday flag should be either FALSE/TRUE
     data[observed_holiday != TRUE | is.na(observed_holiday), observed_holiday := FALSE]
   }
-  
-  
+
+
   return(data)
 }

@@ -22,12 +22,14 @@
 #' to understand how the derived variable is calculated and 2) in case users need to re-calculate episodes of care
 #' or readmission rates for a restricted cohort (see below).
 #'
-#' @param db (`DBIConnection`)\cr
-#' RPostgres DB connection
+#' @param dbcon (`DBIConnection`)\cr
+#' A database connection to any GEMINI database.
 #'
 #' @param restricted_cohort (`data.table` | `data.frame`)\cr
-#' User specified cohort that is a restricted subset of all encounters in `admdad`. Must contain `genc_id` as the
-#' identifier. Default is `Null`, which loads the entire `admdad` table in the user-provided database (recommended).
+#' User specified cohort that is a restricted subset of all encounters in DRM table "ipadmdad" (see
+#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
+#' Must contain `genc_id` as the identifier. Default is `Null`, which loads the entire "ipadmdad"
+#' table in the user-provided database (recommended approach).
 #'
 #' @details
 #' An episode of care refers to all contiguous inpatient hospitalizations admitted to any medical or intensive care
@@ -79,28 +81,27 @@
 #' @examples
 #' \dontrun{
 #' drv <- dbDriver("PostgreSQL")
-#' db <- DBI::dbConnect(drv,
-#'   dbname = "DB_name",
-#'   host = "172.XX.XX.XXX",
-#'   port = 1234,
-#'   user = getPass("Enter user:"),
-#'   password = getPass("Enter Password:")
-#' )
+#' dbcon <- DBI::dbConnect(drv,
+#'                         dbname = "db",
+#'                         host = "172.XX.XX.XXX",
+#'                         port = 1234,
+#'                         user = getPass("Enter user:"),
+#'                         password = getPass("password"))
 #'
-#' epicare_table <- episodes_of_care(db)
+#' epicare_table <- episodes_of_care(dbcon)
 #' }
 #'
-episodes_of_care <- function(db, restricted_cohort = NULL) {
-  if (!RPostgreSQL::isPostgresqlIdCurrent(db)) {
+episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
+  if (!RPostgreSQL::isPostgresqlIdCurrent(dbcon)) {
     stop("\n Please input a valid database connection")
   }
 
   ############ Load lookup_transfer ############
-  lookup_transfer <- DBI::dbGetQuery(db, "select * from lookup_transfer") %>% as.data.table()
+  lookup_transfer <- DBI::dbGetQuery(dbcon, "select * from lookup_transfer") %>% as.data.table()
 
   ############ Load whole admdad table (default) ############
   ## find relevant table name corresponding to admdad
-  admdad_name <- find_db_tablename(db, "admdad", verbose = FALSE)
+  admdad_name <- find_db_tablename(dbcon, "admdad", verbose = FALSE)
   if (!is.null(restricted_cohort)) {
     restricted_cohort <- coerce_to_datatable(restricted_cohort)
     if (!"genc_id" %in% names(restricted_cohort)) {
@@ -112,16 +113,16 @@ episodes_of_care <- function(db, restricted_cohort = NULL) {
       )
 
       ## write a temp table to improve querying efficiency
-      DBI::dbSendQuery(db,"Drop table if exists temp_data;")
-      DBI::dbWriteTable(db, c("pg_temp","temp_data"), restricted_cohort[,.(genc_id)], row.names = F, overwrite = T)
+      DBI::dbSendQuery(dbcon,"Drop table if exists temp_data;")
+      DBI::dbWriteTable(dbcon, c("pg_temp","temp_data"), restricted_cohort[,.(genc_id)], row.names = F, overwrite = T)
 
-      admdad <- DBI::dbGetQuery(db, paste0("select genc_id, patient_id_hashed, age, admit_category, admission_date_time,
+      admdad <- DBI::dbGetQuery(dbcon, paste0("select genc_id, patient_id_hashed, age, admit_category, admission_date_time,
                                             discharge_date_time, institution_from_type, institution_to_type
                                             from ", admdad_name,
                                             " where genc_id in (select genc_id from temp_data); ")) %>% as.data.table()
     }
   } else {
-    admdad <- DBI::dbGetQuery(db, paste0("select genc_id, patient_id_hashed, age, admit_category, admission_date_time,
+    admdad <- DBI::dbGetQuery(dbcon, paste0("select genc_id, patient_id_hashed, age, admit_category, admission_date_time,
                                           discharge_date_time, institution_from_type, institution_to_type
                                           from ", admdad_name)) %>% as.data.table()
   }

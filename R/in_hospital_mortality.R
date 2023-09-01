@@ -25,10 +25,10 @@
 #' `NA` values in returned data.table indicate missing
 #' discharge disposition field values.
 #'
-#' @param ipadmdad (`data.frame` | `data.table`)\cr
-#' a table equivalent to DRM table "ipadmdad" (see
-#' [GEMINI database schema](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
-#' Must contain two fields: `genc_id` and `discharge_disposition`
+#' @param ipadmdad (`data.frame` or `data.table`)\cr
+#' Table with all relevant encounters of interest from DRM table "ipadmdad" (see
+#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
+#' Must contain two fields: `genc_id` and `discharge_disposition`.
 #'
 #' @param suicide (`logical`)\cr
 #' a TRUE/FALSE argument indicating whether suicides in facility

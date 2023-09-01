@@ -24,11 +24,13 @@
 #' databases.
 #'
 #' @param ipadmdad (`data.table` or `data.frame`)\cr
-#' equivalent of DRM table "ipadmdad". Table must contain two fields,
-#' `genc_id` and a date-time variable (typically `admission_date_time`)
-#' @param dtvar1 (`character`)\cr
-#' character string defining the date-time variable of interest.
-#' Must be in "yyyy-mm-dd hh:mm" format.
+#' Table with all relevant encounters of interest from DRM table "ipadmdad" (see
+#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
+#' Must contain two fields: `genc_id` and a date-time variable (typically `admission_date_time`).
+#' Date-time variable must be in "yyyy-mm-dd hh:mm" format.
+#'
+#' @param dtvar (`character`)\cr
+#' Character string defining the date-time variable of interest (e.g., "admission_date_time").
 #'
 #' @return
 #' data.table with the same number of rows as input "ipadmdad", with additional
@@ -40,28 +42,27 @@
 #'
 #' @export
 day_time_of_admission <- function(ipadmdad,
-                                  dtvar1 = "admission_date_time") {
-  ## remap variable names in case field names change in the database
+                                  dtvar = "admission_date_time") {
 
   ## coerce data frame to data table if necessary
   ipadmdad <- coerce_to_datatable(ipadmdad)
 
   res <- ipadmdad[, .(genc_id,
-    dtvar1 = get(dtvar1)
+    dtvar = get(dtvar)
   )]
 
   ## daytime = 08:00 to 16:59
   ## nighttime = 17:00 to 07:59
   res[, ":="(day_of_admission_derived =
-    ifelse(lubridate::wday(str_sub(dtvar1, 1, 10),label = TRUE) %in% c("Sun", "Sat"),
+    ifelse(lubridate::wday(str_sub(dtvar, 1, 10),label = TRUE) %in% c("Sun", "Sat"),
       "weekend", "weekday"
     ),
   time_of_admission_derived =
-    ifelse(as.numeric(str_sub(dtvar1, 12, 13)) >= 8 &
-      as.numeric(str_sub(dtvar1, 12, 13)) < 17,
+    ifelse(as.numeric(str_sub(dtvar, 12, 13)) >= 8 &
+      as.numeric(str_sub(dtvar, 12, 13)) < 17,
     "daytime", "nighttime"
     ),
-  dtvar1 = NULL)][]
+  dtvar = NULL)][]
 
   return(res)
 }
