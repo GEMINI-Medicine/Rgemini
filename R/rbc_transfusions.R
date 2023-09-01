@@ -24,11 +24,11 @@
 #' @return
 #' `data.table`
 #' It includes three columns. It includes genc_id,
-#' n_app_rbc_transfusion_derived , and n_rbc_transfusion_derived.
+#' n_app_rbc_transfusion_derived, and n_rbc_transfusion_derived.
 #' It will include all rows from the ipadmdad parameter. Any encounter without a
 #' transfusion will get a 0.
 #'
-#' @import RPostgreSQL
+#' @import RPostgreSQL lubridate
 #'
 #' @export
 #'
@@ -36,6 +36,11 @@
 rbc_transfusions <-function(con,
                             ipadmdad
                             ) {
+
+
+  cat("\n***Note:***
+  The output of this function is based on manual mapping of RBC transfusions by a GEMINI Subject Matter Expert.
+  Please carefully check mapping coverage for your cohort of interest, or contact the GEMINI team if you require additional support.\n")
 
   ipadmdad <- coerce_to_datatable(ipadmdad)
 

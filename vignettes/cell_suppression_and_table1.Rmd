@@ -137,6 +137,18 @@ table1(
 ```
 &nbsp;
 
+Important conceptual notes
+
+1. **True zeros are not suppressed.**
+
+True zeros risk identifying no patient, and therefore we do not hide valuable information that does not bring with it the risk of re-identification.
+
+2. **Cells that originally had 6 or more patients are also suppressed.**
+
+Consider the group of patients in the pandemic subgroup. Note that patients with CVD post-pandemic were suppressed even though there were originally six patients in that subgroup. Had we only suppressed patients with Dementia (two patients), knowing the total number of patients during the pandemic (34), we could have reverse-calculated the number of patients with Dementia. 
+
+Therefore the algorithm is designed to continue suppressing successively larger groups until the total number of suppressed patients is six or more, such that they cannot be reverse-calculated with reasonable precision. The default option shows the desired behaviour and the most conservative with respect to patient privacy.
+
 ## Customizing output for continuous variables - change number of digits
 
 We can also specify the number of digits to round means or medians to using the `digits` argument.

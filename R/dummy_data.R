@@ -2,7 +2,6 @@
 #' Simulate ICD-10 Diagnosis Codes
 #' @description
 #' This function simulates ICD-10 diagnosis codes at random or by user specified pattern.
-#' @details
 #'
 #' @param n (`integer`)\cr Number of ICD codes to simulate.
 #'

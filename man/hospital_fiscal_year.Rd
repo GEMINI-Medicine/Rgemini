@@ -7,23 +7,33 @@
 hospital_fiscal_year(date_ymd)
 }
 \arguments{
-\item{date_ymd}{a character vector of label of dates or date-times.
-The date value must be in "yyyy-mm-dd" format}
+\item{date_ymd}{(\code{character})\cr
+A character vector of dates or date-times.
+The date value must be in \code{yyyy-mm-dd} format.}
 }
 \value{
-vector with the same number of entries with corresponding fiscal years
-to input dates.
-Possible values of this field is "2010", "2011", "2012" and so on.
+Numeric vector with the same number of entries as input, containing the
+derived fiscal year of all input dates (e.g., 2010, 2011, 2012, and so on).
 }
 \description{
-\code{hospital_fiscal_year} returns the corresponding hospital fiscal years for a set of dates provided.
+\code{hospital_fiscal_year} returns the corresponding hospital fiscal years for a
+set of dates provided.
 }
 \details{
-Hospital fiscal year is defined as April ~ March. For example, in case of 2015-02-25, fiscal year will be 2014.
+Hospital fiscal year is defined as April ~ March. For example, in case of
+2015-02-25, fiscal year will be 2014.
 }
 \section{Warning}{
 
-NA values in returned vector indicates either missing date or
-its format is incorrect, as all dates must be in yyyy-mm-dd format and precede the timestamp.
+NA values in returned vector indicates either missing date or its format is
+incorrect. All dates must be in \code{yyyy-mm-dd} format and precede the timestamp
+(e.g., \verb{yyy-mm-dd hh:mm}).
 }
 
+\examples{
+# Get fiscal year for `discharge_date_time` variable in `ipadmdad` table
+\dontrun{
+ipadmdad$fisc_year <- hospital_fiscal_year(ipadmdad$discharge_date_time)
+}
+
+}

@@ -2,39 +2,50 @@
 % Please edit documentation in R/n_imaging.r
 \name{n_imaging}
 \alias{n_imaging}
-\title{Compute the number of radiology tests}
+\title{Compute the number of radiology tests per encounter}
 \usage{
 n_imaging(
   ipadmdad,
   imaging,
-  dtvar2 = "performed_date_time",
-  mapvar2 = "modality_mapped"
+  dtvar = "performed_date_time",
+  mapvar = "modality_mapped"
 )
 }
 \arguments{
-\item{ipadmdad}{a data.table object equivalent of DRM table "ipadmdad". Table must contain admission id}
+\item{ipadmdad}{(\code{data.table} or \code{data.frame})\cr
+Table equivalent to DRM table "ipadmdad". Must contain \code{genc_id}.}
 
-\item{imaging}{a data.table object equivalent of DRM table "imaging". Table must contain three fields,
-admission id, imaging performed date time and a field that standardizes types of imaging test}
+\item{imaging}{(\code{data.table} or \code{data.frame})\cr
+Table equivalent to DRM table "radiology" as defined in the
+\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+Table must contain three fields: \code{genc_id}, imaging performed date time (see
+\code{dtvar}, in "yyyy-mm-dd hh:mm" format), and a field that standardizes the
+imaging test type (see \code{mapvar}).}
 
-\item{dtvar2}{a character string of label equivalent to "imaging performed date time" in "imaging" table.
-Its value must be in "yyyy-mm-dd hh:mm" format}
+\item{dtvar}{(\code{character})
+Name of the column in \code{imaging} table containing date time of performed
+imaging test (usually \code{"performed_date_time"}).}
 
-\item{mapvar2}{a character string of label that standardizes types of imaging tests}
+\item{mapvar}{(\code{character})
+Name of the column in \code{imaging} table containing the imaging test type
+(usually \code{"modality_mapped"}).}
 }
 \value{
-data.table with the same number of rows with input "ipadmdad" with addtional derived numeric fields labelled as
-"n_img_xray_derived",  "n_img_ct_derived", "n_img_mri_derived",  "n_img_us_derived", "n_img_other_derived", "n_img_int_derived" and
-"n_img_ct_mri_us_derived".
+data.table with the same number of rows as input "ipadmdad", with additional
+derived numeric fields labelled as "n_img_xray_derived",  "n_img_ct_derived",
+"n_img_mri_derived",  "n_img_us_derived", "n_img_other_derived",
+"n_img_int_derived" and "n_img_ct_mri_us_derived".
 }
 \description{
 \code{n_imaging} returns the number of radiology tests for hospital admission.
 }
 \details{
-This function takes a list of admissions and DRM table equivalent of imaging table to generate
-numeric fields counting the number of different radiology tests for each admission.
+This function takes a list of admissions and DRM table equivalent of imaging
+table to generate numeric fields counting the number of different radiology
+tests for each admission.
 
-Imaging table in the database should include field that classifies each test into below 7 categories.
+Imaging table in the database should include field that classifies each test
+into below 7 categories.
 
 \itemize{
 \item{1 : }{X-Ray}
@@ -46,24 +57,27 @@ Imaging table in the database should include field that classifies each test int
 \item{7 : }{Echo (Excluded)}
 }
 
-Therefore, this function should be run after some standardization efforts on imaging table.
-Currently, the number of advanced radiology tests is one of the performance metrics in MyPracticeReport.
-CT, MRI and Ultrasound are considered for this purpose and can be retrieved by one of the resulting fields (n_img_ct_mri_us_derived).
+Therefore, this function should be run after some standardization efforts on
+imaging table (performed by GEMINI team). Currently, the number of advanced
+radiology tests is one of the performance metrics in MyPracticeReport. CT,
+MRI and Ultrasound are considered advance imaging tests, which can be
+retrieved by the derived variable (\code{n_img_ct_mri_us_derived}).
 
-Function automatically removes tests without valid performed date time.
 Any tests being performed in both ED and in-patient settings will be counted.
 }
 \section{Warning}{
 
-Function returns data.table with id field and several numeric fields. By design, function will not return any NA values.
-When one tries to left-join the output of this function with another table (another list of admissions in the left),
-make sure list of admissions (or patient) aligns in both tables
+Function returns data.table with id field and several numeric fields. By
+design, function will not return any NA values. When one tries to left-join
+the output of this function with another table (another list of admissions in
+the left), make sure list of admissions (or patient) aligns in both tables.
 }
 
 \section{Note}{
 
-Function takes required fields labels as input, this was intended not to hardcode variable names
-within the function. When field labels change in database, there is no need to go through the lines to change
-the hardcoded variable names.
+The function takes optional inputs specifying the field label for the
+variables corresponding to date time of the performed imaging test and
+mapped imaging modality, respectively. This is to avoid hardcoding variable
+names within the function in case field labels differ between databases.
 }
 

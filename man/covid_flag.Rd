@@ -38,8 +38,8 @@ using ICD-10-CA U071 and U072 respectively
 A confirmed COVID-19 diagnosis (U071) is coded when
 there is a positive COVID-19 test regardless of the the test type.
 
-A suspected COVID-19 diagnosis (U072) is coded when a
-n encounter is clinically or epidemiological diagnosed
+A suspected COVID-19 diagnosis (U072) is coded when an
+encounter is clinically or epidemiological diagnosed
 but the associated COVID-19 tests are inconclusive,
 not available, or not performed.
 }
@@ -79,8 +79,8 @@ adverse effects in therapeutic use.}
 \section{Warning}{
 
 Function returns data.table with id field and two boolen fields. NA value in
-the output indicates id in the first table is not
-included in the second table.
+the output indicates that the encounter did not have any entry in the
+diagnosis table.
 When one tries to left-join the output of this function with another table
 (another list of admissions in the left),
 make sure list of admissions (or patient) aligns in both tables.
@@ -94,17 +94,18 @@ db_host <- "172.XX.XX.XXX"
 db_port <- 1234
 
 db <- DBI::dbConnect(DBI::dbDriver(db_driver),
-                    dbname = "db",
-                    host = db_host,
-                    port = db_port,
-                    user = db_password("Enter DB credential username"),
-                    password = db_password("Enter DB credential password"))
+  dbname = "db",
+  host = db_host,
+  port = db_port,
+  user = db_password("Enter DB credential username"),
+  password = db_password("Enter DB credential password")
+)
 
-ipadm <- dbGetQuery(db, "select * from admdad") \%>\%  data.table
+ipadm <- dbGetQuery(db, "select * from admdad") \%>\% data.table()
 
-dx <- dbGetQuery(db, "select * from ipdiagnosis") \%>\%  data.table
+dx <- dbGetQuery(db, "select * from ipdiagnosis") \%>\% data.table()
 
-covid <- covid_flag(ipadmdad=ipadm,diagnosis = dx)
+covid <- covid_flag(ipadmdad = ipadm, diagnosis = dx)
 }
 
 }
