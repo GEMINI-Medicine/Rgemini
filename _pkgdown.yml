@@ -34,7 +34,7 @@ reference:
 - title: Dummy Data
   desc: Helper functions designed to produce sample data.
 - contents:
-  - starts_with("dummy")
+  - dummy_diag
   - sample_icd
 - title: Utility Functions
 - contents:

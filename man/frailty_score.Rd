@@ -47,7 +47,7 @@ Historically, scores have been calculated based on partition of ICD-10-CA codes.
 Researchers may want to focus on frailty risk scores based on in-patient (IP) diagnoses because
 emergency department (ED) diagnoses have lower sensitivity/specificity for certain conditions and
 are less reliably filled compared to IP diagnoses. In general, there will be overlap between IP and
-ED diagnosis codes. ED diagnosis codes to compute frailty risk score can be used to evaluate frailty
+ED diagnoses codes. ED diagnoses codes to compute frailty risk score can be used to evaluate frailty
 risk upon admission to IP services.
 
 This function does not differentiate between diagnosis types.

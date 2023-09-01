@@ -20,12 +20,12 @@ test_that("categorical cell suppression works", {
     c(
       "",
       "a" = "32 (84 %)",
-      "b" = "< 6 obs. (suppressed)",
-      "c" = "< 6 obs. (suppressed)",
-      "d" = "< 6 obs. (suppressed)",
-      "e" = "< 6 obs. (suppressed)",
-      "f" = "< 6 obs. (suppressed)",
-      "g" = "< 6 obs. (suppressed)"
+      "b" = "&lt; 6 obs. (suppressed)",
+      "c" = "&lt; 6 obs. (suppressed)",
+      "d" = "&lt; 6 obs. (suppressed)",
+      "e" = "&lt; 6 obs. (suppressed)",
+      "f" = "&lt; 6 obs. (suppressed)",
+      "g" = "&lt; 6 obs. (suppressed)"
       )
     )
 
