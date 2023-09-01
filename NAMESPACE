@@ -44,6 +44,7 @@ import(RPostgreSQL)
 import(data.table, except = c("first", "last", "between", "month", "hour", "quarter", "week", "year", "wday", "second", "minute", "mday", "yday", "isoweek"))
 import(dplyr, except = c("first", "last", "between", "matches"))
 
+import(lubridate)
 import(stddiff)
 import(stringi)
 import(table1)
