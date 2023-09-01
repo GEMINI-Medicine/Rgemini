@@ -2,6 +2,8 @@
 # Rgemini
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/GEMINI-Medicine/Rgemini/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/GEMINI-Medicine/Rgemini/actions/workflows/check-standard.yaml)
+
 <!-- badges: end -->
 
 `Rgemini` (Our GEMINI) is an R package that provides a variety of functions to do data analysis with the [GEMINI](https://www.geminimedicine.ca/) dataset.
@@ -13,7 +15,7 @@ All functions have been developed and tested on the current version of the [GEMI
 `Rgemini` is currently not yet available on CRAN. The development version can be installed from GitHub with the following:
 
 ``` r
-devtools::install_github("GEMINI-Medicine/Rgemini")
+remotes::install_github("GEMINI-Medicine/Rgemini", build_vignettes = TRUE)
 ```
 
 ## Example

@@ -7,7 +7,8 @@ output:
 vignette: >
   %\VignetteIndexEntry{Cell Suppression and Table 1}
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+  \usepackage[utf8]{inputenc}
+
 ---
 
 ```{r, echo = FALSE, message = FALSE}
@@ -51,7 +52,7 @@ age <- rnorm(100, mean = 70, sd = 5)
 
 condition <- sample(
   c("DVT", "CVD", "DM", "Pneumonia", "Dementia"), 
-  size = 100, replace = TRUE, prob = c(0.01, 0.19, 0.4, 0.35, 0.05)
+  size = 100, replace = TRUE, prob = c(0.01, 0.20, 0.4, 0.35, 0.05)
   )
 
 data <- data.frame(gender = gender, exposure = exposure, age = age, condition = condition)
@@ -66,6 +67,7 @@ library(table1)
 
 table1(~ gender + age + condition | exposure, data = data)
 ```
+&nbsp;
 
 Note that patients with particular conditions can be easily identified, sometimes to the precision of the exact patient (such as the patient with DVT pre-pandemic). The goal of this vignette is to show how to protect these patients' privacy.
 
@@ -84,6 +86,19 @@ table1(
   render = render_cell_suppression.default
   )
 ```
+&nbsp;
+
+Important conceptual notes:
+
+1. **True zeros are not suppressed.**
+
+True zeros risk identifying no patient, and therefore we do not hide valuable information that does not bring with it the risk of re-identification.
+
+2. **Cells that originally had 6 or more patients are also suppressed.**
+
+Consider the group of patients in the post-pandemic subgroup. Note that patients with CVD post-pandemic were suppressed even though there were originally seven patients in that subgroup. Why is that? Had we only suppressed patients with DVT (one patient), knowing the total number of patients post-pandemic (37), we could have reverse-calculated the number of patients with DVT (with reasonable precision). 
+
+Therefore the algorithm is designed to continue suppressing successively larger groups until the total number of suppressed patients is six or more, such that they cannot be reverse-calculated with reasonable precision. The default option shows the desired behaviour and the most conservative with respect to patient privacy.
 
 ## Customizing output for continuous variables - change to medians
 
@@ -97,8 +112,20 @@ table1(
   continuous_fn = 'median'
   )
 ```
+&nbsp;
 
-Or we can do this directly by specifying a render function:
+Note however that we can render medians without enabling cell suppression, if desired.
+
+```{r}
+table1(
+  ~ gender + age + condition | exposure, 
+  data = data, 
+  render.continuous = render_median.continuous
+  )
+```
+&nbsp;
+
+We can also specify a render function only for a particular variable type:
 
 ```{r}
 table1(
@@ -108,6 +135,7 @@ table1(
   continuous_fn = 'median'
   )
 ```
+&nbsp;
 
 Important conceptual notes
 
@@ -133,6 +161,7 @@ table1(
   digits = 2
   )
 ```
+&nbsp;
 
 ## Finer control {.tabset}
 
@@ -142,7 +171,7 @@ table1(
 * `render_cell_suppression.continuous()`
 * `render_cell_suppression.discrete()`
 * `render_cell_suppression.missing()`
-* `render_cell_suppression.strata()`
+* `render_cell_suppression.strat()`
 
 We can apply cell suppression directly to covariates of particular data types by supplying these custom renderer functions.
 
@@ -155,6 +184,7 @@ table1(
   render.categorical = render_cell_suppression.categorical
   )
 ```
+&nbsp;
 
 ### Suppress cells with counts fewer than six only
 
@@ -167,6 +197,7 @@ table1(
   render.categorical = render_strict_cell_suppression.categorical
   )
 ```
+&nbsp;
 
 ### Suppress missing values 
 
@@ -180,8 +211,25 @@ table1(
   render.missing = render_cell_suppression.missing
   )
 ```
+&nbsp;
 
-### strategies to suppress continuous variables {.tabset}
+Note that there is an issue here. Although we were able to suppress cells with counts less than six where the gender was missing, it is very obvious what that count should be (i.e. it can be easily reverse calculated). One approach to deal with this is to actually code the missing gender values as a new category for that variable, and apply the more conservative `render_cell_suppression.categorical()`.
+
+```{r}
+levels(data$gender) <- c("M", "F", "Not Available")
+data$gender[is.na(data$gender)] <- "Not Available"
+
+table1(
+  ~ gender + age + condition | exposure, 
+  data = data, 
+  render.categorical = render_cell_suppression.categorical
+  )
+```
+&nbsp;
+
+Although it might not make much practical sense in this case, this approach should be taken for any categorical variable with missing values where we would like to employ the most conservative cell suppression strategy for patient privacy.
+
+### Strategies to suppress continuous variables {.tabset}
 
 It is also possible to suppress continuous variables if desired. See the example below.
 
@@ -198,6 +246,7 @@ continuous_data <- data.frame(
 
 table1(~ age + laps | nobel, data = continuous_data)
 ```
+&nbsp;
 
 #### Suppress continuous variables
 
@@ -210,6 +259,7 @@ table1(
   render.continuous = render_cell_suppression.continuous
   )
 ```
+&nbsp;
 
 Note in this case however, using the strata totals we can reverse-calculate the number of patients, so we suppress the counts in the strata as well using `render_cell_suppression.strat`.
 
@@ -223,6 +273,7 @@ table1(
   render.strat = render_cell_suppression.strat
   )
 ```
+&nbsp;
 
 #### Suppress "Overall" count
 
@@ -237,6 +288,7 @@ table1(
   overall = FALSE
   )
 ```
+&nbsp;
 
 Important conceptual notes:
 
@@ -253,6 +305,7 @@ It can be supplied to `table1` through the `extra.col` argument, which takes a n
 ```{r}
 table1(~ gender + age + condition | exposure, data = data, extra.col = list("Maximum Standardized Mean Difference" = max_pairwise_smd))
 ```
+&nbsp;
 
 # Replicating `table1` functionality
 
@@ -272,6 +325,7 @@ labels <- list(
 strata <- split(data, data$exposure)
 table1(strata, labels = labels)
 ```
+&nbsp;
 
 ### Change strata labels
 
@@ -283,6 +337,7 @@ strata <- split(data, data$exposure)
 
 table1(strata, labels = labels)
 ```
+&nbsp;
 
 ### Add grouping to strata and standardized mean differences
 
@@ -296,6 +351,7 @@ extra_col$`SMD` <- max_pairwise_smd
 
 table1(strata, labels = labels, groupspan = c(2, 1), extra.col = extra_col)
 ```
+&nbsp;
 
 # Putting it all together
 
@@ -307,13 +363,11 @@ table1(
   strata, 
   labels = labels,
   groupspan = c(2, 2),
-  render.categorical = render_strict_cell_suppression.categorical,
-  render.continuous = render_cell_suppression.continuous,
-  render.missing = render_cell_suppression.missing,
-  render.strat = render_cell_suppression.strat,
+  render = render_cell_suppression.default,
   extra.col = list("SMD" = max_pairwise_smd)
   )
 ```
+&nbsp;
 
 # Customization and extending functionality
 

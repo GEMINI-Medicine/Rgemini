@@ -57,7 +57,7 @@ patient) aligns in both tables
 
 This function requires mappings by a Subject Matter Expert to ensure that all
 tests are mapped to
-3019550 - Sodium \link{Moles/volume} in Serum or Plasma, and
-3000963 - Hemoglobin \link{Mass/volume} in Blood
+3019550 - Sodium (Moles/volume) in Serum or Plasma, and
+3000963 - Hemoglobin (Mass/volume) in Blood
 }
 

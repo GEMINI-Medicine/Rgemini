@@ -36,8 +36,8 @@
 #'
 #' This function requires mappings by a Subject Matter Expert to ensure that all
 #' tests are mapped to
-#' 3019550 - Sodium [Moles/volume] in Serum or Plasma, and
-#' 3000963 - Hemoglobin [Mass/volume] in Blood
+#' 3019550 - Sodium (Moles/volume) in Serum or Plasma, and
+#' 3000963 - Hemoglobin (Mass/volume) in Blood
 #'
 #' @param con (`DBIConnection`)\cr
 #' A database connection to any GEMINI Database
@@ -86,7 +86,7 @@ n_routine_bloodwork <- function(con,
     paste0(
       "select genc_id, result_value, test_type_mapped_omop from ",
       lab_table,
-      " where test_type_mapped_omop in ('3019550', '3000963') 
+      " where test_type_mapped_omop in ('3019550', '3000963')
       and genc_id in (select genc_id from temp_data);"
     )
   ) %>%

@@ -1,6 +1,5 @@
 ---
 title: "Daily Census"
-date: "`r Sys.Date()`"
 output:
   html_vignette:
     number_sections: true
