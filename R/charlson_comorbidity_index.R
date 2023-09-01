@@ -20,7 +20,9 @@
 #' @export
 #'
 diagnoses_at_admission <- function(ipdiag, erdiag) {
-  stopifnot(is.data.table(ipdiag) && is.data.table(erdiag))
+
+  ipdiag <- coerce_to_datatable(ipdiag)
+  erdiag <- coerce_to_datatable(erdiag)
 
   ### Synchronize varnames between ipdiag and erdiag
 
