@@ -110,8 +110,8 @@ coerce_to_datatable <- function(data) {
 #' currently uses `grepl("^tablename",drm_table)` to look for table names that
 #' *start with* the same name as specified in DRM (e.g., 'admdad').
 #'
-#' @param db (`DBIConnection`)\cr
-#' RPostgres DB connection
+#' @param dbcon (`DBIConnection`)\cr
+#' A database connection to any GEMINI database.
 #'
 #' @param drm_table (`character`)\cr
 #' Table name to be searched, based on the DRM. Currently only accepts the
@@ -121,6 +121,8 @@ coerce_to_datatable <- function(data) {
 #' - `"ipdiagnosis"`
 #' - `"ipintervention"`
 #' - `"ipcmg"`
+#' - `"transfusion"`
+#' - `"lab`
 #'
 #' Users need to specify the full DRM table name (e.g., `"admdad"` instead of
 #' `"adm"`) to avoid potential confusion with other tables.
@@ -136,37 +138,36 @@ coerce_to_datatable <- function(data) {
 #' @examples
 #' \dontrun{
 #' drv <- dbDriver("PostgreSQL")
-#' db <- DBI::dbConnect(drv,
-#'   dbname = "DB_name",
-#'   host = "172.XX.XX.XXX",
-#'   port = 1234,
-#'   user = getPass("Enter user:"),
-#'   password = getPass("Enter Password:")
-#' )
+#' dbcon <- DBI::dbConnect(drv,
+#'                         dbname = "db",
+#'                         host = "172.XX.XX.XXX",
+#'                         port = 1234,
+#'                         user = getPass("Enter user:"),
+#'                         password = getPass("password"))
 #'
-#' admdad_name <- find_db_tablename(db, "admdad")
+#' admdad_name <- find_db_tablename(dbcon, "admdad")
 #'
 #' # query identified table
-#' admdad <- dbGetQuery(db, paste0("select * from ", admdad_name, ";"))
+#' admdad <- dbGetQuery(dbcon, paste0("select * from ", admdad_name, ";"))
 #' }
 #'
-find_db_tablename <- function(db, drm_table, verbose = TRUE) {
+find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 
   ## Check if table input is supported
-  if (!drm_table %in% c("admdad", "ipdiagnosis", "ipintervention", "ipcmg")) {
+  if (!drm_table %in% c("admdad", "ipdiagnosis", "ipintervention", "ipcmg", "lab", "transfusion")) {
     stop("Invalid user input for argument drm_table.
           Currently, only the following table names are supported:
          'admdad','ipdiagnosis','ipintervention', or 'ipcmg'")
   } else {
 
     ## find any tables in current DB that start with name of DRM table
-    table_name <- unique(dbListTables(db)[grepl(
-      paste0("^", drm_table), dbListTables(db))])
+    table_name <- unique(dbListTables(dbcon)[grepl(
+      paste0("^", drm_table), dbListTables(dbcon))])
   }
 
   ## Check returned value
   # get DB name
-  db_name <- dbGetQuery(db, "SELECT current_database()")$current_database
+  db_name <- dbGetQuery(dbcon, "SELECT current_database()")$current_database
 
   # error if no table found
   if (length(table_name) == 0){
