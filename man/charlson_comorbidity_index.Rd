@@ -2,8 +2,6 @@
 % Please edit documentation in R/charlson_comorbidity_index.R
 \name{charlson_comorbidity_index}
 \alias{charlson_comorbidity_index}
-\alias{admit_charlson_derived}
-\alias{all_charlson_derived}
 \title{Compute Charlson comorbidity index (CCI) score}
 \usage{
 charlson_comorbidity_index(
@@ -12,10 +10,6 @@ charlson_comorbidity_index(
   at_admission = TRUE,
   raw_comorbidities = FALSE
 )
-
-admit_charlson_derived(ipdiag, erdiag)
-
-all_charlson_derived(ipdiag, erdiag)
 }
 \arguments{
 \item{ipdiag}{(\code{data.table})\cr

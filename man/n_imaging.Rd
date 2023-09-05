@@ -5,25 +5,27 @@
 \title{Compute the number of radiology tests per encounter}
 \usage{
 n_imaging(
-  ipadmdad,
+  cohort,
   imaging,
   dtvar = "performed_date_time",
   mapvar = "modality_mapped"
 )
 }
 \arguments{
-\item{ipadmdad}{(\code{data.table} or \code{data.frame})\cr
-Table equivalent to DRM table "ipadmdad". Must contain \code{genc_id}.}
+\item{cohort}{(\code{data.frame} or \code{data.table})
+Cohort table with all relevant encounters of interest, where each row
+corresponds to a single encounter. Must contain GEMINI Encounter ID
+(\code{genc_id}).}
 
 \item{imaging}{(\code{data.table} or \code{data.frame})\cr
 Table equivalent to DRM table "radiology" as defined in the
 \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
-Table must contain three fields: \code{genc_id}, imaging performed date time (see
+Table must contain three fields: \code{genc_id}, imaging performed date-time (see
 \code{dtvar}, in "yyyy-mm-dd hh:mm" format), and a field that standardizes the
 imaging test type (see \code{mapvar}).}
 
 \item{dtvar}{(\code{character})
-Name of the column in \code{imaging} table containing date time of performed
+Name of the column in \code{imaging} table containing date-time of performed
 imaging test (usually \code{"performed_date_time"}).}
 
 \item{mapvar}{(\code{character})
@@ -31,7 +33,7 @@ Name of the column in \code{imaging} table containing the imaging test type
 (usually \code{"modality_mapped"}).}
 }
 \value{
-data.table with the same number of rows as input "ipadmdad", with additional
+data.table with the same number of rows as input "cohort", with additional
 derived numeric fields labelled as "n_img_xray_derived",  "n_img_ct_derived",
 "n_img_mri_derived",  "n_img_us_derived", "n_img_other_derived",
 "n_img_int_derived" and "n_img_ct_mri_us_derived".
@@ -76,7 +78,7 @@ the left), make sure list of admissions (or patient) aligns in both tables.
 \section{Note}{
 
 The function takes optional inputs specifying the field label for the
-variables corresponding to date time of the performed imaging test and
+variables corresponding to date-time of the performed imaging test and
 mapped imaging modality, respectively. This is to avoid hardcoding variable
 names within the function in case field labels differ between databases.
 }

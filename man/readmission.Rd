@@ -5,7 +5,7 @@
 \title{Compute readmission and episodes of care.}
 \usage{
 readmission(
-  db,
+  dbcon,
   elective_admit = TRUE,
   death = TRUE,
   MAID = FALSE,
@@ -19,8 +19,8 @@ readmission(
 )
 }
 \arguments{
-\item{db}{(\code{DBIConnection})\cr
-RPostgres DB connection}
+\item{dbcon}{(\code{DBIConnection})\cr
+A database connection to any GEMINI database.}
 
 \item{elective_admit}{(\code{logical})\cr
 If \code{TRUE} (default), elective episodes of care are not considered to be true readmissions, and are therefore
@@ -70,10 +70,11 @@ If \code{TRUE} (default), episodes of care where the last encounter was self sig
 are removed from the denominator. Specifically, if the (n)th episode of care ended in self-signout/LAMA, it is not
 considered in the readmission calculation (\code{readmit(n) = NA}).}
 
-\item{restricted_cohort}{(\code{data.frame} | \code{data.table})\cr
-User-specified cohort that is a restricted subset of all encounters in the \code{admdad} table (see
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI database schema}). Must
-contain \code{genc_id}. Default is \code{NULL}, which loads the entire \code{admdad} table and is recommended.}
+\item{restricted_cohort}{(\code{data.frame} or \code{data.table})\cr
+User specified cohort that is a restricted subset of all encounters in DRM table "ipadmdad" (see
+\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}).
+Must contain \code{genc_id} as the identifier. Default is \code{Null}, which loads the entire "ipadmdad"
+table in the user-provided database (recommended approach).}
 
 \item{readm_win}{(\code{integer} | \code{vector})\cr
 readmission window(s) of interest, in days (by default: \code{readm_win = c(7,30)} to calculate 7- & 30-day readmission)}
@@ -131,23 +132,21 @@ Warnings are produced if
 }
 
 \examples{
-### Data required to run function without activating any flags
 \dontrun{
 drv <- dbDriver("PostgreSQL")
-db <- DBI::dbConnect(drv,
-  dbname = "DB_name",
-  host = "172.XX.XX.XXX",
-  port = 1234,
-  user = getPass("Enter user:"),
-  password = getPass("Enter Password:")
-)
+dbcon <- DBI::dbConnect(drv,
+                        dbname = "db",
+                        host = "172.XX.XX.XXX",
+                        port = 1234,
+                        user = getPass("Enter user:"),
+                        password = getPass("password"))
 
 ## default readmission calculation (with elective = TRUE & death = TRUE by default)
-readmission(db)
+readmission(dbcon)
 
 ## Readmission calculation following CIHI definition
-readmission(db, elective_admit = TRUE, death = TRUE, MAID = TRUE, palliative = TRUE,
-                chemo = TRUE, mental = TRUE, obstetric = TRUE, signout = TRUE)
+readmission(dbcon, elective_admit = TRUE, death = TRUE, MAID = TRUE, palliative = TRUE,
+                   chemo = TRUE, mental = TRUE, obstetric = TRUE, signout = TRUE)
 
 }
 

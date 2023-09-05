@@ -40,17 +40,16 @@ with a holiday table to flag which dates are holidays/observed holidays.
 \examples{
 \dontrun{
 drv <- dbDriver("PostgreSQL")
-db <- DBI::dbConnect(drv,
-  dbname = "DB_name",
-  host = "172.XX.XX.XXX",
-  port = 1234,
-  user = getPass("Enter user:"),
-  password = getPass("Enter Password:")
-)
+dbcon <- DBI::dbConnect(drv,
+                        dbname = "db",
+                        host = "172.XX.XX.XXX",
+                        port = 1234,
+                        user = getPass("Enter user:"),
+                        password = getPass("password"))
 
 # derive which encounters were discharged on a holiday
-admdad <- dbGetQuery(db, "SELECT discharge_date_time FROM admdad;")
-holidays <- stat_holidays_ON(admdad, "discharge_date_time")
+ipadm <- dbGetQuery(db, "SELECT discharge_date_time FROM admdad;")
+holidays <- stat_holidays_ON(ipadm, "discharge_date_time")
 }
 
 }

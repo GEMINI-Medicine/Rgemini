@@ -5,29 +5,30 @@
 \title{Compute hospital Length of Stay  (LoS)}
 \usage{
 length_of_stay(
-  admdad,
-  admvar1 = "admission_date_time",
-  disvar1 = "discharge_date_time"
+  ipadmdad,
+  adm_dtvar = "admission_date_time",
+  dis_dtvar = "discharge_date_time"
 )
 }
 \arguments{
-\item{admdad}{(\code{data.table} or \code{data.frame})\cr
-Table equivalent to DRM table "ipadmdad" as defined in the
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
-Table must contain three fields: encounter ID (\code{genc_id}), and two date-time
+\item{ipadmdad}{(\code{data.frame} or \code{data.table})\cr
+Table with all relevant encounters of interest from DRM table "ipadmdad" (see
+\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}).
+Must contain three fields: encounter ID (\code{genc_id}), and two date-time
 variables corresponding to admission and discharge (typically
-\code{admission_date_time} and \code{discharge_date_time}).}
+\code{admission_date_time} and \code{discharge_date_time}). Date-time variables must be
+in "yyyy-mm-dd hh:mm" format.}
 
-\item{admvar1}{(\code{character})\cr
-a character string equivalent to "admission date time".
-Must be in "yyyy-mm-dd hh:mm" format.}
+\item{adm_dtvar}{(\code{character})\cr
+Character string defining the column name for admission date-time (typically
+"admission_date_time").}
 
-\item{disvar1}{(\code{character})\cr
-a character string equivalent to "discharge date time".
-Must be in "yyyy-mm-dd hh:mm" format.}
+\item{dis_dtvar}{(\code{character})\cr
+Character string defining the column name for discharge date-time (typically
+"discharge_date_time").}
 }
 \value{
-data.table with the same number of rows as input "admdad", with additional
+data.table with the same number of rows as input "ipadmdad", with additional
 derived numeric fields labelled as "los_hrs_derived" and "los_days_derived".
 }
 \description{
@@ -36,7 +37,7 @@ hours and days.
 }
 \details{
 Length of Stay is defined as the duration of hospital in-patient stay,
-thus, calculated as (discharge date time - admission date time).
+thus, calculated as (\code{discharge_date_time - admission_date_time}).
 It is currently a major patient outcome in various research studies
 and one of the physician performance indicators in MyPracticeReport.
 Researchers might consider a few modifications to this metric.

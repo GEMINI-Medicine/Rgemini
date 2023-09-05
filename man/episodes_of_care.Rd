@@ -4,15 +4,17 @@
 \alias{episodes_of_care}
 \title{Identify episodes of care}
 \usage{
-episodes_of_care(db, restricted_cohort = NULL)
+episodes_of_care(dbcon, restricted_cohort = NULL)
 }
 \arguments{
-\item{db}{(\code{DBIConnection})\cr
-RPostgres DB connection}
+\item{dbcon}{(\code{DBIConnection})\cr
+A database connection to any GEMINI database.}
 
 \item{restricted_cohort}{(\code{data.table} | \code{data.frame})\cr
-User specified cohort that is a restricted subset of all encounters in \code{admdad}. Must contain \code{genc_id} as the
-identifier. Default is \code{Null}, which loads the entire \code{admdad} table in the user-provided database (recommended).}
+User specified cohort that is a restricted subset of all encounters in DRM table "ipadmdad" (see
+\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}).
+Must contain \code{genc_id} as the identifier. Default is \code{Null}, which loads the entire "ipadmdad"
+table in the user-provided database (recommended approach).}
 }
 \value{
 (\code{data.frame})\cr
@@ -76,15 +78,14 @@ concepts is needed for proper use of the function: transfer coded vs. transfer o
 \examples{
 \dontrun{
 drv <- dbDriver("PostgreSQL")
-db <- DBI::dbConnect(drv,
-  dbname = "DB_name",
-  host = "172.XX.XX.XXX",
-  port = 1234,
-  user = getPass("Enter user:"),
-  password = getPass("Enter Password:")
-)
+dbcon <- DBI::dbConnect(drv,
+                        dbname = "db",
+                        host = "172.XX.XX.XXX",
+                        port = 1234,
+                        user = getPass("Enter user:"),
+                        password = getPass("password"))
 
-epicare_table <- episodes_of_care(db)
+epicare_table <- episodes_of_care(dbcon)
 }
 
 }

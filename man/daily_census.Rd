@@ -15,14 +15,14 @@ daily_census(
 )
 }
 \arguments{
-\item{cohort}{(\code{data.frame} | \code{data.table})
-Table containing all encounters of the cohort of interest, including their admission and discharge date-time.
-Needs to contain the following columns:
+\item{cohort}{(\code{data.frame} or \code{data.table})
+Cohort table with all relevant encounters of interest, where each row corresponds to a single encounter.
+Must contain the following columns:
 \itemize{
 \item \code{genc_id} (\code{integer}): GEMINI encounter ID
-\item \code{hospital_num} or \code{hospital_id} (\code{integer} | \code{character}): Hospital ID
-\item \code{admission_date_time} (\code{character}): Date-time of admission of encounter in YYYY-MM-DD HH:MM format
-\item \code{discharge_date_time} (\code{character}): Date-time of discharge of encounter in YYYY-MM-DD HH:MM format
+\item \code{hospital_num} or \code{hospital_id} (\code{integer} or \code{character}): Hospital ID
+\item \code{admission_date_time} (\code{character}): Date-time of admission in YYYY-MM-DD HH:MM format
+\item \code{discharge_date_time} (\code{character}): Date-time of discharge in YYYY-MM-DD HH:MM format
 }
 
 If a \code{group_var} is specified (see below), this should be included in the \code{cohort} table as well.}
@@ -122,8 +122,20 @@ are filtered/grouped based on patient characteristics (e.g., diagnosis, age etc.
 a standardized measure of patient counts, rather than a measure of true capacity limitations of medical wards.
 }
 \examples{
+
+## calculate census of all in-patient admissions (ipadm):
 \dontrun{
-admdad_census <- daily_census(admdad)
+drv <- dbDriver("PostgreSQL")
+dbcon <- DBI::dbConnect(drv,
+                        dbname = "db",
+                        host = "172.XX.XX.XXX",
+                        port = 1234,
+                        user = getPass("Enter user:"),
+                        password = getPass("password"))
+
+ipadm <- dbGetQuery(dbcon, "select * from admdad") \%>\% data.table()
+
+ipadm_census <- daily_census(ipadm)
 }
 
 }
