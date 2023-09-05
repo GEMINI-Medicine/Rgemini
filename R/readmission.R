@@ -143,8 +143,8 @@ readmission <- function(dbcon,
                         restricted_cohort = NULL,
                         readm_win = c(7, 30)) {
 
-  cat("\nThe function may take a few minutes\n")
-
+  cat("\nThis function may take a few minutes to run...\n")
+  
   ### Error message if invalid DB connection
   if (!RPostgreSQL::isPostgresqlIdCurrent(dbcon)) {
     stop("\n Please input a valid database connection")

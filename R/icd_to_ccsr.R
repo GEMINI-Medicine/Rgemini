@@ -261,7 +261,8 @@ icd_to_ccsr <- function(dbcon, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, r
     # i.e., missing/empty type-6/-M diagnosis codes
     missing_mrdx <- dxtable[!genc_id %in% dxtable_final$genc_id, ]
     if (nrow(missing_mrdx) > 0) {
-      warning(paste0("Missing MRDx codes.", length(unique(missing_mrdx$genc_id)),
+      warning(paste0("Missing MRDx codes.
+      ", length(unique(missing_mrdx$genc_id)),
       ' genc_ids in the diagnosis table input do not have any MRDx (type-6 or type-M) diagnosis code.
       These encounters are returned with diagnosis_code = NA and ccsr_default_desc = "Missing diagnosis code".
       Missing MRDx codes may reflect a data quality issue, which should only affect a very small percentage of encounters (<0.01%).'),
