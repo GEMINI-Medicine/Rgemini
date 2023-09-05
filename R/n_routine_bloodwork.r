@@ -39,28 +39,28 @@
 #' 3019550 - Sodium (Moles/volume) in Serum or Plasma, and
 #' 3000963 - Hemoglobin (Mass/volume) in Blood
 #'
-#' @param con (`DBIConnection`)\cr
-#' A database connection to any GEMINI Database
-#' @param ipadmdad (`data.table` or `data.frame`)\cr
-#' Table equivalent to DRM table "ipadmdad". Must contain `genc_id`.
-#' @param lab_table (`character`)\cr
-#' Name of table corresponding to DRM lab table (typically "lab" or
-#' "lab_subset")
+#' @param dbcon (`DBIConnection`)\cr
+#' A database connection to any GEMINI database.
+#' @param cohort (`data.frame` or `data.table`)
+#' Cohort table with all relevant encounters of interest, where each row
+#' corresponds to a single encounter. Must contain GEMINI Encounter ID
+#' (`genc_id`).
 #'
 #' @import RPostgreSQL
 #' @return
-#' data.table object with the same number of rows as input "ipadmdad", with
+#' data.table object with the same number of rows as input "cohort", with
 #' additional derived numeric field labelled as "n_routine_bloodwork_derived"
 #'
 
-n_routine_bloodwork <- function(con,
-                                ipadmdad,
-                                lab_table = "lab") {
-  ipadmdad <- coerce_to_datatable(ipadmdad)
+n_routine_bloodwork <- function(dbcon,
+                                cohort) {
+  cohort <- coerce_to_datatable(cohort)
 
   cat("\n***Note:***
   The output of this function is based on manual mapping of Sodium and Heamoglobin tests by a GEMINI Subject Matter Expert.
   Sodium and Hemoglobin are prioritized and mapped for all encounters. However, please carefully check mapping coverage for your cohort of interest, or contact the GEMINI team if you require additional support.\n")
+
+  cat("\nThis function may take a few minutes to run...\n\n")
 
   startwith.any <- function(x, prefix) {
     mat <- matrix(0, nrow = length(x), ncol = length(prefix))
@@ -71,18 +71,21 @@ n_routine_bloodwork <- function(con,
   }
 
 
-  temp_d_glist <- ipadmdad$genc_id
+  temp_d_glist <- cohort$genc_id
 
   ### query lab table:
-  DBI::dbSendQuery(con, "Drop table if exists temp_data;")
-  DBI::dbWriteTable(con, c("pg_temp", "temp_data"),
-    ipadmdad[, .(genc_id)],
+  DBI::dbSendQuery(dbcon, "Drop table if exists temp_data;")
+  DBI::dbWriteTable(dbcon, c("pg_temp", "temp_data"),
+    cohort[, .(genc_id)],
     row.names = FALSE,
     overwrite = TRUE
   )
 
+  # find table name for lab table
+  lab_table <- find_db_tablename(dbcon, "lab", verbose = FALSE)
+
   lab <- DBI::dbGetQuery(
-    conn = con,
+    conn = dbcon,
     paste0(
       "select genc_id, result_value, test_type_mapped_omop from ",
       lab_table,
@@ -100,7 +103,7 @@ n_routine_bloodwork <- function(con,
 
   ## merge with provided admission list
   res <-
-    merge(ipadmdad[, .(genc_id)],
+    merge(cohort[, .(genc_id)],
       lab,
       by.x = "genc_id",
       by.y = "genc_id",
