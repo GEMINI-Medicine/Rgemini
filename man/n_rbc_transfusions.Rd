@@ -20,10 +20,9 @@ corresponds to a single encounter. Must contain the following columns:
 }
 \value{
 (\code{data.table})\cr
-Table with three columns: \code{genc_id}, \code{n_app_rbc_transfusion_derived}, and
-\code{n_rbc_transfusion_derived}. All
-It will include all rows from the cohort parameter. Any encounter without a
-transfusion will get a 0.
+Table with three columns: \code{genc_id}, \code{n_app_rbc_transfusion_derived} (number
+of appropriate RBC transfusions), and \code{n_rbc_transfusion_derived} (total of
+all RBC transfusions). Encounters without any transfusion will get a 0.
 }
 \description{
 This function calculates the number of appropriate transfusions and total of
@@ -48,5 +47,7 @@ occurring in approximately 2\% of blood transfusions in GEMINI data.
 }
 \note{
 Transfusion data from two hospitals with known data quality issues are
-automatically removed by this function.
+automatically removed by this function. Any \code{genc_ids} from those sites are
+not included in the returned output. When merging the output of this function
+with another table, those \code{genc_ids} should have a value of \code{NA}.
 }
