@@ -27,8 +27,8 @@
 #'  2) the input contains a user-specified restricted cohort, or
 #'  3) more than 25% of episodes of care are removed from the denominator due to the CIHI flags or buffer period.
 #'
-#' @param db (`DBIConnection`)\cr
-#' RPostgres DB connection
+#' @param dbcon (`DBIConnection`)\cr
+#' A database connection to any GEMINI database.
 #' @param elective_admit (`logical`)\cr
 #' If `TRUE` (default), elective episodes of care are not considered to be true readmissions, and are therefore
 #' removed from the numerator. Specifically, if the first encounter of the (n)th episode of care is elective
@@ -69,10 +69,12 @@
 #' If `TRUE` (default), episodes of care where the last encounter was self sign-out/left against medical advice (LAMA)
 #' are removed from the denominator. Specifically, if the (n)th episode of care ended in self-signout/LAMA, it is not
 #' considered in the readmission calculation (`readmit(n) = NA`).
-#' @param restricted_cohort (`data.frame` | `data.table`)\cr
-#' User-specified cohort that is a restricted subset of all encounters in the `admdad` table (see
-#' [GEMINI database schema](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)). Must
-#' contain `genc_id`. Default is `NULL`, which loads the entire `admdad` table and is recommended.
+#' @param restricted_cohort (`data.frame` or `data.table`)\cr
+#' User specified cohort that is a restricted subset of all encounters in DRM table "ipadmdad" (see
+#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
+#' Must contain `genc_id` as the identifier. Default is `Null`, which loads the entire "ipadmdad"
+#' table in the user-provided database (recommended approach).
+#'
 #' @param readm_win (`integer` | `vector`)\cr
 #' readmission window(s) of interest, in days (by default: `readm_win = c(7,30)` to calculate 7- & 30-day readmission)
 #'
@@ -107,23 +109,21 @@
 #' @export
 #'
 #' @examples
-#' ### Data required to run function without activating any flags
 #' \dontrun{
 #' drv <- dbDriver("PostgreSQL")
-#' db <- DBI::dbConnect(drv,
-#'   dbname = "DB_name",
-#'   host = "172.XX.XX.XXX",
-#'   port = 1234,
-#'   user = getPass("Enter user:"),
-#'   password = getPass("Enter Password:")
-#' )
+#' dbcon <- DBI::dbConnect(drv,
+#'                         dbname = "db",
+#'                         host = "172.XX.XX.XXX",
+#'                         port = 1234,
+#'                         user = getPass("Enter user:"),
+#'                         password = getPass("password"))
 #'
 #' ## default readmission calculation (with elective = TRUE & death = TRUE by default)
-#' readmission(db)
+#' readmission(dbcon)
 #'
 #' ## Readmission calculation following CIHI definition
-#' readmission(db, elective_admit = TRUE, death = TRUE, MAID = TRUE, palliative = TRUE,
-#'                 chemo = TRUE, mental = TRUE, obstetric = TRUE, signout = TRUE)
+#' readmission(dbcon, elective_admit = TRUE, death = TRUE, MAID = TRUE, palliative = TRUE,
+#'                    chemo = TRUE, mental = TRUE, obstetric = TRUE, signout = TRUE)
 #'
 #' }
 #'
@@ -131,7 +131,7 @@
 #' @export
 
 
-readmission <- function(db,
+readmission <- function(dbcon,
                         elective_admit = TRUE,
                         death = TRUE,
                         MAID = FALSE,
@@ -143,10 +143,10 @@ readmission <- function(db,
                         restricted_cohort = NULL,
                         readm_win = c(7, 30)) {
 
-  cat("\nThe function may take a few minutes\n")
-
+  cat("\nThis function may take a few minutes to run...\n")
+  
   ### Error message if invalid DB connection
-  if (!RPostgreSQL::isPostgresqlIdCurrent(db)) {
+  if (!RPostgreSQL::isPostgresqlIdCurrent(dbcon)) {
     stop("\n Please input a valid database connection")
   }
 
@@ -177,43 +177,43 @@ readmission <- function(db,
   ############ Derive epicare = episode of care based on transfers ############
   cat("\nDeriving episodes of care ...\n")
   # Note: restricted cohort is the same in episodes_of_care & readmission function
-  epicares <- episodes_of_care(db = db, restricted_cohort = restricted_cohort)
+  epicares <- episodes_of_care(dbcon = dbcon, restricted_cohort = restricted_cohort)
 
   ############ Get additional DB variables ######################
   cat("Querying database ...\n")
 
   # find table corresponding to admdad
-  admdad_name <- find_db_tablename(db, "admdad", verbose = FALSE)
+  admdad_name <- find_db_tablename(dbcon, "admdad", verbose = FALSE)
 
   # find variable name corresponding to hospital identifier (hospital_id/hospital_num)
-  hospital_var <- dbListFields(db, admdad_name)[
-    grepl("hospital_id|hospital_num", dbListFields(db, admdad_name))][1] # if multiple, use first identified variable
+  hospital_var <- dbListFields(dbcon, admdad_name)[
+    grepl("hospital_id|hospital_num", dbListFields(dbcon, admdad_name))][1] # if multiple, use first identified variable
 
-  admdad <- DBI::dbGetQuery(db, paste0(
+  admdad <- DBI::dbGetQuery(dbcon, paste0(
     "select genc_id, ", hospital_var, ", admission_date_time, discharge_date_time, admit_category, discharge_disposition
-    from ", find_db_tablename(db, "admdad", verbose = FALSE),
+    from ", find_db_tablename(dbcon, "admdad", verbose = FALSE),
     " where genc_id in (", paste(as.character(epicares$genc_id), sep = "' '", collapse = ","), ");"
   )) %>% as.data.table()
   data <- merge(admdad, epicares, by = "genc_id") %>% as.data.table()
 
   ## write a temp table to improve querying efficiency
-  DBI::dbSendQuery(db, "Drop table if exists temp_readmission_data;")
-  DBI::dbWriteTable(db, c("pg_temp", "temp_readmission_data"), data[, .(genc_id)], row.names = FALSE, overwrite = TRUE)
+  DBI::dbSendQuery(dbcon, "Drop table if exists temp_readmission_data;")
+  DBI::dbWriteTable(dbcon, c("pg_temp", "temp_readmission_data"), data[, .(genc_id)], row.names = FALSE, overwrite = TRUE)
 
   ## Ipdiagnosis data (if any relevant CIHI flag = TRUE)
   if (any(c(MAID, palliative, chemo, mental, obstetric))) {
-    ipdiagnosis <- DBI::dbGetQuery(db, paste0(
+    ipdiagnosis <- DBI::dbGetQuery(dbcon, paste0(
       "select genc_id, diagnosis_code, diagnosis_type
-      from ", find_db_tablename(db, "ipdiagnosis", verbose = FALSE),
+      from ", find_db_tablename(dbcon, "ipdiagnosis", verbose = FALSE),
       " where genc_id in (select genc_id from temp_readmission_data);"
     )) %>% as.data.table()
   }
 
   ## Ipintervention data (for MAID)
   if (MAID) {
-    ipintervention <- DBI::dbGetQuery(db, paste0(
+    ipintervention <- DBI::dbGetQuery(dbcon, paste0(
       "select genc_id, intervention_code
-      from ", find_db_tablename(db, "ipintervention", verbose = FALSE),
+      from ", find_db_tablename(dbcon, "ipintervention", verbose = FALSE),
       " where intervention_code in ('1ZZ35HAP7','1ZZ35HAP1','1ZZ35HAN3') AND
                                       genc_id in (select genc_id from temp_readmission_data);"
     )) %>% as.data.table()
@@ -221,15 +221,15 @@ readmission <- function(db,
 
   ## Ipcmg data (for mental, see information below)
   if (mental) {
-    ipcmg <- DBI::dbGetQuery(db, paste0(
+    ipcmg <- DBI::dbGetQuery(dbcon, paste0(
       "select  genc_id, cmg
-      from ", find_db_tablename(db, "ipcmg", verbose = FALSE),
+      from ", find_db_tablename(dbcon, "ipcmg", verbose = FALSE),
       " WHERE genc_id in (select genc_id from temp_readmission_data)"
     )) %>% as.data.table()
   }
 
   # Drop temp table after queries
-  DBI::dbSendQuery(db, "Drop table if exists temp_readmission_data;")
+  DBI::dbSendQuery(dbcon, "Drop table if exists temp_readmission_data;")
 
   data <- data[order(patient_id_hashed, discharge_date_time, admission_date_time)]
 

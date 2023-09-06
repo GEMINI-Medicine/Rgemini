@@ -4,12 +4,13 @@
 \alias{frailty_score}
 \title{Compute frailty score using ICD-10-CA}
 \usage{
-frailty_score(ipadmdad, ipdiagnosis, eddiagnosis)
+frailty_score(cohort, ipdiagnosis, eddiagnosis)
 }
 \arguments{
-\item{ipadmdad}{(\code{data.table})
-\code{ipadmdad} table as defined in the \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
-This table must contain the \code{genc_id} field}
+\item{cohort}{(\code{data.frame} or \code{data.table})
+Cohort table with all relevant encounters of interest, where each row
+corresponds to a single encounter. Must contain GEMINI Encounter ID
+(\code{genc_id}).}
 
 \item{ipdiagnosis}{(\code{data.table})
 \code{ipdiagnosis} table as defined in the \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
@@ -23,7 +24,7 @@ The diagnosis codes must be free from any punctuation or special characters.}
 }
 \value{
 \code{data.table}
-This function returns a table with encounters identified by the \code{ipadmdad} table input and
+This function returns a table with all encounters identified by the \code{cohort} table input and
 additional derived numeric fields for \code{ip_frailty_score_derived}, \code{er_frailty_score_derived}
 and \code{frailty_score_derived}
 \itemize{
@@ -62,7 +63,7 @@ Please refer to the references in this page for more details.
 \section{Warning}{
 
 This function returns a \code{data.table} with \code{genc_id} and three numeric fields.
-The function will return NA values if \code{genc_id} in the \code{ipadmdad} table is not found
+The function will return NA values if \code{genc_id} in the \code{cohort} table is not found
 in the \code{ipdiagnosis} or \code{eddiagnosis} tables.
 
 \code{frailty_score_derived} is NA if either \code{ip_frailty_score_derived} or \code{er_frailty_score_derived} are NA.

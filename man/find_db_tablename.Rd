@@ -4,11 +4,11 @@
 \alias{find_db_tablename}
 \title{Find DB table name using regex search.}
 \usage{
-find_db_tablename(db, drm_table, verbose = TRUE)
+find_db_tablename(dbcon, drm_table, verbose = TRUE)
 }
 \arguments{
-\item{db}{(\code{DBIConnection})\cr
-RPostgres DB connection}
+\item{dbcon}{(\code{DBIConnection})\cr
+A database connection to any GEMINI database.}
 
 \item{drm_table}{(\code{character})\cr
 Table name to be searched, based on the DRM. Currently only accepts the
@@ -19,6 +19,8 @@ DBs/datacuts):
 \item \code{"ipdiagnosis"}
 \item \code{"ipintervention"}
 \item \code{"ipcmg"}
+\item \code{"transfusion"}
+\item \code{"lab"}
 }
 
 Users need to specify the full DRM table name (e.g., \code{"admdad"} instead of
@@ -41,25 +43,28 @@ name of interest.
 
 Currently, the function only supports a subset of table names (see below) and
 expects the relevant tables in all databases to only differ based on their
-suffix (e.g., "admdad" vs. "admdad_subset"). Specifically, the function
-currently uses \code{grepl("^tablename",drm_table)} to look for table names that
-\emph{start with} the same name as specified in DRM (e.g., 'admdad').
+suffix (e.g., "admdad" vs. "admdad_subset"). Specifically, for most table
+names, the function uses \code{grepl("^tablename",drm_table)} to look for table
+names that \emph{start with} the same name as specified in DRM (e.g., 'admdad').
+Exceptions are the "lab" and "transfusion" tables. Because there are other
+tables with similar names (e.g., "transfusion_mapping" table), the function
+specifically looks for tables called either "lab"/"transfusion" or
+"lab_subset"/"transfusion_subset" (for HPC datacuts).
 }
 \examples{
 \dontrun{
 drv <- dbDriver("PostgreSQL")
-db <- DBI::dbConnect(drv,
-  dbname = "DB_name",
-  host = "172.XX.XX.XXX",
-  port = 1234,
-  user = getPass("Enter user:"),
-  password = getPass("Enter Password:")
-)
+dbcon <- DBI::dbConnect(drv,
+                        dbname = "db",
+                        host = "172.XX.XX.XXX",
+                        port = 1234,
+                        user = getPass("Enter user:"),
+                        password = getPass("password"))
 
-admdad_name <- find_db_tablename(db, "admdad")
+admdad_name <- find_db_tablename(dbcon, "admdad")
 
 # query identified table
-admdad <- dbGetQuery(db, paste0("select * from ", admdad_name, ";"))
+admdad <- dbGetQuery(dbcon, paste0("select * from ", admdad_name, ";"))
 }
 
 }

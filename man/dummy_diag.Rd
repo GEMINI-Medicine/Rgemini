@@ -74,15 +74,15 @@ Users require specific linkages between these fields should consider customizing
 
 ### Simulate a ipdiagnosis table with ICD-10-CA codes:
 \dontrun{
- drv <- dbDriver("PostgreSQL")
- db <- DBI::dbConnect(drv,
-                          dbname = "db",
-                          host = "172.XX.XX.XXX",
-                          port = 1234,
-                          user = getPass("Enter user:"),
-                          password = getPass("password"))
+drv <- dbDriver("PostgreSQL")
+dbcon <- DBI::dbConnect(drv,
+                        dbname = "db",
+                        host = "172.XX.XX.XXX",
+                        port = 1234,
+                        user = getPass("Enter user:"),
+                        password = getPass("password"))
 
- set.seed(1)
- ipdiag <- dummy_diag(nid=5, nrow=20, ipdiagnosis=T, db=db, source="icd_lookup")}
+set.seed(1)
+ipdiag <- dummy_diag(nid=5, nrow=20, ipdiagnosis=T, dbcon=dbcon, source="icd_lookup")}
 
 }

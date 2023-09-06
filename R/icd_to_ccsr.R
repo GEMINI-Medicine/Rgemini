@@ -17,8 +17,8 @@
 #'
 #' @concept diagnoses, CCSR, ICD-10
 #'
-#' @param db (`DBIConnection`)\cr
-#' RPostgres connection to database
+#' @param dbcon (`DBIConnection`)\cr
+#' A database connection to any GEMINI database.
 #'
 #' @param dxtable (`data.frame` | `data.table`)
 #' Table containing ICD-10-CA diagnosis codes of interest. Typically, this refers to the `ipdiagnosis` table, which
@@ -115,23 +115,32 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' icd_to_ccsr(db, ipdiagnosis)
+#' drv <- dbDriver("PostgreSQL")
+#' dbcon <- DBI::dbConnect(drv,
+#'                         dbname = "db",
+#'                         host = "172.XX.XX.XXX",
+#'                         port = 1234,
+#'                         user = getPass("Enter user:"),
+#'                         password = getPass("password"))
+#'
+#' dxtable <- dbGetQuery(dbcon, "select * from ipdiagnosis") %>% data.table()
+#' icd_to_ccsr(dbcon, dxtable)
 #' }
-icd_to_ccsr <- function(db, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, replace_invalidpdx = TRUE) {
+icd_to_ccsr <- function(dbcon, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, replace_invalidpdx = TRUE) {
 
   cat("\n***Note:***
   The output of this function is based on GEMINI-derived mappings of ICD-10-CA codes to CCSR categories.
   Please carefully check mapping coverage for your cohort of interest, or contact the GEMINI team if you require additional support.\n")
-  
-  
+
+
   cat(paste0(
     "\nObtaining CCSR categories for ICD-10-CA codes in input table ",
     deparse(substitute(dxtable)), "\n "))
 
   #######  Check user inputs  #######
   ## Valid DB connection?
-  if (!isPostgresqlIdCurrent(db)) {
-    stop("Invalid user input for argument db. Please input a valid database connection.")
+  if (!isPostgresqlIdCurrent(dbcon)) {
+    stop("Invalid user input for argument dbcon. Please input a valid database connection.")
   }
 
   ## dxtable provided as data.frame/data.table?
@@ -164,13 +173,13 @@ icd_to_ccsr <- function(db, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, repl
 
   #######  Load relevant lookup tables from DB  #######
   ## ICD-to-CCSR mapping table
-  lookup_icd_to_ccsr <- dbGetQuery(db, "select * from lookup_icd10_ca_to_ccsr; ") %>% as.data.table()
+  lookup_icd_to_ccsr <- dbGetQuery(dbcon, "select * from lookup_icd10_ca_to_ccsr; ") %>% as.data.table()
   ## CCSR category descriptions
-  lookup_ccsr <- dbGetQuery(db, "select * from lookup_ccsr; ") %>%
+  lookup_ccsr <- dbGetQuery(dbcon, "select * from lookup_ccsr; ") %>%
     rename(ccsr_default = ccsr, ccsr_default_desc = ccsr_desc) %>%
     as.data.table()
   ## ICD-10-CA diagnosis code descriptions
-  lookup_icd10_ca <- dbGetQuery(db, "select * from lookup_icd10_ca_description; ") %>%
+  lookup_icd10_ca <- dbGetQuery(dbcon, "select * from lookup_icd10_ca_description; ") %>%
     rename(diagnosis_code_desc = long_description) %>%
     as.data.table()
 
@@ -252,7 +261,8 @@ icd_to_ccsr <- function(db, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, repl
     # i.e., missing/empty type-6/-M diagnosis codes
     missing_mrdx <- dxtable[!genc_id %in% dxtable_final$genc_id, ]
     if (nrow(missing_mrdx) > 0) {
-      warning(paste0("Missing MRDx codes.", length(unique(missing_mrdx$genc_id)),
+      warning(paste0("Missing MRDx codes.
+      ", length(unique(missing_mrdx$genc_id)),
       ' genc_ids in the diagnosis table input do not have any MRDx (type-6 or type-M) diagnosis code.
       These encounters are returned with diagnosis_code = NA and ccsr_default_desc = "Missing diagnosis code".
       Missing MRDx codes may reflect a data quality issue, which should only affect a very small percentage of encounters (<0.01%).'),

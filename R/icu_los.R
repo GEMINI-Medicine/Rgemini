@@ -9,10 +9,10 @@
 #' This function calculates the length of stay (LoS) in hours and days that
 #' an encounter spent in the ICU during a hospital stay.
 #'
-#' It uses DAD fields SCU Admit date/time (Group 13, Field 03/04) and
-#' SCU Discharge date/time (Group 13, Field 05/06) to derive these numeric fields.
+#' It uses DAD fields SCU Admit date-time (Group 13, Field 03/04) and
+#' SCU Discharge date-time (Group 13, Field 05/06) to derive these numeric fields.
 #'
-#' Rows with either of SCU Admit/Discharge date time fields missing,
+#' Rows with either of SCU Admit/Discharge date-time fields missing,
 #' will not be counted in calculation.
 #'
 #' For encounters with multiple ICU visits, the function returns
@@ -32,11 +32,11 @@
 #'
 #' Please refer to the CIHI DAD abstracting manual for more details.
 #'
-#' @param cohort (`data.table`, `data.frame`)\cr
-#' Table containing a cohort of encounters of interest identified by GEMINI Encounter ID (`genc_id`)
-#' See definitions in [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' @param cohort (`data.table` or `data.frame`)\cr
+#' Table with all relevant encounters of interest, where each row corresponds to
+#' a single encounter. Must contain GEMINI Encounter ID (`genc_id`).
 #'
-#' @param ipscu (`data.table`, `data.frame`)\cr
+#' @param ipscu (`data.table` or `data.frame`)\cr
 #' Table equivalent to the `ipscu` table defined in the
 #' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
 #' Table must contain fields:
@@ -115,19 +115,4 @@ icu_los <- function(cohort, ipscu) {
     dplyr::mutate(across(starts_with("icu"), ~ ifelse(is.na(.), 0, .))) # assign 0 to encounters with no ICU visits
 
   return(res)
-}
-
-
-#' @rdname icu_los
-#'
-#' @param ipadmdad (`data.table`, `data.frame`)\cr
-#' Table equivalent to the `admdad` table defined in the
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
-#' Table must contain fields:
-#' GEMINI Encounter ID (`genc_id`) and admission time (`admission_date_time`).
-#'
-#' @export
-#'
-compute_icu_los <- function(ipadmdad, ipscu) {
-  icu_los(cohort=ipadmdad, ipscu)
 }

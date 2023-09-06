@@ -5,7 +5,7 @@
 \title{Identify CCSR categories for ICD-10-CA diagnosis codes}
 \usage{
 icd_to_ccsr(
-  db,
+  dbcon,
   dxtable,
   type_mrdx = TRUE,
   unique_mrdx = FALSE,
@@ -13,8 +13,8 @@ icd_to_ccsr(
 )
 }
 \arguments{
-\item{db}{(\code{DBIConnection})\cr
-RPostgres connection to database}
+\item{dbcon}{(\code{DBIConnection})\cr
+A database connection to any GEMINI database.}
 
 \item{dxtable}{(\code{data.frame} | \code{data.table})
 Table containing ICD-10-CA diagnosis codes of interest. Typically, this refers to the \code{ipdiagnosis} table, which
@@ -122,7 +122,16 @@ carefully read the documentation to understand how exactly invalid PDX categorie
 }
 \examples{
 \dontrun{
-icd_to_ccsr(db, ipdiagnosis)
+drv <- dbDriver("PostgreSQL")
+dbcon <- DBI::dbConnect(drv,
+                        dbname = "db",
+                        host = "172.XX.XX.XXX",
+                        port = 1234,
+                        user = getPass("Enter user:"),
+                        password = getPass("password"))
+
+dxtable <- dbGetQuery(dbcon, "select * from ipdiagnosis") \%>\% data.table()
+icd_to_ccsr(dbcon, dxtable)
 }
 }
 \seealso{

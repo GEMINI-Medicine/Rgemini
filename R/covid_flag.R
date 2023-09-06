@@ -52,62 +52,59 @@
 #' }
 #'
 #' @section Warning:
-#' Function returns data.table with id field and two boolen fields. NA value in
-#' the output indicates that the encounter did not have any entry in the
-#' diagnosis table.
+#' Function returns data.table with `genc_id` field and two boolen fields. NA
+#' value in the output indicates that the encounter did not have any entry in
+#' the diagnosis table.
 #' When one tries to left-join the output of this function with another table
 #' (another list of admissions in the left),
 #' make sure list of admissions (or patient) aligns in both tables.
 #'
-#' @param ipadmdad a data.table object equivalent of DRM table "ipadmdad".
-#' Table must contain field genc_id
-#' @param diagnosis a data.table object equivalent of DRM table "ipdiagnosis".
-#' Table must contain two fields,
-#' genc_id and diagnosis_code (as ICD-10-CA) and the function
-#' handles long format table only
-#' Its value must be free from any special character.
-#' If user wishes to use erdiagnosis instead or in combination with ipdiagnosis,
-#' be sure to rename er_diagnosis_code to diagnosis_code before combining
-#' with ipdiagnosis or input into the function.
+#' @param cohort (`data.frame` or `data.table`)
+#' Cohort table with all relevant encounters of interest, where each row
+#' corresponds to a single encounter. Must contain GEMINI Encounter ID
+#' (`genc_id`).
+#'
+#' @param diagnosis (`data.frame` or `data.table`)
+#' A table equivalent to DRM table "ipdiagnosis".
+#' Must contain two fields: `genc_id` and `diagnosis_code` (as ICD-10-CA). The
+#' function handles long format table only. Diagnosis codes must be free from
+#' any special characters.
+#' If user wishes to use DRM table "erdiagnosis" instead or in combination with
+#' "ipdiagnosis", be sure to rename field `er_diagnosis_code` to
+#' `diagnosis_code`.
 #'
 #' @return
-#' data.table with the same number of rows with input "ipadmdad" with addtional
+#' data.table with the same number of rows as input "cohort" with additional
 #' derived boolean fields labelled as "covid_icd_confirmed_flag"
-#' and "covid_icd_suspected_flag". Possible values are
-#' TRUE, FALSE or NA
+#' and "covid_icd_suspected_flag". Possible values are TRUE, FALSE or NA.
 #' NA indicates that an encounter does not have a diagnosis code
-#' in diagnosis table
+#' in diagnosis table.
 #'
 #' @examples
 #' \dontrun{
-#' db_driver <- "PostgreSQL"
-#' db_password <- getPass::getPass
-#' db_host <- "172.XX.XX.XXX"
-#' db_port <- 1234
+#' drv <- dbDriver("PostgreSQL")
+#' dbcon <- DBI::dbConnect(drv,
+#'                         dbname = "db",
+#'                         host = "172.XX.XX.XXX",
+#'                         port = 1234,
+#'                         user = getPass("Enter user:"),
+#'                         password = getPass("password"))
 #'
-#' db <- DBI::dbConnect(DBI::dbDriver(db_driver),
-#'   dbname = "db",
-#'   host = db_host,
-#'   port = db_port,
-#'   user = db_password("Enter DB credential username"),
-#'   password = db_password("Enter DB credential password")
-#' )
+#' ipadm <- dbGetQuery(dbcon, "select * from admdad") %>% data.table()
 #'
-#' ipadm <- dbGetQuery(db, "select * from admdad") %>% data.table()
+#' dx <- dbGetQuery(dbcon, "select * from ipdiagnosis") %>% data.table()
 #'
-#' dx <- dbGetQuery(db, "select * from ipdiagnosis") %>% data.table()
-#'
-#' covid <- covid_flag(ipadmdad = ipadm, diagnosis = dx)
+#' covid <- covid_flag(cohort = ipadm, diagnosis = dx)
 #' }
 #'
 #' @references
 #' https://www.cihi.ca/en/covid-19-resources/covid-19-data-collection-and-coding-direction
 #'
 #' @export
-covid_flag <- function(ipadmdad,
+covid_flag <- function(cohort,
                        diagnosis) {
   ## remap variable names in case field names change in the database
-  res <- coerce_to_datatable(ipadmdad)[, .(genc_id)]
+  res <- coerce_to_datatable(cohort)[, .(genc_id)]
   res2 <- coerce_to_datatable(diagnosis)[, .(genc_id, diagnosis_code)]
 
   ## flag those with U071 or U072 in any diagnosis type

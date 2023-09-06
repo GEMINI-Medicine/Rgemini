@@ -7,7 +7,7 @@
 #'
 #' @details
 #' Length of Stay is defined as the duration of hospital in-patient stay,
-#' thus, calculated as (discharge date time - admission date time).
+#' thus, calculated as (`discharge_date_time - admission_date_time`).
 #' It is currently a major patient outcome in various research studies
 #' and one of the physician performance indicators in MyPracticeReport.
 #' Researchers might consider a few modifications to this metric.
@@ -26,48 +26,49 @@
 #' discharge date-time variables of interest (by default `admission_date_time`
 #' and `discharge_date_time`).
 #'
-#' @param admdad (`data.table` or `data.frame`)\cr
-#' Table equivalent to DRM table "ipadmdad" as defined in the
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
-#' Table must contain three fields: encounter ID (`genc_id`), and two date-time
+#' @param ipadmdad (`data.frame` or `data.table`)\cr
+#' Table with all relevant encounters of interest from DRM table "ipadmdad" (see
+#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
+#' Must contain three fields: encounter ID (`genc_id`), and two date-time
 #' variables corresponding to admission and discharge (typically
-#' `admission_date_time` and `discharge_date_time`).
+#' `admission_date_time` and `discharge_date_time`). Date-time variables must be
+#'  in "yyyy-mm-dd hh:mm" format.
 #'
-#' @param admvar1 (`character`)\cr
-#' a character string equivalent to "admission date time".
-#' Must be in "yyyy-mm-dd hh:mm" format.
-#' @param disvar1 (`character`)\cr
-#' a character string equivalent to "discharge date time".
-#' Must be in "yyyy-mm-dd hh:mm" format.
+#' @param adm_dtvar (`character`)\cr
+#' Character string defining the column name for admission date-time (typically
+#' "admission_date_time").
 #'
+#' @param dis_dtvar (`character`)\cr
+#' Character string defining the column name for discharge date-time (typically
+#' "discharge_date_time").
 #'
 #' @return
-#' data.table with the same number of rows as input "admdad", with additional
+#' data.table with the same number of rows as input "ipadmdad", with additional
 #' derived numeric fields labelled as "los_hrs_derived" and "los_days_derived".
 #'
 #' @export
-length_of_stay <- function(admdad,
-                           admvar1 = "admission_date_time",
-                           disvar1 = "discharge_date_time") {
+length_of_stay <- function(ipadmdad,
+                           adm_dtvar = "admission_date_time",
+                           dis_dtvar = "discharge_date_time") {
   ## remap variable names in case field names change in the database/users want
   # to use other date-time variables (e.g., entry into palliative care)
-  admdad <- coerce_to_datatable(admdad)
-  res <- admdad[, .(
+  ipadmdad <- coerce_to_datatable(ipadmdad)
+  res <- ipadmdad[, .(
     genc_id,
-    admvar1 = get(admvar1),
-    disvar1 = get(disvar1)
+    adm_dtvar = get(adm_dtvar),
+    dis_dtvar = get(dis_dtvar)
   )]
 
-  res[, ":="(los_hrs_derived = as.numeric(difftime(ymd_hm(disvar1),
-    ymd_hm(admvar1),
+  res[, ":="(los_hrs_derived = as.numeric(difftime(ymd_hm(dis_dtvar),
+    ymd_hm(adm_dtvar),
     units = "hours"
   )),
-  los_days_derived = as.numeric(difftime(ymd_hm(disvar1),
-    ymd_hm(admvar1),
+  los_days_derived = as.numeric(difftime(ymd_hm(dis_dtvar),
+    ymd_hm(adm_dtvar),
     units = "days"
   )),
-  admvar1 = NULL,
-  disvar1 = NULL)][]
+  adm_dtvar = NULL,
+  dis_dtvar = NULL)][]
 
   return(res)
 }

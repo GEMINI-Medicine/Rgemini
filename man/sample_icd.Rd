@@ -4,7 +4,7 @@
 \alias{sample_icd}
 \title{Simulate ICD-10 Diagnosis Codes}
 \usage{
-sample_icd(n = 1, source = "comorbidity", db = NULL, pattern = NULL)
+sample_icd(n = 1, source = "comorbidity", dbcon = NULL, pattern = NULL)
 }
 \arguments{
 \item{n}{(\code{integer})\cr Number of ICD codes to simulate.}
@@ -16,7 +16,8 @@ If \code{source} is \code{icd_lookup}, ICD-10-CA codes will be sampled from the
 \code{lookup_icd10_ca_description} table in the GEMINI database,
 see details in \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.}
 
-\item{db}{RPostgres DB connection Required when \code{source} is \code{icd_lookup}.}
+\item{dbcon}{(\code{DBIConnection})\cr
+A database connection to any GEMINI database. Required when \code{source} is \code{icd_lookup}.}
 
 \item{pattern}{(\code{string})\cr A valid regex expression that specifies the
 desired pattern that the returned ICD codes should be matched with.}
@@ -37,13 +38,13 @@ This function simulates ICD-10 diagnosis codes at random or by user specified pa
 ### Simulate 50 ICD-10-CA codes based on codes found in the `lookup_icd10_ca_description` table
 \dontrun{
 drv <- dbDriver("PostgreSQL")
-db <- DBI::dbConnect(drv,
-                          dbname = "db",
-                          host = "172.XX.XX.XXX",
-                          port = 1234,
-                          user = getPass("Enter user:"),
-                          password = getPass("password"))
-sample_icd(50, source="icd_lookup", db=db)
+dbcon <- DBI::dbConnect(drv,
+                        dbname = "db",
+                        host = "172.XX.XX.XXX",
+                        port = 1234,
+                        user = getPass("Enter user:"),
+                        password = getPass("password"))
+sample_icd(50, source="icd_lookup", dbcon=dbcon)
 }
 
 }

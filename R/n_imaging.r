@@ -38,46 +38,48 @@
 #'
 #' @section Note:
 #' The function takes optional inputs specifying the field label for the
-#' variables corresponding to date time of the performed imaging test and
+#' variables corresponding to date-time of the performed imaging test and
 #' mapped imaging modality, respectively. This is to avoid hardcoding variable
 #' names within the function in case field labels differ between databases.
-#'
-#' @param ipadmdad (`data.table` or `data.frame`)\cr
-#' Table equivalent to DRM table "ipadmdad". Must contain `genc_id`.
+
+#' @param cohort (`data.frame` or `data.table`)
+#' Cohort table with all relevant encounters of interest, where each row
+#' corresponds to a single encounter. Must contain GEMINI Encounter ID
+#' (`genc_id`).
 #' @param imaging (`data.table` or `data.frame`)\cr
 #' Table equivalent to DRM table "radiology" as defined in the
 #' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
-#' Table must contain three fields: `genc_id`, imaging performed date time (see
+#' Table must contain three fields: `genc_id`, imaging performed date-time (see
 #' `dtvar`, in "yyyy-mm-dd hh:mm" format), and a field that standardizes the
 #' imaging test type (see `mapvar`).
 #' @param dtvar (`character`)
-#' Name of the column in `imaging` table containing date time of performed
+#' Name of the column in `imaging` table containing date-time of performed
 #' imaging test (usually `"performed_date_time"`).
 #' @param mapvar (`character`)
 #' Name of the column in `imaging` table containing the imaging test type
 #' (usually `"modality_mapped"`).
 #'
 #' @return
-#' data.table with the same number of rows as input "ipadmdad", with additional
+#' data.table with the same number of rows as input "cohort", with additional
 #' derived numeric fields labelled as "n_img_xray_derived",  "n_img_ct_derived",
 #' "n_img_mri_derived",  "n_img_us_derived", "n_img_other_derived",
 #' "n_img_int_derived" and "n_img_ct_mri_us_derived".
 #'
 #' @export
-n_imaging <- function(ipadmdad,
+n_imaging <- function(cohort,
                       imaging,
                       dtvar = "performed_date_time",
                       mapvar = "modality_mapped") {
-  
+
   cat("\n***Note:***
   The output of this function is based on manual mapping of imaging modalities by a GEMINI Subject Matter Expert.
   Please carefully check mapping coverage for your cohort of interest, or contact the GEMINI team if you require additional support.\n")
-  
+
   ## remap variable names in case field names change in the database
-  ipadmdad <- coerce_to_datatable(ipadmdad)
+  cohort <- coerce_to_datatable(cohort)
   imaging <- coerce_to_datatable(imaging)
 
-  res <- ipadmdad[, .(genc_id)]
+  res <- cohort[, .(genc_id)]
 
   imaging <- imaging[, .(genc_id,
     dtvar = get(dtvar),

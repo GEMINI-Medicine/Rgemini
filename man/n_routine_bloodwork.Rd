@@ -4,21 +4,19 @@
 \alias{n_routine_bloodwork}
 \title{Compute the number of routine bloodwork tests per encounter}
 \usage{
-n_routine_bloodwork(con, ipadmdad, lab_table = "lab")
+n_routine_bloodwork(dbcon, cohort)
 }
 \arguments{
-\item{con}{(\code{DBIConnection})\cr
-A database connection to any GEMINI Database}
+\item{dbcon}{(\code{DBIConnection})\cr
+A database connection to any GEMINI database.}
 
-\item{ipadmdad}{(\code{data.table} or \code{data.frame})\cr
-Table equivalent to DRM table "ipadmdad". Must contain \code{genc_id}.}
-
-\item{lab_table}{(\code{character})\cr
-Name of table corresponding to DRM lab table (typically "lab" or
-"lab_subset")}
+\item{cohort}{(\code{data.frame} or \code{data.table})
+Cohort table with all relevant encounters of interest, where each row
+corresponds to a single encounter. Must contain GEMINI Encounter ID
+(\code{genc_id}).}
 }
 \value{
-data.table object with the same number of rows as input "ipadmdad", with
+data.table object with the same number of rows as input "cohort", with
 additional derived numeric field labelled as "n_routine_bloodwork_derived"
 }
 \description{

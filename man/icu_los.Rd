@@ -2,19 +2,16 @@
 % Please edit documentation in R/icu_los.R
 \name{icu_los}
 \alias{icu_los}
-\alias{compute_icu_los}
 \title{Compute Length of Stay in Intensive Care Unit}
 \usage{
 icu_los(cohort, ipscu)
-
-compute_icu_los(ipadmdad, ipscu)
 }
 \arguments{
-\item{cohort}{(\code{data.table}, \code{data.frame})\cr
-Table containing a cohort of encounters of interest identified by GEMINI Encounter ID (\code{genc_id})
-See definitions in \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.}
+\item{cohort}{(\code{data.table} or \code{data.frame})\cr
+Table with all relevant encounters of interest, where each row corresponds to
+a single encounter. Must contain GEMINI Encounter ID (\code{genc_id}).}
 
-\item{ipscu}{(\code{data.table}, \code{data.frame})\cr
+\item{ipscu}{(\code{data.table} or \code{data.frame})\cr
 Table equivalent to the \code{ipscu} table defined in the
 \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
 Table must contain fields:
@@ -22,12 +19,6 @@ GEMINI Encounter ID (\code{genc_id}),
 SCU admission time (\code{scu_admit_date_time} in "yyyy-mm-dd hh:mm" format),
 SCU discharge time (\code{scu_discharge_date_time} in "yyyy-mm-dd hh:mm" format),
 and SCU number (\code{scu_unit_number}).}
-
-\item{ipadmdad}{(\code{data.table}, \code{data.frame})\cr
-Table equivalent to the \code{admdad} table defined in the
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
-Table must contain fields:
-GEMINI Encounter ID (\code{genc_id}) and admission time (\code{admission_date_time}).}
 }
 \value{
 (\code{data.table})\cr
@@ -42,10 +33,10 @@ during a hospital stay using CIHI Discharge Abstract Database (DAD) fields
 This function calculates the length of stay (LoS) in hours and days that
 an encounter spent in the ICU during a hospital stay.
 
-It uses DAD fields SCU Admit date/time (Group 13, Field 03/04) and
-SCU Discharge date/time (Group 13, Field 05/06) to derive these numeric fields.
+It uses DAD fields SCU Admit date-time (Group 13, Field 03/04) and
+SCU Discharge date-time (Group 13, Field 05/06) to derive these numeric fields.
 
-Rows with either of SCU Admit/Discharge date time fields missing,
+Rows with either of SCU Admit/Discharge date-time fields missing,
 will not be counted in calculation.
 
 For encounters with multiple ICU visits, the function returns

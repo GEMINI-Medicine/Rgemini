@@ -6,8 +6,8 @@
 #' hospital stay using CIHI Discharge Abstract Database (DAD) fields.
 #'
 #' @details
-#' This function uses DAD fields Admission date/time (Group 04 Fields 01/02),
-#' and SCU Admit date/time (Group 13, Field 03/04) to derive boolean fields
+#' This function uses DAD fields Admission date-time (Group 04 Fields 01/02),
+#' and SCU Admit date-time (Group 13, Field 03/04) to derive boolean fields
 #' indicating ICU entries at any time during hospital stay,
 #' and within specified time window since hospital admission.
 #'
@@ -25,11 +25,11 @@
 #'
 #' Please refer to the CIHI DAD abstracting manual for more details.
 #'
-#' @param ipadmdad (`data.table`, `data.frame`)\cr
-#' Table equivalent to the `admdad` table defined in the
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
-#' Table must contain fields:
-#' GEMINI Encounter ID (`genc_id`) and admission time (`admission_date_time`).
+#' @param cohort (`data.table`, `data.frame`)\cr
+#' Cohort table with all relevant encounters of interest, where each row corresponds to
+#' a single encounter. Must contain the following columns:
+#' - `genc_id` (`integer`): GEMINI encounter ID
+#' - `admission_date_time` (`character`): Date-time of admission in YYYY-MM-DD HH:MM format
 #'
 #' @param ipscu (`data.table`, `data.frame`)\cr
 #' Table equivalent to the `ipscu` table defined in the
@@ -42,7 +42,7 @@
 #' By default, `window = c(24, 48, 72)` to calculate ICU entry within 24, 48 or 72 hours since hospital admission.
 #'
 #' @return (`data.table`)\cr
-#' By default, for each encounter in input "ipadmdad" returns the corresponding derived boolean (TRUE/FALSE) fields
+#' By default, for each encounter in input "cohort" returns the corresponding derived boolean (TRUE/FALSE) fields
 #' "icu_entry_derived", "icu_entry_in_24hr_derived", "icu_entry_in_48hr_derived" and "icu_entry_in_72hr_derived".
 #' If user specified time window x hour is used, field "icu_entry_in_xhr_derived" is computed in addition to "icu_entry_derived".
 #'
@@ -56,21 +56,21 @@
 #' @examples
 #' # Default time window 24, 48, 72 hours:
 #' \dontrun{
-#' icu_entry (ipadmdad, ipscu)
+#' icu_entry (cohort, ipscu)
 #' }
 #'
 #' # User specified time window:
 #' \dontrun{
-#' icu_entry (ipadmdad, ipscu, window=12)
+#' icu_entry (cohort, ipscu, window=12)
 #' }
 #'
 
-icu_entry <- function(ipadmdad, ipscu, window = c(24, 48, 72)) {
+icu_entry <- function(cohort, ipscu, window = c(24, 48, 72)) {
   ###### Check user inputs ######
 
   ## table provided as data.frame/data.table
-  if (!any(class(ipadmdad) %in% c("data.frame", "data.table"))) {
-    stop("Invalid user input for ipadmdad. Please provide a data.frame or a data.table.")
+  if (!any(class(cohort) %in% c("data.frame", "data.table"))) {
+    stop("Invalid user input for cohort. Please provide a data.frame or a data.table.")
   }
 
   if (!any(class(ipscu) %in% c("data.frame", "data.table"))) {
@@ -78,8 +78,8 @@ icu_entry <- function(ipadmdad, ipscu, window = c(24, 48, 72)) {
   }
 
   ## table contains required fields
-  if (any(!c("genc_id", "admission_date_time") %in% names(ipadmdad))) {
-    stop("Input ipadmdad table is missing at least one of the required variables.
+  if (any(!c("genc_id", "admission_date_time") %in% names(cohort))) {
+    stop("Input cohort table is missing at least one of the required variables.
           Refer to function documentation for details.")
   }
 
@@ -91,11 +91,11 @@ icu_entry <- function(ipadmdad, ipscu, window = c(24, 48, 72)) {
   ###### Prepare data ######
 
   ## coerce tables to data.table as function uses data.table syntax
-  ipadmdad <- coerce_to_datatable(ipadmdad)
+  cohort <- coerce_to_datatable(cohort)
   ipscu <- coerce_to_datatable(ipscu)
 
   ## subset and format fields used for calculation
-  res <- ipadmdad[, .(genc_id, admission_date_time = lubridate::ymd_hm(admission_date_time))]
+  res <- cohort[, .(genc_id, admission_date_time = lubridate::ymd_hm(admission_date_time))]
   ipscu <- ipscu[, .(genc_id, scu_admit_date_time = lubridate::ymd_hm(scu_admit_date_time), scu_unit_number)]
 
   ## filter out step-down units as they are not considered as icus, and merge in admission date time
@@ -123,12 +123,4 @@ icu_entry <- function(ipadmdad, ipscu, window = c(24, 48, 72)) {
   res[, admission_date_time := NULL][]
 
   return(res)
-}
-
-
-#' @rdname icu_entry
-#' @export
-#'
-compute_icu_entry <- function(ipadmdad, ipscu) {
-  icu_entry(ipadmdad, ipscu, window = c(24, 48, 72))
 }

@@ -57,3 +57,12 @@ readm <- readmission(
 ```
 
 Please review the extensive package documentation and vignettes for detailed examples and sample code.
+
+## Package versions
+
+Different versions of `Rgemini` are released with X.Y.Z. increments following these conventions:
+* `Z`: Patch version, bug fixes, documentation, tests, changing argument defaults, optimizing the internals of a function without affecting the external interface (argument names etc).
+* `Y`: Minor version, new function added, some large changes to existing functions (including even changes to the type and number of arguments).
+* `X`: Major version, change to the underlying DB the code was written for (table and variable names).
+
+Usually we'd accumulate a series of changes on develop and release them all at once on master with a version increment.

@@ -20,7 +20,9 @@
 #' @export
 #'
 diagnoses_at_admission <- function(ipdiag, erdiag) {
-  stopifnot(is.data.table(ipdiag) && is.data.table(erdiag))
+
+  ipdiag <- coerce_to_datatable(ipdiag)
+  erdiag <- coerce_to_datatable(erdiag)
 
   ### Synchronize varnames between ipdiag and erdiag
 
@@ -191,20 +193,4 @@ charlson_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_
   }
 
   return(res)
-}
-
-
-#' @rdname charlson_comorbidity_index
-#' @export
-#'
-admit_charlson_derived <- function(ipdiag, erdiag) {
-  charlson_comorbidity_index(ipdiag, erdiag, at_admission = TRUE)
-}
-
-
-#' @rdname charlson_comorbidity_index
-#' @export
-#'
-all_charlson_derived <- function(ipdiag, erdiag) {
-  charlson_comorbidity_index(ipdiag, erdiag, at_admission = FALSE)
 }
