@@ -20,7 +20,7 @@ reference:
   - length_of_stay
   - n_imaging
   - n_routine_bloodwork
-  - rbc_transfusions
+  - n_rbc_transfusions
 - title: Data Transformation
   desc: These functions aid in querying the data, either by applying filters or mapping values.
 - contents:
