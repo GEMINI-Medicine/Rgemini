@@ -30,7 +30,7 @@ not available, or not performed."><!-- mathjax --><script src="https://cdnjs.clo
     
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -84,37 +84,38 @@ not available, or not performed.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">covid_flag</span><span class="op">(</span><span class="va">ipadmdad</span>, <span class="va">diagnosis</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">covid_flag</span><span class="op">(</span><span class="va">cohort</span>, <span class="va">diagnosis</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>ipadmdad</dt>
-<dd><p>a data.table object equivalent of DRM table "ipadmdad".
-Table must contain field genc_id</p></dd>
+    <dl><dt>cohort</dt>
+<dd><p>(<code>data.frame</code> or <code>data.table</code>)
+Cohort table with all relevant encounters of interest, where each row
+corresponds to a single encounter. Must contain GEMINI Encounter ID
+(<code>genc_id</code>).</p></dd>
 
 
 <dt>diagnosis</dt>
-<dd><p>a data.table object equivalent of DRM table "ipdiagnosis".
-Table must contain two fields,
-genc_id and diagnosis_code (as ICD-10-CA) and the function
-handles long format table only
-Its value must be free from any special character.
-If user wishes to use erdiagnosis instead or in combination with ipdiagnosis,
-be sure to rename er_diagnosis_code to diagnosis_code before combining
-with ipdiagnosis or input into the function.</p></dd>
+<dd><p>(<code>data.frame</code> or <code>data.table</code>)
+A table equivalent to DRM table "ipdiagnosis".
+Must contain two fields: <code>genc_id</code> and <code>diagnosis_code</code> (as ICD-10-CA). The
+function handles long format table only. Diagnosis codes must be free from
+any special characters.
+If user wishes to use DRM table "erdiagnosis" instead or in combination with
+"ipdiagnosis", be sure to rename field <code>er_diagnosis_code</code> to
+<code>diagnosis_code</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>data.table with the same number of rows with input "ipadmdad" with addtional
+<p>data.table with the same number of rows as input "cohort" with additional
 derived boolean fields labelled as "covid_icd_confirmed_flag"
-and "covid_icd_suspected_flag". Possible values are
-TRUE, FALSE or NA
+and "covid_icd_suspected_flag". Possible values are TRUE, FALSE or NA.
 NA indicates that an encounter does not have a diagnosis code
-in diagnosis table</p>
+in diagnosis table.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -149,9 +150,9 @@ adverse effects in therapeutic use.</p></li>
     <h2 id="warning">Warning<a class="anchor" aria-label="anchor" href="#warning"></a></h2>
     
 
-<p>Function returns data.table with id field and two boolen fields. NA value in
-the output indicates that the encounter did not have any entry in the
-diagnosis table.
+<p>Function returns data.table with <code>genc_id</code> field and two boolen fields. NA
+value in the output indicates that the encounter did not have any entry in
+the diagnosis table.
 When one tries to left-join the output of this function with another table
 (another list of admissions in the left),
 make sure list of admissions (or patient) aligns in both tables.</p>
@@ -164,24 +165,19 @@ make sure list of admissions (or patient) aligns in both tables.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span><span class="va">db_driver</span> <span class="op">&lt;-</span> <span class="st">"PostgreSQL"</span></span></span>
-<span class="r-in"><span><span class="va">db_password</span> <span class="op">&lt;-</span> <span class="fu">getPass</span><span class="fu">::</span><span class="va">getPass</span></span></span>
-<span class="r-in"><span><span class="va">db_host</span> <span class="op">&lt;-</span> <span class="st">"172.XX.XX.XXX"</span></span></span>
-<span class="r-in"><span><span class="va">db_port</span> <span class="op">&lt;-</span> <span class="fl">1234</span></span></span>
+<span class="r-in"><span><span class="va">drv</span> <span class="op">&lt;-</span> <span class="fu">dbDriver</span><span class="op">(</span><span class="st">"PostgreSQL"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dbcon</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="va">drv</span>,</span></span>
+<span class="r-in"><span>                        dbname <span class="op">=</span> <span class="st">"db"</span>,</span></span>
+<span class="r-in"><span>                        host <span class="op">=</span> <span class="st">"172.XX.XX.XXX"</span>,</span></span>
+<span class="r-in"><span>                        port <span class="op">=</span> <span class="fl">1234</span>,</span></span>
+<span class="r-in"><span>                        user <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter user:"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                        password <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"password"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">db</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDriver.html" class="external-link">dbDriver</a></span><span class="op">(</span><span class="va">db_driver</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  dbname <span class="op">=</span> <span class="st">"db"</span>,</span></span>
-<span class="r-in"><span>  host <span class="op">=</span> <span class="va">db_host</span>,</span></span>
-<span class="r-in"><span>  port <span class="op">=</span> <span class="va">db_port</span>,</span></span>
-<span class="r-in"><span>  user <span class="op">=</span> <span class="fu">db_password</span><span class="op">(</span><span class="st">"Enter DB credential username"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  password <span class="op">=</span> <span class="fu">db_password</span><span class="op">(</span><span class="st">"Enter DB credential password"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ipadm</span> <span class="op">&lt;-</span> <span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">dbcon</span>, <span class="st">"select * from admdad"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">ipadm</span> <span class="op">&lt;-</span> <span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">db</span>, <span class="st">"select * from admdad"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dx</span> <span class="op">&lt;-</span> <span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">dbcon</span>, <span class="st">"select * from ipdiagnosis"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">dx</span> <span class="op">&lt;-</span> <span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">db</span>, <span class="st">"select * from ipdiagnosis"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">covid</span> <span class="op">&lt;-</span> <span class="fu">covid_flag</span><span class="op">(</span>ipadmdad <span class="op">=</span> <span class="va">ipadm</span>, diagnosis <span class="op">=</span> <span class="va">dx</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">covid</span> <span class="op">&lt;-</span> <span class="fu">covid_flag</span><span class="op">(</span>cohort <span class="op">=</span> <span class="va">ipadm</span>, diagnosis <span class="op">=</span> <span class="va">dx</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

@@ -12,7 +12,7 @@ in hospital based on the CIHI DAD field discharge disposition"><!-- mathjax --><
     
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,10 +63,10 @@ in hospital based on the CIHI DAD field discharge disposition</p>
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>ipadmdad</dt>
-<dd><p>(<code>data.frame</code> | <code>data.table</code>)<br>
-a table equivalent to DRM table "ipadmdad" (see
-<a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI database schema</a>).
-Must contain two fields: <code>genc_id</code> and <code>discharge_disposition</code></p></dd>
+<dd><p>(<code>data.frame</code> or <code>data.table</code>)<br>
+Table with all relevant encounters of interest from DRM table "ipadmdad" (see
+<a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>).
+Must contain two fields: <code>genc_id</code> and <code>discharge_disposition</code>.</p></dd>
 
 
 <dt>suicide</dt>

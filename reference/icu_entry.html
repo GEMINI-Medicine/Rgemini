@@ -12,7 +12,7 @@ hospital stay using CIHI Discharge Abstract Database (DAD) fields."><!-- mathjax
     
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,19 +57,17 @@ hospital stay using CIHI Discharge Abstract Database (DAD) fields.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">icu_entry</span><span class="op">(</span><span class="va">ipadmdad</span>, <span class="va">ipscu</span>, window <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">24</span>, <span class="fl">48</span>, <span class="fl">72</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">compute_icu_entry</span><span class="op">(</span><span class="va">ipadmdad</span>, <span class="va">ipscu</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">icu_entry</span><span class="op">(</span><span class="va">cohort</span>, <span class="va">ipscu</span>, window <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">24</span>, <span class="fl">48</span>, <span class="fl">72</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>ipadmdad</dt>
+    <dl><dt>cohort</dt>
 <dd><p>(<code>data.table</code>, <code>data.frame</code>)<br>
-Table equivalent to the <code>admdad</code> table defined in the
-<a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>.
-Table must contain fields:
-GEMINI Encounter ID (<code>genc_id</code>) and admission time (<code>admission_date_time</code>).</p></dd>
+Cohort table with all relevant encounters of interest, where each row corresponds to
+a single encounter. Must contain the following columns:</p><ul><li><p><code>genc_id</code> (<code>integer</code>): GEMINI encounter ID</p></li>
+<li><p><code>admission_date_time</code> (<code>character</code>): Date-time of admission in YYYY-MM-DD HH:MM format</p></li>
+</ul></dd>
 
 
 <dt>ipscu</dt>
@@ -93,14 +91,14 @@ By default, <code>window = c(24, 48, 72)</code> to calculate ICU entry within 24
 <p>(<code>data.table</code>)<br></p>
 
 
-<p>By default, for each encounter in input "ipadmdad" returns the corresponding derived boolean (TRUE/FALSE) fields
+<p>By default, for each encounter in input "cohort" returns the corresponding derived boolean (TRUE/FALSE) fields
 "icu_entry_derived", "icu_entry_in_24hr_derived", "icu_entry_in_48hr_derived" and "icu_entry_in_72hr_derived".
 If user specified time window x hour is used, field "icu_entry_in_xhr_derived" is computed in addition to "icu_entry_derived".</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>This function uses DAD fields Admission date/time (Group 04 Fields 01/02),
-and SCU Admit date/time (Group 13, Field 03/04) to derive boolean fields
+    <p>This function uses DAD fields Admission date-time (Group 04 Fields 01/02),
+and SCU Admit date-time (Group 13, Field 03/04) to derive boolean fields
 indicating ICU entries at any time during hospital stay,
 and within specified time window since hospital admission.</p>
 <p>By definition in DAD (Group 13, Field 02), SCUs include ICUs and Step-Down Units.
@@ -124,12 +122,12 @@ make sure the list of encounters aligns in both tables</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Default time window 24, 48, 72 hours:</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span><span class="fu">icu_entry</span> <span class="op">(</span><span class="va">ipadmdad</span>, <span class="va">ipscu</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">icu_entry</span> <span class="op">(</span><span class="va">cohort</span>, <span class="va">ipscu</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># User specified time window:</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span><span class="fu">icu_entry</span> <span class="op">(</span><span class="va">ipadmdad</span>, <span class="va">ipscu</span>, window<span class="op">=</span><span class="fl">12</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">icu_entry</span> <span class="op">(</span><span class="va">cohort</span>, <span class="va">ipscu</span>, window<span class="op">=</span><span class="fl">12</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

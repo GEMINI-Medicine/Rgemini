@@ -30,7 +30,7 @@ type_mrdx to FALSE."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/a
     
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -85,7 +85,7 @@ page 13). Users can choose to obtain CCSR categories for all diagnosis types by 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">icd_to_ccsr</span><span class="op">(</span></span>
-<span>  <span class="va">db</span>,</span>
+<span>  <span class="va">dbcon</span>,</span>
 <span>  <span class="va">dxtable</span>,</span>
 <span>  type_mrdx <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  unique_mrdx <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -95,9 +95,9 @@ page 13). Users can choose to obtain CCSR categories for all diagnosis types by 
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>db</dt>
+    <dl><dt>dbcon</dt>
 <dd><p>(<code>DBIConnection</code>)<br>
-RPostgres connection to database</p></dd>
+A database connection to any GEMINI database.</p></dd>
 
 
 <dt>dxtable</dt>
@@ -202,7 +202,16 @@ The vignette provides further context and some example code illustrating how to 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span><span class="fu">icd_to_ccsr</span><span class="op">(</span><span class="va">db</span>, <span class="va">ipdiagnosis</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">drv</span> <span class="op">&lt;-</span> <span class="fu">dbDriver</span><span class="op">(</span><span class="st">"PostgreSQL"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dbcon</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="va">drv</span>,</span></span>
+<span class="r-in"><span>                        dbname <span class="op">=</span> <span class="st">"db"</span>,</span></span>
+<span class="r-in"><span>                        host <span class="op">=</span> <span class="st">"172.XX.XX.XXX"</span>,</span></span>
+<span class="r-in"><span>                        port <span class="op">=</span> <span class="fl">1234</span>,</span></span>
+<span class="r-in"><span>                        user <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter user:"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                        password <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"password"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">dxtable</span> <span class="op">&lt;-</span> <span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">dbcon</span>, <span class="st">"select * from ipdiagnosis"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">icd_to_ccsr</span><span class="op">(</span><span class="va">dbcon</span>, <span class="va">dxtable</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>

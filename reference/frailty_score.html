@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,15 +54,16 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">frailty_score</span><span class="op">(</span><span class="va">ipadmdad</span>, <span class="va">ipdiagnosis</span>, <span class="va">eddiagnosis</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">frailty_score</span><span class="op">(</span><span class="va">cohort</span>, <span class="va">ipdiagnosis</span>, <span class="va">eddiagnosis</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>ipadmdad</dt>
-<dd><p>(<code>data.table</code>)
-<code>ipadmdad</code> table as defined in the <a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>.
-This table must contain the <code>genc_id</code> field</p></dd>
+    <dl><dt>cohort</dt>
+<dd><p>(<code>data.frame</code> or <code>data.table</code>)
+Cohort table with all relevant encounters of interest, where each row
+corresponds to a single encounter. Must contain GEMINI Encounter ID
+(<code>genc_id</code>).</p></dd>
 
 
 <dt>ipdiagnosis</dt>
@@ -86,7 +87,7 @@ The diagnosis codes must be free from any punctuation or special characters.</p>
 <p><code>data.table</code></p>
 
 
-<p>This function returns a table with encounters identified by the <code>ipadmdad</code> table input and
+<p>This function returns a table with all encounters identified by the <code>cohort</code> table input and
 additional derived numeric fields for <code>ip_frailty_score_derived</code>, <code>er_frailty_score_derived</code></p>
 
 
@@ -125,7 +126,7 @@ and the frailty risk score only uses the first three characters of ICD-10.</p>
     
 
 <p>This function returns a <code>data.table</code> with <code>genc_id</code> and three numeric fields.
-The function will return NA values if <code>genc_id</code> in the <code>ipadmdad</code> table is not found
+The function will return NA values if <code>genc_id</code> in the <code>cohort</code> table is not found
 in the <code>ipdiagnosis</code> or <code>eddiagnosis</code> tables.</p>
 <p><code>frailty_score_derived</code> is NA if either <code>ip_frailty_score_derived</code> or <code>er_frailty_score_derived</code> are NA.
 When one tries to left-join the output of this function with another table (another list of admissions in the left),

@@ -12,7 +12,7 @@ hours and days."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/
     
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,46 +58,47 @@ hours and days.</p>
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">length_of_stay</span><span class="op">(</span></span>
-<span>  <span class="va">admdad</span>,</span>
-<span>  admvar1 <span class="op">=</span> <span class="st">"admission_date_time"</span>,</span>
-<span>  disvar1 <span class="op">=</span> <span class="st">"discharge_date_time"</span></span>
+<span>  <span class="va">ipadmdad</span>,</span>
+<span>  adm_dtvar <span class="op">=</span> <span class="st">"admission_date_time"</span>,</span>
+<span>  dis_dtvar <span class="op">=</span> <span class="st">"discharge_date_time"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>admdad</dt>
-<dd><p>(<code>data.table</code> or <code>data.frame</code>)<br>
-Table equivalent to DRM table "ipadmdad" as defined in the
-<a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>.
-Table must contain three fields: encounter ID (<code>genc_id</code>), and two date-time
+    <dl><dt>ipadmdad</dt>
+<dd><p>(<code>data.frame</code> or <code>data.table</code>)<br>
+Table with all relevant encounters of interest from DRM table "ipadmdad" (see
+<a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>).
+Must contain three fields: encounter ID (<code>genc_id</code>), and two date-time
 variables corresponding to admission and discharge (typically
-<code>admission_date_time</code> and <code>discharge_date_time</code>).</p></dd>
+<code>admission_date_time</code> and <code>discharge_date_time</code>). Date-time variables must be
+in "yyyy-mm-dd hh:mm" format.</p></dd>
 
 
-<dt>admvar1</dt>
+<dt>adm_dtvar</dt>
 <dd><p>(<code>character</code>)<br>
-a character string equivalent to "admission date time".
-Must be in "yyyy-mm-dd hh:mm" format.</p></dd>
+Character string defining the column name for admission date-time (typically
+"admission_date_time").</p></dd>
 
 
-<dt>disvar1</dt>
+<dt>dis_dtvar</dt>
 <dd><p>(<code>character</code>)<br>
-a character string equivalent to "discharge date time".
-Must be in "yyyy-mm-dd hh:mm" format.</p></dd>
+Character string defining the column name for discharge date-time (typically
+"discharge_date_time").</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>data.table with the same number of rows as input "admdad", with additional
+<p>data.table with the same number of rows as input "ipadmdad", with additional
 derived numeric fields labelled as "los_hrs_derived" and "los_days_derived".</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Length of Stay is defined as the duration of hospital in-patient stay,
-thus, calculated as (discharge date time - admission date time).
+thus, calculated as (<code>discharge_date_time - admission_date_time</code>).
 It is currently a major patient outcome in various research studies
 and one of the physician performance indicators in MyPracticeReport.
 Researchers might consider a few modifications to this metric.

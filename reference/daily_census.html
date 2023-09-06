@@ -28,7 +28,7 @@ a standardized measure of patient counts, rather than a measure of true capacity
     
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -95,12 +95,12 @@ a standardized measure of patient counts, rather than a measure of true capacity
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>cohort</dt>
-<dd><p>(<code>data.frame</code> | <code>data.table</code>)
-Table containing all encounters of the cohort of interest, including their admission and discharge date-time.
-Needs to contain the following columns:</p><ul><li><p><code>genc_id</code> (<code>integer</code>): GEMINI encounter ID</p></li>
-<li><p><code>hospital_num</code> or <code>hospital_id</code> (<code>integer</code> | <code>character</code>): Hospital ID</p></li>
-<li><p><code>admission_date_time</code> (<code>character</code>): Date-time of admission of encounter in YYYY-MM-DD HH:MM format</p></li>
-<li><p><code>discharge_date_time</code> (<code>character</code>): Date-time of discharge of encounter in YYYY-MM-DD HH:MM format</p></li>
+<dd><p>(<code>data.frame</code> or <code>data.table</code>)
+Cohort table with all relevant encounters of interest, where each row corresponds to a single encounter.
+Must contain the following columns:</p><ul><li><p><code>genc_id</code> (<code>integer</code>): GEMINI encounter ID</p></li>
+<li><p><code>hospital_num</code> or <code>hospital_id</code> (<code>integer</code> or <code>character</code>): Hospital ID</p></li>
+<li><p><code>admission_date_time</code> (<code>character</code>): Date-time of admission in YYYY-MM-DD HH:MM format</p></li>
+<li><p><code>discharge_date_time</code> (<code>character</code>): Date-time of discharge in YYYY-MM-DD HH:MM format</p></li>
 </ul><p>If a <code>group_var</code> is specified (see below), this should be included in the <code>cohort</code> table as well.</p></dd>
 
 
@@ -202,8 +202,20 @@ For any dates inside the buffer period, <code>census</code> and <code>capacity_r
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span><span class="va">admdad_census</span> <span class="op">&lt;-</span> <span class="fu">daily_census</span><span class="op">(</span><span class="va">admdad</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## calculate census of all in-patient admissions (ipadm):</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="va">drv</span> <span class="op">&lt;-</span> <span class="fu">dbDriver</span><span class="op">(</span><span class="st">"PostgreSQL"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dbcon</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="va">drv</span>,</span></span>
+<span class="r-in"><span>                        dbname <span class="op">=</span> <span class="st">"db"</span>,</span></span>
+<span class="r-in"><span>                        host <span class="op">=</span> <span class="st">"172.XX.XX.XXX"</span>,</span></span>
+<span class="r-in"><span>                        port <span class="op">=</span> <span class="fl">1234</span>,</span></span>
+<span class="r-in"><span>                        user <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter user:"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                        password <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"password"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">ipadm</span> <span class="op">&lt;-</span> <span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">dbcon</span>, <span class="st">"select * from admdad"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">ipadm_census</span> <span class="op">&lt;-</span> <span class="fu">daily_census</span><span class="op">(</span><span class="va">ipadm</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

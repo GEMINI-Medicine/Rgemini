@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -55,7 +55,7 @@
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">n_imaging</span><span class="op">(</span></span>
-<span>  <span class="va">ipadmdad</span>,</span>
+<span>  <span class="va">cohort</span>,</span>
 <span>  <span class="va">imaging</span>,</span>
 <span>  dtvar <span class="op">=</span> <span class="st">"performed_date_time"</span>,</span>
 <span>  mapvar <span class="op">=</span> <span class="st">"modality_mapped"</span></span>
@@ -64,23 +64,25 @@
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>ipadmdad</dt>
-<dd><p>(<code>data.table</code> or <code>data.frame</code>)<br>
-Table equivalent to DRM table "ipadmdad". Must contain <code>genc_id</code>.</p></dd>
+    <dl><dt>cohort</dt>
+<dd><p>(<code>data.frame</code> or <code>data.table</code>)
+Cohort table with all relevant encounters of interest, where each row
+corresponds to a single encounter. Must contain GEMINI Encounter ID
+(<code>genc_id</code>).</p></dd>
 
 
 <dt>imaging</dt>
 <dd><p>(<code>data.table</code> or <code>data.frame</code>)<br>
 Table equivalent to DRM table "radiology" as defined in the
 <a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>.
-Table must contain three fields: <code>genc_id</code>, imaging performed date time (see
+Table must contain three fields: <code>genc_id</code>, imaging performed date-time (see
 <code>dtvar</code>, in "yyyy-mm-dd hh:mm" format), and a field that standardizes the
 imaging test type (see <code>mapvar</code>).</p></dd>
 
 
 <dt>dtvar</dt>
 <dd><p>(<code>character</code>)
-Name of the column in <code>imaging</code> table containing date time of performed
+Name of the column in <code>imaging</code> table containing date-time of performed
 imaging test (usually <code>"performed_date_time"</code>).</p></dd>
 
 
@@ -94,7 +96,7 @@ Name of the column in <code>imaging</code> table containing the imaging test typ
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>data.table with the same number of rows as input "ipadmdad", with additional
+<p>data.table with the same number of rows as input "cohort", with additional
 derived numeric fields labelled as "n_img_xray_derived",  "n_img_ct_derived",
 "n_img_mri_derived",  "n_img_us_derived", "n_img_other_derived",
 "n_img_int_derived" and "n_img_ct_mri_us_derived".</p>
@@ -134,7 +136,7 @@ the left), make sure list of admissions (or patient) aligns in both tables.</p>
     
 
 <p>The function takes optional inputs specifying the field label for the
-variables corresponding to date time of the performed imaging test and
+variables corresponding to date-time of the performed imaging test and
 mapped imaging modality, respectively. This is to avoid hardcoding variable
 names within the function in case field labels differ between databases.</p>
     </div>

@@ -12,7 +12,7 @@ during a hospital stay using CIHI Discharge Abstract Database (DAD) fields"><!--
     
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,21 +57,19 @@ during a hospital stay using CIHI Discharge Abstract Database (DAD) fields</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">icu_los</span><span class="op">(</span><span class="va">cohort</span>, <span class="va">ipscu</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">compute_icu_los</span><span class="op">(</span><span class="va">ipadmdad</span>, <span class="va">ipscu</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">icu_los</span><span class="op">(</span><span class="va">cohort</span>, <span class="va">ipscu</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>cohort</dt>
-<dd><p>(<code>data.table</code>, <code>data.frame</code>)<br>
-Table containing a cohort of encounters of interest identified by GEMINI Encounter ID (<code>genc_id</code>)
-See definitions in <a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>.</p></dd>
+<dd><p>(<code>data.table</code> or <code>data.frame</code>)<br>
+Table with all relevant encounters of interest, where each row corresponds to
+a single encounter. Must contain GEMINI Encounter ID (<code>genc_id</code>).</p></dd>
 
 
 <dt>ipscu</dt>
-<dd><p>(<code>data.table</code>, <code>data.frame</code>)<br>
+<dd><p>(<code>data.table</code> or <code>data.frame</code>)<br>
 Table equivalent to the <code>ipscu</code> table defined in the
 <a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>.
 Table must contain fields:
@@ -79,14 +77,6 @@ GEMINI Encounter ID (<code>genc_id</code>),
 SCU admission time (<code>scu_admit_date_time</code> in "yyyy-mm-dd hh:mm" format),
 SCU discharge time (<code>scu_discharge_date_time</code> in "yyyy-mm-dd hh:mm" format),
 and SCU number (<code>scu_unit_number</code>).</p></dd>
-
-
-<dt>ipadmdad</dt>
-<dd><p>(<code>data.table</code>, <code>data.frame</code>)<br>
-Table equivalent to the <code>admdad</code> table defined in the
-<a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>.
-Table must contain fields:
-GEMINI Encounter ID (<code>genc_id</code>) and admission time (<code>admission_date_time</code>).</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -103,9 +93,9 @@ derived numeric fields "icu_los_hrs_derived" and "icu_los_days_derived".</p>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This function calculates the length of stay (LoS) in hours and days that
 an encounter spent in the ICU during a hospital stay.</p>
-<p>It uses DAD fields SCU Admit date/time (Group 13, Field 03/04) and
-SCU Discharge date/time (Group 13, Field 05/06) to derive these numeric fields.</p>
-<p>Rows with either of SCU Admit/Discharge date time fields missing,
+<p>It uses DAD fields SCU Admit date-time (Group 13, Field 03/04) and
+SCU Discharge date-time (Group 13, Field 05/06) to derive these numeric fields.</p>
+<p>Rows with either of SCU Admit/Discharge date-time fields missing,
 will not be counted in calculation.</p>
 <p>For encounters with multiple ICU visits, the function returns
 the sum of the duration of each visit.</p>

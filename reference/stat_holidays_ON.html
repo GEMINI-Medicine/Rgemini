@@ -12,7 +12,7 @@ with a holiday table to flag which dates are holidays/observed holidays."><!-- m
     
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -98,17 +98,16 @@ observed holidays will be returned as separate columns.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span><span class="va">drv</span> <span class="op">&lt;-</span> <span class="fu">dbDriver</span><span class="op">(</span><span class="st">"PostgreSQL"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">db</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="va">drv</span>,</span></span>
-<span class="r-in"><span>  dbname <span class="op">=</span> <span class="st">"DB_name"</span>,</span></span>
-<span class="r-in"><span>  host <span class="op">=</span> <span class="st">"172.XX.XX.XXX"</span>,</span></span>
-<span class="r-in"><span>  port <span class="op">=</span> <span class="fl">1234</span>,</span></span>
-<span class="r-in"><span>  user <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter user:"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  password <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter Password:"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dbcon</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="va">drv</span>,</span></span>
+<span class="r-in"><span>                        dbname <span class="op">=</span> <span class="st">"db"</span>,</span></span>
+<span class="r-in"><span>                        host <span class="op">=</span> <span class="st">"172.XX.XX.XXX"</span>,</span></span>
+<span class="r-in"><span>                        port <span class="op">=</span> <span class="fl">1234</span>,</span></span>
+<span class="r-in"><span>                        user <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter user:"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                        password <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"password"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># derive which encounters were discharged on a holiday</span></span></span>
-<span class="r-in"><span><span class="va">admdad</span> <span class="op">&lt;-</span> <span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">db</span>, <span class="st">"SELECT discharge_date_time FROM admdad;"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">holidays</span> <span class="op">&lt;-</span> <span class="fu">stat_holidays_ON</span><span class="op">(</span><span class="va">admdad</span>, <span class="st">"discharge_date_time"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ipadm</span> <span class="op">&lt;-</span> <span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">db</span>, <span class="st">"SELECT discharge_date_time FROM admdad;"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">holidays</span> <span class="op">&lt;-</span> <span class="fu">stat_holidays_ON</span><span class="op">(</span><span class="va">ipadm</span>, <span class="st">"discharge_date_time"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
