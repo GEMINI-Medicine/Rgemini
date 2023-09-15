@@ -232,15 +232,21 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 #' example, `c(2015, 2019)` generates data from 2015-04-01 to 2019-04-01. 
 #' 
 #' @param plot_hist (`logical`)\cr
-#' Whether or not to plot a histogram of all simulated variables. 
+#' Whether or not to plot a histogram of simulated variables. Plots will also
+#' include some descriptive stats. 
 #'
 #' @return (`data.table`)\cr A data.table object similar to the "ipadmdad" table
 #' containing the following fields:
-#' - 
-#' - 
+#' - `genc_id` (`integer`): GEMINI encounter ID
+#' - `hospital_num` (`integer`): Hospital ID
+#' - `admission_date_time` (`character`): Date-time of admission in YYYY-MM-DD HH:MM format
+#' - `discharge_date_time` (`character`): Date-time of discharge in YYYY-MM-DD HH:MM format
+#' - `age` (`integer`): Patient age
+#' - `gender` (`character`): Patient gender (F/M/O for Female/Male/Other)
 #' - 
 #'
 #' @importFrom sn rsn
+#' @importFrom MCMCpack rdirichlet
 #' @export
 #'
 #' @examples
@@ -311,15 +317,23 @@ dummy_ipadmdad <- function(n = 1000,
   # simulated as random intercept, i.e., different location parameter)
   add_vars <- function(hosp_data) {
     
+    n <- nrow(hosp_data)
+    
     ## AGE 
     # create new age distribution for each hospital where location parameter xi
     # varies to create a random intercept by site
-    age <- age_distr(xi = rnorm(1,95,5))
-    hosp_data$age <- sample(age,nrow(hosp_data),replace=TRUE)
+    age <- age_distr(xi = rnorm(1, 95, 5))
+    hosp_data$age <- sample(age, n, replace=TRUE)
     
+    ## GENDER (F/M/Other)
+    # Proportions similar(-ish) to overall GIM cohort
+    prob <- c(.501, .498, 0.001 + 1e-5) # add small constant to Os to ensure it's not rounded to 0 below
+    # Introduce random hospital-level variability
+    prob <- rdirichlet(1, alpha = prob / 0.005) # 0.005 = level of noise
+    hosp_data$gender <- sample(c("F", "M", "O"), n, replace = TRUE, prob / sum(prob)) # make sure probs add up to 1 (see addition of constant above)
+  
     
-    
-    
+      
     
     
     return(hosp_data)
@@ -352,7 +366,7 @@ dummy_ipadmdad <- function(n = 1000,
   
   
   ## Select relevant output variables
-  data <- data[ , .(genc_id, hospital_num, discharge_date_time, age)]
+  data <- data[ , .(genc_id, hospital_num, discharge_date_time, age, gender)]
 
   
   
