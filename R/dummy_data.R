@@ -203,6 +203,167 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 
 
 #' @title
+#' Simulate ipadmdad data
+#' 
+#' @description
+#' This function creates a dummy dataset with a subset of variables that
+#' are contained in the GEMINI "ipadmdad" table (see details in
+#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
+#' 
+#' The function simulates patient populations that differ across hospitals. That
+#' is, patient characteristics like `age`, `gender`, and `discharge_disposition`
+#' are simulated separately for each hospital, with a different, randomly drawn
+#' distribution mean (i.e., random intercepts).
+#' 
+#' All other variables are simulated independently of each other, i.e., there is
+#' no correlation between patient characteristics (e.g., age and discharge
+#' disposition) that may exist in real data. 
+#'
+#' @param n (`integer`)\cr Total number of encounters (`genc_ids`) to be
+#' simulated.
+#'
+#' @param n_hospitals (`integer`)\cr
+#' Number of hospitals to be simulated. Total number of `genc_ids` will be split
+#' up psuedo-randomly between hospitals to ensure roughly equal sample size at
+#' each hospital.
+#'
+#' @param fisc_years (`numeric`)\cr
+#' A numeric vector containing the time period, specified as fiscal years. For
+#' example, `c(2015, 2019)` generates data from 2015-04-01 to 2019-04-01. 
+#' 
+#' @param plot_hist (`logical`)\cr
+#' Whether or not to plot a histogram of all simulated variables. 
+#'
+#' @return (`data.table`)\cr A data.table object similar to the "ipadmdad" table
+#' containing the following fields:
+#' - 
+#' - 
+#' - 
+#'
+#' @importFrom sn rsn
+#' @export
+#'
+#' @examples
+#' ### Simulate 10,000 encounters from 10 hospitals for 2 years from 2018-2020.
+#' \dontrun{ 
+#' dummy_ipadmdad(10000, n_hospitals = 10, time_period = c(2018, 2020)) }
+#'
+#' 
+#' }
+#'
+dummy_ipadmdad <- function(n = 1000, 
+                           n_hospitals = 10, 
+                           time_period = c(2015, 2023),
+                           plot_hist = TRUE) {
+  
+  
+  ############### CHECKS: Make sure n_encounters is at least n_hospitals * length(fisc_years)
+  
+  ############### PREPARE OUTPUT TABLE ###############
+  ## create all combinations of hospitals and fiscal years
+  hospital_num <- seq(1,n_hospitals,1)
+  year <- seq(time_period[1],time_period[2],1)
+  
+  data <- expand.grid(hospital_num = hospital_num, year = year) %>% data.table()
+  
+  # randomly draw number of encounters per hospital*year combo 
+  # make sure they add up to desired total number of encounters
+  data[ , n := rmultinom(1, n_encounters, rep.int(1 / nrow(data), nrow(data)))]
+  sum(data$n)
+  
+  # blow up row number according to encounter per combo 
+  data <- data[rep(seq(nrow(data)), data$n),]
+  
+  # turn year variable into actual date by randomly drawing date_time
+  add_random_datetime <- function(year) {
+    start_date <- paste0(year, "-04-01 00:00 UTC") # start each fisc year on Apr 1
+    end_date <- paste0(year+1, "-03-31 23:59 UTC")   # end of fisc year
+    
+    random_datetime <- format(as.POSIXct(runif(length(year), as.POSIXct(start_date), as.POSIXct(end_date))), format = "%Y-%m-%d %H:%M") # 
+    return(random_datetime)
+  }
+  
+  data[, discharge_date_time := add_random_datetime(year)]
+  
+  # add genc_id from 1-n
+  data <- data[order(discharge_date_time),]
+  data[ , genc_id := seq(1,nrow(data),1)]
+  
+
+  ############### DEFINE VARIABLE DISTRIBUTIONS ###############
+  ## AGE
+  # create left-skewed distribution, truncated from 18-110
+  age_distr <- function(n=10000, xi=95, omega=30, alpha=-10) {
+    
+    age <- rsn(n, xi, omega, alpha)
+    
+    # truncate at [18, 110]
+    age <- as.integer(age[age >= 18 & age <= 110])
+    
+  }
+
+  
+  
+  
+  ############### ADD VARIABLES CLUSTERED BY HOSPITAL ###############
+  # Any encounter characteristics (e.g., age/gender/discharge disposition) are
+  # simulated as being clustered by hospital (i.e., each hospital will be
+  # simulated as random intercept, i.e., different location parameter)
+  add_vars <- function(hosp_data) {
+    
+    ## AGE 
+    # create new age distribution for each hospital where location parameter xi
+    # varies to create a random intercept by site
+    age <- age_distr(xi = rnorm(1,95,5))
+    hosp_data$age <- sample(age,nrow(hosp_data),replace=TRUE)
+    
+    
+    
+    
+    
+    
+    return(hosp_data)
+  }
+  
+  
+  
+  # note: split data by hospital before running foverlaps to avoid working with massive tables
+  cohort_hospitals <- split(data, data$hospital_num)
+  data_all <- lapply(cohort_hospitals, add_vars#,
+                     #time_period_start = time_period_start,
+                     #time_period_end = time_period_end,
+                     #group_var = group_var,
+                     #scu_exclude = scu_exclude
+  )
+  
+  
+  ##  Combine all
+  data <- do.call(rbind, data_all)
+  
+  
+  
+  
+  ############### PLOT HISTOGRAMS ###############
+  if (plot_hist){
+    
+    
+    
+  }
+  
+  
+  ## Select relevant output variables
+  data <- data[ , .(genc_id, hospital_num, discharge_date_time, age)]
+
+  
+  
+    
+  
+  return(data)
+  
+}
+
+
+#' @title
 #' Dummy ipdiagnosis data
 #'
 #' @description
@@ -238,6 +399,21 @@ NULL
 #'
 #' @keywords internal
 #' @name dummy_ccsr
+#' @docType data
+#'
+NULL
+
+#' @title
+#' Dummy ipadmdad data
+#'
+#' @description
+#' Used to generate a subset of variables from the ipadmdad table. Simulates
+#' clustering by hospital where patient populations have different
+#' characteristics at different sites (i.e., simulated data can be used to test
+#' random intercept models).
+#'
+#' @keywords internal
+#' @name dummy_ipadmdad
 #' @docType data
 #'
 NULL

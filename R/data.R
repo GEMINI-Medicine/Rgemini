@@ -17,3 +17,10 @@ NULL
 #' @name dummy_ccsr
 #' @docType data
 NULL
+
+
+#' Dummy ipadmdad data
+#'
+#' @name dummy_ipadmdad
+#' @docType data
+NULL
