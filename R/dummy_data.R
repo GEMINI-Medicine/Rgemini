@@ -243,10 +243,29 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 #' - `discharge_date_time` (`character`): Date-time of discharge in YYYY-MM-DD HH:MM format
 #' - `age` (`integer`): Patient age
 #' - `gender` (`character`): Patient gender (F/M/O for Female/Male/Other)
-#' - 
+#' - `discharge_disposition`: All valid categories according to DAD abstracting manual 2022-2023 
+#'    - 4: Home with Support/Referral
+#'    - 5: Private Home
+#'    - 8: Cadaveric Donor (does not exist in GEMINI data)
+#'    - 9: Stillbirth (does not exist in GEMINI data)
+#'    - 10: Transfer to Inpatient Care
+#'    - 20: Transfer to ED and Ambulatory Care
+#'    - 30: Transfer to Residential Care
+#'    - 40: Transfer to Group/Supportive Living
+#'    - 90: Transfer to Correctional Facility
+#'    - 61: Absent Without Leave (AWOL
+#'    - 62: Left Against Medical Advice (LAMA
+#'    - 65: Did not Return from Pass/Leave
+#'    - 66: Died While on Pass/Leave
+#'    - 67: Suicide out of Facility (does not exist in GEMINI data)
+#'    - 72: Died in Facility
+#'    - 73: Medical Assistance in Dying (MAID)
+#'    - 74: Suicide in Facility
+#'    
 #'
 #' @importFrom sn rsn
 #' @importFrom MCMCpack rdirichlet
+#' @importFrom lubridate ymd_hm
 #' @export
 #'
 #' @examples
@@ -317,24 +336,36 @@ dummy_ipadmdad <- function(n = 1000,
   # simulated as random intercept, i.e., different location parameter)
   add_vars <- function(hosp_data) {
     
-    n <- nrow(hosp_data)
+    n_enc <- nrow(hosp_data)
     
     ## AGE 
     # create new age distribution for each hospital where location parameter xi
     # varies to create a random intercept by site
     age <- age_distr(xi = rnorm(1, 95, 5))
-    hosp_data$age <- sample(age, n, replace=TRUE)
+    hosp_data[, age := sample(age, n_enc, replace=TRUE)]
     
     ## GENDER (F/M/Other)
     # Proportions similar(-ish) to overall GIM cohort
-    prob <- c(.501, .498, 0.001 + 1e-5) # add small constant to Os to ensure it's not rounded to 0 below
+    prob <- data.table("gender" = c("F", "M", "O"),
+                       "p" = c(.501, .498, 0.001 + 1e-5)) # add small constant to Os to ensure it's not rounded to 0 below
     # Introduce random hospital-level variability
-    prob <- rdirichlet(1, alpha = prob / 0.005) # 0.005 = level of noise
-    hosp_data$gender <- sample(c("F", "M", "O"), n, replace = TRUE, prob / sum(prob)) # make sure probs add up to 1 (see addition of constant above)
+    prob[ , p := t(rdirichlet(1, alpha = prob$p / 0.005))] # 0.005 = level of variability
+    hosp_data[, gender := sample(prob$gender, n_enc, replace = TRUE, prob$p / sum(prob$p))] # make sure probs add up to 1 (see addition of constant above)
   
-    
+    ## DISCHARGE DISPOSITION
+    # Proportions similar(-ish) to overall GIM cohort
+    prob <- data.table("discharge_disposition" = c(4, 5, 8, 9, 10, 20, 30, 40, 61, 62, 65, 66, 67, 72, 73, 74, 90),
+                       "p" = c(.275, .386,  0, 0, .143, 0.002, .045, .040, .001+1e-5, .028, 0.001+1e-5, 0.001+1e-5, 0, .079, .001+1e-5, 0.001+1e-5, .001)) # add small constant to Os to ensure it's not rounded to 0 below
+    # Introduce random hospital-level variability
+    prob[ , p := t(rdirichlet(1, alpha = prob$p / 0.005))] # 0.005 = level of variability
+    hosp_data[, discharge_disposition := as.integer(sample(prob$discharge_disposition, n_enc, replace = TRUE, prob$p / sum(prob$p)))] # make sure probs add up to 1 (see addition of constant above)
       
     
+    ## Simulate LOS to derive ADMISSION_DATE_TIME
+    # create right-skewed distribution with randomly drawn offset by site
+    hosp_data[, los := rsn(n_enc, rnorm(1, 1.02, .05), .2, 10)^10]
+    
+    hosp_data[, admission_date_time := format(as.POSIXct(ymd_hm(discharge_date_time) - ddays(los)), format = "%Y-%m-%d %H:%M")]
     
     return(hosp_data)
   }
@@ -353,42 +384,53 @@ dummy_ipadmdad <- function(n = 1000,
   
   ##  Combine all
   data <- do.call(rbind, data_all)
-  
-  
-  
-  
+
+
   ############### PLOT DESCRIPTIVES ###############
   if (plot){
     
-    fig_age <- ggplot(admdad_dummy, aes(x=age))  +
+    fig_age <- ggplot(data, aes(x=age))  +
       geom_histogram(color = "black", fill = "lightblue", binwidth = 5) + #, binwidth = 5) + 
       scale_x_continuous(breaks = seq(10,110,10)) + 
       labs(title = "Age", subtitle = paste0(
-        "Median = ", median(admdad_dummy$age), 
-        " [Q1 = ", quantile(admdad_dummy$age, 0.25),
-        ", Q3 = ", quantile(admdad_dummy$age, 0.75), "]")) + 
-      theme_minimal(base_size = 12)
+        "Median = ", median(data$age), 
+        " [Q1 = ", quantile(data$age, 0.25),
+        ", Q3 = ", quantile(data$age, 0.75), "]")) + 
+      theme_minimal(base_size = 10)
     
-    
-    fig_gender <- ggplot(admdad_dummy, aes(x=as.factor(gender))) + 
+    fig_gender <- ggplot(data, aes(x=as.factor(gender))) + 
       geom_bar(color = "black", fill = "lightblue") +
-      geom_text(stat = "count", aes(label = scales::percent(..count../sum(..count..))),
-                vjust = -0.2, hjust = 0.5) +
+      geom_text(stat = "count", aes(label = scales::percent(round(..count../sum(..count..), digits = 3))),
+                vjust = -0.2, hjust = 0.5, size = 3) +
       labs(title = "Gender") + xlab("gender") + 
-      theme_minimal(base_size = 12)
+      theme_minimal(base_size = 10)
     
-    fig <- ggarrange(fig_age, fig_gender, ncol = 2, nrow = 2)
+    fig_discharge_disp <- ggplot(data, aes(x=as.factor(discharge_disposition))) + 
+      geom_bar(color = "black", fill = "lightblue") +
+      geom_text(stat = "count", aes(label = scales::percent(round(..count../sum(..count..), digits = 3))),
+                vjust = -0.2, hjust = 0.5, size = 3) +
+      labs(title = "Discharge disposition") + xlab("discharge_disposition") + 
+      theme_minimal(base_size = 10)
+    
+    # re-derive LOS based on discharge-admission date time as sanity check
+    data[, los_days_derived := length_of_stay(data)$los_days_derived]
+    fig_los <- ggplot(data, aes(x=los_days_derived)) + 
+      geom_histogram(color = "black", fill = "lightblue", binwidth = 2.5) +
+      scale_x_continuous(breaks = seq(0,100,10), limits = c(NA, 105)) + 
+      labs(title = "Length of stay (derived)", subtitle = paste0(
+        "Median = ", round(median(data$los_days_derived), digits = 2), 
+        " [Q1 = ", round(quantile(data$los_days_derived, 0.25), digits = 2),
+        ", Q3 = ", round(quantile(data$los_days_derived, 0.75), digits = 2), "]")) + 
+      theme_minimal(base_size = 10)
+    
+    fig <- suppressWarnings(ggarrange(fig_age, fig_gender, fig_discharge_disp, fig_los,
+                     ncol = 2, nrow = 2))
     plot(fig)
     
   }
   
-  
   ## Select relevant output variables
-  data <- data[ , .(genc_id, hospital_num, discharge_date_time, age, gender)]
-
-  
-  
-    
+  data <- data[ , .(genc_id, hospital_num, admission_date_time, discharge_date_time, age, gender, discharge_disposition)]
   
   return(data)
   
