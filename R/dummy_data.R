@@ -231,7 +231,7 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 #' A numeric vector containing the time period, specified as fiscal years. For
 #' example, `c(2015, 2019)` generates data from 2015-04-01 to 2019-04-01. 
 #' 
-#' @param plot_hist (`logical`)\cr
+#' @param plot (`logical`)\cr
 #' Whether or not to plot a histogram of simulated variables. Plots will also
 #' include some descriptive stats. 
 #'
@@ -260,7 +260,7 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 dummy_ipadmdad <- function(n = 1000, 
                            n_hospitals = 10, 
                            time_period = c(2015, 2023),
-                           plot_hist = TRUE) {
+                           plot = TRUE) {
   
   
   ############### CHECKS: Make sure n_encounters is at least n_hospitals * length(fisc_years)
@@ -357,10 +357,28 @@ dummy_ipadmdad <- function(n = 1000,
   
   
   
-  ############### PLOT HISTOGRAMS ###############
-  if (plot_hist){
+  ############### PLOT DESCRIPTIVES ###############
+  if (plot){
+    
+    fig_age <- ggplot(admdad_dummy, aes(x=age))  +
+      geom_histogram(color = "black", fill = "lightblue", binwidth = 5) + #, binwidth = 5) + 
+      scale_x_continuous(breaks = seq(10,110,10)) + 
+      labs(title = "Age", subtitle = paste0(
+        "Median = ", median(admdad_dummy$age), 
+        " [Q1 = ", quantile(admdad_dummy$age, 0.25),
+        ", Q3 = ", quantile(admdad_dummy$age, 0.75), "]")) + 
+      theme_minimal(base_size = 12)
     
     
+    fig_gender <- ggplot(admdad_dummy, aes(x=as.factor(gender))) + 
+      geom_bar(color = "black", fill = "lightblue") +
+      geom_text(stat = "count", aes(label = scales::percent(..count../sum(..count..))),
+                vjust = -0.2, hjust = 0.5) +
+      labs(title = "Gender") + xlab("gender") + 
+      theme_minimal(base_size = 12)
+    
+    fig <- ggarrange(fig_age, fig_gender, ncol = 2, nrow = 2)
+    plot(fig)
     
   }
   
