@@ -431,7 +431,7 @@ dummy_ipadmdad <- function(n = 1000,
   }
   
   ## Select relevant output variables
-  data <- data[ , .(genc_id, hospital_num, admission_date_time, discharge_date_time, age, gender, discharge_disposition)]
+  data <- data[order(genc_id), .(genc_id, hospital_num, admission_date_time, discharge_date_time, age, gender, discharge_disposition)]
   
   return(data)
   
