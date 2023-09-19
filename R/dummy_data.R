@@ -262,10 +262,11 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 #'    - 73: Medical Assistance in Dying (MAID)
 #'    - 74: Suicide in Facility
 #'    
-#'
+#' @import ggplot2
 #' @importFrom sn rsn
 #' @importFrom MCMCpack rdirichlet
 #' @importFrom lubridate ymd_hm
+#' @importFrom ggpubr ggarrange
 #' @export
 #'
 #' @examples
@@ -483,8 +484,8 @@ NULL
 #' @description
 #' Used to generate a subset of variables from the ipadmdad table. Simulates
 #' clustering by hospital where patient populations have different
-#' characteristics at different sites (i.e., simulated data can be used to test
-#' random intercept models).
+#' characteristics at different sites (i.e., function can be used to simulate
+#' data for random intercept models).
 #'
 #' @keywords internal
 #' @name dummy_ipadmdad
