@@ -51,6 +51,8 @@
 #' data.table object with the same number of rows as input "cohort", with
 #' additional derived numeric field labelled as "n_routine_bloodwork_derived"
 #'
+#' @export
+#' 
 
 n_routine_bloodwork <- function(dbcon,
                                 cohort) {
