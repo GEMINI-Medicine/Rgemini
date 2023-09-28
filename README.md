@@ -18,6 +18,8 @@ All functions have been developed and tested on the current version of the [GEMI
 remotes::install_github("GEMINI-Medicine/Rgemini", build_vignettes = TRUE)
 ```
 
+If installing `Rgemini` from the GEMINI HPC environment, simply call `install.packages("Rgemini")`.
+ 
 ## Example
 
 Most functions require access to the GEMINI database. With access, the functions can be used as follows:
@@ -61,6 +63,7 @@ Please review the extensive package documentation and vignettes for detailed exa
 ## Package versions
 
 Different versions of `Rgemini` are released with X.Y.Z. increments following these conventions:
+
 * `Z`: Patch version, bug fixes, documentation, tests, changing argument defaults, optimizing the internals of a function without affecting the external interface (argument names etc).
 * `Y`: Minor version, new function added, some large changes to existing functions (including even changes to the type and number of arguments).
 * `X`: Major version, change to the underlying DB the code was written for (table and variable names).
