@@ -1,3 +1,8 @@
+# Rgemini 0.3.0
+
+* Exports `n_rbc_transfusion` function.
+* Adds installation instructions for GEMINI HPC.
+
 # Rgemini 0.2.0
 
 * Small bug fixes in `n_imaging` and `n_rbc_transfusion`
