@@ -58,7 +58,7 @@ readm <- readmission(
 )
 ```
 
-Please review the extensive package documentation and vignettes for detailed examples and sample code.
+Please review the extensive [package documentation](https://gemini-medicine.github.io/Rgemini/) and vignettes for detailed examples and sample code.
 
 ## Package versions
 
@@ -69,3 +69,9 @@ Different versions of `Rgemini` are released with X.Y.Z. increments following th
 * `X`: Major version, change to the underlying DB the code was written for (table and variable names).
 
 Usually we'd accumulate a series of changes on develop and release them all at once on master with a version increment.
+
+## Citation
+
+If you find `Rgemini` useful, please cite it in your publications using `citation("Rgemini")`:
+
+> The GEMINI team (2023). Rgemini: R Functions for GEMINI Data. R package version 0.3.0. https://gemini-medicine.github.io/Rgemini/
