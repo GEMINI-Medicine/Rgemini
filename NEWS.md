@@ -2,6 +2,7 @@
 
 * Exports `n_rbc_transfusion` function.
 * Adds installation instructions for GEMINI HPC.
+* Tested on GEMINI Data Repository v2.1.2
 
 # Rgemini 0.2.0
 
