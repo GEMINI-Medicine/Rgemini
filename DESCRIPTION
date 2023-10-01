@@ -22,9 +22,12 @@ Imports:
     stringr, 
     table1, 
     tidyr, 
-    timeDate
+	tidyselect,
+    timeDate,
 Suggests: 
     ggplot2,
+	ggthemes,
+	grid,
     kableExtra,
     knitr,
     rmarkdown,
