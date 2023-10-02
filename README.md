@@ -18,7 +18,17 @@ All functions have been developed by the GEMINI team and were tested on the curr
 remotes::install_github("GEMINI-Medicine/Rgemini", build_vignettes = TRUE)
 ```
 
+### HPC4Health
+
 If installing `Rgemini` from the GEMINI HPC4Health environment, simply call `install.packages("Rgemini")`.
+
+If your `R` script has a dependency on `Rgemini` and you would like to run this script with `Slurm`, please point your library call to the local folder under which `Rgemini` was installed.
+
+For example:
+
+```r
+library(Rgemini, lib.loc = "$HOME/R/x86_64-pc-linux-gnu-library/4.1")
+```
  
 ## Example
 
