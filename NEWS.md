@@ -1,3 +1,6 @@
+# Pre-release
+* Fixes `find_db_tablename` and `readmission` for DBs with foreign data wrappers
+
 # Rgemini 0.3.0
 
 * Exports `n_rbc_transfusion` function.

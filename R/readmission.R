@@ -144,7 +144,7 @@ readmission <- function(dbcon,
                         readm_win = c(7, 30)) {
 
   cat("\nThis function may take a few minutes to run...\n")
-  
+
   ### Error message if invalid DB connection
   if (!RPostgreSQL::isPostgresqlIdCurrent(dbcon)) {
     stop("\n Please input a valid database connection")
@@ -186,8 +186,8 @@ readmission <- function(dbcon,
   admdad_name <- find_db_tablename(dbcon, "admdad", verbose = FALSE)
 
   # find variable name corresponding to hospital identifier (hospital_id/hospital_num)
-  hospital_var <- dbListFields(dbcon, admdad_name)[
-    grepl("hospital_id|hospital_num", dbListFields(dbcon, admdad_name))][1] # if multiple, use first identified variable
+  admdad_cols <- dbGetQuery(dbcon, paste0("SELECT column_name FROM information_schema.columns WHERE table_name = '", admdad_name,"';")) %>% data.table()
+  hospital_var <- admdad_cols[column_name %in% c("hospital_id","hospital_num")]$column_name[1] # if multiple, use first identified variable
 
   admdad <- DBI::dbGetQuery(dbcon, paste0(
     "select genc_id, ", hospital_var, ", admission_date_time, discharge_date_time, admit_category, discharge_disposition

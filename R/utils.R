@@ -107,7 +107,7 @@ coerce_to_datatable <- function(data) {
 #' Currently, the function only supports a subset of table names (see below) and
 #' expects the relevant tables in all databases to only differ based on their
 #' suffix (e.g., "admdad" vs. "admdad_subset"). Specifically, for most table
-#' names, the function uses `grepl("^tablename",drm_table)` to look for table
+#' names, the function uses `grepl("^tablename", drm_table)` to look for table
 #' names that *start with* the same name as specified in DRM (e.g., 'admdad').
 #' Exceptions are the "lab" and "transfusion" tables. Because there are other
 #' tables with similar names (e.g., "transfusion_mapping" table), the function
@@ -161,21 +161,35 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
   if (!drm_table %in% c("admdad", "ipdiagnosis", "ipintervention", "ipcmg", "lab", "transfusion")) {
     stop("Invalid user input for argument drm_table.
           Currently, only the following table names are supported:
-         'admdad','ipdiagnosis','ipintervention', or 'ipcmg'")
-  } else {
+         'admdad', 'ipdiagnosis', 'ipintervention', 'ipcmg', 'lab', or 'transfusion'")
+  }
 
-    ## for lab & transfusion table table:
+
+  ## Define search criteria based on table name
+  if (drm_table %in% c("lab","transfusion")) {
+    # for lab & transfusion table table:
     # check for specific table names lab/lab_subset and transfusion/transfusion_subset
     # (otherwise, lab/transfusion_mapping or other tables might be returned)
-    if (drm_table %in% c("lab","transfusion")) {
-      table_name <- unique(dbListTables(dbcon)[dbListTables(dbcon) %in% c(drm_table,paste0(drm_table,"subset"))])
-    } else { # for all other tables, do simple grepl search based on first characters
-      ## find any tables in current DB that start with name of DRM table
-      table_name <- unique(dbListTables(dbcon)[grepl(
-        paste0("^", drm_table), dbListTables(dbcon))])
-    }
-
+    search <- 'table_name <- table_names[table_names %in% c(drm_table, paste0(drm_table, "subset"))]'
+  } else {
+    # for all other tables, simply search for names starting with search term
+    search <- 'table_name <- table_names[grepl(paste0("^", drm_table), table_names)]'
   }
+
+  ## Find all table names and run search as defined above
+  table_names <- dbListTables(dbcon)
+  eval(parse(text = search))
+
+  ## If none found, might be due to DB versions with foreign data wrappers
+  #  In that case try this:
+  if (length(table_name) == 0){
+    table_names <- dbGetQuery(dbcon, "SELECT table_name from information_schema.tables
+                                      WHERE table_type='FOREIGN' and table_schema='public';")$table_name
+    eval(parse(text = search))
+  }
+
+  ## Get unique value (some DBs have duplicate table names)
+  table_name <- unique(table_name)
 
   ## Check returned value
   # get DB name
