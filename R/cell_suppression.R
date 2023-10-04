@@ -181,8 +181,8 @@ render_cell_suppression.default <- function(
 #' A categorical variable to summarize.
 #'
 #' @param ... \cr
-#' Optionally accept a named `digits` argument which specifies the number of digits to
-#' round percentages to.
+#' Optionally accept a named `digits` (`integer`) or `single_level_binary` (`logical`) argument
+#' which specifiesthe number of digits to round percentages to.
 #'
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
@@ -286,8 +286,8 @@ render_cell_suppression.categorical <- function(x, ...) {
 #' A categorical variable to summarize.
 #'
 #' @param ... \cr
-#' Optionally accept a named `digits` argument which specifies the number of digits to
-#' round percentages to.
+#' Optionally accept a named `digits` (`integer`) or `single_level_binary` (`logical`) argument
+#' which specifiesthe number of digits to round percentages to.
 #'
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
