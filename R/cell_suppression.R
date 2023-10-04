@@ -180,6 +180,10 @@ render_cell_suppression.default <- function(
 #' @param x (`character` or `factor`)\cr
 #' A categorical variable to summarize.
 #'
+#' @param ... \cr
+#' Optionally accept a named `digits` argument which specifies the number of digits to
+#' round percentages to.
+#'
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
 #'
@@ -211,7 +215,15 @@ render_cell_suppression.default <- function(
 #'
 #' render_cell_suppression.categorical(z)
 #'
-render_cell_suppression.categorical <- function(x) {
+render_cell_suppression.categorical <- function(x, ...) {
+  args <- list(...)
+
+  if (!is.null(args$digits)) {
+    output_format <- paste0("%d (%0.", args$digits, "f%%)")
+  } else {
+    output_format <- "%d (%0.1f%%)"
+  }
+
   contents <- vapply(
     stats.default(x),
     function(y) with(y, c(frequency = FREQ, pct = PCT)),
@@ -231,7 +243,7 @@ render_cell_suppression.categorical <- function(x) {
       transmute(
         summary = ifelse(
           frequency < 6 & frequency != 0, "&lt; 6 obs. (suppressed)",
-          sprintf("%d (%0.0f %%)", frequency, pct)
+          sprintf(output_format, frequency, pct)
         )
       )
   } else if (levels_w_fewer_than_6_obs > 0) {
@@ -240,16 +252,20 @@ render_cell_suppression.categorical <- function(x) {
       mutate(id = row_number()) %>%
       arrange(-frequency) %>%
       mutate(remainder = sum(frequency) - cumsum(frequency)) %>%
-      mutate(summary = ifelse(((frequency < 6) | (remainder < 6)) & frequency != 0, "(suppressed)", sprintf("%d (%0.0f %%)", frequency, pct))) %>%
+      mutate(summary = ifelse(((frequency < 6) | (remainder < 6)) & frequency != 0, "(suppressed)", sprintf(output_format, frequency, pct))) %>%
       arrange(id) %>%
       select(summary)
   } else {
     contents <- contents %>%
-      transmute(summary = sprintf("%d (%0.0f %%)", frequency, pct))
+      transmute(summary = sprintf(output_format, frequency, pct))
   }
 
   res <- t(contents) %>% as.character()
   names(res) <- colnames(t(contents))
+
+  if (!is.null(args$single_level_binary) && args$single_level_binary) {
+    res <- res[1]
+  }
 
   return(c("", res))
 }
@@ -264,6 +280,10 @@ render_cell_suppression.categorical <- function(x) {
 #'
 #' @param x (`character` or `factor`)\cr
 #' A categorical variable to summarize.
+#'
+#' @param ... \cr
+#' Optionally accept a named `digits` argument which specifies the number of digits to
+#' round percentages to.
 #'
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
@@ -295,7 +315,15 @@ render_cell_suppression.categorical <- function(x) {
 #'
 #' render_strict_cell_suppression.categorical(z)
 #'
-render_strict_cell_suppression.categorical <- function(x) {
+render_strict_cell_suppression.categorical <- function(x, ...) {
+  args <- list(...)
+
+  if (!is.null(args$digits)) {
+    output_format <- paste0("%d (%0.", args$digits, "f%%)")
+  } else {
+    output_format <- "%d (%0.1f%%)"
+  }
+
   contents <- vapply(
     stats.default(x),
     function(y) with(y, c(frequency = FREQ, pct = PCT)),
@@ -308,12 +336,16 @@ render_strict_cell_suppression.categorical <- function(x) {
     transmute(
       summary = ifelse(
         (frequency < 6) & (frequency != 0), "&lt; 6 obs. (suppressed)",
-        sprintf("%d (%0.0f %%)", frequency, pct)
+        sprintf(output_format, frequency, pct)
       )
     )
 
   res <- t(contents) %>% as.character()
   names(res) <- colnames(t(contents))
+
+  if (!is.null(args$single_level_binary) && args$single_level_binary) {
+    res <- res[1]
+  }
 
   return(c("", res))
 }
