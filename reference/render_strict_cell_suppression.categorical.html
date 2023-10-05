@@ -12,7 +12,7 @@ from the more conservative logic of render_cell_suppression.categorical()."><!--
     
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -82,14 +82,14 @@ A categorical variable to summarize.</p></dd>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"a"</span>, times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">)</span><span class="op">)</span>, <span class="st">"b"</span><span class="op">)</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">render_strict_cell_suppression.categorical</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                     a </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                         ""                "32 (97 %)" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                         ""               "32 (97.0%)" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                          b </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> "&amp;lt; 6 obs. (suppressed)" </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">x2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"a"</span>, times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">render_strict_cell_suppression.categorical</span><span class="op">(</span><span class="va">x2</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                         a            b </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           "" "32 (100 %)"    "0 (0 %)" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                           a             b </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            "" "32 (100.0%)"    "0 (0.0%)" </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"a"</span>, times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">)</span><span class="op">)</span>, <span class="st">"b"</span>, <span class="st">"c"</span>, <span class="st">"d"</span>, <span class="st">"e"</span>, <span class="st">"f"</span>, <span class="st">"g"</span><span class="op">)</span>,</span></span>
@@ -97,7 +97,7 @@ A categorical variable to summarize.</p></dd>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">render_strict_cell_suppression.categorical</span><span class="op">(</span><span class="va">y</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                     a </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                         ""                "32 (84 %)" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                         ""               "32 (84.2%)" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                          b                          c </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> "&amp;lt; 6 obs. (suppressed)" "&amp;lt; 6 obs. (suppressed)" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                          d                          e </span>
@@ -117,11 +117,11 @@ A categorical variable to summarize.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">render_strict_cell_suppression.categorical</span><span class="op">(</span><span class="va">z</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                     a </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                         ""               "100 (63 %)" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                         ""              "100 (62.9%)" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                          b                          c </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                "50 (31 %)"                  "7 (4 %)" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>               "50 (31.4%)"                 "7 (4.4%)" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                          d                          e </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> "&amp;lt; 6 obs. (suppressed)"                  "0 (0 %)" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> "&amp;lt; 6 obs. (suppressed)"                 "0 (0.0%)" </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
