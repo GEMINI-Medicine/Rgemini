@@ -164,28 +164,34 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
          'admdad', 'ipdiagnosis', 'ipintervention', 'ipcmg', 'lab', or 'transfusion'")
   }
 
+  ## Define search criteria for different tables
+  search_fn <- function(table_names, table = drm_table) {
 
-  ## Define search criteria based on table name
-  if (drm_table %in% c("lab","transfusion")) {
-    # for lab & transfusion table table:
-    # check for specific table names lab/lab_subset and transfusion/transfusion_subset
-    # (otherwise, lab/transfusion_mapping or other tables might be returned)
-    search <- 'table_name <- table_names[table_names %in% c(drm_table, paste0(drm_table, "subset"))]'
-  } else {
-    # for all other tables, simply search for names starting with search term
-    search <- 'table_name <- table_names[grepl(paste0("^", drm_table), table_names)]'
+    if (drm_table %in% c("lab", "transfusion")) {
+      # for lab & transfusion table table:
+      # check for specific table names lab/lab_subset and transfusion/transfusion_subset
+      # (otherwise, lab/transfusion_mapping or other tables might be returned)
+      res <- table_names[table_names %in% c(table, paste0(table, "subset"))]
+
+    } else {
+      # for all other tables, simply search for names starting with search term
+      res <- table_names[grepl(paste0("^", drm_table), table_names)]
+    }
+
+    return(res)
   }
 
+
   ## Find all table names and run search as defined above
-  table_names <- dbListTables(dbcon)
-  eval(parse(text = search))
+  tables <- dbListTables(dbcon)
+  table_name <- search_fn(tables)
 
   ## If none found, might be due to DB versions with foreign data wrappers
   #  In that case try this:
   if (length(table_name) == 0){
-    table_names <- dbGetQuery(dbcon, "SELECT table_name from information_schema.tables
-                                      WHERE table_type='FOREIGN' and table_schema='public';")$table_name
-    eval(parse(text = search))
+    tables <- dbGetQuery(dbcon, "SELECT table_name from information_schema.tables
+                                 WHERE table_type='FOREIGN' and table_schema='public';")$table_name
+    table_name <- search_fn(tables)
   }
 
   ## Get unique value (some DBs have duplicate table names)
