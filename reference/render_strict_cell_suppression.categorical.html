@@ -57,7 +57,7 @@ from the more conservative logic of <code><a href="render_cell_suppression.categ
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">render_strict_cell_suppression.categorical</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">render_strict_cell_suppression.categorical</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -65,6 +65,12 @@ from the more conservative logic of <code><a href="render_cell_suppression.categ
     <dl><dt>x</dt>
 <dd><p>(<code>character</code> or <code>factor</code>)<br>
 A categorical variable to summarize.</p></dd>
+
+
+<dt>...</dt>
+<dd><p><br>
+Optionally accept a named <code>digits</code> (<code>integer</code>) or <code>single_level_binary</code> (<code>logical</code>) argument
+which specifiesthe number of digits to round percentages to.</p></dd>
 
 </dl></div>
     <div class="section level2">
