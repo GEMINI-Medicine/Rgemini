@@ -204,36 +204,44 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 
 #' @title
 #' Simulate ipadmdad data
-#' 
+#'
 #' @description
 #' This function creates a dummy dataset with a subset of variables that
 #' are contained in the GEMINI "ipadmdad" table (see details in
 #' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
-#' 
+#'
+#' The simulated patient characteristics returned by this function are
+#' currently: Age, gender, discharge disposition, length of stay (based on
+#' discharge - admission date-time), and transfer to an alternate level of care
+#' (ALC).
+#' The distribution of these simulated variables roughly mimic the real
+#' distribution of each variable observed in the GIM cohort from 2015-2022
+#' (based on `drm_cleandb_v2`). However, note that all variables are simulated
+#' independently of each other, i.e., there is no correlation between patient
+#' variables (e.g., age and discharge disposition) that may exist in real data.
+#' One exception to this is `number_of_alc_days`, which is only > 0 for entries
+#' where `alc_service_transfer_flag == TRUE` and the length of ALC is capped at
+#' the total length of stay.
+#'
 #' The function simulates patient populations that differ across hospitals. That
-#' is, patient characteristics like `age`, `gender`, and `discharge_disposition`
-#' are simulated separately for each hospital, with a different, randomly drawn
-#' distribution mean (i.e., random intercepts).
-#' 
-#' All other variables are simulated independently of each other, i.e., there is
-#' no correlation between patient characteristics (e.g., age and discharge
-#' disposition) that may exist in real data. 
+#' is, patient characteristics are simulated separately for each hospital, with
+#' a different, randomly drawn distribution mean (i.e., random intercepts).
 #'
 #' @param n (`integer`)\cr Total number of encounters (`genc_ids`) to be
 #' simulated.
 #'
 #' @param n_hospitals (`integer`)\cr
 #' Number of hospitals to be simulated. Total number of `genc_ids` will be split
-#' up psuedo-randomly between hospitals to ensure roughly equal sample size at
+#' up pseudo-randomly between hospitals to ensure roughly equal sample size at
 #' each hospital.
 #'
 #' @param fisc_years (`numeric`)\cr
 #' A numeric vector containing the time period, specified as fiscal years. For
-#' example, `c(2015, 2019)` generates data from 2015-04-01 to 2019-04-01. 
-#' 
+#' example, `c(2015, 2019)` generates data from 2015-04-01 to 2019-04-01.
+#'
 #' @param plot (`logical`)\cr
 #' Whether or not to plot a histogram of simulated variables. Plots will also
-#' include some descriptive stats. 
+#' include some descriptive stats.
 #'
 #' @return (`data.table`)\cr A data.table object similar to the "ipadmdad" table
 #' containing the following fields:
@@ -243,7 +251,8 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 #' - `discharge_date_time` (`character`): Date-time of discharge in YYYY-MM-DD HH:MM format
 #' - `age` (`integer`): Patient age
 #' - `gender` (`character`): Patient gender (F/M/O for Female/Male/Other)
-#' - `discharge_disposition`: All valid categories according to DAD abstracting manual 2022-2023 
+#' - `discharge_disposition` (`integer`): All valid categories according to DAD
+#' abstracting manual 2022-2023
 #'    - 4: Home with Support/Referral
 #'    - 5: Private Home
 #'    - 8: Cadaveric Donor (does not exist in GEMINI data)
@@ -253,15 +262,29 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 #'    - 30: Transfer to Residential Care
 #'    - 40: Transfer to Group/Supportive Living
 #'    - 90: Transfer to Correctional Facility
-#'    - 61: Absent Without Leave (AWOL
-#'    - 62: Left Against Medical Advice (LAMA
+#'    - 61: Absent Without Leave (AWOL)
+#'    - 62: Left Against Medical Advice (LAMA)
 #'    - 65: Did not Return from Pass/Leave
 #'    - 66: Died While on Pass/Leave
 #'    - 67: Suicide out of Facility (does not exist in GEMINI data)
 #'    - 72: Died in Facility
 #'    - 73: Medical Assistance in Dying (MAID)
 #'    - 74: Suicide in Facility
-#'    
+#' - `alc_service_transfer_flag` (`character`): Variable indicating whether
+#' patient was transferred to an alternate level of care (ALC) during their
+#' hospital stay. Coding is messy and varies across sites. Possible values are:
+#'    - Missing: `NA`, `""`
+#'    - True: `"TRUE"/"true"/"T"`, `"y"/"Y"`, `"1"/"99"`, `"ALC"`
+#'    - False: `"FALSE"/"false"`, `"N"`, `"0"`, `"non-ALC"`
+#' Some entries with missing `alc_service_transfer_flag` can be inferred based
+#' on value of `number_of_alc_days` (see below)
+#' - `number_of_alc_days` (`integer`): Number of days spent in ALC (rounded to
+#' nearest integer). If `number_of_alc_days == 0`, no ALC occurred;
+#' if `number_of_alc_days > 0`, ALC occurred.
+#' Note that days spent in ALC should usually be < length of
+#' stay. However, due to the fact that ALC days are rounded up, it's possible
+#' for `number_of_alc_days` to be larger than `los_days_derived`.
+#'
 #' @import ggplot2
 #' @importFrom sn rsn
 #' @importFrom MCMCpack rdirichlet
@@ -271,170 +294,224 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 #'
 #' @examples
 #' ### Simulate 10,000 encounters from 10 hospitals for 2 years from 2018-2020.
-#' \dontrun{ 
+#' \dontrun{
 #' dummy_ipadmdad(10000, n_hospitals = 10, time_period = c(2018, 2020)) }
 #'
-#' 
+#'
 #' }
 #'
-dummy_ipadmdad <- function(n = 1000, 
-                           n_hospitals = 10, 
+dummy_ipadmdad <- function(n = 1000,
+                           n_hospitals = 10,
                            time_period = c(2015, 2023),
                            plot = TRUE) {
-  
-  
-  ############### CHECKS: Make sure n_encounters is at least n_hospitals * length(fisc_years)
-  
+
+
+  ############### CHECKS: Make sure n_encounters is at least n_hospitals * length(time_period)
+  if (n < n_hospitals*length(time_period)){
+    stop("Invalid user input.
+    Number of encounters `n` should at least be equal to `n_hospitals` * `length(time_period)`")
+  }
+
   ############### PREPARE OUTPUT TABLE ###############
   ## create all combinations of hospitals and fiscal years
   hospital_num <- seq(1,n_hospitals,1)
   year <- seq(time_period[1],time_period[2],1)
-  
+
   data <- expand.grid(hospital_num = hospital_num, year = year) %>% data.table()
-  
-  # randomly draw number of encounters per hospital*year combo 
+
+  # randomly draw number of encounters per hospital*year combo
   # make sure they add up to desired total number of encounters
   data[ , n := rmultinom(1, n_encounters, rep.int(1 / nrow(data), nrow(data)))]
   sum(data$n)
-  
-  # blow up row number according to encounter per combo 
+
+  # blow up row number according to encounter per combo
   data <- data[rep(seq(nrow(data)), data$n),]
-  
+
   # turn year variable into actual date by randomly drawing date_time
   add_random_datetime <- function(year) {
     start_date <- paste0(year, "-04-01 00:00 UTC") # start each fisc year on Apr 1
     end_date <- paste0(year+1, "-03-31 23:59 UTC")   # end of fisc year
-    
-    random_datetime <- format(as.POSIXct(runif(length(year), as.POSIXct(start_date), as.POSIXct(end_date))), format = "%Y-%m-%d %H:%M") # 
+
+    random_datetime <- format(as.POSIXct(runif(length(year), as.POSIXct(start_date), as.POSIXct(end_date))), format = "%Y-%m-%d %H:%M") #
     return(random_datetime)
   }
-  
+
   data[, discharge_date_time := add_random_datetime(year)]
-  
+
   # add genc_id from 1-n
   data <- data[order(discharge_date_time),]
   data[ , genc_id := seq(1,nrow(data),1)]
-  
+
 
   ############### DEFINE VARIABLE DISTRIBUTIONS ###############
   ## AGE
   # create left-skewed distribution, truncated from 18-110
   age_distr <- function(n=10000, xi=95, omega=30, alpha=-10) {
-    
+
     age <- rsn(n, xi, omega, alpha)
-    
+
     # truncate at [18, 110]
     age <- as.integer(age[age >= 18 & age <= 110])
-    
+
   }
 
-  
-  
-  
+
+
+
   ############### ADD VARIABLES CLUSTERED BY HOSPITAL ###############
   # Any encounter characteristics (e.g., age/gender/discharge disposition) are
   # simulated as being clustered by hospital (i.e., each hospital will be
   # simulated as random intercept, i.e., different location parameter)
   add_vars <- function(hosp_data) {
-    
+
     n_enc <- nrow(hosp_data)
-    
-    ## AGE 
+
+    ## AGE
     # create new age distribution for each hospital where location parameter xi
     # varies to create a random intercept by site
     age <- age_distr(xi = rnorm(1, 95, 5))
     hosp_data[, age := sample(age, n_enc, replace=TRUE)]
-    
+
     ## GENDER (F/M/Other)
-    # Proportions similar(-ish) to overall GIM cohort
     prob <- data.table("gender" = c("F", "M", "O"),
                        "p" = c(.501, .498, 0.001 + 1e-5)) # add small constant to Os to ensure it's not rounded to 0 below
     # Introduce random hospital-level variability
     prob[ , p := t(rdirichlet(1, alpha = prob$p / 0.005))] # 0.005 = level of variability
     hosp_data[, gender := sample(prob$gender, n_enc, replace = TRUE, prob$p / sum(prob$p))] # make sure probs add up to 1 (see addition of constant above)
-  
+
     ## DISCHARGE DISPOSITION
-    # Proportions similar(-ish) to overall GIM cohort
     prob <- data.table("discharge_disposition" = c(4, 5, 8, 9, 10, 20, 30, 40, 61, 62, 65, 66, 67, 72, 73, 74, 90),
                        "p" = c(.275, .386,  0, 0, .143, 0.002, .045, .040, .001+1e-5, .028, 0.001+1e-5, 0.001+1e-5, 0, .079, .001+1e-5, 0.001+1e-5, .001)) # add small constant to Os to ensure it's not rounded to 0 below
-    # Introduce random hospital-level variability
-    prob[ , p := t(rdirichlet(1, alpha = prob$p / 0.005))] # 0.005 = level of variability
+    prob[ , p := t(rdirichlet(1, alpha = prob$p / 0.005))] # 0.005 = level of hospital-level variability
     hosp_data[, discharge_disposition := as.integer(sample(prob$discharge_disposition, n_enc, replace = TRUE, prob$p / sum(prob$p)))] # make sure probs add up to 1 (see addition of constant above)
-      
-    
+
     ## Simulate LOS to derive ADMISSION_DATE_TIME
     # create right-skewed distribution with randomly drawn offset by site
     hosp_data[, los := rsn(n_enc, rnorm(1, 1.02, .05), .2, 10)^10]
-    
     hosp_data[, admission_date_time := format(as.POSIXct(ymd_hm(discharge_date_time) - ddays(los)), format = "%Y-%m-%d %H:%M")]
-    
+
+    ## Alternate level of care (ALC) & days spent in ALC
+    # ALC flag
+    prob <- data.table("alc_service_transfer_flag" = c("FALSE", "TRUE", NA),
+                       "p" = c(.85, .11, .04))
+    prob[ , p := t(rdirichlet(1, alpha = prob$p / 0.05))] # 0.05 = level of variability
+    hosp_data[, alc_service_transfer_flag := sample(prob$alc_service_transfer_flag, n_enc, replace = TRUE, prob$p / sum(prob$p))] # make sure probs add up to 1 (see addition of constant above)
+
+    # Days spent in ALC (as integer)
+    # If ALC = FALSE, ALC days are either coded as 0 or NA (random across sites)
+    hosp_data[alc_service_transfer_flag == "FALSE", number_of_alc_days := sample(c(0, NA), 1, prob = c(.8, .2))]
+    # If ALC = TRUE, ALC days are drawn from uniform distribution between 0 and LOS (divided by 1.5 because ALC should be < LOS)
+    # Note: because ALC is rounded UP, this results in some entries where ALC > LOS (especially for cases with short LOS); this mimics entries we find in our real data as well
+    hosp_data[alc_service_transfer_flag == "TRUE", number_of_alc_days := ceiling(runif(.N, 0, ceiling(los/1.5)))]
+    # for cases where number_of_alc_days != NA, alc_service_transfer_flag is NA anywhere from 0-100% by site (mostly 0 or 100, but some in-between), so let's mimic that
+    hosp_data[genc_id %in% hosp_data[!is.na(number_of_alc_days)][
+      sample(.N, size = round(sample(c(0, .25, .50, .75, 1), prob = c(.59, .05, .05, .01, .3), 1)*.N)), 'genc_id'],
+      alc_service_transfer_flag := NA]
+
+    # randomly recode values referring to FALSE/TRUE to simulate real messiness of ALC coding
+    coding <- t(data.table(code1 = c("FALSE", "TRUE"),
+                           code2 = c("0", "1"),
+                           code3 = c("0", "99"),
+                           code4 = c("N", "Y"),
+                           code5 = c("n", "y"),
+                           code6 = c("false", "true"),
+                           code7 = c("non-ALC", "ALC"),
+                           code8 = c(NA, "Y")) # this is intentional, some sites only code "true", everything else is missing...
+    )
+    code <- sample(1:nrow(coding), 1)
+
+    hosp_data[alc_service_transfer_flag == FALSE, alc_service_transfer_flag := coding[code, 1]]
+    hosp_data[alc_service_transfer_flag == TRUE, alc_service_transfer_flag := coding[code, 2]]
+    # code missing as NA or "" (randomly per site)
+    hosp_data[is.na(alc_service_transfer_flag), alc_service_transfer_flag := sample(c(NA, ""), 1, prob = c(.8, .2))]
+
     return(hosp_data)
   }
-  
-  
-  
+
+
+
   # note: split data by hospital before running foverlaps to avoid working with massive tables
   cohort_hospitals <- split(data, data$hospital_num)
-  data_all <- lapply(cohort_hospitals, add_vars#,
-                     #time_period_start = time_period_start,
-                     #time_period_end = time_period_end,
-                     #group_var = group_var,
-                     #scu_exclude = scu_exclude
-  )
-  
-  
+  data_all <- lapply(cohort_hospitals, add_vars)
+
+
   ##  Combine all
   data <- do.call(rbind, data_all)
 
 
   ############### PLOT DESCRIPTIVES ###############
   if (plot){
-    
+
     fig_age <- ggplot(data, aes(x=age))  +
-      geom_histogram(color = "black", fill = "lightblue", binwidth = 5) + #, binwidth = 5) + 
-      scale_x_continuous(breaks = seq(10,110,10)) + 
+      geom_histogram(color = "black", fill = "lightblue", binwidth = 5) + #, binwidth = 5) +
+      scale_x_continuous(breaks = seq(10,110,10)) +
       labs(title = "Age", subtitle = paste0(
-        "Median = ", median(data$age), 
+        "Median = ", median(data$age),
         " [Q1 = ", quantile(data$age, 0.25),
-        ", Q3 = ", quantile(data$age, 0.75), "]")) + 
+        ", Q3 = ", quantile(data$age, 0.75), "]")) +
       theme_minimal(base_size = 10)
-    
-    fig_gender <- ggplot(data, aes(x=as.factor(gender))) + 
+
+    fig_gender <- ggplot(data, aes(x=as.factor(gender))) +
       geom_bar(color = "black", fill = "lightblue") +
       geom_text(stat = "count", aes(label = scales::percent(round(..count../sum(..count..), digits = 3))),
                 vjust = -0.2, hjust = 0.5, size = 3) +
-      labs(title = "Gender") + xlab("gender") + 
+      labs(title = "Gender") + xlab("gender") +
       theme_minimal(base_size = 10)
-    
-    fig_discharge_disp <- ggplot(data, aes(x=as.factor(discharge_disposition))) + 
+
+    fig_discharge_disp <- ggplot(data, aes(x=as.factor(discharge_disposition))) +
       geom_bar(color = "black", fill = "lightblue") +
       geom_text(stat = "count", aes(label = scales::percent(round(..count../sum(..count..), digits = 3))),
                 vjust = -0.2, hjust = 0.5, size = 3) +
-      labs(title = "Discharge disposition") + xlab("discharge_disposition") + 
+      labs(title = "Discharge disposition") + xlab("discharge_disposition") +
       theme_minimal(base_size = 10)
-    
+
     # re-derive LOS based on discharge-admission date time as sanity check
     data[, los_days_derived := length_of_stay(data)$los_days_derived]
-    fig_los <- ggplot(data, aes(x=los_days_derived)) + 
+    fig_los <- ggplot(data, aes(x=los_days_derived)) +
       geom_histogram(color = "black", fill = "lightblue", binwidth = 2.5) +
-      scale_x_continuous(breaks = seq(0,100,10), limits = c(NA, 105)) + 
+      scale_x_continuous(breaks = seq(0,100,10), limits = c(NA, 105)) +
       labs(title = "Length of stay (derived)", subtitle = paste0(
-        "Median = ", round(median(data$los_days_derived), digits = 2), 
+        "Median = ", round(median(data$los_days_derived), digits = 2),
         " [Q1 = ", round(quantile(data$los_days_derived, 0.25), digits = 2),
-        ", Q3 = ", round(quantile(data$los_days_derived, 0.75), digits = 2), "]")) + 
+        ", Q3 = ", round(quantile(data$los_days_derived, 0.75), digits = 2), "]")) +
       theme_minimal(base_size = 10)
-    
-    fig <- suppressWarnings(ggarrange(fig_age, fig_gender, fig_discharge_disp, fig_los,
-                     ncol = 2, nrow = 2))
+
+    fig_alc <- ggplot(data, aes(x=alc_service_transfer_flag)) +
+      geom_bar(color = "black", fill = "lightblue") +
+      geom_text(stat = "count", aes(label = scales::percent(round(..count../sum(..count..), digits = 3))),
+                vjust = -0.2, hjust = 0.5, size = 3) +
+      labs(title = "ALC transfer") + xlab("alc_service_transfer_flag") +
+      theme_minimal(base_size = 10)
+
+    fig_alc_days <- ggplot(data, aes(x=number_of_alc_days)) +
+      geom_histogram(color = "black", fill = "lightblue", binwidth = 2.5) +
+      scale_x_continuous(breaks = seq(0,100,10), limits = c(NA, 105)) +
+      labs(title = "ALC days", subtitle = paste0(
+        "Median = ", round(median(data$number_of_alc_days, na.rm = TRUE), digits = 2),
+        " [Q1 = ", round(quantile(data$number_of_alc_days, na.rm = TRUE, 0.25), digits = 2),
+        ", Q3 = ", round(quantile(data$number_of_alc_days, na.rm = TRUE, 0.75), digits = 2), "]")) +
+      theme_minimal(base_size = 10)
+
+
+    fig <- suppressWarnings(ggarrange(fig_age, fig_gender, fig_discharge_disp, fig_los, fig_alc, fig_alc_days,
+                     ncol = 3, nrow = 2))
     plot(fig)
-    
+
   }
-  
+
   ## Select relevant output variables
-  data <- data[order(genc_id), .(genc_id, hospital_num, admission_date_time, discharge_date_time, age, gender, discharge_disposition)]
-  
+  data <- data[order(genc_id), .(genc_id,
+                                 hospital_num,
+                                 admission_date_time,
+                                 discharge_date_time,
+                                 age,
+                                 gender,
+                                 discharge_disposition,
+                                 alc_service_transfer_flag,
+                                 number_of_alc_days)]
+
   return(data)
-  
+
 }
 
 
