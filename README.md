@@ -80,6 +80,16 @@ readm <- readmission(
 
 Please review the extensive [package documentation](https://gemini-medicine.github.io/Rgemini/) and vignettes for detailed examples and sample code.
 
+## Contributing
+
+Currently, only GEMINI team members can directly contribute to this package. However, we invite all users to share their feedback and suggestions with us so we can continue to improve `Rgemini`. 
+
+If you identify any package bugs or would like to request enhancements, please open a [GitHub issue](https://github.com/GEMINI-Medicine/Rgemini/issues). We have also activated the GitHub
+[discussion forum](https://github.com/GEMINI-Medicine/Rgemini/discussions) for you to submit any questions about package functionality or discuss applications of `Rgemini` functions to your research question.
+Note that the repository is public, so please do not share any sensitive information and/or GEMINI data on the GitHub site!
+
+For GEMINI team members: Please carefully review the [CONTRIBUTING.md](https://github.com/GEMINI-Medicine/Rgemini/blob/master/CONTRIBUTING.md) file for guidelines on how to contribute and review code.
+
 ## Package versions
 
 Different versions of `Rgemini` are released with X.Y.Z. increments following these conventions:
@@ -88,7 +98,7 @@ Different versions of `Rgemini` are released with X.Y.Z. increments following th
 * `Y`: Minor version, new function added, some large changes to existing functions (including even changes to the type and number of arguments).
 * `X`: Major version, change to the underlying DB the code was written for (table and variable names).
 
-Usually we'd accumulate a series of changes on develop and release them all at once on master with a version increment.
+Usually we accumulate a series of changes on develop and release them all at once on master with a version increment.
 
 ## Citation
 
