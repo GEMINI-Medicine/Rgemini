@@ -18,6 +18,16 @@ All functions have been developed by the GEMINI team and were tested on the curr
 remotes::install_github("GEMINI-Medicine/Rgemini", build_vignettes = TRUE)
 ```
 
+### Alternatives
+
+If the installation method above does not work, try one of the following:
+
+1. Install using `pak::pkg_install("GEMINI-Medicine/Rgemini")`.
+2. `git clone` the package to some directory such as `/path/to/repo`, and run `devtools::install("/path/to/repo", build_vignettes = TRUE)`.
+3. Download the latest source tarball from the [package releases](https://github.com/GEMINI-Medicine/Rgemini/tags) to some directory such as `/path/to/tarball` and run `install.packages("/path/to/tarball", repos = NULL, type="source")`.
+
+If none of the above methods work, please create a post on our [discussion board](https://github.com/GEMINI-Medicine/Rgemini/discussions/categories/q-a).
+
 ### HPC4Health
 
 If installing `Rgemini` from the GEMINI HPC4Health environment, simply call `install.packages("Rgemini")`.
