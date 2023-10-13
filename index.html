@@ -77,6 +77,18 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"GEMINI-Medicine/Rgemini"</span>, build_vignettes <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
+<h3 id="alternatives">Alternatives<a class="anchor" aria-label="anchor" href="#alternatives"></a>
+</h3>
+<p>If the installation method above does not work, try one of the following:</p>
+<ol style="list-style-type: decimal">
+<li>Install using <code>pak::pkg_install("GEMINI-Medicine/Rgemini")</code>.</li>
+<li>
+<code>git clone</code> the package to some directory such as <code>/path/to/repo</code>, and run <code>devtools::install("/path/to/repo", build_vignettes = TRUE)</code>.</li>
+<li>Download the latest source tarball from the <a href="https://github.com/GEMINI-Medicine/Rgemini/tags" class="external-link">package releases</a> to some directory such as <code>/path/to/tarball</code> and run <code>install.packages("/path/to/tarball", repos = NULL, type="source")</code>.</li>
+</ol>
+<p>If none of the above methods work, please create a post on our <a href="https://github.com/GEMINI-Medicine/Rgemini/discussions/categories/q-a" class="external-link">discussion board</a>.</p>
+</div>
+<div class="section level3">
 <h3 id="hpc4health">HPC4Health<a class="anchor" aria-label="anchor" href="#hpc4health"></a>
 </h3>
 <p>If installing <code>Rgemini</code> from the GEMINI HPC4Health environment, simply call <code>install.packages("Rgemini")</code>.</p>
