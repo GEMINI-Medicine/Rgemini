@@ -59,7 +59,7 @@
 <li><p>If appropriate, add unit tests in the <code>tests/testthat/</code> directory.</p></li>
 <li><p>Submit a <a href="https://help.github.com/articles/using-pull-requests" class="external-link">pull request</a> into the <code>develop</code> branch.</p></li>
 <li><p>Ask a team member to review the changes (see guidelines for reviewers below) and implement additional changes based on the reviewer’s feedback.</p></li>
-<li><p>Once the reviewer has approved the pull request, merge the branch into <code>develop</code>, close the issue, and delete the branch you developed on.</p></li>
+<li><p>Once the reviewer has approved the pull request, squash all commits and merge the branch into <code>develop</code>, close the issue, and delete the branch you developed on.</p></li>
 </ol></div>
 <div class="section level1">
 <h1 id="reviewing-code">Reviewing code<a class="anchor" aria-label="anchor" href="#reviewing-code"></a></h1>
@@ -80,7 +80,7 @@
 <li><p>Decide on a new version number based on the guidelines <a href="https://github.com/GEMINI-Medicine/Rgemini#package-versions" class="external-link">here</a>.</p></li>
 <li><p>Update the version number in the <code>NEWS.md</code> and <code>DESCRIPTION</code> files.</p></li>
 <li><p>Run <code>devtools::document()</code> in R to make sure all documentation is up to date.</p></li>
-<li><p>Run <code>rcmdcheck::rcmdcheck()</code> or <code>devtools::check()</code> and make sure no errors are returned.</p></li>
+<li><p>Run <code>rcmdcheck::rcmdcheck()</code> or <code>devtools::check()</code> and make sure no errors or warnings are returned.</p></li>
 <li><p>If everything looks good, approve the pull request and merge <code>develop</code> into <code>master</code>.</p></li>
 <li><p>Add a new tag to the repository corresponding to the updated version number.</p></li>
 <li><p>Notify the team about the updated version. Ideally, all members should immediately update to the newest version of <code>Rgemini</code>.</p></li>
