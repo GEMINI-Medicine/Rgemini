@@ -239,11 +239,7 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 #' A numeric vector containing the time period, specified as fiscal years. For
 #' example, `c(2015, 2019)` generates data from 2015-04-01 to 2019-04-01.
 #'
-#' @param plot (`logical`)\cr
-#' Whether or not to plot a histogram of simulated variables. Plots will also
-#' include some descriptive stats.
-#'
-#' @return (`data.table`)\cr A data.table object similar to the "ipadmdad" table
+#' @return (`data.frame`)\cr A data.frame object similar to the "ipadmdad" table
 #' containing the following fields:
 #' - `genc_id` (`integer`): GEMINI encounter ID
 #' - `hospital_num` (`integer`): Hospital ID
@@ -285,11 +281,9 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 #' stay. However, due to the fact that ALC days are rounded up, it's possible
 #' for `number_of_alc_days` to be larger than `los_days_derived`.
 #'
-#' @import ggplot2
 #' @importFrom sn rsn
 #' @importFrom MCMCpack rdirichlet
 #' @importFrom lubridate ymd_hm
-#' @importFrom ggpubr ggarrange
 #' @export
 #'
 #' @examples
@@ -302,8 +296,7 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 #'
 dummy_ipadmdad <- function(n = 1000,
                            n_hospitals = 10,
-                           time_period = c(2015, 2023),
-                           plot = TRUE) {
+                           time_period = c(2015, 2023)) {
 
 
   ############### CHECKS: Make sure n_encounters is at least n_hospitals * length(time_period)
@@ -438,67 +431,6 @@ dummy_ipadmdad <- function(n = 1000,
   ##  Combine all
   data <- do.call(rbind, data_all)
 
-
-  ############### PLOT DESCRIPTIVES ###############
-  if (plot){
-
-    fig_age <- ggplot(data, aes(x=age))  +
-      geom_histogram(color = "black", fill = "lightblue", binwidth = 5) + #, binwidth = 5) +
-      scale_x_continuous(breaks = seq(10,110,10)) +
-      labs(title = "Age", subtitle = paste0(
-        "Median = ", median(data$age),
-        " [Q1 = ", quantile(data$age, 0.25),
-        ", Q3 = ", quantile(data$age, 0.75), "]")) +
-      theme_minimal(base_size = 10)
-
-    fig_gender <- ggplot(data, aes(x=as.factor(gender))) +
-      geom_bar(color = "black", fill = "lightblue") +
-      geom_text(stat = "count", aes(label = scales::percent(round(..count../sum(..count..), digits = 3))),
-                vjust = -0.2, hjust = 0.5, size = 3) +
-      labs(title = "Gender") + xlab("gender") +
-      theme_minimal(base_size = 10)
-
-    fig_discharge_disp <- ggplot(data, aes(x=as.factor(discharge_disposition))) +
-      geom_bar(color = "black", fill = "lightblue") +
-      geom_text(stat = "count", aes(label = scales::percent(round(..count../sum(..count..), digits = 3))),
-                vjust = -0.2, hjust = 0.5, size = 3) +
-      labs(title = "Discharge disposition") + xlab("discharge_disposition") +
-      theme_minimal(base_size = 10)
-
-    # re-derive LOS based on discharge-admission date time as sanity check
-    data[, los_days_derived := length_of_stay(data)$los_days_derived]
-    fig_los <- ggplot(data, aes(x=los_days_derived)) +
-      geom_histogram(color = "black", fill = "lightblue", binwidth = 2.5) +
-      scale_x_continuous(breaks = seq(0,100,10), limits = c(NA, 105)) +
-      labs(title = "Length of stay (derived)", subtitle = paste0(
-        "Median = ", round(median(data$los_days_derived), digits = 2),
-        " [Q1 = ", round(quantile(data$los_days_derived, 0.25), digits = 2),
-        ", Q3 = ", round(quantile(data$los_days_derived, 0.75), digits = 2), "]")) +
-      theme_minimal(base_size = 10)
-
-    fig_alc <- ggplot(data, aes(x=alc_service_transfer_flag)) +
-      geom_bar(color = "black", fill = "lightblue") +
-      geom_text(stat = "count", aes(label = scales::percent(round(..count../sum(..count..), digits = 3))),
-                vjust = -0.2, hjust = 0.5, size = 3) +
-      labs(title = "ALC transfer") + xlab("alc_service_transfer_flag") +
-      theme_minimal(base_size = 10)
-
-    fig_alc_days <- ggplot(data, aes(x=number_of_alc_days)) +
-      geom_histogram(color = "black", fill = "lightblue", binwidth = 2.5) +
-      scale_x_continuous(breaks = seq(0,100,10), limits = c(NA, 105)) +
-      labs(title = "ALC days", subtitle = paste0(
-        "Median = ", round(median(data$number_of_alc_days, na.rm = TRUE), digits = 2),
-        " [Q1 = ", round(quantile(data$number_of_alc_days, na.rm = TRUE, 0.25), digits = 2),
-        ", Q3 = ", round(quantile(data$number_of_alc_days, na.rm = TRUE, 0.75), digits = 2), "]")) +
-      theme_minimal(base_size = 10)
-
-
-    fig <- suppressWarnings(ggarrange(fig_age, fig_gender, fig_discharge_disp, fig_los, fig_alc, fig_alc_days,
-                     ncol = 3, nrow = 2))
-    plot(fig)
-
-  }
-
   ## Select relevant output variables
   data <- data[order(genc_id), .(genc_id,
                                  hospital_num,
@@ -509,6 +441,9 @@ dummy_ipadmdad <- function(n = 1000,
                                  discharge_disposition,
                                  alc_service_transfer_flag,
                                  number_of_alc_days)]
+  
+  # Return as data.frame (instead of data.table) as this is what SQL queries return
+  data <- as.data.frame(data)
 
   return(data)
 
