@@ -7,7 +7,7 @@ test_that("categorical cell suppression works", {
   x2 <- factor(c(rep("a", times = nrow(mtcars))), levels = c("a", "b"))
   res2 <- render_cell_suppression.categorical(x2)
 
-  expect_equal(res2, c("", "a" = "32 (100 %)", "b" = "0 (0 %)"))
+  expect_equal(res2, c("", "a" = "32 (100.0%)", "b" = "0 (0.0%)"))
 
   x3 <- factor(
     c(rep("a", times = nrow(mtcars)), "b", "c", "d", "e", "f", "g"),
@@ -19,7 +19,7 @@ test_that("categorical cell suppression works", {
     res3,
     c(
       "",
-      "a" = "32 (84 %)",
+      "a" = "32 (84.2%)",
       "b" = "&lt; 6 obs. (suppressed)",
       "c" = "&lt; 6 obs. (suppressed)",
       "d" = "&lt; 6 obs. (suppressed)",
@@ -43,11 +43,11 @@ test_that("categorical cell suppression works", {
     res4,
     c(
       "",
-      "a" = "100 (63 %)",
-      "b" = "50 (31 %)",
+      "a" = "100 (62.9%)",
+      "b" = "50 (31.4%)",
       "c" = "(suppressed)",
       "d"  = "(suppressed)",
-      "e" = "0 (0 %)"
+      "e" = "0 (0.0%)"
       )
     )
 })
@@ -55,5 +55,22 @@ test_that("categorical cell suppression works", {
 test_that("bad input throws errors", {
   expect_error(
     render_default.continuous(letters)
+  )
+})
+
+test_that("categorial cell suppression doesn't round to the nearest integer", {
+  x <- factor(
+    c(rep("a", times = 1000), rep("b", times = 1010)),
+    levels = c("a", "b")
+    )
+
+  expect_equal(
+    render_strict_cell_suppression.categorical(x),
+    c("", "a" = "1000 (49.8%)", "b" = "1010 (50.2%)")
+    )
+
+  expect_equal(
+    render_cell_suppression.categorical(x),
+    c("", "a" = "1000 (49.8%)", "b" = "1010 (50.2%)")
   )
 })

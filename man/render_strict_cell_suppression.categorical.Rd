@@ -4,11 +4,15 @@
 \alias{render_strict_cell_suppression.categorical}
 \title{Render Strict Cell Suppression (Categorical)}
 \usage{
-render_strict_cell_suppression.categorical(x)
+render_strict_cell_suppression.categorical(x, ...)
 }
 \arguments{
 \item{x}{(\code{character} or \code{factor})\cr
 A categorical variable to summarize.}
+
+\item{...}{\cr
+Optionally accept a named \code{digits} (\code{integer}) or \code{single_level_binary} (\code{logical}) argument
+which specifiesthe number of digits to round percentages to.}
 }
 \value{
 named (\code{character})\cr
