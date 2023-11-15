@@ -234,7 +234,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' - For all inputs: Whether input is of correct class (e.g., `logical`,
 #' `numeric`, `character` etc.)
 #' - For `numeric` inputs: Check whether provided input is within acceptable
-#' range (e.g., > 0).
+#' interval (e.g., > 0).
 #' - For `character` (categorical) inputs: Check whether input corresponds to
 #' one of acceptable categories.
 #' - For `data.table|data.frame` inputs: 1) Check whether required columns exist
@@ -256,6 +256,17 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' `data.table` OR `data.frame`), available options should be provided as a
 #' character vector (e.g., `argclass = c('data.frame', 'data.table')`).
 #'
+#' @param options (`character`)\or
+#' Optional input if argclass is `"character"`.
+#' Character vector specifying acceptable options for character inputs (e.g.,
+#' `options = c("none", "all")`)
+#'
+#' @param interval (`numeric`)\or
+#' Optional input if argclass is `"numeric"` or `"integer"`.
+#' Numeric vector specifying acceptable range for numeric inputs (e.g.,
+#' `interval = c(1,100)`, or for non-negative numbers: `interval = c(0, Inf)`).
+#' Note that `interval` specifies a closed interval (i.e., end points are
+#' included).
 #'
 #' @return \cr
 #' If any of the input checks fail, function will return error message and
@@ -269,7 +280,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #'
 check_input <- function(arginput, argclass,
                         options = NULL, # for character inputs only
-                        range = NULL, # for numeric inputs only
+                        interval = NULL, # for numeric inputs only
                         colnames = NULL, colclass = NULL) { # for data.table/data.frame inputs only
 
   argname <- deparse(substitute(arginput)) # get name of input argument
@@ -283,38 +294,45 @@ check_input <- function(arginput, argclass,
   ## For DB connections
   if (any(grepl("dbi|con|posgre|sql", argclass, ignore.case = TRUE))){
     if (!RPostgreSQL::isPostgresqlIdCurrent(arginput) & !grepl("PostgreSQL", class(arginput)[1])){
-      stop(
-        paste0("Invalid user input in '", sys.calls()[[1]], "': '",
-               argname,"' needs to be a valid database connection.\n",
-               "\nWe recommend the following method to establish the connection:\n",
-               "drv <- dbDriver('PostgreSQL')\n",
-               "dbcon <- DBI::dbConnect(drv, dbname = 'db_name', host = 'XXX.XX.XX.net', port = 1234, user = getPass('Enter user:'), password = getPass('password'))\n",
-               "\nPlease refer to the function documentation for more details."),
-        call. = FALSE
-      )
+
+      stop(paste0("Invalid user input in '", sys.calls()[[1]], "': '",
+                  argname,"' needs to be a valid database connection.\n",
+                  "\nWe recommend the following method to establish the connection:\n",
+                  "drv <- dbDriver('PostgreSQL')\n",
+                  "dbcon <- DBI::dbConnect(drv, dbname = 'db_name', host = 'XXX.XX.XX.net', port = 1234, user = getPass('Enter user:'), password = getPass('password'))\n",
+                  "\nPlease refer to the function documentation for more details."),
+           call. = FALSE)
     }
 
   ## For all other inputs
   } else if ((argclass == "integer" & !is.integer(arginput)) |
              argclass != "integer" & !any(class(arginput) %in% argclass)){
-    stop(
-      paste0("Invalid user input in '", sys.calls()[[1]], "': '",
-             argname,"' needs to be of type '", paste(argclass, collapse = "' or '"), "'.",
-             "\nPlease refer to the function documentation for more details."),
-      call. = FALSE
-    )
+
+    stop(paste0("Invalid user input in '", sys.calls()[[1]], "': '",
+                argname,"' needs to be of type '", paste(argclass, collapse = "' or '"), "'.",
+                "\nPlease refer to the function documentation for more details."),
+         call. = FALSE)
   }
 
 
   ##### CHECK 2 (for character inputs): Check if option is one of acceptable alternatives [optional]
   if (argclass == "character" & !is.null(options)){
     if (any(!arginput %in% options)){
-      stop(
-        paste0("Invalid user input in '", sys.calls()[[1]], "': '",
-               argname,"' needs to be either '", paste0(paste(options[1:length(options)-1], collapse = "', '"), "' or '", options[length(options)]), "'.",
-               "\nPlease refer to the function documentation for more details."),
-        call. = FALSE
-      )
+      stop(paste0("Invalid user input in '", sys.calls()[[1]], "': '",
+                  argname,"' needs to be either '", paste0(paste(options[1:length(options)-1], collapse = "', '"), "' or '", options[length(options)]), "'.",
+                  "\nPlease refer to the function documentation for more details."),
+           call. = FALSE)
+    }
+  }
+
+
+  ##### CHECK 3 (for numeric/integer inputs): Check if number is within acceptable interval [optional]
+  if (argclass %in% c("numeric", "integer") & !is.null(interval)){
+    if (arginput < interval[1] | arginput > interval[2]){
+      stop(paste0("Invalid user input in '", sys.calls()[[1]], "': '",
+                  argname,"' needs to be within interval [", interval[1], ", ", interval[2], "].",
+                  "\nPlease refer to the function documentation for more details."),
+           call. = FALSE)
     }
   }
 
