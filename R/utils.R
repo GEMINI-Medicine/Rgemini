@@ -246,11 +246,11 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' @param argclass (`character`)\cr
 #' Acceptable class(es) of input object. Has to be one of the following:
 #' - `"logical"`
-#' - `"numeric"`
 #' - `"character"`
-#' - `"DBIConnection"`
+#' - `"numeric"`
 #' - `"data.table"`
 #' - `"data.frame"`
+#' - `"DBI" | "dbcon" | "PostgreSQL"` for DB connection input
 #'
 #' If an input object can be one of several acceptable classes (e.g.,
 #' `data.table` OR `data.frame`), available options should be provided as a
@@ -274,18 +274,34 @@ check_input <- function(arginput, argclass,
 
   argname <- deparse(substitute(arginput)) # get name of input argument
 
-  ## CHECK 1 (for all inputs): Check if class is correct
-  if (!any(class(arginput) %in% argclass)){
-    stop(
-      paste0("\nInvalid user input in '", sys.calls()[[1]], "': '",
-             argname,"' needs to be of type '", paste(argclass, collapse = "' or '"),
-             "'.\nPlease refer to the function documentation for additional details."),
-      call. = FALSE
-    )
+  ##### CHECK 1 (for all inputs): Check if class is correct
+  ## For DB connections
+  if (any(grepl("dbi|con|posgre|sql", argclass, ignore.case = TRUE))){
+    if (!RPostgreSQL::isPostgresqlIdCurrent(arginput) & !grepl("PostgreSQL", class(arginput)[1])){
+      stop(
+        paste0("Invalid user input in '", sys.calls()[[1]], "': '",
+               argname,"' needs to be a valid database connection.\n",
+               "\nWe recommend the following method to establish the connection:\n",
+               "drv <- dbDriver('PostgreSQL')\n",
+               "dbcon <- DBI::dbConnect(drv, dbname = 'db_name', host = 'XXX.XX.XX.net', port = 1234, user = getPass('Enter user:'), password = getPass('password'))\n",
+               "\nPlease refer to the function documentation for more details."),
+        call. = FALSE
+      )
+    }
+
+  ## For all other input types
+  } else {
+    if (!any(class(arginput) %in% argclass)){
+      stop(
+        paste0("Invalid user input in '", sys.calls()[[1]], "': '",
+             argname,"' needs to be of type '", paste(argclass, collapse = "' or '"), "'.",
+             "\nPlease refer to the function documentation for more details."),
+        call. = FALSE
+      )
+    }
   }
 
 
-  return()
 
 }
 
