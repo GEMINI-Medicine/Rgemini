@@ -231,7 +231,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' @description
 #' Function checking whether user-provided input objects are appropriate.
 #' Checks for the following:
-#' - For all inputs: Whether input is of correct class (e.g., `logical`,
+#' - For all inputs: Whether input is of correct type (e.g., `logical`,
 #' `numeric`, `character` etc.)
 #' - For `numeric` inputs: Check whether provided input is within acceptable
 #' interval (e.g., > 0).
@@ -243,8 +243,8 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' @param arginput (`character`)\cr
 #' Input argument to be checked.
 #'
-#' @param argclass (`character`)\cr
-#' Acceptable class(es) of input object. Has to be one of the following:
+#' @param argtype (`character`)\cr
+#' Acceptable type(es) of input object. Has to be one of the following:
 #' - `"logical"`
 #' - `"character"`
 #' - `"numeric"` (or `"integer"` if specifically checking for integers)
@@ -252,21 +252,32 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' - `"data.frame"`
 #' - `"DBI" | "dbcon" | "PostgreSQL"` for DB connection input
 #'
-#' If an input object can be one of several acceptable classes (e.g.,
+#' If an input object can be one of several acceptable types (e.g.,
 #' `data.table` OR `data.frame`), available options should be provided as a
-#' character vector (e.g., `argclass = c('data.frame', 'data.table')`).
+#' character vector (e.g., `argtype = c('data.frame', 'data.table')`).
 #'
-#' @param options (`character`)\or
-#' Optional input if argclass is `"character"`.
+#' @param options (`character`)\cr
+#' Optional input if argtype is `"character"`.
 #' Character vector specifying acceptable options for character inputs (e.g.,
 #' `options = c("none", "all")`)
 #'
-#' @param interval (`numeric`)\or
-#' Optional input if argclass is `"numeric"` or `"integer"`.
+#' @param interval (`numeric`)\cr
+#' Optional input if argtype is `"numeric"` or `"integer"`.
 #' Numeric vector specifying acceptable range for numeric inputs (e.g.,
 #' `interval = c(1,100)`, or for non-negative numbers: `interval = c(0, Inf)`).
 #' Note that `interval` specifies a closed interval (i.e., end points are
 #' included).
+#'
+#' @param colnames (`character`)\cr
+#' Optional input if argtype is `"data.frame"` or `"data.table"`.
+#' Character vector specifying all columns that need to exist in the input table
+#' (e.g., `colnames = c("genc_id", "discharge_date_time")`).\
+#'
+#' @param coltypes (`character`)\cr
+#' Optional input if argtype is `"data.frame"` or `"data.table"`.
+#' Character vector specifying required data type of each column in `colnames`
+#' (e.g., `coltypes = c("integer", "character")`).
+#'
 #'
 #' @return \cr
 #' If any of the input checks fail, function will return error message and
@@ -278,21 +289,28 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #'
 #' }
 #'
-check_input <- function(arginput, argclass,
+check_input <- function(arginput, argtype,
                         options = NULL, # for character inputs only
                         interval = NULL, # for numeric inputs only
-                        colnames = NULL, colclass = NULL) { # for data.table/data.frame inputs only
+                        colnames = NULL, coltypes = NULL) { # for data.table/data.frame inputs only
 
   argname <- deparse(substitute(arginput)) # get name of input argument
 
   ## Define new function to check for integers
-  # (Note: base R `is.integer` does not return TRUE if class = numeric)
-  is.integer <- function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
+  # (Note: base R's `is.integer` does not return TRUE if type == numeric)
+  is.integer <- function(x){
+    if (is.numeric(x)){
+      tol = .Machine$double.eps^0.5
+      return(abs(x - round(x)) < tol)
+    } else {
+      return(FALSE)
+    }
+  }
 
 
-  ##### CHECK 1 (for all inputs): Check if class is correct
+  ##### CHECK 1 (for all inputs): Check if type is correct
   ## For DB connections
-  if (any(grepl("dbi|con|posgre|sql", argclass, ignore.case = TRUE))){
+  if (any(grepl("dbi|con|posgre|sql", argtype, ignore.case = TRUE))){
     if (!RPostgreSQL::isPostgresqlIdCurrent(arginput) & !grepl("PostgreSQL", class(arginput)[1])){
 
       stop(paste0("Invalid user input in '", sys.calls()[[1]], "': '",
@@ -305,18 +323,18 @@ check_input <- function(arginput, argclass,
     }
 
   ## For all other inputs
-  } else if ((argclass == "integer" & !is.integer(arginput)) |
-             argclass != "integer" & !any(class(arginput) %in% argclass)){
+  } else if ((any(argtype == "integer") & !is.integer(arginput)) |
+             !any(argtype == "integer") & !any(class(arginput) %in% argtype)){
 
     stop(paste0("Invalid user input in '", sys.calls()[[1]], "': '",
-                argname,"' needs to be of type '", paste(argclass, collapse = "' or '"), "'.",
+                argname,"' needs to be of type '", paste(argtype, collapse = "' or '"), "'.",
                 "\nPlease refer to the function documentation for more details."),
          call. = FALSE)
   }
 
 
   ##### CHECK 2 (for character inputs): Check if option is one of acceptable alternatives [optional]
-  if (argclass == "character" & !is.null(options)){
+  if (any(argtype == "character") & !is.null(options)){
     if (any(!arginput %in% options)){
       stop(paste0("Invalid user input in '", sys.calls()[[1]], "': '",
                   argname,"' needs to be either '", paste0(paste(options[1:length(options)-1], collapse = "', '"), "' or '", options[length(options)]), "'.",
@@ -327,10 +345,42 @@ check_input <- function(arginput, argclass,
 
 
   ##### CHECK 3 (for numeric/integer inputs): Check if number is within acceptable interval [optional]
-  if (argclass %in% c("numeric", "integer") & !is.null(interval)){
+  if (any(argtype %in% c("numeric", "integer")) & !is.null(interval)){
     if (arginput < interval[1] | arginput > interval[2]){
       stop(paste0("Invalid user input in '", sys.calls()[[1]], "': '",
                   argname,"' needs to be within interval [", interval[1], ", ", interval[2], "].",
+                  "\nPlease refer to the function documentation for more details."),
+           call. = FALSE)
+    }
+  }
+
+
+  ##### CHECK 4 (for data.table/data.frame inputs): Check if relevant columns exist [optional]
+  if (any(argtype %in% c("data.frame", "data.table")) & !is.null(colnames)){
+
+    # get missing columns
+    missing_cols <- setdiff(colnames, colnames(arginput))
+
+    if (length(missing_cols) > 0){
+      stop(paste0("Invalid user input in '", sys.calls()[[1]], "': '",
+                  argname,"' input table is missing required column(s) '", paste0(missing_cols, collapse = "', '"), "'.",
+                  "\nPlease refer to the function documentation for more details."),
+           call. = FALSE)
+    }
+  }
+
+
+  ##### CHECK 5 (for data.table/data.frame inputs): Check if required columns are of correct type [optional]
+  if (any(argtype %in% c("data.frame", "data.table")) & !is.null(coltypes)){
+
+    # get class of each required column
+    cols <- sapply(arginput %>% select(all_of(colnames)), class)
+
+    # for simplicity of error output:
+    # only show first column where incorrect type was found (if any)
+    if (length(cols[cols != coltypes]) > 0){
+      stop(paste0("Invalid user input in '", sys.calls()[[1]], "': '",
+                  colnames[which(cols != coltypes)][1],"' in input table '", argname, "' has to be of type '", coltypes[which(cols != coltypes)][1], "'.",
                   "\nPlease refer to the function documentation for more details."),
            call. = FALSE)
     }
