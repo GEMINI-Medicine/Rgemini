@@ -268,8 +268,8 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' }
 #'
 check_input <- function(arginput, argclass,
-                        range = NULL, # for numeric inputs only
                         options = NULL, # for character inputs only
+                        range = NULL, # for numeric inputs only
                         colnames = NULL, colclass = NULL) { # for data.table/data.frame inputs only
 
   argname <- deparse(substitute(arginput)) # get name of input argument
@@ -288,7 +288,6 @@ check_input <- function(arginput, argclass,
         call. = FALSE
       )
     }
-
   ## For all other input types
   } else {
     if (!any(class(arginput) %in% argclass)){
@@ -301,7 +300,18 @@ check_input <- function(arginput, argclass,
     }
   }
 
+  ##### CHECK 2 (for character inputs): Check if option is one of acceptable alternatives [optional]
+  if (argclass == "character" & !is.null(options)){
+    if (any(!arginput %in% options)){
+      stop(
+        paste0("Invalid user input in '", sys.calls()[[1]], "': '",
+               argname,"' needs to be either '", paste0(paste(options[1:length(options)-1], collapse = "', '"), "' or '", options[length(options)]), "'.",
+               "\nPlease refer to the function documentation for more details."),
+        call. = FALSE
+      )
+    }
 
+  }
 
 }
 
