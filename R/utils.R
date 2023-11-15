@@ -224,3 +224,68 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 }
 
 
+
+#' @title
+#' Check user inputs
+#'
+#' @description
+#' Function checking whether user-provided input objects are appropriate.
+#' Checks for the following:
+#' - For all inputs: Whether input is of correct class (e.g., `logical`,
+#' `numeric`, `character` etc.)
+#' - For `numeric` inputs: Check whether provided input is within acceptable
+#' range (e.g., > 0).
+#' - For `character` (categorical) inputs: Check whether input corresponds to
+#' one of acceptable categories.
+#' - For `data.table|data.frame` inputs: 1) Check whether required columns exist
+#' in table and 2) whether each column is of required type (optional)
+#'
+#' @param arginput (`character`)\cr
+#' Input argument to be checked.
+#'
+#' @param argclass (`character`)\cr
+#' Acceptable class(es) of input object. Has to be one of the following:
+#' - `"logical"`
+#' - `"numeric"`
+#' - `"character"`
+#' - `"DBIConnection"`
+#' - `"data.table"`
+#' - `"data.frame"`
+#'
+#' If an input object can be one of several acceptable classes (e.g.,
+#' `data.table` OR `data.frame`), available options should be provided as a
+#' character vector (e.g., `argclass = c('data.frame', 'data.table')`).
+#'
+#'
+#' @return \cr
+#' If any of the input checks fail, function will return error message and
+#' execution of called `Rgemini` function will be stopped.
+#'
+#'
+#' @examples
+#' \dontrun{
+#'
+#' }
+#'
+check_input <- function(arginput, argclass,
+                        range = NULL, # for numeric inputs only
+                        options = NULL, # for character inputs only
+                        colnames = NULL, colclass = NULL) { # for data.table/data.frame inputs only
+
+  argname <- deparse(substitute(arginput)) # get name of input argument
+
+  ## CHECK 1 (for all inputs): Check if class is correct
+  if (!any(class(arginput) %in% argclass)){
+    stop(
+      paste0("\nInvalid user input in '", sys.calls()[[1]], "': '",
+             argname,"' needs to be of type '", paste(argclass, collapse = "' or '"),
+             "'.\nPlease refer to the function documentation for additional details."),
+      call. = FALSE
+    )
+  }
+
+
+  return()
+
+}
+
