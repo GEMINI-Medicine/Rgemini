@@ -247,7 +247,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' Acceptable class(es) of input object. Has to be one of the following:
 #' - `"logical"`
 #' - `"character"`
-#' - `"numeric"`
+#' - `"numeric"` (or `"integer"` if specifically checking for integers)
 #' - `"data.table"`
 #' - `"data.frame"`
 #' - `"DBI" | "dbcon" | "PostgreSQL"` for DB connection input
@@ -274,6 +274,11 @@ check_input <- function(arginput, argclass,
 
   argname <- deparse(substitute(arginput)) # get name of input argument
 
+  ## Define new function to check for integers
+  # (Note: base R `is.integer` does not return TRUE if class = numeric)
+  is.integer <- function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
+
+
   ##### CHECK 1 (for all inputs): Check if class is correct
   ## For DB connections
   if (any(grepl("dbi|con|posgre|sql", argclass, ignore.case = TRUE))){
@@ -288,17 +293,18 @@ check_input <- function(arginput, argclass,
         call. = FALSE
       )
     }
-  ## For all other input types
-  } else {
-    if (!any(class(arginput) %in% argclass)){
-      stop(
-        paste0("Invalid user input in '", sys.calls()[[1]], "': '",
+
+  ## For all other inputs
+  } else if ((argclass == "integer" & !is.integer(arginput)) |
+             argclass != "integer" & !any(class(arginput) %in% argclass)){
+    stop(
+      paste0("Invalid user input in '", sys.calls()[[1]], "': '",
              argname,"' needs to be of type '", paste(argclass, collapse = "' or '"), "'.",
              "\nPlease refer to the function documentation for more details."),
-        call. = FALSE
-      )
-    }
+      call. = FALSE
+    )
   }
+
 
   ##### CHECK 2 (for character inputs): Check if option is one of acceptable alternatives [optional]
   if (argclass == "character" & !is.null(options)){
@@ -310,7 +316,6 @@ check_input <- function(arginput, argclass,
         call. = FALSE
       )
     }
-
   }
 
 }
