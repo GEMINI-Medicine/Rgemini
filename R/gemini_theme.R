@@ -14,24 +14,30 @@
 #' @param base.family 
 #' @param base.color 
 #' @param bg.color 
+#' 
+#' @import ggplot2
+#' @import grid
+#' @import ggthemes
 #'
 #' @return
 #' @export
-#'
-#' @examples
 gemini_theme <- function(
     base.size=14, 
     base.family="sans", 
     base.colour='steelblue', 
-    bg.colour='aliceblue'
+    bg.colour='lightgray'
     ) {
 
   library(grid)
   library(ggthemes)
   res <- (
     theme_foundation(base_size=base.size, base_family=base.family)
-    + theme(plot.title = element_text(face = "bold",
-                                      size = rel(1.2), hjust = 0.5, margin = margin(0,0,20,0)),
+    + theme(plot.title = element_text(
+                  face = "bold",
+                  size = rel(1.2), 
+                  hjust = 0.5, 
+                  margin = margin(0,0,20,0)
+                  ),
             text = element_text(),
             panel.background = element_rect(colour = NA),
             plot.background = element_rect(colour = NA),
