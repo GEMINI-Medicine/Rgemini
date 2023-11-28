@@ -278,6 +278,10 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' Character vector specifying required data type of each column in `colnames`
 #' (e.g., `coltypes = c("integer", "character")`).
 #'
+#' @param unique (`logical`)\cr
+#' Flag indicating whether all rows in the provided input table need to be
+#' distinct.
+#'
 #'
 #' @return \cr
 #' If any of the input checks fail, function will return error message and
@@ -292,9 +296,9 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 check_input <- function(arginput, argtype,
                         options = NULL, # for character inputs only
                         interval = NULL, # for numeric inputs only
-                        colnames = NULL, coltypes = NULL) { # for data.table/data.frame inputs only
+                        colnames = NULL, coltypes = NULL, unique = FALSE) { # for data.table/data.frame inputs only
 
-  argname <- deparse(substitute(arginput)) # get name of input argument
+  argname <- deparse(substitute(arginput))[1] # get name of input argument
 
   ## Define new function to check for integers
   # (Note: base R's `is.integer` does not return TRUE if type == numeric)
@@ -313,7 +317,7 @@ check_input <- function(arginput, argtype,
   if (any(grepl("dbi|con|posgre|sql", argtype, ignore.case = TRUE))){
     if (!RPostgreSQL::isPostgresqlIdCurrent(arginput) & !grepl("PostgreSQL", class(arginput)[1])){
 
-      stop(paste0("Invalid user input in '", sys.calls()[[1]], "': '",
+      stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
                   argname,"' needs to be a valid database connection.\n",
                   "\nWe recommend the following method to establish the connection:\n",
                   "drv <- dbDriver('PostgreSQL')\n",
@@ -326,7 +330,7 @@ check_input <- function(arginput, argtype,
   } else if ((any(argtype == "integer") & !is.integer(arginput)) |
              !any(argtype == "integer") & !any(class(arginput) %in% argtype)){
 
-    stop(paste0("Invalid user input in '", sys.calls()[[1]], "': '",
+    stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
                 argname,"' needs to be of type '", paste(argtype, collapse = "' or '"), "'.",
                 "\nPlease refer to the function documentation for more details."),
          call. = FALSE)
@@ -336,7 +340,7 @@ check_input <- function(arginput, argtype,
   ##### CHECK 2 (for character inputs): Check if option is one of acceptable alternatives [optional]
   if (any(argtype == "character") & !is.null(options)){
     if (any(!arginput %in% options)){
-      stop(paste0("Invalid user input in '", sys.calls()[[1]], "': '",
+      stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
                   argname,"' needs to be either '", paste0(paste(options[1:length(options)-1], collapse = "', '"), "' or '", options[length(options)]), "'.",
                   "\nPlease refer to the function documentation for more details."),
            call. = FALSE)
@@ -347,7 +351,7 @@ check_input <- function(arginput, argtype,
   ##### CHECK 3 (for numeric/integer inputs): Check if number is within acceptable interval [optional]
   if (any(argtype %in% c("numeric", "integer")) & !is.null(interval)){
     if (arginput < interval[1] | arginput > interval[2]){
-      stop(paste0("Invalid user input in '", sys.calls()[[1]], "': '",
+      stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
                   argname,"' needs to be within interval [", interval[1], ", ", interval[2], "].",
                   "\nPlease refer to the function documentation for more details."),
            call. = FALSE)
@@ -362,7 +366,7 @@ check_input <- function(arginput, argtype,
     missing_cols <- setdiff(colnames, colnames(arginput))
 
     if (length(missing_cols) > 0){
-      stop(paste0("Invalid user input in '", sys.calls()[[1]], "': '",
+      stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
                   argname,"' input table is missing required column(s) '", paste0(missing_cols, collapse = "', '"), "'.",
                   "\nPlease refer to the function documentation for more details."),
            call. = FALSE)
@@ -379,9 +383,23 @@ check_input <- function(arginput, argtype,
     # for simplicity of error output:
     # only show first column where incorrect type was found (if any)
     if (length(cols[cols != coltypes]) > 0){
-      stop(paste0("Invalid user input in '", sys.calls()[[1]], "': '",
+      stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
                   colnames[which(cols != coltypes)][1],"' in input table '", argname, "' has to be of type '", coltypes[which(cols != coltypes)][1], "'.",
                   "\nPlease refer to the function documentation for more details."),
+           call. = FALSE)
+    }
+  }
+
+
+  ##### CHECK 6 (for data.table/data.frame inputs): Check if all rows are distinct [optional]
+  if (any(argtype %in% c("data.frame", "data.table")) & unique == TRUE){
+
+    # for simplicity of error output:
+    # only show first column where incorrect type was found (if any)
+    if (any(duplicated(arginput))){
+      stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': ",
+                  "Input table '", argname, "' has to contain unique rows.",
+                  "\nPlease check for duplicate entries and refer to the function documentation for more details."),
            call. = FALSE)
     }
   }
