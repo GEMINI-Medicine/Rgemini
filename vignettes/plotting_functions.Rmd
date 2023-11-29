@@ -69,12 +69,22 @@ cat(paste0('Currently, this function only simulates a subset of variables in the
 
 ## Plot histograms of multiple variables
 
-... code currently embedded in `dummy_ipadmdad`, planning to move this to a separate function...
-
 ```{r, out.width = "80%", fig.align = "center"}
-ipadmdad <- dummy_ipadmdad(n_encounters, n_hospitals, time_period, plot = TRUE)
+plot_histograms(cohort = ipadmdad, vars = c("age", "gender", "discharge_disposition"))
+```
+
+... or specify each variable as list item containing additional attributes:
+```{r, out.width = "80%", fig.align = "center"}
+vars <- list(
+  age = list(distribution = "normal", binwidth = 1),
+  gender = list(class = "categorical", label = "Sex")
+)
+
+plot_histograms(cohort = admdad, vars = vars)
 
 ```
+
+
 
 ## Plot by hospital
 
