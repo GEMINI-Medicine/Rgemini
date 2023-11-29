@@ -229,32 +229,39 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' Check user inputs
 #'
 #' @description
-#' Function checking whether user-provided input objects are appropriate.
-#' Checks for the following:
-#' - For all inputs: Whether input is of correct type (e.g., `logical`,
-#' `numeric`, `character` etc.)
-#' - For `numeric` inputs: Check whether provided input is within acceptable
-#' interval (e.g., > 0).
+#' Function checking whether user-provided inputs for a function are appropriate.
+#' The following check is applied for all inputs:
+#' - Whether input is of correct type (e.g., `logical`, `numeric`, `character`
+#' etc.)
+#' For some input types, the following additional checks can be applied
+#' optionally:
+#' - For `numeric`/`integer` inputs: Check whether provided input is within
+#' acceptable interval (e.g., between 1-100).
 #' - For `character` (categorical) inputs: Check whether input corresponds to
 #' one of acceptable categories.
 #' - For `data.table|data.frame` inputs: 1) Check whether required columns exist
-#' in table and 2) whether each column is of required type (optional)
+#' in table and 2) whether each column is of a specified type
 #'
 #' @param arginput (`character`)\cr
-#' Input argument to be checked.
+#' Input argument to be checked. Users can provide multiple inputs to be checked
+#' within a single call to this function by providing all inputs as a list (e.g.,
+#' `arginput = list(input1, input2)`). However, this only works if all input
+#' arguments (e.g., input1 AND input2) are supposed to meet the same criteria
+#' (e.g., both should be numeric within interval 0-10).
 #'
 #' @param argtype (`character`)\cr
-#' Acceptable type(es) of input object. Has to be one of the following:
+#' Example type(s) users can specify:
 #' - `"logical"`
 #' - `"character"`
 #' - `"numeric"` (or `"integer"` if specifically checking for integers)
 #' - `"data.table"`
 #' - `"data.frame"`
 #' - `"DBI" | "dbcon" | "PostgreSQL"` for DB connection input
+#' - `"list"`
 #'
 #' If an input object can be one of several acceptable types (e.g.,
 #' `data.table` OR `data.frame`), available options should be provided as a
-#' character vector (e.g., `argtype = c('data.frame', 'data.table')`).
+#' character vector (e.g., `argtype = c("data.frame", "data.table")`).
 #'
 #' @param options (`character`)\cr
 #' Optional input if argtype is `"character"`.
@@ -279,13 +286,13 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' (e.g., `coltypes = c("integer", "character")`).
 #'
 #' @param unique (`logical`)\cr
-#' Flag indicating whether all rows in the provided input table need to be
-#' distinct.
+#' Optional input if argtype is `"data.frame"` or `"data.table"`. Flag
+#' indicating whether all rows in the provided input table need to be distinct.
 #'
 #'
 #' @return \cr
-#' If any of the input checks fail, function will return error message and
-#' execution of called `Rgemini` function will be stopped.
+#' If any of the input checks fail, function will return error message and stop
+#' execution of parent `Rgemini` function.
 #'
 #'
 #' @examples
@@ -296,24 +303,32 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 check_input <- function(arginput, argtype,
                         options = NULL, # for character inputs only
                         interval = NULL, # for numeric inputs only
-                        colnames = NULL, coltypes = NULL, unique = FALSE) { # for data.table/data.frame inputs only
+                        colnames = NULL, # for data.table/data.frame inputs only
+                        coltypes = NULL, # "-"
+                        unique = FALSE # "-"
+) {
 
-   ## Users can provide multiple arginputs to be checked as a list
-   # ...or they might want to check an arginput that is supposed to be a list itself
-   # if argtype = "list" assume that user wants to check that arginput is a list,
-   # otherwise, assume user wants to check multiple arginputs that are provided as a list
-   if (any(class(arginput) == "list") & !any(argtype == "list")){
-     # get names of all arguments
-     argnames <- sapply(substitute(arginput), deparse)[-1]
 
-   } else {
+  ## Get argument names and restructure input
+  if (any(class(arginput) == "list")){
+    # Note: Users can provide multiple arginputs to be checked by combining them into a list
+    # ...or they might want to check an arginput that is supposed to be a list itself
+    # Here: We infer which one it is based on deparse(substitute)
+    # If arginput is provided as a single input name -> assume input itself is supposed to be a list
+    # If each list item corresponds to a separate argument name -> assume user wants to check individual items
+    # it's a bit hacky but seems to work for tested scenarios
+    argnames <- sapply(substitute(arginput), deparse)[-1]
+    if (length(argnames) < 1){
+      argnames <- deparse(substitute(arginput))
+      arginput <- list(arginput = arginput)
+    }
+  } else {
 
-     # get name of argument
-     argnames <- deparse(substitute(arginput))
+    # get name of argument
+    argnames <- deparse(substitute(arginput))
 
-     # turn arginput into list (for Map function below to work)
-     arginput <- list(arginput = arginput)
-    #arginput <- as.list(arginput)
+    # turn arginput into list (for Map function below to work)
+    arginput <- list(arginput = arginput)
 
   }
 
@@ -329,6 +344,7 @@ check_input <- function(arginput, argtype,
     }
   }
 
+  browser()
 
   ## Function defining all input checks to be run
   run_checks <- function(arginput, argname){

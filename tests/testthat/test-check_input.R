@@ -11,7 +11,8 @@ test_that("correct inputs pass checks", {
                                   input6 = data.table( # data.table
                                     genc_id = as.integer(5),
                                     discharge_date_time = '2020-01-01 00:00'),
-                                  input7 = dbDriver("PostgreSQL") # DB connection
+                                  input7 = dbDriver("PostgreSQL"), # DB connection
+                                  input8 = list(1,2) # list inputs
   ){
 
     expect_no_error(
@@ -49,6 +50,28 @@ test_that("correct inputs pass checks", {
       check_input(input7, "dbi")
     )
 
+    expect_no_error(
+      check_input(input8, "list")
+    )
+
+    ## Check multiple inputs provided as list
+    expect_no_error(
+      check_input(list(input2, input3), "numeric", interval = c(-100, 100))
+    )
+
+    ## Check list of lists
+    expect_no_error(
+      check_input(list(input8, input8), "list", interval = c(-100, 100))
+    )
+
+    expect_no_error(
+      check_input(list(input5, input6), c("data.frame", "data.table"),
+                  colnames = c("genc_id", "discharge_date_time"),
+                  coltypes = c("integer", "character"),
+                  unique = TRUE)
+    )
+
+
   }
 
   my_function_correct()
@@ -70,7 +93,8 @@ test_that("incorrect inputs fail check", {
                                   input6 = data.table( # data.table
                                     genc_id = as.integer(5),
                                     discharge_date_time = '2020-01-01 00:00'),
-                                  input7 = dbDriver("PostgreSQL") # DB connection
+                                  input7 = dbDriver("PostgreSQL"), # DB connection
+                                  input8 = list(1,2) # list inputs
   ){
 
     # wrong type
@@ -105,6 +129,16 @@ test_that("incorrect inputs fail check", {
     input6 <- rbind(input6, input6)
     expect_error(
       check_input(input6, c("data.frame", "data.table"), unique = TRUE)
+    )
+
+    # wrong type
+    expect_error(
+      check_input(input7, "list")
+    )
+
+    # wrong type for 1st list entry
+    expect_error(
+      check_input(list(input7, input8), "list")
     )
 
   }
