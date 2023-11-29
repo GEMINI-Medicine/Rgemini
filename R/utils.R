@@ -298,20 +298,25 @@ check_input <- function(arginput, argtype,
                         interval = NULL, # for numeric inputs only
                         colnames = NULL, coltypes = NULL, unique = FALSE) { # for data.table/data.frame inputs only
 
-  # if checking multiple arguments in a single call (e.g., check_input(c(TRUE,TRUE), "logical")),
-  # function currently only supports simple check of whether all inputs are of a single, correct type (e.g., all logical)
-  if (length(arginput) > 1 & any(!is.null(options), !is.null(interval), !is.null(colnames), !is.null(coltypes), !is.null(unique)){
-    stop('Note: When multiple input arguments are checked the same time, the check_input() function only checks that all inputs are of a single, correct type (e.g., all logical).
-            All additional checks should be conducted individually for each input argument.')
+   ## Users can provide multiple arginputs to be checked as a list
+   # ...or they might want to check an arginput that is supposed to be a list itself
+   # if argtype = "list" assume that user wants to check that arginput is a list,
+   # otherwise, assume user wants to check multiple arginputs that are provided as a list
+   if (any(class(arginput) == "list") & !any(argtype == "list")){
+     # get names of all arguments
+     argnames <- sapply(substitute(arginput), deparse)[-1]
+
+   } else {
+
+     # get name of argument
+     argnames <- deparse(substitute(arginput))
+
+     # turn arginput into list (for Map function below to work)
+     arginput <- list(arginput = arginput)
+    #arginput <- as.list(arginput)
+
   }
 
-  ## Get name of input argument(s)
-  if (length(arginput) > 1){ # if checking more than 1 input at the same time
-    # get names of all relevant input arguments
-    argname <- sapply(substitute(arginput), deparse)[-1]
-  } else {
-    argname <- deparse(substitute(arginput))
-  }
 
   ## Define new function to check for integers
   # (Note: base R's `is.integer` does not return TRUE if type == numeric)
@@ -325,18 +330,19 @@ check_input <- function(arginput, argtype,
   }
 
 
-  ##### CHECK 1 (for all inputs): Check if type is correct
-  # can check multiple inputs that should be of same type at the same time
-  check_input_type <- function(arginput){
+  ## Function defining all input checks to be run
+  run_checks <- function(arginput, argname){
+
+    ###### CHECK 1 (for all input types): Check if type is correct
     ## For DB connections
     if (any(grepl("dbi|con|posgre|sql", argtype, ignore.case = TRUE))){
       if (!RPostgreSQL::isPostgresqlIdCurrent(arginput) & !grepl("PostgreSQL", class(arginput)[1])){
 
         stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
-                    paste0(argname, collapse = "', '"),"' needs to be a valid database connection.\n",
+                    argname,"' needs to be a valid database connection.\n",
                     "\nWe recommend the following method to establish the connection:\n",
                     "drv <- dbDriver('PostgreSQL')\n",
-                    "dbcon <- DBI::dbConnect(drv, dbname = 'db_name', host = 'XXX.XX.XX.net', port = 1234, user = getPass('Enter user:'), password = getPass('password'))\n",
+                    "dbcon <- DBI::dbConnect(drv, dbname = 'db_name', host = 'XXX-XX-XX.net', port = 1234, user = getPass('Enter user:'), password = getPass('password'))\n",
                     "\nPlease refer to the function documentation for more details."),
              call. = FALSE)
       }
@@ -346,16 +352,13 @@ check_input <- function(arginput, argtype,
                !any(argtype == "integer") & !any(class(arginput) %in% argtype)){
 
       stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
-                  paste(argname, collapse = "', '"),"' needs to be of type '", paste(argtype, collapse = "' or '"), "'.",
+                  argname,"' needs to be of type '", paste(argtype, collapse = "' or '"), "'.",
                   "\nPlease refer to the function documentation for more details."),
            call. = FALSE)
     }
-  }
-  sapply(arginput, check_input_type)
 
 
-  ## All remaining checks below should be done separately for individual inputs
-    ##### CHECK 2 (for character inputs): Check if option is one of acceptable alternatives [optional]
+    ###### CHECK 2 (for character inputs): Check if option is one of acceptable alternatives [optional]
     if (any(argtype == "character") & !is.null(options)){
       if (any(!arginput %in% options)){
         stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
@@ -366,18 +369,18 @@ check_input <- function(arginput, argtype,
     }
 
 
-    ##### CHECK 3 (for numeric/integer inputs): Check if number is within acceptable interval [optional]
+    ###### CHECK 3 (for numeric/integer inputs): Check if number is within acceptable interval [optional]
     if (any(argtype %in% c("numeric", "integer")) & !is.null(interval)){
       if (arginput < interval[1] | arginput > interval[2]){
         stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
-                    argname,"' needs to be within interval [", interval[1], ", ", interval[2], "].",
+                    argname,"' needs to be within closed interval [", interval[1], ", ", interval[2], "].",
                     "\nPlease refer to the function documentation for more details."),
              call. = FALSE)
       }
     }
 
 
-    ##### CHECK 4 (for data.table/data.frame inputs): Check if relevant columns exist [optional]
+    ###### CHECK 4 (for data.table/data.frame inputs): Check if relevant columns exist [optional]
     if (any(argtype %in% c("data.frame", "data.table")) & !is.null(colnames)){
 
       # get missing columns
@@ -392,11 +395,11 @@ check_input <- function(arginput, argtype,
     }
 
 
-    ##### CHECK 5 (for data.table/data.frame inputs): Check if required columns are of correct type [optional]
+    ###### CHECK 5 (for data.table/data.frame inputs): Check if required columns are of correct type [optional]
     if (any(argtype %in% c("data.frame", "data.table")) & !is.null(coltypes)){
 
       # get class of each required column
-      cols <- sapply(arginput %>% select(all_of(colnames)), class)
+      cols <- sapply(arginput %>% dplyr::select(all_of(colnames)), class)
 
       # for simplicity of error output:
       # only show first column where incorrect type was found (if any)
@@ -409,7 +412,7 @@ check_input <- function(arginput, argtype,
     }
 
 
-    ##### CHECK 6 (for data.table/data.frame inputs): Check if all rows are distinct [optional]
+    ###### CHECK 6 (for data.table/data.frame inputs): Check if all rows are distinct [optional]
     if (any(argtype %in% c("data.frame", "data.table")) & unique == TRUE){
 
       # for simplicity of error output:
@@ -421,6 +424,11 @@ check_input <- function(arginput, argtype,
              call. = FALSE)
       }
     }
+  }
+
+
+  ### Run checks on all input arguments (if multiple)
+  check_all <- Map(run_checks, arginput, argnames)
 
 }
 
