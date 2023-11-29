@@ -235,6 +235,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' etc.)
 #' For some input types, the following additional checks can be applied
 #' optionally:
+#' - Check whether length of provided input is as expected
 #' - For `numeric`/`integer` inputs: Check whether provided input is within
 #' acceptable interval (e.g., between 1-100).
 #' - For `character` (categorical) inputs: Check whether input corresponds to
@@ -262,6 +263,10 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' If an input object can be one of several acceptable types (e.g.,
 #' `data.table` OR `data.frame`), available options should be provided as a
 #' character vector (e.g., `argtype = c("data.frame", "data.table")`).
+#'
+#' @param length (`numeric`)\cr
+#' Optional input specifying the expected length of a given input argument
+#' (e.g., use `length = 2` to check if a vector/list contains 2 elements).
 #'
 #' @param options (`character`)\cr
 #' Optional input if argtype is `"character"`.
@@ -301,6 +306,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' }
 #'
 check_input <- function(arginput, argtype,
+                        length = NULL,
                         options = NULL, # for character inputs only
                         interval = NULL, # for numeric inputs only
                         colnames = NULL, # for data.table/data.frame inputs only
@@ -344,7 +350,6 @@ check_input <- function(arginput, argtype,
     }
   }
 
-  browser()
 
   ## Function defining all input checks to be run
   run_checks <- function(arginput, argname){
@@ -360,43 +365,55 @@ check_input <- function(arginput, argtype,
                     "drv <- dbDriver('PostgreSQL')\n",
                     "dbcon <- DBI::dbConnect(drv, dbname = 'db_name', host = 'XXX-XX-XX.net', port = 1234, user = getPass('Enter user:'), password = getPass('password'))\n",
                     "\nPlease refer to the function documentation for more details."),
-             call. = FALSE)
+             call. = FALSE, immediate. = TRUE)
       }
 
       ## For all other inputs
-    } else if ((any(argtype == "integer") & !is.integer(arginput)) |
+    } else if ((any(argtype == "integer") & !all(is.integer(arginput))) |
                !any(argtype == "integer") & !any(class(arginput) %in% argtype)){
 
       stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
                   argname,"' needs to be of type '", paste(argtype, collapse = "' or '"), "'.",
                   "\nPlease refer to the function documentation for more details."),
-           call. = FALSE)
+           call. = FALSE, immediate. = TRUE)
     }
 
 
-    ###### CHECK 2 (for character inputs): Check if option is one of acceptable alternatives [optional]
+
+    ###### CHECK 2: Check if length of input argument is as expected [optional]
+    if (!is.null(length)){
+      if (length(arginput) != length){
+        stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
+                    argname,"' needs to be of length ", length,
+                    "\nPlease refer to the function documentation for more details."),
+             call. = FALSE, immediate. = TRUE)
+      }
+    }
+
+
+    ###### CHECK 3 (for character inputs): Check if option is one of acceptable alternatives [optional]
     if (any(argtype == "character") & !is.null(options)){
       if (any(!arginput %in% options)){
         stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
                     argname,"' needs to be either '", paste0(paste(options[1:length(options)-1], collapse = "', '"), "' or '", options[length(options)]), "'.",
                     "\nPlease refer to the function documentation for more details."),
-             call. = FALSE)
+             call. = FALSE, immediate. = TRUE)
       }
     }
 
 
-    ###### CHECK 3 (for numeric/integer inputs): Check if number is within acceptable interval [optional]
+    ###### CHECK 4 (for numeric/integer inputs): Check if number is within acceptable interval [optional]
     if (any(argtype %in% c("numeric", "integer")) & !is.null(interval)){
-      if (arginput < interval[1] | arginput > interval[2]){
+      if (any(arginput < interval[1]) | any(arginput > interval[2])){
         stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
                     argname,"' needs to be within closed interval [", interval[1], ", ", interval[2], "].",
                     "\nPlease refer to the function documentation for more details."),
-             call. = FALSE)
+             call. = FALSE, immediate. = TRUE)
       }
     }
 
 
-    ###### CHECK 4 (for data.table/data.frame inputs): Check if relevant columns exist [optional]
+    ###### CHECK 5 (for data.table/data.frame inputs): Check if relevant columns exist [optional]
     if (any(argtype %in% c("data.frame", "data.table")) & !is.null(colnames)){
 
       # get missing columns
@@ -406,12 +423,12 @@ check_input <- function(arginput, argtype,
         stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
                     argname,"' input table is missing required column(s) '", paste0(missing_cols, collapse = "', '"), "'.",
                     "\nPlease refer to the function documentation for more details."),
-             call. = FALSE)
+             call. = FALSE, immediate. = TRUE)
       }
     }
 
 
-    ###### CHECK 5 (for data.table/data.frame inputs): Check if required columns are of correct type [optional]
+    ###### CHECK 6 (for data.table/data.frame inputs): Check if required columns are of correct type [optional]
     if (any(argtype %in% c("data.frame", "data.table")) & !is.null(coltypes)){
 
       # get class of each required column
@@ -419,16 +436,17 @@ check_input <- function(arginput, argtype,
 
       # for simplicity of error output:
       # only show first column where incorrect type was found (if any)
-      if (length(cols[cols != coltypes]) > 0){
+      # ignore coltypes without specification ("")
+      if (length(cols[cols != coltypes & coltypes != ""]) > 0){
         stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
-                    colnames[which(cols != coltypes)][1],"' in input table '", argname, "' has to be of type '", coltypes[which(cols != coltypes)][1], "'.",
+                    colnames[which(cols != coltypes & coltypes != "")][1],"' in input table '", argname, "' has to be of type '", coltypes[which(cols != coltypes & coltypes != "")][1], "'.",
                     "\nPlease refer to the function documentation for more details."),
-             call. = FALSE)
+             call. = FALSE, immediate. = TRUE)
       }
     }
 
 
-    ###### CHECK 6 (for data.table/data.frame inputs): Check if all rows are distinct [optional]
+    ###### CHECK 7 (for data.table/data.frame inputs): Check if all rows are distinct [optional]
     if (any(argtype %in% c("data.frame", "data.table")) & unique == TRUE){
 
       # for simplicity of error output:
@@ -437,7 +455,7 @@ check_input <- function(arginput, argtype,
         stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': ",
                     "Input table '", argname, "' has to contain unique rows.",
                     "\nPlease check for duplicate entries and refer to the function documentation for more details."),
-             call. = FALSE)
+             call. = FALSE, immediate. = TRUE)
       }
     }
   }

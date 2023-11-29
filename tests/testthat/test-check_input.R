@@ -102,6 +102,11 @@ test_that("incorrect inputs fail check", {
       check_input(input2, "integer")
     )
 
+    # wrong length
+    expect_error(
+      check_input(input1, "logical", length = 2)
+    )
+
     # wrong interval for numeric/integer variable
     expect_error(
       check_input(input3, "numeric", interval = c(-Inf, 0))
