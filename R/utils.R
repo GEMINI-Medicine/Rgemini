@@ -1,9 +1,12 @@
-
 #' Imports for the entire package
 #' Doesn't require Depends or `@import` per function
 #'
-#' @rawNamespace import(data.table, except = c("first", "last", "between", "month", "hour", "quarter", "week", "year", "wday", "second", "minute", "mday", "yday", "isoweek"))
-#' @rawNamespace import(dplyr, except = c("first", "last", "between", "matches"))
+#' @rawNamespace
+#' import(data.table, except = c("first", "last", "between", "month", "hour",
+#' "quarter", "week", "year", "wday", "second", "minute", "mday", "yday",
+#' "isoweek"))
+#' @rawNamespace
+#' import(dplyr, except = c("first", "last", "between", "matches"))
 #'
 NULL
 
@@ -26,7 +29,7 @@ NULL
 #' @export
 #'
 #' @examples
-#' c('x', 'y') %ni% 'x'
+#' c("x", "y") %ni% "x"
 #'
 `%ni%` <- function(x, y) {
   Negate(`%in%`)(x, y)
@@ -37,7 +40,8 @@ NULL
 #' Count missing
 #'
 #' @description
-#' This function checks the number of missingness in a vector, returns the results in the exact number (percentage)
+#' This function checks the number of missingness in a vector, returns the
+#' results in the exact number (percentage)
 #'
 #' @param x (`vector`)
 #'
@@ -57,8 +61,7 @@ count_missing <- function(x) {
 #'
 #' @examples
 #' lunique(c(1, 1, 2, 2, 2, 3))
-
-lunique <- function(x){
+lunique <- function(x) {
   length(unique(x))
 }
 
@@ -67,9 +70,9 @@ lunique <- function(x){
 #' Coerce to `data.table`
 #'
 #' @description
-#' Some `Rgemini` functions rely on `data.table` operations and assume the input is provided
-#' in `data.table` format. If it  is not, coerce with message to ensure the function logic
-#' works without breaking.
+#' Some `Rgemini` functions rely on `data.table` operations and assume the input
+#' is provided in `data.table` format. If it  is not, coerce with message to
+#' ensure the function logic works without breaking.
 #'
 #' @param data (`data.frame` or `data.table`)\cr
 #' The data to check class of and coerce to `data.table` if necessary.
@@ -87,7 +90,10 @@ coerce_to_datatable <- function(data) {
 
   if (!is.data.table(data)) {
     data <- as.data.table(data)
-    warning(var, " was passed as a data.frame and has been coerced to a data.table", immediate. = TRUE)
+    warning(var,
+      " was passed as a data.frame and has been coerced to a data.table",
+      immediate. = TRUE
+    )
   }
   return(data)
 }
@@ -143,11 +149,12 @@ coerce_to_datatable <- function(data) {
 #' \dontrun{
 #' drv <- dbDriver("PostgreSQL")
 #' dbcon <- DBI::dbConnect(drv,
-#'                         dbname = "db",
-#'                         host = "172.XX.XX.XXX",
-#'                         port = 1234,
-#'                         user = getPass("Enter user:"),
-#'                         password = getPass("password"))
+#'   dbname = "db",
+#'   host = "172.XX.XX.XXX",
+#'   port = 1234,
+#'   user = getPass("Enter user:"),
+#'   password = getPass("password")
+#' )
 #'
 #' admdad_name <- find_db_tablename(dbcon, "admdad")
 #'
@@ -156,23 +163,21 @@ coerce_to_datatable <- function(data) {
 #' }
 #'
 find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
-
   ## Check if table input is supported
-  if (!drm_table %in% c("admdad", "ipdiagnosis", "ipintervention", "ipcmg", "lab", "transfusion")) {
-    stop("Invalid user input for argument drm_table.
-          Currently, only the following table names are supported:
-         'admdad', 'ipdiagnosis', 'ipintervention', 'ipcmg', 'lab', or 'transfusion'")
-  }
+  check_input(drm_table, "character",
+    options = c(
+      "admdad", "ipdiagnosis", "ipintervention", "ipcmg",
+      "lab", "transfusion"
+    )
+  )
 
   ## Define search criteria for different tables
   search_fn <- function(table_names, table = drm_table) {
-
     if (drm_table %in% c("lab", "transfusion")) {
-      # for lab & transfusion table table:
-      # check for specific table names lab/lab_subset and transfusion/transfusion_subset
+      # for lab & transfusion table table: check for specific table names
+      # lab/lab_subset and transfusion/transfusion_subset
       # (otherwise, lab/transfusion_mapping or other tables might be returned)
       res <- table_names[table_names %in% c(table, paste0(table, "subset"))]
-
     } else {
       # for all other tables, simply search for names starting with search term
       res <- table_names[grepl(paste0("^", drm_table), table_names)]
@@ -188,9 +193,12 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 
   ## If none found, might be due to DB versions with foreign data wrappers
   #  In that case try this:
-  if (length(table_name) == 0){
-    tables <- dbGetQuery(dbcon, "SELECT table_name from information_schema.tables
-                                 WHERE table_type='FOREIGN' and table_schema='public';")$table_name
+  if (length(table_name) == 0) {
+    tables <- dbGetQuery(
+      dbcon,
+      "SELECT table_name from information_schema.tables
+      WHERE table_type='FOREIGN' and table_schema='public';"
+    )$table_name
     table_name <- search_fn(tables)
   }
 
@@ -202,22 +210,31 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
   db_name <- dbGetQuery(dbcon, "SELECT current_database()")$current_database
 
   # error if no table found
-  if (length(table_name) == 0){
-    stop(paste0("No table corresponding to '", drm_table, "' identified in database '", db_name,  "'.
-                 Please make sure your database contains the relevant table."))
+  if (length(table_name) == 0) {
+    stop(paste0(
+      "No table corresponding to '", drm_table,
+      "' identified in database '", db_name, "'.
+      Please make sure your database contains the relevant table."
+    ))
   }
 
   # error if more than 1 table found
-  if (length(table_name) > 1){
-    stop(paste0("Multiple tables corresponding to '", drm_table, "' identified in database '", db_name,  ": ", paste0(table_name, collapse = ", "), ".
-                 Please ensure that the searched table name results in a unique match."))
+  if (length(table_name) > 1) {
+    stop(paste0(
+      "Multiple tables corresponding to '", drm_table,
+      "' identified in database '", db_name, ": ",
+      paste0(table_name, collapse = ", "), ".
+      Please ensure that the searched table name results in a unique match."
+    ))
   }
 
   ## show identified table
   if (verbose) {
-    cat(paste0("\nThe following table in '", db_name,
-               "' was found to match the DRM table name '",
-               drm_table, "': '", table_name, "'\n "))
+    cat(paste0(
+      "\nThe following table in '", db_name,
+      "' was found to match the DRM table name '",
+      drm_table, "': '", table_name, "'\n "
+    ))
   }
 
   return(table_name)
@@ -229,8 +246,8 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' Check user inputs
 #'
 #' @description
-#' Function checking whether user-provided inputs for a function are appropriate.
-#' The following check is applied for all inputs:
+#' Function checking whether user-provided inputs for a function are
+#' appropriate. The following check is applied for all inputs:
 #' - Whether input is of correct type (e.g., `logical`, `numeric`, `character`
 #' etc.)
 #' For some input types, the following additional checks can be applied
@@ -246,10 +263,10 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #'
 #' @param arginput (`character`)\cr
 #' Input argument to be checked. Users can provide multiple inputs to be checked
-#' within a single call to this function by providing all inputs as a list (e.g.,
-#' `arginput = list(input1, input2)`). However, this only works if all input
-#' arguments (e.g., input1 AND input2) are supposed to meet the same criteria
-#' (e.g., both should be numeric within interval 0-10).
+#' within a single call to this function by providing all inputs as a list
+#' (e.g., `arginput = list(input1, input2)`). However, this only works if all
+#' input arguments (e.g., input1 AND input2) are supposed to meet the same
+#' criteria (e.g., both should be numeric within interval 0-10).
 #'
 #' @param argtype (`character`)\cr
 #' Required type of input argument based on `class()`. Example type(s) users can
@@ -311,58 +328,67 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' my_function <- function(input1 = TRUE, # logical
 #'                         input2 = 2, # numeric
 #'                         input3 = 1.5, # numeric
-#'                         input4 = data.frame(genc_id = as.integer(5),
-#'                                             discharge_date_time = "2020-01-01")){
+#'                         input4 = data.frame(
+#'                           genc_id = as.integer(5),
+#'                           discharge_date_time = Sys.time(),
+#'                           hospital_num = 1
+#'                         )) {
+#'   # check single input
+#'   check_input(input1, "logical")
 #'
-#'    # check single input
-#'    check_input(input1, "logical")
+#'   # check multiple inputs that should be of same type/meet same criteria
+#'   check_input(
+#'     arginput = list(input2, input3), argtype = "numeric",
+#'     length = 1, interval = c(1, 10)
+#'   )
 #'
-#'    # check multiple inputs that should be of same type/meet same criteria
-#'    check_input(arginput = list(input2, input3), argtype = "numeric",
-#'                length = 1, interval = c(1, 10))
+#'   # check table input (can be either data.frame or data.table)
+#'   check_input(input4,
+#'     argtype = c("data.table", "data.frame"),
+#'     colnames = c("genc_id", "discharge_date_time", "hospital_num"),
+#'     coltypes = c("integer", "character|POSIXct", ""),
+#'     unique = TRUE
+#'   )
+#' }
 #'
-#'    # check table input (can be either data.frame or data.table)
-#'    check_input(input4, argtype = c("data.table", "data.frame"),
-#'                colnames = c("genc_id", "discharge_date_time", "hospital_num"),
-#'                coltypes = c("integer", "character|POSIXct", ""),
-#'                unique = TRUE)
-#'
-#'  }
-#'
+#' # will not result in any errors (default inputs are correct)
 #' my_function()
 #'
+#' # will result in an error
+#' my_function(input1 = 1) # input 1 has to be logical
 #' }
 #'
 check_input <- function(arginput, argtype,
                         length = NULL,
-                        options = NULL,  # for character inputs only
+                        options = NULL, # for character inputs only
                         interval = NULL, # for numeric inputs only
-                        colnames = NULL, # for data.table/data.frame inputs only
+                        colnames = NULL, # for data.table/.frame inputs only
                         coltypes = NULL, #          "-"
-                        unique = FALSE){ #          "-"
+                        unique = FALSE) { #          "-"
 
 
   ## Get argument names and restructure input
-  if (any(class(arginput) == "list")){
-    # Note: Users can provide multiple arginputs to be checked by combining them into a list
-    # ...or they might want to check an arginput that is supposed to be a list itself
+  if (any(class(arginput) == "list")) {
+    # Note: Users can provide multiple arginputs to be checked by combining them
+    # into a list ...or they might want to check an arginput that is supposed to
+    # be a list itself
     # Here: We infer which one it is based on deparse(substitute)
-    # If arginput is provided as a single input name -> assume input itself is supposed to be a list
-    # If each list item corresponds to a separate argument name -> assume user wants to check individual items
+    # If arginput is provided as a single input name:
+    # -> assume input itself is supposed to be a list
+    # If each list item corresponds to a separate argument name
+    # -> assume user wants to check individual items
     # it's a bit hacky but seems to work for tested scenarios
     argnames <- sapply(substitute(arginput), deparse)[-1]
-    if (length(argnames) < 1){
+    if (length(argnames) < 1) {
       argnames <- deparse(substitute(arginput))
       arginput <- list(arginput = arginput)
     }
   } else {
-
     # get name of argument
     argnames <- deparse(substitute(arginput))
 
     # turn arginput into list (for Map function below to work)
     arginput <- list(arginput = arginput)
-
   }
 
 
@@ -370,9 +396,9 @@ check_input <- function(arginput, argtype,
   #  Note: base R's `is.integer` does not return TRUE if type == numeric
   #  Note 2: For coltypes check below, this function is not used
   #  (instead coltypes are checked for whether class(column) returns "integer")
-  is.integer <- function(x){
-    if (is.numeric(x)){
-      tol = .Machine$double.eps^0.5
+  is_integer <- function(x) {
+    if (is.numeric(x)) {
+      tol <- .Machine$double.eps^0.5
       return(abs(x - round(x)) < tol)
     } else {
       return(FALSE)
@@ -381,109 +407,155 @@ check_input <- function(arginput, argtype,
 
 
   ## Function defining all input checks
-  run_checks <- function(arginput, argname){
-
+  run_checks <- function(arginput, argname) {
     ###### CHECK 1 (for all input types): Check if type is correct
     ## For DB connections
-    if (any(grepl("dbi|con|posgre|sql", argtype, ignore.case = TRUE))){
-      if (!RPostgreSQL::isPostgresqlIdCurrent(arginput) & !grepl("PostgreSQL", class(arginput)[1])){
-
-        stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
-                    argname,"' needs to be a valid database connection.\n",
-                    "\nWe recommend the following method to establish the connection:\n",
-                    "drv <- dbDriver('PostgreSQL')\n",
-                    "dbcon <- DBI::dbConnect(drv, dbname = 'db_name', host = 'XXX-XX-XX.net', port = 1234, user = getPass('Enter user:'), password = getPass('password'))\n",
-                    "\nPlease refer to the function documentation for more details."),
-             call. = FALSE, immediate. = TRUE)
+    if (any(grepl("dbi|con|posgre|sql", argtype, ignore.case = TRUE))) {
+      if (!RPostgreSQL::isPostgresqlIdCurrent(arginput) &&
+        !grepl("PostgreSQL", class(arginput)[1])) {
+        stop(
+          paste0(
+            "Invalid user input in '",
+            as.character(sys.calls()[[1]])[1], "': '",
+            argname, "' needs to be a valid database connection.\n",
+            "We recommend the following method to establish a DB connection:\n",
+            "drv <- dbDriver('PostgreSQL')\n",
+            "dbcon <- DBI::dbConnect(drv, dbname = 'db_name', ",
+            "host = 'domain_name.net', port = 1234, ",
+            "user = getPass('Enter user:'), password = getPass('password'))\n",
+            "\nPlease refer to the function documentation for more details."
+          ),
+          call. = FALSE
+        )
       }
 
       ## For all other inputs
-    } else if ((any(argtype == "integer") & !all(is.integer(arginput))) |
-               !any(argtype == "integer") & !any(class(arginput) %in% argtype)){
-
-      stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
-                  argname,"' needs to be of type '", paste(argtype, collapse = "' or '"), "'.",
-                  "\nPlease refer to the function documentation for more details."),
-           call. = FALSE, immediate. = TRUE)
+    } else if ((any(argtype == "integer") && !all(is_integer(arginput))) ||
+      !any(argtype == "integer") && !any(class(arginput) %in% argtype)) {
+      stop(
+        paste0(
+          "Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
+          argname, "' needs to be of type '", paste(argtype,
+            collapse = "' or '"
+          ), "'.",
+          "\nPlease refer to the function documentation for more details."
+        ),
+        call. = FALSE
+      )
     }
 
 
 
     ###### CHECK 2: Check if length of input argument is as expected [optional]
-    if (!is.null(length)){
-      if (length(arginput) != length){
-        stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
-                    argname,"' needs to be of length ", length,
-                    "\nPlease refer to the function documentation for more details."),
-             call. = FALSE, immediate. = TRUE)
+    if (!is.null(length)) {
+      if (length(arginput) != length) {
+        stop(
+          paste0(
+            "Invalid user input in '", as.character(sys.calls()[[1]])[1],
+            "': '", argname, "' needs to be of length ", length,
+            "\nPlease refer to the function documentation for more details."
+          ),
+          call. = FALSE
+        )
       }
     }
 
 
-    ###### CHECK 3 (for character inputs): Check if option is one of acceptable alternatives [optional]
-    if (any(argtype == "character") & !is.null(options)){
-      if (any(!arginput %in% options)){
-        stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
-                    argname,"' needs to be either '", paste0(paste(options[1:length(options)-1], collapse = "', '"), "' or '", options[length(options)]), "'.",
-                    "\nPlease refer to the function documentation for more details."),
-             call. = FALSE, immediate. = TRUE)
+    ###### CHECK 3 (for character inputs):
+    ###### Check if option is one of acceptable alternatives [optional]
+    if (any(argtype == "character") && !is.null(options)) {
+      if (any(!arginput %in% options)) {
+        stop(
+          paste0(
+            "Invalid user input in '", as.character(sys.calls()[[1]])[1],
+            "': '", argname, "' needs to be either '", paste0(
+              paste(options[1:length(options) - 1], collapse = "', '"),
+              "' or '", options[length(options)]
+            ), "'.",
+            "\nPlease refer to the function documentation for more details."
+          ),
+          call. = FALSE
+        )
       }
     }
 
 
-    ###### CHECK 4 (for numeric/integer inputs): Check if number is within acceptable interval [optional]
-    if (any(argtype %in% c("numeric", "integer")) & !is.null(interval)){
-      if (any(arginput < interval[1]) | any(arginput > interval[2])){
-        stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
-                    argname,"' needs to be within closed interval [", interval[1], ", ", interval[2], "].",
-                    "\nPlease refer to the function documentation for more details."),
-             call. = FALSE, immediate. = TRUE)
+    ###### CHECK 4 (for numeric/integer inputs):
+    ###### Check if number is within acceptable interval [optional]
+    if (any(argtype %in% c("numeric", "integer")) && !is.null(interval)) {
+      if (any(arginput < interval[1]) || any(arginput > interval[2])) {
+        stop(
+          paste0(
+            "Invalid user input in '", as.character(sys.calls()[[1]])[1],
+            "': '", argname, "' needs to be within closed interval [",
+            interval[1], ", ", interval[2], "].",
+            "\nPlease refer to the function documentation for more details."
+          ),
+          call. = FALSE
+        )
       }
     }
 
 
-    ###### CHECK 5 (for data.table/data.frame inputs): Check if relevant columns exist [optional]
-    if (any(argtype %in% c("data.frame", "data.table")) & !is.null(colnames)){
-
+    ###### CHECK 5 (for data.table/data.frame inputs):
+    ###### Check if relevant columns exist [optional]
+    if (any(argtype %in% c("data.frame", "data.table")) && !is.null(colnames)) {
       # get missing columns
       missing_cols <- setdiff(colnames, colnames(arginput))
 
-      if (length(missing_cols) > 0){
-        stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
-                    argname,"' input table is missing required column(s) '", paste0(missing_cols, collapse = "', '"), "'.",
-                    "\nPlease refer to the function documentation for more details."),
-             call. = FALSE, immediate. = TRUE)
+      if (length(missing_cols) > 0) {
+        stop(
+          paste0(
+            "Invalid user input in '", as.character(sys.calls()[[1]])[1],
+            "': '", argname, "' input table is missing required column(s) '",
+            paste0(missing_cols, collapse = "', '"), "'.",
+            "\nPlease refer to the function documentation for more details."
+          ),
+          call. = FALSE
+        )
       }
     }
 
 
-    ###### CHECK 6 (for data.table/data.frame inputs): Check if required columns are of correct type [optional]
-    if (any(argtype %in% c("data.frame", "data.table")) & !is.null(coltypes)){
-
+    ###### CHECK 6 (for data.table/data.frame inputs):
+    ###### Check if required columns are of correct type [optional]
+    if (any(argtype %in% c("data.frame", "data.table")) && !is.null(coltypes)) {
       # for simplicity of error output:
       # only show first column where incorrect type was found (if any)
       # ignore coltypes without specification ("")
-      check_col_type <- function(col, coltype){
-        if (coltype != "" & !grepl(coltype, class(as.data.table(arginput)[[col]]), ignore.case = TRUE)){
-          stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
-                      col,"' in input table '", argname, "' has to be of type '", coltype, "'.",
-                      "\nPlease refer to the function documentation for more details."),
-               call. = FALSE, immediate. = TRUE)
+      check_col_type <- function(col, coltype) {
+        if (coltype != "" && !grepl(coltype,
+          class(as.data.table(arginput)[[col]]),
+          ignore.case = TRUE
+        )) {
+          stop(
+            paste0(
+              "Invalid user input in '", as.character(sys.calls()[[1]])[1],
+              "': '", col, "' in input table '", argname,
+              "' has to be of type '", coltype, "'.",
+              "\nPlease refer to the function documentation for more details."
+            ),
+            call. = FALSE
+          )
         }
       }
       mapply(check_col_type, colnames, coltypes)
-
     }
 
 
-    ###### CHECK 7 (for data.table/data.frame inputs): Check if all rows are distinct [optional]
-    if (any(argtype %in% c("data.frame", "data.table")) & unique == TRUE){
-
-      if (any(duplicated(arginput))){
-        stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': ",
-                    "Input table '", argname, "' has to contain unique rows.",
-                    "\nPlease check for duplicate entries and refer to the function documentation for more details."),
-             call. = FALSE, immediate. = TRUE)
+    ###### CHECK 7 (for data.table/data.frame inputs):
+    ###### Check if all rows are distinct [optional]
+    if (any(argtype %in% c("data.frame", "data.table")) && unique == TRUE) {
+      if (any(duplicated(arginput))) {
+        stop(
+          paste0(
+            "Invalid user input in '", as.character(sys.calls()[[1]])[1], "': ",
+            "Input table '", argname, "' has to contain unique rows.",
+            "\nPlease check for duplicate entries and ",
+            "refer to the function documentation for more details."
+          ),
+          call. = FALSE
+        )
       }
     }
   }
@@ -491,6 +563,4 @@ check_input <- function(arginput, argtype,
 
   ### Run checks on all input arguments (if multiple)
   check_all <- Map(run_checks, arginput, argnames)
-
 }
-
