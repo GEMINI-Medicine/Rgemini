@@ -67,7 +67,7 @@ test_that("correct inputs pass checks", {
     expect_no_error(
       check_input(list(input5, input6), c("data.frame", "data.table"),
                   colnames = c("genc_id", "discharge_date_time"),
-                  coltypes = c("integer", "character"),
+                  coltypes = c("integer|numeric", ""),
                   unique = TRUE)
     )
 

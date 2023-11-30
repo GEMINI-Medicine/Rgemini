@@ -241,7 +241,8 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' - For `character` (categorical) inputs: Check whether input corresponds to
 #' one of acceptable categories.
 #' - For `data.table|data.frame` inputs: 1) Check whether required columns exist
-#' in table and 2) whether each column is of a specified type
+#' in table, 2) whether each column is of a specified type, and 3) whether all
+#' entries are unique.
 #'
 #' @param arginput (`character`)\cr
 #' Input argument to be checked. Users can provide multiple inputs to be checked
@@ -251,7 +252,8 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' (e.g., both should be numeric within interval 0-10).
 #'
 #' @param argtype (`character`)\cr
-#' Example type(s) users can specify:
+#' Required type of input argument based on `class()`. Example type(s) users can
+#' specify:
 #' - `"logical"`
 #' - `"character"`
 #' - `"numeric"` (or `"integer"` if specifically checking for integers)
@@ -261,8 +263,8 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' - `"list"`
 #'
 #' If an input object can be one of several acceptable types (e.g.,
-#' `data.table` OR `data.frame`), available options should be provided as a
-#' character vector (e.g., `argtype = c("data.frame", "data.table")`).
+#' `data.table` OR `data.frame`), types should be provided as a character vector
+#' (e.g., `argtype = c("data.frame", "data.table")`).
 #'
 #' @param length (`numeric`)\cr
 #' Optional input specifying the expected length of a given input argument
@@ -283,36 +285,61 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' @param colnames (`character`)\cr
 #' Optional input if argtype is `"data.frame"` or `"data.table"`.
 #' Character vector specifying all columns that need to exist in the input table
-#' (e.g., `colnames = c("genc_id", "discharge_date_time")`).\
+#' (e.g., `colnames = c("genc_id", "discharge_date_time")`).
 #'
 #' @param coltypes (`character`)\cr
 #' Optional input if argtype is `"data.frame"` or `"data.table"`.
 #' Character vector specifying required data type of each column in `colnames`
-#' (e.g., `coltypes = c("integer", "character")`).
+#' (e.g., `coltypes = c("integer", "character")`) where the order of the vector
+#' elements should correspond to the order of the entries in `colnames`.
+#' If a column can have multiple acceptable types, types should be separated by
+#' `|` (e.g., `coltypes = c("integer|numeric", "character|POSIXct")`)). For any
+#' columns that do not have to be of a particular type, simply specify as `""`
+#' (e.g., `coltypes = c("integer|numeric", "")`).
 #'
 #' @param unique (`logical`)\cr
 #' Optional input if argtype is `"data.frame"` or `"data.table"`. Flag
 #' indicating whether all rows in the provided input table need to be distinct.
 #'
-#'
 #' @return \cr
 #' If any of the input checks fail, function will return error message and stop
-#' execution of parent `Rgemini` function.
-#'
+#' execution of parent `Rgemini` function. Otherwise, function will not return
+#' anything.
 #'
 #' @examples
 #' \dontrun{
+#' my_function <- function(input1 = TRUE, # logical
+#'                         input2 = 2, # numeric
+#'                         input3 = 1.5, # numeric
+#'                         input4 = data.frame(genc_id = as.integer(5),
+#'                                             discharge_date_time = "2020-01-01")){
+#'
+#'    # check single input
+#'    check_input(input1, "logical")
+#'
+#'    # check multiple inputs that should be of same type/meet same criteria
+#'    check_input(arginput = list(input2, input3), argtype = "numeric",
+#'                length = 1, interval = c(1, 10))
+#'
+#'    # check table input (can be either data.frame or data.table)
+#'    check_input(input4, argtype = c("data.table", "data.frame"),
+#'                colnames = c("genc_id", "discharge_date_time", "hospital_num"),
+#'                coltypes = c("integer", "character|POSIXct", ""),
+#'                unique = TRUE)
+#'
+#'  }
+#'
+#' my_function()
 #'
 #' }
 #'
 check_input <- function(arginput, argtype,
                         length = NULL,
-                        options = NULL, # for character inputs only
+                        options = NULL,  # for character inputs only
                         interval = NULL, # for numeric inputs only
                         colnames = NULL, # for data.table/data.frame inputs only
-                        coltypes = NULL, # "-"
-                        unique = FALSE # "-"
-) {
+                        coltypes = NULL, #          "-"
+                        unique = FALSE){ #          "-"
 
 
   ## Get argument names and restructure input
@@ -340,7 +367,9 @@ check_input <- function(arginput, argtype,
 
 
   ## Define new function to check for integers
-  # (Note: base R's `is.integer` does not return TRUE if type == numeric)
+  #  Note: base R's `is.integer` does not return TRUE if type == numeric
+  #  Note 2: For coltypes check below, this function is not used
+  #  (instead coltypes are checked for whether class(column) returns "integer")
   is.integer <- function(x){
     if (is.numeric(x)){
       tol = .Machine$double.eps^0.5
@@ -351,7 +380,7 @@ check_input <- function(arginput, argtype,
   }
 
 
-  ## Function defining all input checks to be run
+  ## Function defining all input checks
   run_checks <- function(arginput, argname){
 
     ###### CHECK 1 (for all input types): Check if type is correct
@@ -431,26 +460,25 @@ check_input <- function(arginput, argtype,
     ###### CHECK 6 (for data.table/data.frame inputs): Check if required columns are of correct type [optional]
     if (any(argtype %in% c("data.frame", "data.table")) & !is.null(coltypes)){
 
-      # get class of each required column
-      cols <- sapply(arginput %>% dplyr::select(all_of(colnames)), class)
-
       # for simplicity of error output:
       # only show first column where incorrect type was found (if any)
       # ignore coltypes without specification ("")
-      if (length(cols[cols != coltypes & coltypes != ""]) > 0){
-        stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
-                    colnames[which(cols != coltypes & coltypes != "")][1],"' in input table '", argname, "' has to be of type '", coltypes[which(cols != coltypes & coltypes != "")][1], "'.",
-                    "\nPlease refer to the function documentation for more details."),
-             call. = FALSE, immediate. = TRUE)
+      check_col_type <- function(col, coltype){
+        if (coltype != "" & !grepl(coltype, class(as.data.table(arginput)[[col]]), ignore.case = TRUE)){
+          stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
+                      col,"' in input table '", argname, "' has to be of type '", coltype, "'.",
+                      "\nPlease refer to the function documentation for more details."),
+               call. = FALSE, immediate. = TRUE)
+        }
       }
+      mapply(check_col_type, colnames, coltypes)
+
     }
 
 
     ###### CHECK 7 (for data.table/data.frame inputs): Check if all rows are distinct [optional]
     if (any(argtype %in% c("data.frame", "data.table")) & unique == TRUE){
 
-      # for simplicity of error output:
-      # only show first column where incorrect type was found (if any)
       if (any(duplicated(arginput))){
         stop(paste0("Invalid user input in '", as.character(sys.calls()[[1]])[1], "': ",
                     "Input table '", argname, "' has to contain unique rows.",
