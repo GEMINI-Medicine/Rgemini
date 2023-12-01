@@ -25,6 +25,7 @@ If the installation method above does not work, try one of the following:
 1. Install using `pak::pkg_install("GEMINI-Medicine/Rgemini")`.
 2. `git clone` the package to some directory such as `/path/to/repo`, and run `devtools::install("/path/to/repo", build_vignettes = TRUE)`.
 3. Download the latest source tarball from the [package releases](https://github.com/GEMINI-Medicine/Rgemini/tags) to some directory such as `/path/to/tarball` and run `install.packages("/path/to/tarball", repos = NULL, type="source")`.
+4. Try configuring secure downloads as described in [this blog post](https://support.posit.co/hc/en-us/articles/206827897-Secure-Package-Downloads-for-R).
 
 If none of the above methods work, please create a post on our [discussion board](https://github.com/GEMINI-Medicine/Rgemini/discussions/categories/q-a).
 
