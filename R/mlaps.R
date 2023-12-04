@@ -312,21 +312,21 @@ mlaps <- function(admdad, lab, hours_after_admission = 0, componentwise = FALSE)
       )
     ) %>%
     group_by(genc_id, test_type_mapped_omop) %>%
-    summarise(score = max(score, na.rm = TRUE) %>% suppressWarnings()) %>%
+    summarise(score = max_result_value(score)) %>%
     mutate(score = ifelse(is.infinite(score), NA, score))
 
   bun <- lab %>%
     dplyr::filter(test_type_mapped_omop == 3024641) %>%
     mutate(result_value = gsub("<|>", "", result_value) %>% trimws() %>% as.numeric()) %>%
     group_by(genc_id) %>%
-    summarise(max_bun = max(result_value, na.rm = TRUE) %>% suppressWarnings()) %>%
+    summarise(max_bun = max_result_value(result_value)) %>%
     mutate(max_bun = ifelse(is.infinite(max_bun), NA, max_bun))
 
   creatinine <- lab %>%
     dplyr::filter(test_type_mapped_omop == 3020564) %>%
     mutate(result_value = gsub("<|>", "", result_value) %>% trimws() %>% as.numeric()) %>%
     group_by(genc_id) %>%
-    summarise(min_creatinine = min(result_value, na.rm = TRUE) %>% suppressWarnings()) %>%
+    summarise(min_creatinine = min_result_value(result_value)) %>%
     mutate(min_creatinine = ifelse(is.infinite(min_creatinine), NA, min_creatinine))
 
   bun_creatinine <- bun %>%
@@ -353,4 +353,41 @@ mlaps <- function(admdad, lab, hours_after_admission = 0, componentwise = FALSE)
     summarise(mlaps = sum(score, na.rm = TRUE))
 
   return(res)
+}
+
+
+#' @title
+#' Calculates minima when input vector is not empty, else returns NA.
+#'
+#' @details
+#' This is a helper function to suppress default warning message from `base::min()`` function 
+#' when all elements in the input vector is NA, which can be problemetic for unit testing.
+#' Default to remove NA values in minima calculation.
+#'
+#' @param x (`numeric`)\cr
+#' A vecctor of numerical values.
+#'
+#' @return (`numeric`)\cr
+#' A numerical value or NA
+#'
+min_result_value <- function(x) {
+  ifelse(all(is.na(x)), NA, min(x, na.rm = TRUE))
+}
+
+#' @title
+#' Calculates maxima when input vector is not empty, else returns NA.
+#'
+#' @details
+#' This is a helper function to suppress default warning message from `base::max()`` function 
+#' when all elements in the input vector is NA, which can be problemetic for unit testing.
+#' Default to remove NA values in maxima calculation.
+#'
+#' @param x (`numeric`)\cr
+#' A vecctor of numerical values.
+#'
+#' @return (`numeric`)\cr
+#' A numerical value or NA
+#'
+max_result_value <- function(x) {
+  ifelse(all(is.na(x)), NA, max(x, na.rm = TRUE))
 }
