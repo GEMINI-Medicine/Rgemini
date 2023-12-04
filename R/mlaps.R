@@ -70,7 +70,7 @@ laps_assign_test <- function(x, breaks, points) {
 #' Loop mLAPS
 #'
 #' @description
-#' A wrapper around the `mlaps()` function which breaks down the calculation of LAPS on a
+#' A wrapper around the `mlaps()` function which breaks down the calculation of mLAPS on a
 #' large number of encounters by hospital-year. This avoids memory issues that can be caused
 #' by loading large chunks of the lab table.
 #'
@@ -81,8 +81,10 @@ laps_assign_test <- function(x, breaks, points) {
 #' A numeric vector of `genc_ids` to restrict the calculation to.
 #'
 #' @param hours_after_admission (`numeric`)\cr
-#' Consider lab tests collected **up to** `hours_after_admission` hours after admission in the
-#' calculation.
+#' Consider lab tests collected **up to** `hours_after_admission` hours after inpatient admission in the calculation.
+#' Default `hours_after_admission` is set to 0, where only lab tests collected at Emergency Department (before inpatient admission) is considered in mLAPS calculation. 
+#' Since not all encounters are admitted through Emergency Department, depending on research question, it can be relevant to consider lab tests collected in early inpatient admission.
+#' Typically, `hours_after_admission` can be set to 24 to consider any lab tests collected at Emergency Department and 24 hours after inpatient admission.
 #'
 #' @param output_laps_components (`logical`)\cr
 #' Does not aggregate the score and instead outputs for each LAPS component (test), its contribution
@@ -100,6 +102,12 @@ laps_assign_test <- function(x, breaks, points) {
 #'
 #' @import DBI RPostgreSQL data.table dplyr
 #' @export
+#'
+#' @references
+#' When the function is used, please cite the following:
+#' https://doi.org/10.1097/MLR.0b013e3181589bb6
+#' https://doi.org/10.1007/s11606-023-08245-w
+#' https://doi.org/10.1101/2023.01.06.23284273
 #'
 loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, output_laps_components = FALSE) {
 
@@ -152,7 +160,7 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, output_laps
       res <- mlaps(
         admdad %>% dplyr::filter(hospital_id == hospital_id, year == year),
         lab,
-        hours_offset = hours_after_admission,
+        hours_after_admission = hours_after_admission,
         componentwise = output_laps_components
       )
     }
@@ -166,7 +174,7 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, output_laps
 #' mLAPS
 #'
 #' @details
-#' Laboratory based Acute Physiology Score (LAPS) uses 14 lab test values.
+#' Modified Laboratory based Acute Physiology Score (mLAPS) uses 14 lab test values.
 #' In this modified version, High senstive Troponin tests are ignored and treated as normal.
 #'
 #' @param admdad (`data.frame`)\cr
@@ -177,8 +185,11 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, output_laps
 #' Table equivalent to a subset of the `lab` table defined in the
 #' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
 #'
-#' @param hours_offset (`numeric`)\cr
-#' Consider lab tests collected **up to** `hours_after_admission` hours after admission in the
+#' @param hours_after_admission (`numeric`)\cr
+#' Consider lab tests collected **up to** `hours_after_admission` hours after inpatient admission in the calculation.
+#' Default `hours_after_admission` is set to 0, where only lab tests collected at Emergency Department (before inpatient admission) is considered in mLAPS calculation. 
+#' Since not all encounters are admitted through Emergency Department, depending on research question, it can be relevant to consider lab tests collected in early inpatient admission.
+#' Typically, `hours_after_admission` can be set to 24 to consider any lab tests collected at Emergency Department and 24 hours after inpatient admission.
 #'
 #' @param componentwise (`logical`)\cr
 #' Does not aggregate the score and instead outputs for each LAPS component (test), its contribution
@@ -199,11 +210,12 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, output_laps
 #' @export
 #'
 #' @references
-#' https://pubmed.ncbi.nlm.nih.gov/18388836/
+#' When the function is used, please cite the following:
+#' https://doi.org/10.1097/MLR.0b013e3181589bb6
+#' https://doi.org/10.1007/s11606-023-08245-w
+#' https://doi.org/10.1101/2023.01.06.23284273
 #'
-#' @examples
-#'
-mlaps <- function(admdad, lab, hours_offset = 0, componentwise = FALSE) {
+mlaps <- function(admdad, lab, hours_after_admission = 0, componentwise = FALSE) {
 
   lab <- lab %>%
     select(test_type_mapped_omop, genc_id, result_value, result_unit, collection_date_time) %>%
@@ -212,7 +224,7 @@ mlaps <- function(admdad, lab, hours_offset = 0, componentwise = FALSE) {
       admdad %>% select(genc_id, admission_date_time),
       by = "genc_id"
     ) %>%
-    filter(lubridate::ymd_hm(collection_date_time) < (lubridate::ymd_hm(admission_date_time) + lubridate::hours(hours_offset)))
+    filter(lubridate::ymd_hm(collection_date_time) < (lubridate::ymd_hm(admission_date_time) + lubridate::hours(hours_after_admission)))
 
   laps <- lab %>%
     mutate(result_value = ifelse(
