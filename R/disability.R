@@ -2,25 +2,31 @@
 #' Identify encounters with disability
 #'
 #' @description
-#' This function identifies whether or not a `genc_id` has any ICD-10-CA diagnosis
-#' code(s) indicating a physical, sensory, and/or cognitive disability. Diagnosis codes
-#' that are included as disabilities are based on
-#' [Brown et al., 2022](https://www.cmaj.ca/content/194/4/E112).
+#' This function identifies whether or not an encounter had any ICD-10-CA
+#' diagnosis code(s) indicating a physical, sensory, or intellectual/
+#' developmental disability as defined by
+#' [Brown et al., 2021](https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2776018).
 #'
-#' Physical disabilities include
+#' Broadly, this includes any diagnosis codes for conditions that are likely to
+#' result in functional limitations and are considered to be chronic (see
+#' Supplemental eTable 2 in [Brown et al., 2021](https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2776018)
+#' for a full list of diagnosis codes).
 #'
-#' Sensory disabilities include
+#' In addition to returning a global disability flag indicating any disability,
+#' users may choose to return individual flags for the following disability
+#' subcategories by using `return_categories = TRUE`:
+#' - Physical disability: Congenital Anomalies
+#' - Physical disability: Musculoskeletal disorders
+#' - Physical disability: Neurological disorders
+#' - Physical disability: Permanent Injuries
+#' - Sensory disabilities: Hearing impairments
+#' - Sensory disabilities: Vision impairments
+#' - Developmental Disabilities
 #'
-#' Cognitive disabilities refer to developmental
 #'
 #' @details
-#' This function takes a `cohort` and `dxtable` data input and returns a logical
-#' output indicating whether a given `genc_id` was diagnosed with a physical,
-#' sensory, and/or cognitive disability.
-#'
-#' A list of all ICD-10-CA diagnosis codes that are classified as physical/sensory/cognitive disability can be
-#' found in Table 1 of the paper by [Brown et al., 2022](https://www.cmaj.ca/content/194/4/E112).
-#' All codes listed in this table, plus any children codes are considered by this function.
+#' This function takes a `cohort` and `ipdiag` data input and returns a logical
+#' output indicating whether a given `genc_id` was diagnosed with a disability.
 #'
 #'
 #' @param cohort (`data.frame` or `data.table`)
@@ -28,29 +34,35 @@
 #' corresponds to a single encounter. Must contain GEMINI Encounter ID
 #' (`genc_id`).
 #'
-#' @param dxtable (`data.frame` or `data.table`)
+#' @param ipdiag (`data.frame` or `data.table`)
 #' Table containing ICD-10-CA diagnosis codes for each encounter in long format.
 #' Must contain the following columns:
 #' - `genc_id` (`integer`): GEMINI encounter ID
-#' - `diagnosis_code` (`character`): alphanumeric ICD-10-CA diagnosis code consisting of 3-7 characters.
+#' - `diagnosis_code` (`character`): alphanumeric ICD-10-CA diagnosis code
+#' consisting of 3-7 characters.
 #'
 #' Typically, this input corresponds to the `ipdiagnosis` table, which
 #' contains the CIHI in-patient diagnoses for each encounter (see
 #' [GEMINI database schema](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
-#' However, users may also include Emergency Department diagnoses (`erdiagnosis` table) by combining
-#' `ipdiagnosis` and `erdiagnosis` table prior to running this function.
+#' However, users may also include Emergency Department diagnoses (`erdiagnosis`
+#' table) by combining `ipdiagnosis` and `erdiagnosis` table prior to running
+#' this function.
 #'
-#' This function does not differentiate between diagnosis types. That is, diagnosis codes are included
-#' regardless of whether the diagnosis was coded as a most responsible diagnosis, a comorbidity, or secondary diagnosis. If users wish to only include
-#' certain diagnosis types, please filter the `dxtable` input based on `diagnosis_type` prior to running this function (for more
+#' This function does not differentiate between diagnosis types. That is,
+#' diagnosis codes are included regardless of whether the diagnosis was coded as
+#' a most responsible diagnosis, a comorbidity, or secondary diagnosis. If users
+#' wish to only include certain diagnosis types, please filter the `ipdiag`
+#' input based on `diagnosis_type` prior to running this function (for more
 #' details, see [CIHI diagnosis type definitions](https://www.cihi.ca/sites/default/files/document/diagnosis-type-definitions-en.pdf).
 #'
 #' @return `data.table`
-#' This function returns a table with all encounters identified by the `cohort` table input and
-#' additional derived logical fields ``.
+#' This function returns a table with all encounters identified by the `cohort`
+#' table input and additional derived logical fields `disability`.
 #' If no diagnosis code referring to any disablility was found...
-#' If a `genc_id` does not have any entry in the diagnosis table at all, `disability = NA`. Note that this is very rare when including the
-#' full `ipdiagnosis` table (i.e., if no additional filtering was performed, > 99.9% of `genc_ids` should have at least 1 diagnosis code).
+#' If a `genc_id` does not have any entry in the diagnosis table at all,
+#' `disability = NA`. Note that this is very rare when including the full
+#' `ipdiagnosis` table (i.e., if no additional filtering was performed, > 99.9%
+#' of `genc_ids` should have at least 1 diagnosis code).
 #'
 #' @examples
 #' \dontrun{
@@ -65,32 +77,42 @@
 #' ipadmdad <- dbGetQuery(dbcon, "select * from admdad") %>% data.table()
 #' ipdiagnosis <- dbGetQuery(dbcon, "select * from ipdiagnosis") %>% data.table()
 #'
-#' disability(cohort = ipadmdad, dxtable = ipdiagnosis)
+#' disability(cohort = ipadmdad, ipdiag = ipdiagnosis)
 #' }
 #'
 #' @references
-#' Brown, H. K., Saha, S., Chan, T. C., Cheung, A. M., Fralick, M., Ghassemi, M., ... & Verma, A. A. (2022).
-#' Outcomes in patients with and without disability admitted to hospital with COVID-19: a retrospective cohort study.
-#' Cmaj, 194(4), E112-E121.
+#' Brown, H. K., Ray, J. G., Chen, S., Guttmann, A., Havercamp, S. M., Parish,
+#' S., ... & Lunsky, Y. (2021). Association of preexisting disability with
+#' severe maternal morbidity or mortality in Ontario, Canada. JAMA Network Open,
+#' 4(2), e2034993-e2034993.
 #'
 #' @import stringr
 #' @export
 #'
-disability <- function(cohort, dxtable) {
+disability <- function(cohort, ipdiag, erdiag) { # , component_wise = FALSE
 
   ############# CHECK & PREPARE DATA #############
   ## check that cohort contains genc_ids
 
-  ## check that dxtable contains genc_id & diagnosis_code
+  ## check that ipdiag contains genc_id & diagnosis_code
 
   ## Prepare output - should have 1 row per genc_id in cohort file
   res <- cohort %>% select(genc_id) %>% distinct() %>% data.table()
 
-  ## Ensure dxtable is in data.table format before proceeding
-  dxtable <- coerce_to_datatable(dxtable[, c('genc_id', 'diagnosis_code')])
+  ## Ensure ipdiag is in data.table format before proceeding
+  ipdiag <- coerce_to_datatable(ipdiag[, c('genc_id', 'diagnosis_code')])
+
+
+  if (is.null(erdiag)){
+    print('hello')
+  }
+
 
 
   ############# GET DISABILITY CODES #############
+
+  ## Read file with disability codes from data folder
+  # ...
   ## Define disability diagnosis codes
   physical_disability <- str_c(paste0("^",
                                       c('Q675', 'Q66', 'Q676', 'Q677', 'Q678', 'E343', 'E230', 'Q019', 'Q02', 'Q03', 'Q04', 'Q06', 'Q078',
@@ -130,9 +152,9 @@ disability <- function(cohort, dxtable) {
 
 
   ## Create flags
-  res[, physical_disability := genc_id %in% dxtable[str_detect(diagnosis_code, physical_disability),]$genc_id]
-  res[, sensory_disability := genc_id %in% dxtable[str_detect(diagnosis_code, sensory_disability),]$genc_id]
-  res[, development_disability := genc_id %in% dxtable[str_detect(diagnosis_code, development_disability),]$genc_id]
+  res[, physical_disability := genc_id %in% ipdiag[str_detect(diagnosis_code, physical_disability),]$genc_id]
+  res[, sensory_disability := genc_id %in% ipdiag[str_detect(diagnosis_code, sensory_disability),]$genc_id]
+  res[, development_disability := genc_id %in% ipdiag[str_detect(diagnosis_code, development_disability),]$genc_id]
 
 
   ## Create single flag indicating whether any disability
@@ -140,7 +162,7 @@ disability <- function(cohort, dxtable) {
 
 
   ## For any genc_ids with no entry in diagnosis table, set all flags to NA
-  #res[genc_id %ni% dxtable$genc_id, ':=' .(disability, physical_disability, sensory_disability, development_disability) := NA]
+  #res[genc_id %ni% ipdiag$genc_id, ':=' .(disability, physical_disability, sensory_disability, development_disability) := NA]
 
 
   return(res[ ,.(genc_id, disability, physical_disability, sensory_disability, development_disability)])
