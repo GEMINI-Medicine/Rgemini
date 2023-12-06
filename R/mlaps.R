@@ -101,6 +101,7 @@ laps_assign_test <- function(x, breaks, points) {
 #'     `mlaps` (`numeric`) sum of max scores for each relevant test for this encounter.
 #'
 #' @import DBI RPostgreSQL
+#' @importFrom purrr map2_df
 #' @export
 #'
 #' @references
