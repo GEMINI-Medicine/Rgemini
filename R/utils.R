@@ -398,7 +398,7 @@ check_input <- function(arginput, argtype,
   #  (instead coltypes are checked for whether class(column) returns "integer")
   is_integer <- function(x) {
     if (is.numeric(x)) {
-      tol <- .Machine$double.eps^0.5
+      tol <- .Machine$double.eps
       return(abs(x - round(x)) < tol)
     } else {
       return(FALSE)
