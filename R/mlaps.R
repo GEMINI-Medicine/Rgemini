@@ -82,7 +82,7 @@ laps_assign_test <- function(x, breaks, points) {
 #'
 #' @param hours_after_admission (`numeric`)\cr
 #' Consider lab tests collected **up to** `hours_after_admission` hours after inpatient admission in the calculation.
-#' Default `hours_after_admission` is set to 0, where only lab tests collected at Emergency Department (before inpatient admission) is considered in mLAPS calculation. 
+#' Default `hours_after_admission` is set to 0, where only lab tests collected at Emergency Department (before inpatient admission) is considered in mLAPS calculation.
 #' Since not all encounters are admitted through Emergency Department, depending on research question, it can be relevant to consider lab tests collected in early inpatient admission.
 #' Typically, `hours_after_admission` can be set to 24 to consider any lab tests collected at Emergency Department and 24 hours after inpatient admission.
 #'
@@ -100,7 +100,7 @@ laps_assign_test <- function(x, breaks, points) {
 #'     `genc_id` (`numeric`),\cr
 #'     `mlaps` (`numeric`) sum of max scores for each relevant test for this encounter.
 #'
-#' @import DBI RPostgreSQL data.table dplyr
+#' @import DBI RPostgreSQL
 #' @export
 #'
 #' @references
@@ -111,15 +111,17 @@ laps_assign_test <- function(x, breaks, points) {
 #'
 loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, output_laps_components = FALSE) {
 
+  hospital_field <- return_hospital_field(db)
+
   admdad <- DBI::dbGetQuery(
     db,
     paste(
       "SELECT
         genc_id,
         admission_date_time,
-        EXTRACT(YEAR FROM discharge_date_time::DATE) AS year,
-        hospital_id
-      FROM admdad",
+        EXTRACT(YEAR FROM discharge_date_time::DATE) AS year,",
+        hospital_field, "AS hospital_id",
+      "FROM admdad",
       if (!is.null(cohort)) {
         paste("WHERE genc_id IN (", paste(cohort, collapse = ", "), ")")
       }
@@ -148,7 +150,7 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, output_laps
           INNER JOIN admdad a
             ON l.genc_id = a.genc_id
           WHERE l.test_type_mapped_omop IN (", paste(LAPS_OMOP_CONCEPTS, collapse = ", "), ")",
-          paste0("AND a.hospital_id = '", hospital_id, "'"),
+          paste0("AND a.", hospital_field, " = '", hospital_id, "'"),
           "AND EXTRACT(YEAR FROM a.discharge_date_time::DATE) = ", year,
           if (!is.null(cohort)) {
             paste("AND l.genc_id IN (", paste(cohort, collapse = ", "), ")")
@@ -187,7 +189,7 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, output_laps
 #'
 #' @param hours_after_admission (`numeric`)\cr
 #' Consider lab tests collected **up to** `hours_after_admission` hours after inpatient admission in the calculation.
-#' Default `hours_after_admission` is set to 0, where only lab tests collected at Emergency Department (before inpatient admission) is considered in mLAPS calculation. 
+#' Default `hours_after_admission` is set to 0, where only lab tests collected at Emergency Department (before inpatient admission) is considered in mLAPS calculation.
 #' Since not all encounters are admitted through Emergency Department, depending on research question, it can be relevant to consider lab tests collected in early inpatient admission.
 #' Typically, `hours_after_admission` can be set to 24 to consider any lab tests collected at Emergency Department and 24 hours after inpatient admission.
 #'
@@ -205,7 +207,6 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, output_laps
 #'     `genc_id` (`numeric`),\cr
 #'     `mlaps` (`numeric`) sum of max scores for each relevant test for this encounter.
 #'
-#' @import dplyr
 #' @importFrom lubridate ymd_hm hours
 #' @export
 #'
@@ -360,7 +361,7 @@ mlaps <- function(admdad, lab, hours_after_admission = 0, componentwise = FALSE)
 #' Calculates minima when input vector is not empty, else returns NA.
 #'
 #' @details
-#' This is a helper function to suppress default warning message from `base::min()`` function 
+#' This is a helper function to suppress default warning message from `base::min()`` function
 #' when all elements in the input vector is NA, which can be problemetic for unit testing.
 #' Default to remove NA values in minima calculation.
 #'
@@ -378,7 +379,7 @@ min_result_value <- function(x) {
 #' Calculates maxima when input vector is not empty, else returns NA.
 #'
 #' @details
-#' This is a helper function to suppress default warning message from `base::max()`` function 
+#' This is a helper function to suppress default warning message from `base::max()`` function
 #' when all elements in the input vector is NA, which can be problemetic for unit testing.
 #' Default to remove NA values in maxima calculation.
 #'

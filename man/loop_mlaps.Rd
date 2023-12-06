@@ -19,8 +19,10 @@ RPostgres DB connection.}
 A numeric vector of \code{genc_ids} to restrict the calculation to.}
 
 \item{hours_after_admission}{(\code{numeric})\cr
-Consider lab tests collected \strong{up to} \code{hours_after_admission} hours after admission in the
-calculation.}
+Consider lab tests collected \strong{up to} \code{hours_after_admission} hours after inpatient admission in the calculation.
+Default \code{hours_after_admission} is set to 0, where only lab tests collected at Emergency Department (before inpatient admission) is considered in mLAPS calculation.
+Since not all encounters are admitted through Emergency Department, depending on research question, it can be relevant to consider lab tests collected in early inpatient admission.
+Typically, \code{hours_after_admission} can be set to 24 to consider any lab tests collected at Emergency Department and 24 hours after inpatient admission.}
 
 \item{output_laps_components}{(\code{logical})\cr
 Does not aggregate the score and instead outputs for each LAPS component (test), its contribution
@@ -38,7 +40,13 @@ If \code{output_laps_components == FALSE}:
 \code{mlaps} (\code{numeric}) sum of max scores for each relevant test for this encounter.
 }
 \description{
-A wrapper around the \code{mlaps()} function which breaks down the calculation of LAPS on a
+A wrapper around the \code{mlaps()} function which breaks down the calculation of mLAPS on a
 large number of encounters by hospital-year. This avoids memory issues that can be caused
 by loading large chunks of the lab table.
+}
+\references{
+When the function is used, please cite the following:
+https://doi.org/10.1097/MLR.0b013e3181589bb6
+https://doi.org/10.1007/s11606-023-08245-w
+https://doi.org/10.1101/2023.01.06.23284273
 }

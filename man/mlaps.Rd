@@ -4,7 +4,7 @@
 \alias{mlaps}
 \title{mLAPS}
 \usage{
-mlaps(admdad, lab, hours_offset = 0, componentwise = FALSE)
+mlaps(admdad, lab, hours_after_admission = 0, componentwise = FALSE)
 }
 \arguments{
 \item{admdad}{(\code{data.frame})\cr
@@ -15,8 +15,11 @@ Table equivalent to a subset of the \code{admdad} table defined in the
 Table equivalent to a subset of the \code{lab} table defined in the
 \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.}
 
-\item{hours_offset}{(\code{numeric})\cr
-Consider lab tests collected \strong{up to} \code{hours_after_admission} hours after admission in the}
+\item{hours_after_admission}{(\code{numeric})\cr
+Consider lab tests collected \strong{up to} \code{hours_after_admission} hours after inpatient admission in the calculation.
+Default \code{hours_after_admission} is set to 0, where only lab tests collected at Emergency Department (before inpatient admission) is considered in mLAPS calculation.
+Since not all encounters are admitted through Emergency Department, depending on research question, it can be relevant to consider lab tests collected in early inpatient admission.
+Typically, \code{hours_after_admission} can be set to 24 to consider any lab tests collected at Emergency Department and 24 hours after inpatient admission.}
 
 \item{componentwise}{(\code{logical})\cr
 Does not aggregate the score and instead outputs for each LAPS component (test), its contribution
@@ -37,12 +40,12 @@ If \code{componentwise == FALSE}:
 mLAPS
 }
 \details{
-Laboratory based Acute Physiology Score (LAPS) uses 14 lab test values.
+Modified Laboratory based Acute Physiology Score (mLAPS) uses 14 lab test values.
 In this modified version, High senstive Troponin tests are ignored and treated as normal.
 }
-\examples{
-
-}
 \references{
-https://pubmed.ncbi.nlm.nih.gov/18388836/
+When the function is used, please cite the following:
+https://doi.org/10.1097/MLR.0b013e3181589bb6
+https://doi.org/10.1007/s11606-023-08245-w
+https://doi.org/10.1101/2023.01.06.23284273
 }

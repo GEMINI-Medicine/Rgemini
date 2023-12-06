@@ -224,3 +224,31 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 }
 
 
+#' @title
+#' Return Hospital Field
+#'
+#' @description
+#' To accommodate differences in column names between databases, find the name of the column corresponding to
+#' the hospital for downstream queries.
+#'
+#' @param db (`DBIConnection`)\cr
+#' RPostgres DB connection.
+#'
+#' @return (`character`)\cr
+#' `hospital_id` or `hospital_num`, with preference given to `hospital_id` if it exists.
+#'
+return_hospital_field <- function(db) {
+
+  fields <- dbListFields(db, "admdad")
+
+  if ("hospital_id" %in% fields) {
+    return("hospital_id")
+
+  } else if ("hospital_num" %in% fields) {
+    return("hospital_num")
+
+  } else {
+    error("A field corresponding to the hospital was not found.")
+  }
+
+}
