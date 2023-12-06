@@ -241,7 +241,8 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #'
 return_hospital_field <- function(db) {
 
-  fields <- dbListFields(db, "admdad")
+  admdad <- find_db_tablename(db, "admdad")
+  fields <- dbListFields(db, admdad)
 
   if ("hospital_id" %in% fields) {
     return("hospital_id")
