@@ -124,6 +124,72 @@ diagnoses_at_admission <- function(ipdiag, erdiag) {
 
 
 #' @title
+#' Compute Comorbidity Index
+#'
+#' @description
+#' This is a generic function that is wrapped by [Rgemini::charlson_comorbidity_index()]
+#' and [Rgemini::elixhauser_comorbidity_index()] and is not meant to be used directly.
+#' The function is an interface to [comorbidity::comorbidity()] for GEMINI data,
+#' providing options for outputting raw comorbidities or comorbidities at admission.
+#'
+#' @inheritParams diagnoses_at_admission
+#' @inheritParams comorbidity::comorbidity
+#' @inheritParams comorbidity::score
+#'
+#' @param raw_comorbidities (`logical`)\cr
+#' Whether to output a `data.table` of raw comorbidities as opposed to pre-computed scores.
+#'
+#' @param at_admission (`logical`)\cr
+#' Whether to calculate the score for all comorbidities or for only pre-admit comorbidities.
+#'
+#' @return (`data.table`)\cr
+#' By default, for each encounter, outputs the comorbidity score. If `raw_comorbidities` is `TRUE`,
+#' outputs a wide `data.table` with a column for each comorbidity for each encounter.
+#'
+#' @details
+#' A hierarchy of comorbidities is used when calculating the cormorbidity score, but not when outputting `raw_comorbidites`.
+#' This affects comorbidities present in a patient with different degrees of severity. See documentation for
+#' [comorbidity::comorbidity()] for details.
+#'
+#' @importFrom comorbidity comorbidity score
+#' @export
+#'
+comorbidity_index <- function(ipdiag, erdiag, map, weights, at_admission = TRUE, raw_comorbidities = FALSE) {
+
+  diagnoses <- if (at_admission) {
+    diagnoses_at_admission(ipdiag, erdiag)
+  } else {
+    rbind(
+      erdiag[, .(genc_id, "diagnosis_code" = er_diagnosis_code, "diagnosis_type" = er_diagnosis_type)],
+      ipdiag[, .(genc_id, diagnosis_code, diagnosis_type)]
+    )
+  }
+
+  comorbidities <- comorbidity(
+    x = diagnoses,
+    id = "genc_id",
+    code = "diagnosis_code",
+    map = map,
+    assign0 = FALSE
+  )
+
+  if (raw_comorbidities) {
+    if (at_admission) {
+      attr(comorbidities, "variable.labels") <- paste(attr(comorbidities, "variable.labels"), "(at admission)")
+    }
+
+    return(comorbidities)
+  }
+
+  scores <- score(comorbidities, weights = weights, assign0 = TRUE)
+
+  res <- cbind(comorbidities$genc_id, scores) %>% as.data.table()
+
+  return(res)
+}
+
+
+#' @title
 #' Compute Charlson comorbidity index (CCI) score
 #'
 #' @description
@@ -136,60 +202,77 @@ diagnoses_at_admission <- function(ipdiag, erdiag) {
 #' [HSMR Methodology](https://www.cihi.ca/sites/default/files/document/hospital-standardized-mortality-ratio-meth-notes-en.pdf)
 #' or for the entire patient encounter. The default is to compute comorbidity at admission.
 #'
-#' @inheritParams diagnoses_at_admission
+#' @inheritParams comorbidity_index
+#' @inherit comorbidity_index return details
 #'
-#' @param raw_comorbidities (`logical`)\cr
-#' Whether to output a `data.table` of raw comorbidities as opposed to pre-computed charlson scores.
-#'
-#' @param at_admission (`logical`)\cr
-#' Whether to calculate the charlson score for all comorbidities or for only pre-admit comorbidities.
-#'
-#' @return (`data.table`)\cr
-#' By default, for each encounter, outputs the Charlson comorbidity index. If `raw_comorbidities` is `TRUE`,
-#' outputs a wide `data.table` with a column for each comorbidity for each encounter.
-#'
-#' @note
-#' A hierarchy of comorbidities is used when calculating the Charlson score, but not when outputting `raw_comorbidites`.
-#' This affects comorbidities present in a patient with different degrees of severity. See documentation for
-#' [comorbidity::comorbidity()] for details.
-#'
-#' @importFrom comorbidity comorbidity score
 #' @export
 #'
+#' @references
+#' \itemize{
+#'  \item{[Quan et al. 2011](http://dx.doi.org/10.1093/aje/kwq433)}
+#'  \item{[Gasparini, 2018](https://doi.org/10.21105/joss.00648)}
+#' }
+#'
 charlson_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_comorbidities = FALSE) {
-  diagnoses <- if (at_admission) {
-    diagnoses_at_admission(ipdiag, erdiag)
-  } else {
-    rbind(
-      erdiag[, .(genc_id, "diagnosis_code" = er_diagnosis_code, "diagnosis_type" = er_diagnosis_type)],
-      ipdiag[, .(genc_id, diagnosis_code, diagnosis_type)]
-      )
-  }
 
-  charlson <- comorbidity(
-    x = diagnoses,
-    id = "genc_id",
-    code = "diagnosis_code",
+  res <- comorbidity_index(
+    ipdiag = ipdiag,
+    erdiag = erdiag,
     map = "charlson_icd10_quan",
-    assign0 = FALSE
-  )
-
-  if (raw_comorbidities) {
-    if (at_admission) {
-      attr(charlson, "variable.labels") <- paste(attr(charlson, "variable.labels"), "(at admission)")
-    }
-
-    return(charlson)
-  }
-
-  scores <- score(charlson, weights = "quan", assign0 = TRUE)
-
-  res <- cbind(charlson$genc_id, scores) %>% as.data.table()
+    weights = "quan",
+    at_admission = at_admission,
+    raw_comorbidities = raw_comorbidities
+    )
 
   if (at_admission) {
     names(res) <- c("genc_id", "admit_charlson_derived")
   } else {
     names(res) <- c("genc_id", "all_charlson_derived")
+  }
+
+  return(res)
+}
+
+
+#' @title
+#' Compute Elixhauser comorbidity score
+#'
+#' @description
+#' Based on the methodology from [Elixhauser A et al. 1998](https://pubmed.ncbi.nlm.nih.gov/19433995/)
+#' using ICD-10 codes as the mapping algorithm,
+#' implemented in the R [comorbidity](https://ellessenne.github.io/comorbidity/index.html) package
+#' by [Gasparini, 2018](https://doi.org/10.21105/joss.00648).
+#'
+#' Can compute either Elixhauser score at admission based on
+#' [HSMR Methodology](https://www.cihi.ca/sites/default/files/document/hospital-standardized-mortality-ratio-meth-notes-en.pdf)
+#' or for the entire patient encounter. The default is to compute comorbidity at admission.
+#'
+#' @inheritParams comorbidity_index
+#' @inherit comorbidity_index return details
+#'
+#' @export
+#'
+#' @references
+#' \itemize{
+#'  \item{[Elixhauser A et al. 1998](https://pubmed.ncbi.nlm.nih.gov/19433995/)}
+#'  \item{[Gasparini, 2018](https://doi.org/10.21105/joss.00648)}
+#' }
+#'
+elixhauser_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_comorbidities = FALSE) {
+
+  res <- comorbidity_index(
+    ipdiag = ipdiag,
+    erdiag = erdiag,
+    map = "elixhauser_icd10_quan",
+    weights = "vw",
+    at_admission = at_admission,
+    raw_comorbidities = raw_comorbidities
+  )
+
+  if (at_admission) {
+    names(res) <- c("genc_id", "admit_elixhauser_derived")
+  } else {
+    names(res) <- c("genc_id", "all_elixhauser_derived")
   }
 
   return(res)
