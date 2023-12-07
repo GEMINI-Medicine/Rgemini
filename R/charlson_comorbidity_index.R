@@ -20,7 +20,6 @@
 #' @export
 #'
 diagnoses_at_admission <- function(ipdiag, erdiag) {
-
   ipdiag <- coerce_to_datatable(ipdiag)
   erdiag <- coerce_to_datatable(erdiag)
 
@@ -109,7 +108,7 @@ diagnoses_at_admission <- function(ipdiag, erdiag) {
 
   type2_or_type6 <- ipdiag[
     diagnosis_type == 2 | diagnosis_type == 6, c("genc_id", "diagnosis_code", "diagnosis_type")
-    ] %>%
+  ] %>%
     .[, genc_diag := paste(genc_id, diagnosis_code)]
 
   ipcharl <- ipcharl[, exclude := ifelse(genc_diag %in% type2_or_type6$genc_diag, 1, 0)] %>%
@@ -155,7 +154,6 @@ diagnoses_at_admission <- function(ipdiag, erdiag) {
 #' @export
 #'
 comorbidity_index <- function(ipdiag, erdiag, map, weights, at_admission = TRUE, raw_comorbidities = FALSE) {
-
   diagnoses <- if (at_admission) {
     diagnoses_at_admission(ipdiag, erdiag)
   } else {
@@ -214,7 +212,6 @@ comorbidity_index <- function(ipdiag, erdiag, map, weights, at_admission = TRUE,
 #' }
 #'
 charlson_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_comorbidities = FALSE) {
-
   res <- comorbidity_index(
     ipdiag = ipdiag,
     erdiag = erdiag,
@@ -222,7 +219,7 @@ charlson_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_
     weights = "quan",
     at_admission = at_admission,
     raw_comorbidities = raw_comorbidities
-    )
+  )
 
   if (at_admission) {
     names(res) <- c("genc_id", "admit_charlson_derived")
@@ -259,7 +256,6 @@ charlson_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_
 #' }
 #'
 elixhauser_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_comorbidities = FALSE) {
-
   res <- comorbidity_index(
     ipdiag = ipdiag,
     erdiag = erdiag,
