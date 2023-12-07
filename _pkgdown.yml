@@ -8,6 +8,7 @@ reference:
   - matches("charlson")
   - covid_flag
   - daily_census
+  - elixhauser_comorbidity_index
   - frailty_score
   - day_time_of_admission
   - hospital_fiscal_year
