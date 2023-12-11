@@ -165,7 +165,7 @@ coerce_to_datatable <- function(data) {
 find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
   ## Check if table input is supported
   check_input(drm_table, "character",
-    options = c(
+    categories = c(
       "admdad", "ipdiagnosis", "ipintervention", "ipcmg",
       "lab", "transfusion"
     )
@@ -287,10 +287,10 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' Optional input specifying the expected length of a given input argument
 #' (e.g., use `length = 2` to check if a vector/list contains 2 elements).
 #'
-#' @param options (`character`)\cr
+#' @param categories (`character`)\cr
 #' Optional input if argtype is `"character"`.
-#' Character vector specifying acceptable options for character inputs (e.g.,
-#' `options = c("none", "all")`)
+#' Character vector specifying acceptable categories for character inputs (e.g.,
+#' `categories = c("none", "all")`)
 #'
 #' @param interval (`numeric`)\cr
 #' Optional input if argtype is `"numeric"` or `"integer"`.
@@ -360,7 +360,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #'
 check_input <- function(arginput, argtype,
                         length = NULL,
-                        options = NULL, # for character inputs only
+                        categories = NULL, # for character inputs only
                         interval = NULL, # for numeric inputs only
                         colnames = NULL, # for data.table/.frame inputs only
                         coltypes = NULL, #          "-"
@@ -463,14 +463,14 @@ check_input <- function(arginput, argtype,
 
     ###### CHECK 3 (for character inputs):
     ###### Check if option is one of acceptable alternatives [optional]
-    if (any(argtype == "character") && !is.null(options)) {
-      if (any(!arginput %in% options)) {
+    if (any(argtype == "character") && !is.null(categories)) {
+      if (any(!arginput %in% categories)) {
         stop(
           paste0(
             "Invalid user input in '", as.character(sys.calls()[[1]])[1],
             "': '", argname, "' needs to be either '", paste0(
-              paste(options[1:length(options) - 1], collapse = "', '"),
-              "' or '", options[length(options)]
+              paste(categories[1:length(categories) - 1], collapse = "', '"),
+              "' or '", categories[length(categories)]
             ), "'.",
             "\nPlease refer to the function documentation for more details."
           ),

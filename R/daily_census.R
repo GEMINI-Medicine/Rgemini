@@ -188,7 +188,7 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
   }
 
   ## Valid input for capacity_func?
-  check_input(capacity_func, "character", options = c("median", "mode", "mean","max"))
+  check_input(capacity_func, "character", categories = c("median", "mode", "mean","max"))
 
   ## Buffer needs to be non-negative integer
   check_input(buffer, "integer", interval = c(0, Inf))
