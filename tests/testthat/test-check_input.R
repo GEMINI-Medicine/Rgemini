@@ -28,7 +28,7 @@ test_that("correct inputs pass checks", {
     )
 
     expect_no_error(
-      check_input(input4, "character", options = c("all", "none"))
+      check_input(input4, "character", categories = c("all", "none"))
     )
 
     expect_no_error(
@@ -114,7 +114,7 @@ test_that("incorrect inputs fail check", {
 
     # unacceptable option for character input
     expect_error(
-      check_input(input4, "character", options = c("any", "none"))
+      check_input(input4, "character", categories = c("any", "none"))
     )
 
     # missing column in table input
