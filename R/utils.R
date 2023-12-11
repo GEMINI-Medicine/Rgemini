@@ -41,7 +41,7 @@ NULL
 #' or `data table`. It returns the results in exact number (percentage) or
 #' returns the index of missingness
 #'
-#' @param x(`vector` or `data.frame` or `data.table`)
+#' @param x (`vector` or `data.frame` or `data.table`)
 #' the object to be checked
 #'
 #' @param na_strings (`character`)

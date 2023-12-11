@@ -10,6 +10,9 @@ n_missing(x, na_strings = c(""), index = FALSE)
 mi2(x, na_strings = c(""), index = FALSE)
 }
 \arguments{
+\item{x}{(\code{vector} or \code{data.frame} or \code{data.table})
+the object to be checked}
+
 \item{na_strings}{(\code{character})
 a character vector of strings which are to be interpreted as \code{NA} values.
 The default for \code{n_missing} is "", which will treat empty strings as \code{NA}.}
@@ -20,9 +23,6 @@ number (percentage). For \code{vector} input, a logical vector of same length wi
 be returned. For \code{data.frame} or \code{data.table} input, the function returns a
 vector with length equal to the number of rows of input table and any
 missingness in the row will result in a returned value of \code{TRUE} for the row.}
-
-\item{x(`vector`}{or \code{data.frame} or \code{data.table})
-the object to be checked}
 }
 \value{
 (\code{logical})
