@@ -14,7 +14,7 @@
 #'
 #' In addition to returning a global disability flag indicating any disability,
 #' users may choose to return individual flags for the following disability
-#' subcategories by using `return_categories = TRUE`:
+#' subcategories by using `component_wise = TRUE`:
 #' - Physical disability: Congenital Anomalies
 #' - Physical disability: Musculoskeletal disorders
 #' - Physical disability: Neurological disorders
@@ -28,41 +28,49 @@
 #' This function takes a `cohort` and `ipdiag` data input and returns a logical
 #' output indicating whether a given `genc_id` was diagnosed with a disability.
 #'
-#'
 #' @param cohort (`data.frame` or `data.table`)
 #' Cohort table with all relevant encounters of interest, where each row
 #' corresponds to a single encounter. Must contain GEMINI Encounter ID
 #' (`genc_id`).
 #'
-#' @param ipdiag (`data.frame` or `data.table`)
-#' Table containing ICD-10-CA diagnosis codes for each encounter in long format.
-#' Must contain the following columns:
-#' - `genc_id` (`integer`): GEMINI encounter ID
-#' - `diagnosis_code` (`character`): alphanumeric ICD-10-CA diagnosis code
-#' consisting of 3-7 characters.
+#' @param ipdiag (`data.table`)
+#' `ipdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' This table must contain the `genc_id` and `diagnosis_code` (as ICD-10-CA) fields in long format.
 #'
-#' Typically, this input corresponds to the `ipdiagnosis` table, which
-#' contains the CIHI in-patient diagnoses for each encounter (see
-#' [GEMINI database schema](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
-#' However, users may also include Emergency Department diagnoses (`erdiagnosis`
-#' table) by combining `ipdiagnosis` and `erdiagnosis` table prior to running
-#' this function.
+#' @param erdiag (`data.table`)
+#' `erdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' This table must contain the `genc_id` and `er_diagnosis_code` (as ICD-10-CA) fields in long format.
+#' Typically, ER diagnoses should be included when deriving disability in order
+#' to increase sensitivity. However, in certain scenarios, users may choose to
+#' only include IP diagnoses by specifying `erdiag = NULL`. This may be useful
+#' when comparing cohorts with different rates of ER admissions. Additionally,
+#' please note that the validity of ER diagnosis codes has been shown to be
+#' lower compared to CIHI in-patient diagnoses (). Thus, users may want to
+#' exclude ER diagnoses in certain situations.
 #'
-#' This function does not differentiate between diagnosis types. That is,
-#' diagnosis codes are included regardless of whether the diagnosis was coded as
-#' a most responsible diagnosis, a comorbidity, or secondary diagnosis. If users
-#' wish to only include certain diagnosis types, please filter the `ipdiag`
-#' input based on `diagnosis_type` prior to running this function (for more
-#' details, see [CIHI diagnosis type definitions](https://www.cihi.ca/sites/default/files/document/diagnosis-type-definitions-en.pdf).
+#' @warning
+#' This function does not differentiate between diagnosis types. That is, the
+#' disability flags are derived based on all diagnosis codes that are provided
+#' as input to this function. By default, users should include all diagnosis
+#' types to identify disabilities. However, if users wish to include only
+#' certain diagnosis types (e.g., type-M for most responsible discharge
+#' diagnosis), the `ipdiag` and `erdiag` input tables should be filtered
+#' accordingly based on `diagnosis_type` *prior to running this function* (for
+#' more details, see [CIHI diagnosis type definitions](https://www.cihi.ca/sites/default/files/document/diagnosis-type-definitions-en.pdf).
 #'
 #' @return `data.table`
 #' This function returns a table with all encounters identified by the `cohort`
-#' table input and additional derived logical fields `disability`.
-#' If no diagnosis code referring to any disablility was found...
+#' table input and an additional derived field `disability` (`logical`)
+#' indicating whether any diagnosis code for a disability was identified.
 #' If a `genc_id` does not have any entry in the diagnosis table at all,
-#' `disability = NA`. Note that this is very rare when including the full
-#' `ipdiagnosis` table (i.e., if no additional filtering was performed, > 99.9%
-#' of `genc_ids` should have at least 1 diagnosis code).
+#' `disability = NA`. Note that this is very rare: If no additional filtering
+#' was performed, >99.9% of `genc_ids` should have an entry in the `ipdiagnosis`
+#' (and >99.9% of `genc_ids` that were admitted via ER should have an entry in
+#' the `erdiagnosis` table).
+#' If `component_wise = TRUE`, 7 additional columns will be returned containing
+#' flags for the individual physicial/sensory/developmental disability
+#' categories.
+#'
 #'
 #' @examples
 #' \dontrun{
@@ -76,8 +84,9 @@
 #'
 #' ipadmdad <- dbGetQuery(dbcon, "select * from admdad") %>% data.table()
 #' ipdiagnosis <- dbGetQuery(dbcon, "select * from ipdiagnosis") %>% data.table()
+#' erdiagnosis <- dbGetQuery(db, "select * from erdiagnosis") %>% data.table()
 #'
-#' disability(cohort = ipadmdad, ipdiag = ipdiagnosis)
+#' disability(cohort = ipadmdad, ipdiag = ipdiagnosis, erdiag = erdiagnosis)
 #' }
 #'
 #' @references
@@ -86,12 +95,17 @@
 #' severe maternal morbidity or mortality in Ontario, Canada. JAMA Network Open,
 #' 4(2), e2034993-e2034993.
 #'
-#' @import stringr
+#' @importFrom stringr str_detect
 #' @export
 #'
-disability <- function(cohort, ipdiag, erdiag) { # , component_wise = FALSE
+disability <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
 
   ############# CHECK & PREPARE DATA #############
+  if (is.null(erdiag)){
+    cat('\n*** Based on the input you provided, only in-patient diagnoses (ipdiag) will be included in the calculation of the disability flag. If you want to include ER diagnoses, please provide the correspondig table as an input to `erdiag`. ***')
+  }
+
+
   ## check that cohort contains genc_ids
 
   ## check that ipdiag contains genc_id & diagnosis_code
@@ -99,71 +113,44 @@ disability <- function(cohort, ipdiag, erdiag) { # , component_wise = FALSE
   ## Prepare output - should have 1 row per genc_id in cohort file
   res <- cohort %>% select(genc_id) %>% distinct() %>% data.table()
 
-  ## Ensure ipdiag is in data.table format before proceeding
-  ipdiag <- coerce_to_datatable(ipdiag[, c('genc_id', 'diagnosis_code')])
-
-
-  if (is.null(erdiag)){
-    print('hello')
+  ## Ensure ipdiag/erdiag are in data.table format before proceeding
+  diagnoses <- coerce_to_datatable(ipdiag[, c('genc_id', 'diagnosis_code')])
+  if (!is.null(erdiag)){
+    erdiag <- coerce_to_datatable(erdiag[, c('genc_id', 'er_diagnosis_code')])
+    setnames(erdiag, 'er_diagnosis_code', 'diagnosis_code')
+    # combine all diagnoses
+    diagnoses <- rbind(diagnoses, erdiag)
   }
 
 
-
   ############# GET DISABILITY CODES #############
-
   ## Read file with disability codes from data folder
-  # ...
-  ## Define disability diagnosis codes
-  physical_disability <- str_c(paste0("^",
-                                      c('Q675', 'Q66', 'Q676', 'Q677', 'Q678', 'E343', 'E230', 'Q019', 'Q02', 'Q03', 'Q04', 'Q06', 'Q078',
-                                        'Q079', 'G901', 'Q75', 'Q76', 'Q77', 'Q78', 'Q79', 'Q72', 'Q73', 'Q74', 'Q71', 'Q05', 'Q70', 'E220',
-                                        'M45', 'M46', 'M863', 'M864', 'M865', 'M866', 'M500', 'M502', 'M503', 'M504', 'M505', 'M506', 'M507',
-                                        'M508', 'M509', 'M510', 'M512', 'M513', 'M514', 'M515', 'M516', 'M517', 'M518', 'M519', 'M224',
-                                        'M232', 'M233', 'M234', 'M235', 'M238', 'M239', 'M15', 'M16', 'M17', 'M18', 'M19', 'M42', 'M91',
-                                        'M92', 'M93', 'M87', 'M80', 'M353', 'M05', 'M06', 'M47', 'G80', 'G90', 'G40', 'G81', 'G60', 'G11',
-                                        'G328', 'G57', 'G58', 'G35', 'G71', 'G72', 'G70', 'G54', 'G55', 'G36', 'G37', 'G95', 'G10', 'G23',
-                                        'G241', 'G242', 'G243', 'G244', 'G245', 'G246', 'G247', 'G248', 'G249', 'G25', 'G82', 'G83', 'G61',
-                                        'G62', 'G63', 'G318', 'G20', 'G21', 'I69', 'B91', 'G12', 'S77', 'S87', 'S970', 'T041', 'T043', 'T044',
-                                        'T045', 'T046', 'T047', 'T048', 'Z993', 'Z998', 'S324', 'S325', 'S326', 'S327', 'S328', 'T912', 'S140',
-                                        'S141', 'S240', 'S241', 'S340', 'S341', 'S343', 'T060', 'T061', 'T913', 'M218', 'S78', 'S88', 'S980',
-                                        'S983', 'T05', 'Z894', 'Z895', 'Z896', 'Z897', 'Z898', 'S48', 'S58', 'S683', 'S684', 'Z891', 'Z892', 'Z893')),
-                               collapse = '|')
+  #data(mapping_disability, package = "Rgemini")
+  load("H:/GitHub/Rgemini/data/mapping_disability.rda")
 
-  sensory_disability <- str_c(paste0("^",
-                                     c('H90', 'H913', 'H918', 'H919', 'Q160', 'Q161', 'Q163', 'Q164', 'Q165', 'Q166', 'Q167', 'Q168',
-                                       'Q169', 'H54', 'H25', 'H26', 'H30', 'H31', 'Q111', 'Q112', 'Q131', 'Q133', 'Q138', 'Q150',
-                                       'H44', 'H201', 'H476', 'H40', 'H42', 'H55', 'E1031', 'E1032', 'E1033', 'E1034', 'E1035',
-                                       'E1131', 'E1132', 'E1133', 'E1134', 'E1135', 'H34', 'H35', 'H36')),
-                              collapse = '|')
+  disability_codes <- mapping_disability %>% data.table()
+
+  ## Derive flag for any disability
+  res[, disability := ifelse(!genc_id %in% diagnoses$genc_id, NA, # if no diagnosis code at all for genc_id, set flag to NA
+                             ifelse(genc_id %in% diagnoses[ # if entry in mapped diagnosis codes, set disability to TRUE, otherwise: FALSE
+                               str_detect(diagnoses$diagnosis_code, paste0("^", disability_codes$ICD_10_CA_code, collapse = '|')), ]$genc_id, TRUE, FALSE))]
 
 
-  development_disability <- str_c(paste0("^",
-                                         c('S020', 'S021', 'S023', 'S027', 'S028', 'S029', 'S061', 'S062', 'S063', 'S064', 'S065',
-                                           'S066', 'S067', 'S068', 'S069', 'S07', 'T020', 'T905', 'F700', 'F701', 'F708', 'F709',
-                                           'F710', 'F711', 'F718', 'F719', 'F720', 'F721', 'F728', 'F729', 'F730', 'F731', 'F738',
-                                           'F739', 'F780', 'F781', 'F788', 'F789', 'F790', 'F791', 'F798', 'F799', 'F840', 'F841',
-                                           'F843', 'F844', 'F845', 'F848', 'F849', 'Q851', 'Q860', 'Q861', 'Q871', 'Q8723', 'Q8731',
-                                           'Q878', 'Q900', 'Q901', 'Q902', 'Q903', 'Q904', 'Q905', 'Q906', 'Q907', 'Q908', 'Q909',
-                                           'Q910', 'Q911', 'Q912', 'Q913', 'Q914', 'Q915', 'Q916', 'Q917', 'Q918', 'Q919', 'Q920',
-                                           'Q921', 'Q922', 'Q923', 'Q924', 'Q925', 'Q927', 'Q928', 'Q929', 'Q930', 'Q931', 'Q932',
-                                           'Q933', 'Q934', 'Q935', 'Q936', 'Q937', 'Q938', 'Q939', 'Q971', 'Q992', 'Q998')),
-                                  collapse = '|')
+  if (component_wise == TRUE){
+    # rename columns for disability categories
+    disability_codes[, Category := gsub(' - ', '.', Category)]
+    disability_codes[, Category := gsub(' ', '_', Category)]
 
+    disability_categories <- unique(disability_codes$Category)
 
+    sapply(disability_categories, function(disability_cat){
+      res[, paste0(disability_cat) := ifelse(!genc_id %in% diagnoses$genc_id, NA, # if no diagnosis code at all for genc_id, set flag to NA
+                                 ifelse(genc_id %in% diagnoses[ # if entry in mapped diagnosis codes, set disability to TRUE, otherwise: FALSE
+                                   str_detect(diagnoses$diagnosis_code, paste0("^", disability_codes[Category == disability_cat,]$ICD_10_CA_code, collapse = '|')), ]$genc_id, TRUE, FALSE))]
+    })
 
-  ## Create flags
-  res[, physical_disability := genc_id %in% ipdiag[str_detect(diagnosis_code, physical_disability),]$genc_id]
-  res[, sensory_disability := genc_id %in% ipdiag[str_detect(diagnosis_code, sensory_disability),]$genc_id]
-  res[, development_disability := genc_id %in% ipdiag[str_detect(diagnosis_code, development_disability),]$genc_id]
+  }
 
+  return(res)
 
-  ## Create single flag indicating whether any disability
-  res[disability := physical_disability | sensory_disability | development_disability]
-
-
-  ## For any genc_ids with no entry in diagnosis table, set all flags to NA
-  #res[genc_id %ni% ipdiag$genc_id, ':=' .(disability, physical_disability, sensory_disability, development_disability) := NA]
-
-
-  return(res[ ,.(genc_id, disability, physical_disability, sensory_disability, development_disability)])
 }
