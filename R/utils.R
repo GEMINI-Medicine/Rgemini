@@ -80,20 +80,20 @@ NULL
 #'
 n_missing <- function(x, na_strings = c(""), index = FALSE) {
 
-  ##### Define function to identify missingness ######
+  ##### Define function to identify missingness in vector ######
   is_missing <- function(x, na_strings) {
     return(is.na(x) | x %in% na_strings)
   }
 
   ## Define function to count missingness in vector ###
   count_missing <- function(x, na_strings) {
-    a <- sum(is_missing(x, na_strings = na_strings))
-    b <- length(x)
+    len_missing <- sum(is_missing(x, na_strings = na_strings))
+    len_x <- length(x)
     return(
       paste0(
-        a,
+        len_missing,
         " (",
-        sprintf(paste0("%.", 1, "f"), a / b * 100),
+        sprintf(paste0("%.", 1, "f"), len_missing / len_x * 100),
         "%)"
       )
     )
