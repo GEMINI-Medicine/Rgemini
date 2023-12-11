@@ -48,7 +48,7 @@ df <- data.frame(
 n_missing(df)
 n_missing(df$z)
 n_missing(df, na_strings = c("", "NA", " "))
-n_missing(df$z, index = T)
-n_missing(df, na_strings = c("", "NA", " "), index = T)
+n_missing(df$z, index = TRUE)
+n_missing(df, na_strings = c("", "NA", " "), index = TRUE)
 
 }
