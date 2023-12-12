@@ -55,11 +55,11 @@ NULL
 #' vector with length equal to the number of rows of input table and any
 #' missingness in the row will result in a returned value of `TRUE` for the row.
 #'
-#' @return (`logical`)
-#' For `vector` input, a vector of logical values the same length of `x` where
+#' @return (`character` or `logical`)
+#' For `vector` input, a `character` vector the same length of `x` where
 #' each value represents whether that particular element is missing.
-#' For `data.frame` or `data.table` input, a vector of logical values where
-#' length equals to number of rows of input table and each value represents
+#' For `data.frame` or `data.table` input, a `logical` vector of which the
+#' length is the number of rows of input table and each value represents
 #' whether any element of the row is missing.
 #'
 #' @export
@@ -113,6 +113,7 @@ n_missing <- function(x, na_strings = c(""), index = FALSE) {
       return(count_missing(x, na_strings = na_strings))
     }
   }
+
 }
 
 

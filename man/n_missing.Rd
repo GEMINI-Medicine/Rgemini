@@ -25,11 +25,11 @@ vector with length equal to the number of rows of input table and any
 missingness in the row will result in a returned value of \code{TRUE} for the row.}
 }
 \value{
-(\code{logical})
-For \code{vector} input, a vector of logical values the same length of \code{x} where
+(\code{character} or \code{logical})
+For \code{vector} input, a \code{character} vector the same length of \code{x} where
 each value represents whether that particular element is missing.
-For \code{data.frame} or \code{data.table} input, a vector of logical values where
-length equals to number of rows of input table and each value represents
+For \code{data.frame} or \code{data.table} input, a \code{logical} vector of which the
+length is the number of rows of input table and each value represents
 whether any element of the row is missing.
 }
 \description{
