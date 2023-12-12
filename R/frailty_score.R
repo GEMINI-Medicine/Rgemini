@@ -4,6 +4,16 @@ frailty_score  <- function(cohort, ipdiag, erdiag, componentwise=F){
   data("mapping_cihi_hfrs_icd", package = "Rgemini")
   frailty_map <- mapping_cihi_hfrs_icd %>% mutate(diagnosis_code = gsub("\\.", "", icd10ca)) %>% data.table()
  
+   # input checks    
+    cohort <- coerce_to_datatable(cohort)
+    ipdiag <- coerce_to_datatable(ipdiag)
+    erdiag <- coerce_to_datatable(erdiag)
+    elig_enc <- unique(cohort[age>=65,]$genc_id)
+
+  if (!all(c("genc_id", "age") %in% colnames(cohort))) {
+    stop("Cohort must be a dataframe with columns:\n","genc_id, age")
+    }
+
   # clean and merge all diagnosis codes; return a warning if EXPLICITLY set to NULL by user
   if (is.null(erdiag)){
     warning(
@@ -11,10 +21,10 @@ frailty_score  <- function(cohort, ipdiag, erdiag, componentwise=F){
       )
     } 
   else {
-    erdiag <- erdiag[genc_id %in% cohort[age>=65,]$genc_id, .(genc_id, er_diagnosis_code)] %>% rename(diagnosis_code = er_diagnosis_code)
+    erdiag <- erdiag[genc_id %in% elig_enc, .(genc_id, er_diagnosis_code)] %>% rename(diagnosis_code = er_diagnosis_code)
     }
  
-  ipdiag <- ipdiag[genc_id %in% cohort[age>=65,]$genc_id, .(genc_id, diagnosis_code)]
+  ipdiag <- ipdiag[genc_id %in% elig_enc, .(genc_id, diagnosis_code)]
   
   alldiag <- rbind(ipdiag, erdiag)   
   
