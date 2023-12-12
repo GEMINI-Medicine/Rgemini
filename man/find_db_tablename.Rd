@@ -55,11 +55,12 @@ specifically looks for tables called either "lab"/"transfusion" or
 \dontrun{
 drv <- dbDriver("PostgreSQL")
 dbcon <- DBI::dbConnect(drv,
-                        dbname = "db",
-                        host = "172.XX.XX.XXX",
-                        port = 1234,
-                        user = getPass("Enter user:"),
-                        password = getPass("password"))
+  dbname = "db",
+  host = "172.XX.XX.XXX",
+  port = 1234,
+  user = getPass("Enter user:"),
+  password = getPass("password")
+)
 
 admdad_name <- find_db_tablename(dbcon, "admdad")
 

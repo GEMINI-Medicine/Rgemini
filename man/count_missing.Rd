@@ -10,5 +10,6 @@ count_missing(x)
 \item{x}{(\code{vector})}
 }
 \description{
-This function checks the number of missingness in a vector, returns the results in the exact number (percentage)
+This function checks the number of missingness in a vector, returns the
+results in the exact number (percentage)
 }

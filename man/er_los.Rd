@@ -21,8 +21,8 @@ Left ER date-time (\code{left_er_date_time} in "yyyy-mm-dd hh:mm" format).}
 }
 \value{
 (\code{data.table})\cr
-By default, for each encounter in input "cohort" returns the corresponding
-derived numeric fields "er_los_hrs_derived".
+By default, for each encounter in input \code{cohort} returns the corresponding
+derived numeric fields \code{er_los_hrs_derived} and \code{er_los_days_derived}.
 }
 \description{
 Calculate the total duration in Emergency Room (ER) that an encounter spent
@@ -35,16 +35,13 @@ encounter spent in the ER during a hospital stay.
 
 It uses NACRS fields Triage Date and Time (Data Element Number 24/25) and
 Date and Time Patient Left Emergency Department (Data Element Number 116/117).
-
-Rows with either triage date-time or left ER date-time missing will be
-excluded from the calculation.
-
-For encounters with no ER visit, the function returns 0 in both
-\code{er_los_hrs_derived} and \code{er_los_days_derived}
 }
 \note{
-By design, function will not return any NA values.
-Encounter IDs in the \code{cohort} table that are not present in the \code{er} table are assumed to have no ER visit.
+By design, function will not return any \code{NA} values.
+Encounter IDs in the \code{cohort} table that are not present in the \code{er} table
+are assumed to have no ER visit.
+Encounter IDs in the \code{er} table but with either missing \code{triage_date_time} or
+\code{left_er_date_time} will be excluded from the calculation.
 For these encounters, a value of 0 will be assigned to the derived fields.
 }
 \examples{
