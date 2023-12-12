@@ -1,5 +1,8 @@
 # Rgemini `develop`
 
+* Switch function `frailty_score()` to calculate the CIHI Hospital Frailty Risk Score for each encounter.
+* Deprecates function `frailty_score()` that calculates the UK Hospital Frailty Risk Score.
+
 # Rgemini 0.3.1
 
 * Allows the user to specify the number of digits to round percentages to in cell suppression of categorical variables, without forcing rounding to integer.

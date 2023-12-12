@@ -118,7 +118,7 @@ frailty_score  <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
 
   # Calculate score
   frailty <- alldiag %>%
-    regex_left_join(frailty_map, by = "diagnosis_code", ignore_case = TRUE) %>% # per CIHI manual frailty conditions are identified by 595 icd-10-ca codes and any codes starting with these codes
+    fuzzyjoin::regex_left_join(frailty_map, by = "diagnosis_code", ignore_case = TRUE) %>% # per CIHI manual frailty conditions are identified by 595 icd-10-ca codes and any codes starting with these codes
     data.table() %>%
     .[!is.na(frailty_categories), .(genc_id, diagnosis_code.x, diagnosis_code.y, frailty_categories)] # filter to encounters with diagnosis mapped to frailty conditions
 
