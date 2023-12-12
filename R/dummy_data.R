@@ -294,7 +294,7 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 #' @examples
 #' \dontrun{
 #' # Simulate 10,000 encounters from 10 hospitals for fiscal years 2018-2020.
-#' dummy_ipadmdad(n = 10000, n_hospitals = 10, time_period = c(2018, 2020)) }
+#' dummy_ipadmdad(n = 10000, n_hospitals = 10, time_period = c(2018, 2020))
 #'
 #' }
 #'

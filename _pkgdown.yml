@@ -36,6 +36,7 @@ reference:
 - contents:
   - dummy_diag
   - sample_icd
+  - dummy_ipadmdad
 - title: Utility Functions
 - contents:
   - lunique

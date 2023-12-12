@@ -22,7 +22,9 @@ Imports:
     stringr, 
     table1, 
     tidyr, 
-    timeDate
+    timeDate,
+	MCMCpack,
+	sn
 Suggests: 
     ggplot2,
     kableExtra,
