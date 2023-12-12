@@ -15,16 +15,10 @@
 #' check whether chronic conditions are coded consistently across different
 #' encounters for a given patient.
 #'
-#' In addition to returning a global disability flag indicating any disability,
-#' users may choose to return individual flags for the following disability
-#' subcategories by using `component_wise = TRUE`:
-#' - Physical disability: Congenital Anomalies
-#' - Physical disability: Musculoskeletal disorders
-#' - Physical disability: Neurological disorders
-#' - Physical disability: Permanent Injuries
-#' - Sensory disabilities: Hearing impairments
-#' - Sensory disabilities: Vision impairments
-#' - Developmental Disabilities
+#' In addition to returning a global disability flag indicating whether a
+#' `genc_id` was diagnosed with *any* disability, users may choose to return
+#' individual flags for different disability categories (e.g., physical/sensory/
+#' developmental disabilities) by using `component_wise = TRUE`.
 #'
 #'
 #' @param cohort (`data.frame` or `data.table`)
@@ -48,6 +42,20 @@
 #' please note that the reliability of ER diagnosis codes has been shown to be
 #' lower compared to in-patient diagnoses. Thus, users may want to
 #' exclude ER diagnoses in certain situations.
+#'
+#' @param component_wise (`logical`)
+#' If `FALSE`, only a single (global) disability flag will be returned
+#' indicating whether `genc_id` was diagnosed with *any* disability.
+#' If `TRUE`, 7 additional columns will be returned with an individual flag for
+#' each of the following disability categories:
+#' - Physical disability: Congenital Anomalies
+#' - Physical disability: Musculoskeletal disorders
+#' - Physical disability: Neurological disorders
+#' - Physical disability: Permanent Injuries
+#' - Sensory disabilities: Hearing impairments
+#' - Sensory disabilities: Vision impairments
+#' - Developmental Disabilities
+#'
 #'
 #' @section Warning:
 #' This function does not differentiate between diagnosis types. That is, the

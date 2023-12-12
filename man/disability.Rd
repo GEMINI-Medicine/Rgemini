@@ -28,6 +28,21 @@ when comparing cohorts with different rates of ER admissions. Additionally,
 please note that the reliability of ER diagnosis codes has been shown to be
 lower compared to in-patient diagnoses. Thus, users may want to
 exclude ER diagnoses in certain situations.}
+
+\item{component_wise}{(\code{logical})
+If \code{FALSE}, only a single (global) disability flag will be returned
+indicating whether \code{genc_id} was diagnosed with \emph{any} disability.
+If \code{TRUE}, 7 additional columns will be returned with an individual flag for
+each of the following disability categories:
+\itemize{
+\item Physical disability: Congenital Anomalies
+\item Physical disability: Musculoskeletal disorders
+\item Physical disability: Neurological disorders
+\item Physical disability: Permanent Injuries
+\item Sensory disabilities: Hearing impairments
+\item Sensory disabilities: Vision impairments
+\item Developmental Disabilities
+}}
 }
 \value{
 \code{data.table}
@@ -57,18 +72,10 @@ searches for relevant diagnosis codes at the encounter level and does not
 check whether chronic conditions are coded consistently across different
 encounters for a given patient.
 
-In addition to returning a global disability flag indicating any disability,
-users may choose to return individual flags for the following disability
-subcategories by using \code{component_wise = TRUE}:
-\itemize{
-\item Physical disability: Congenital Anomalies
-\item Physical disability: Musculoskeletal disorders
-\item Physical disability: Neurological disorders
-\item Physical disability: Permanent Injuries
-\item Sensory disabilities: Hearing impairments
-\item Sensory disabilities: Vision impairments
-\item Developmental Disabilities
-}
+In addition to returning a global disability flag indicating whether a
+\code{genc_id} was diagnosed with \emph{any} disability, users may choose to return
+individual flags for different disability categories (e.g., physical/sensory/
+developmental disabilities) by using \code{component_wise = TRUE}.
 }
 \section{Warning}{
 
