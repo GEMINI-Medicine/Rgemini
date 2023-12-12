@@ -96,17 +96,17 @@ frailty_score  <- function(cohort, ipdiag, erdiag, componentwise = FALSE) {
   # input checks
     cohort <- coerce_to_datatable(cohort)
     ipdiag <- coerce_to_datatable(ipdiag)
-    erdiag <- coerce_to_datatable(erdiag)
+    if (!is.null(erdiag)) {erdiag <- coerce_to_datatable(erdiag)}
     elig_enc <- unique(cohort[age >= 65, ]$genc_id)
 
   if (!all(c("genc_id", "age") %in% colnames(cohort))) {
     stop("Cohort must be a dataframe with columns:\n", "genc_id, age")
     }
-
+  
   # clean and merge all diagnosis codes; return a warning if EXPLICITLY set to NULL by user
   if (is.null(erdiag)) {
     warning(
-      "\nBased on user input, `erdiag` is set to NULL. This is NOT recommended. The CIHI frailty score was developed and validated based on diagnosis codes from both NACRS and DAD. Excluding erdiagnosis can underestimate the level of frailty (see reference in function documentation for details).\n"
+      "\nBased on user input, `erdiag` is set to NULL. This is NOT recommended. The CIHI frailty score was developed and validated based on diagnosis codes from both NACRS and DAD. Excluding erdiagnosis can underestimate the level of frailty (see references in documentation for details).\n"
       )
     } else {
     erdiag <- erdiag[genc_id %in% elig_enc, .(genc_id, er_diagnosis_code)] %>% rename(diagnosis_code = er_diagnosis_code)
