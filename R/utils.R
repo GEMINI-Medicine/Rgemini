@@ -87,7 +87,7 @@ coerce_to_datatable <- function(data) {
 
   if (!is.data.table(data)) {
     data <- as.data.table(data)
-    warning(var, " was passed as a data.frame and has been coerced to a data.table", immediate. = TRUE)
+    warning(var, " was passed as a data.frame and has been coerced to a data.table.\n", immediate. = TRUE)
   }
   return(data)
 }
