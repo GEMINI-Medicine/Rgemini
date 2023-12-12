@@ -67,7 +67,7 @@
 #' @notes
 #' The previous `frailty_score()` function calculates the UK HFRS (Gilbert, 2018), and it now deprecated.
 #' Using a similar approach as the UK HFRS, the CIHI HFRS was developed and validated based on Canadian cohorts, making it particularly suited for GEMINI data.
-#' The UK version remains available in `Rgemini` version 0.3.0 and earlier but will not receive future maintenance.
+#' The UK version remains available in `Rgemini` version 0.3.1 and earlier but will not receive future maintenance.
 #' Users interested in the UK version should refer to the original publications for important differences in diagnostic coding practices and age threshold.
 #'
 #' @references
@@ -84,7 +84,8 @@
 #' frailty_score(cohort_dum, ipdiag_dum, erdiag_dum, component_wise = F)
 #' }
 #'
-#' @import fuzzyjoin
+#' @importFrom fuzzyjoin regex_left_join 
+#' 
 #' @export
 
 frailty_score  <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
@@ -118,7 +119,7 @@ frailty_score  <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
 
   # Calculate score
   frailty <- alldiag %>%
-    fuzzyjoin::regex_left_join(frailty_map, by = "diagnosis_code", ignore_case = TRUE) %>% # per CIHI manual frailty conditions are identified by 595 icd-10-ca codes and any codes starting with these codes
+    regex_left_join(frailty_map, by = "diagnosis_code", ignore_case = TRUE) %>% # per CIHI manual frailty conditions are identified by 595 icd-10-ca codes and any codes starting with these codes
     data.table() %>%
     .[!is.na(frailty_categories), .(genc_id, diagnosis_code.x, diagnosis_code.y, frailty_categories)] # filter to encounters with diagnosis mapped to frailty conditions
 

@@ -22,7 +22,8 @@ Imports:
     stringr, 
     table1, 
     tidyr, 
-    timeDate
+    timeDate,
+    fuzzyjoin
 Suggests: 
     ggplot2,
     kableExtra,
