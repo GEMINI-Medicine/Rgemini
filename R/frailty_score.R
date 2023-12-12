@@ -6,18 +6,18 @@
 #'
 #' @details
 #' The CIHI HFRS is a contextual measure of frailty for patients aged 65 years and older.
-#' It categorizes a list of ICD-10-CA diagnosis codes into 36 frailty-related deficits .
+#' It categorizes a list of ICD-10-CA diagnosis codes into 36 distinct frailty-related deficits.
 #' The level of frailty is determined as the cumulative number of distinct frailty deficits (an equal-weight algorithm) present in an individual.
-#' ALL diagnoses are included to the calculation (i.e. all emergency department(ER) and in-patient (IP) diagnoses at, all diagnosis types).
+#' ALL diagnoses are included to the calculation (i.e. all emergency department (ER) and in-patient (IP) diagnoses at, all diagnosis types).
 #' When none of the frailty deficits is present in an individual, a score of zero is assigned.
 #'
-#' The function closely adheres to the CIHI HFRS with following adaptations:
+#' The function closely adheres to the CIHI HFRS with the following adaptations:
 #' \itemize{
 #'  \item{No look-back period: }{Score is computed at encounter level. The 2-year look-back in the CIHI HFRS is not implemented. This adaptation systematically underestimates frailty but ensures comparable scores across time and hospitals considering variations in data availability}
-#'  \item{Score format : }{Integer scores are returns presenting the sum of the number of frailty deficits.
-#'  These scores can be easily converted to the different formats defined by CIHI HFRS (continuous fractions, 8 risk groups, binary).
+#'  \item{Score format : }{Integer scores are returned representing the sum of the number of frailty deficits.
+#'  These scores can be easily converted to the different formats (i.e. continuous fractions, 8 risk groups, binary) defined by CIHI HFRS.
 #'  For example, dividing the returned score by 36 (maximum number of deficits possible) gives the continuous CIHI HFRS.
-#'  Users interested in further categorizing the scores should refer [Amuah et al, 2023](https://doi.org/10.1503/cmaj.220926) and [CIHI methodology] (https://www.cihi.ca/sites/default/files/document/cihi-hospital-frailty-risk-measure-meth-notes-en.pdf) for details.
+#'  Users interested in further categorizing the scores should refer to [Amuah et al, 2023](https://doi.org/10.1503/cmaj.220926) and [CIHI methodology] (https://www.cihi.ca/sites/default/files/document/cihi-hospital-frailty-risk-measure-meth-notes-en.pdf).
 #'  }
 #' }
 #'
@@ -65,16 +65,16 @@
 #' Excluding diagnoses in NACRS was found to underestimate frailty levels (Amuah et al, 2023).
 #'
 #' @notes
-#' The CIHI HFRS was built on the UK HFRS, but developed and validated using a Canadian cohort, making it particularly suited for GEMINI data.
-#' The previous `frailty_score()` function that calculates the UK HFRS is now deprecated.
+#' The previous `frailty_score()` function calculates the UK HFRS (Gilbert, 2018), and it now deprecated.
+#' Using a similar approach as the UK HFRS, the CIHI HFRS was developed and validated based on Canadian cohorts, making it particularly suited for GEMINI data.
 #' The UK version remains available in `Rgemini` version 0.3.0 and earlier but will not receive future maintenance.
-#' Users interested in the UK version should refer to the original publications (see References) for
-#' important differences in diagnostic coding practices and age threshold.
+#' Users interested in the UK version should refer to the original publications for important differences in diagnostic coding practices and age threshold.
 #'
 #' @references
 #' UK HFRS: Gilbert T, et al. Lancet, 2018. http://dx.doi.org/10.1016/S0140-6736(18)30668-8
 #' CIHI HFRS: Amuah JE, et al. CMAJ, 2023. https://doi.org/10.1503/cmaj.220926
 #' CIHI methodology notes: https://www.cihi.ca/sites/default/files/document/cihi-hospital-frailty-risk-measure-meth-notes-en.pdf
+#' We recommend referencing both original articles (UK HFRS and CIHI HFRS) when using this function.
 #'
 #' @examples
 #' \dontrun{
@@ -102,7 +102,7 @@ frailty_score  <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
   if (!all(c("genc_id", "age") %in% colnames(cohort))) {
     stop("Cohort must be a dataframe with columns:\n", "genc_id, age")
     }
-  
+
   # clean and merge all diagnosis codes; return a warning if EXPLICITLY set to NULL by user
   if (is.null(erdiag)) {
     warning(
