@@ -36,17 +36,17 @@
 #' This table must contain the `genc_id` and `er_diagnosis_code` fields in long format.
 #' The diagnosis codes must be free from punctuation or special characters.
 #'
-#' @param componentwise (`logical`)\cr
+#' @param component_wise (`logical`)\cr
 #' Default is FALSE. When TRUE, the function does not aggregate the score and instead outputs a table in long format that
 #' shows the frailty conditions contributed to the score for each encounter.
 #' Encounters with no frailty conditions found (frailty_score_derived=0) are excluded.
 #'
 #' @return (`data.frame`)\cr
-#' If `componentwise == FALSE`:
+#' If `component_wise == FALSE`:
 #'     `genc_id` (`numeric`),\cr
 #'     `frailty_score_derived` (`numeric`) total number of frailty conditions for the encounter.
 #'
-#' If `componentwise == TRUE`:
+#' If `component_wise == TRUE`:
 #'     `genc_id` (`numeric`),\cr
 #'     `diagnosis_code` (`character`),\cr ICD-10-CA diagnosis codes associated with the encounter
 #'     `frailty_categories` (`character`)\cr frailty category of the ICD-10-CA code mapped to
@@ -81,13 +81,13 @@
 #' cohort_dum <- data.frame(genc_id=c(1, 2, 3), age=c(64, 65, 80))
 #' ipdiag_dum <- dummy_diag(nid=3, nrow=10, ipdiagnosis=T, pattern ="C20$|R460$") # frailty conditions
 #' erdiag_dum <- dummy_diag(nid=3, nrow=5, ipdiagnosis=F, pattern ="M121$") # not a frailty condition
-#' frailty_score(cohort_dum, ipdiag_dum, erdiag_dum, componentwise = F)
+#' frailty_score(cohort_dum, ipdiag_dum, erdiag_dum, component_wise = F)
 #' }
 #'
 #' @import fuzzyjoin
 #' @export
 
-frailty_score  <- function(cohort, ipdiag, erdiag, componentwise = FALSE) {
+frailty_score  <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
 
   # load CIHI HFRS-ICD mapping from package data folder
   data("mapping_cihi_hfrs_icd", package = "Rgemini")
@@ -130,7 +130,7 @@ frailty_score  <- function(cohort, ipdiag, erdiag, componentwise = FALSE) {
 
   res <- rbind(res_score, res_0) # combine
 
-  ## Componentwise result (available only for encounters w/ diagnoses mapped)
+  ## component_wise result (available only for encounters w/ diagnoses mapped)
   res_component <- frailty[, .(genc_id, diagnosis_code.x, frailty_categories)] %>% rename(diagnosis_code = diagnosis_code.x)
 
   # Warnings on output
@@ -153,7 +153,7 @@ frailty_score  <- function(cohort, ipdiag, erdiag, componentwise = FALSE) {
   }
 
   # Outputs
-  if (componentwise) {
+  if (component_wise) {
     return(res_component)
     }
 
