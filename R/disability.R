@@ -10,7 +10,10 @@
 #' Broadly, this includes any diagnosis codes for conditions that are likely to
 #' result in functional limitations and are considered to be chronic (see
 #' Supplemental eTable 2 in [Brown et al., 2021](https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2776018)
-#' for a full list of diagnosis codes).
+#' for a full list of diagnosis codes). However, note that this function only
+#' searches for relevant diagnosis codes at the encounter level and does not
+#' check whether chronic conditions are coded consistently across different
+#' encounters for a given patient.
 #'
 #' In addition to returning a global disability flag indicating any disability,
 #' users may choose to return individual flags for the following disability
@@ -24,10 +27,6 @@
 #' - Developmental Disabilities
 #'
 #'
-#' @details
-#' This function takes a `cohort` and `ipdiag` data input and returns a logical
-#' output indicating whether a given `genc_id` was diagnosed with a disability.
-#'
 #' @param cohort (`data.frame` or `data.table`)
 #' Cohort table with all relevant encounters of interest, where each row
 #' corresponds to a single encounter. Must contain GEMINI Encounter ID
@@ -35,17 +34,19 @@
 #'
 #' @param ipdiag (`data.table`)
 #' `ipdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
-#' This table must contain the `genc_id` and `diagnosis_code` (as ICD-10-CA) fields in long format.
+#' This table must contain `genc_id` and `diagnosis_code` (as ICD-10-CA
+#' alphanumeric code) in long format.
 #'
 #' @param erdiag (`data.table`)
 #' `erdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
-#' This table must contain the `genc_id` and `er_diagnosis_code` (as ICD-10-CA) fields in long format.
+#' This table must contain `genc_id` and `er_diagnosis_code` (as ICD-10-CA
+#' alphanumeric code) in long format.
 #' Typically, ER diagnoses should be included when deriving disability in order
 #' to increase sensitivity. However, in certain scenarios, users may choose to
 #' only include IP diagnoses by specifying `erdiag = NULL`. This may be useful
 #' when comparing cohorts with different rates of ER admissions. Additionally,
-#' please note that the validity of ER diagnosis codes has been shown to be
-#' lower compared to CIHI in-patient diagnoses (). Thus, users may want to
+#' please note that the reliability of ER diagnosis codes has been shown to be
+#' lower compared to in-patient diagnoses. Thus, users may want to
 #' exclude ER diagnoses in certain situations.
 #'
 #' @warning
@@ -76,17 +77,25 @@
 #' \dontrun{
 #' drv <- dbDriver("PostgreSQL")
 #' dbcon <- DBI::dbConnect(drv,
-#'                         dbname = "db",
-#'                         host = "172.XX.XX.XXX",
-#'                         port = 1234,
-#'                         user = getPass("Enter user:"),
-#'                         password = getPass("password"))
+#'   dbname = "db",
+#'   host = "domain_name.ca",
+#'   port = 1234,
+#'   user = getPass("Enter user:"),
+#'   password = getPass("password")
+#' )
 #'
 #' ipadmdad <- dbGetQuery(dbcon, "select * from admdad") %>% data.table()
 #' ipdiagnosis <- dbGetQuery(dbcon, "select * from ipdiagnosis") %>% data.table()
 #' erdiagnosis <- dbGetQuery(db, "select * from erdiagnosis") %>% data.table()
 #'
+#' # including ER diagnosis codes
 #' disability(cohort = ipadmdad, ipdiag = ipdiagnosis, erdiag = erdiagnosis)
+#'
+#' # not including ER diagnosis codes
+#' disability(cohort = ipadmdad, ipdiag = ipdiagnosis, erdiag = NULL)
+#'
+#' # returning component-wise disability flags
+#' disability(ipadmdad, ipdiagnosis, erdiagnosis, component_wise = TRUE)
 #' }
 #'
 #' @references
@@ -101,56 +110,62 @@
 disability <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
 
   ############# CHECK & PREPARE DATA #############
-  if (is.null(erdiag)){
-    cat('\n*** Based on the input you provided, only in-patient diagnoses (ipdiag) will be included in the calculation of the disability flag. If you want to include ER diagnoses, please provide the correspondig table as an input to `erdiag`. ***')
+  if (is.null(erdiag)) {
+    cat("\n*** Based on the input you provided, only in-patient diagnoses (ipdiag) will be included in the calculation of the disability flag.
+    If you want to include ER diagnoses, please provide the correspondig table as an input to `erdiag`. ***\n")
   }
 
+  ## check that cohort contains genc_ids -> add these once check_input function from branch #26 has been reviewed
+  # check_input(cohort, c("data.table", "data.frame"), colnames = c("genc_id"))
 
-  ## check that cohort contains genc_ids
-
-  ## check that ipdiag contains genc_id & diagnosis_code
+  ## check that ipdiag/erdiag contains genc_id & diagnosis_code
+  # check_input(ipdiag, c("data.table", "data.frame"),
+  #             colnames = c("genc_id", "diagnosis_code"),
+  #             coltypes = c("", "character"))
+  # if (!is.null(erdiag)){
+  #  check_input(erdiag, c("data.table", "data.frame"),
+  #              colnames = c("genc_id", "er_diagnosis_code"),
+  #              coltypes = c("", "character"))
+  # }
 
   ## Prepare output - should have 1 row per genc_id in cohort file
-  res <- cohort %>% select(genc_id) %>% distinct() %>% data.table()
+  res <- cohort %>%
+    select(genc_id) %>%
+    distinct() %>%
+    data.table()
 
   ## Ensure ipdiag/erdiag are in data.table format before proceeding
-  diagnoses <- coerce_to_datatable(ipdiag[, c('genc_id', 'diagnosis_code')])
-  if (!is.null(erdiag)){
-    erdiag <- coerce_to_datatable(erdiag[, c('genc_id', 'er_diagnosis_code')])
-    setnames(erdiag, 'er_diagnosis_code', 'diagnosis_code')
+  diagnoses <- coerce_to_datatable(ipdiag[, c("genc_id", "diagnosis_code")])
+  if (!is.null(erdiag)) {
+    erdiag <- coerce_to_datatable(erdiag[, c("genc_id", "er_diagnosis_code")])
+    setnames(erdiag, "er_diagnosis_code", "diagnosis_code")
     # combine all diagnoses
     diagnoses <- rbind(diagnoses, erdiag)
   }
 
-
-  ############# GET DISABILITY CODES #############
   ## Read file with disability codes from data folder
-  #data(mapping_disability, package = "Rgemini")
-  load("H:/GitHub/Rgemini/data/mapping_disability.rda")
-
+  data(mapping_disability, package = "Rgemini")
   disability_codes <- mapping_disability %>% data.table()
 
   ## Derive flag for any disability
   res[, disability := ifelse(!genc_id %in% diagnoses$genc_id, NA, # if no diagnosis code at all for genc_id, set flag to NA
-                             ifelse(genc_id %in% diagnoses[ # if entry in mapped diagnosis codes, set disability to TRUE, otherwise: FALSE
-                               str_detect(diagnoses$diagnosis_code, paste0("^", disability_codes$ICD_10_CA_code, collapse = '|')), ]$genc_id, TRUE, FALSE))]
+    ifelse(genc_id %in% diagnoses[ # if entry in mapped diagnosis codes, set disability to TRUE, otherwise: FALSE
+      str_detect(diagnoses$diagnosis_code, paste0("^", disability_codes$ICD_10_CA_code, collapse = "|")),
+    ]$genc_id, TRUE, FALSE)
+  )]
 
-
-  if (component_wise == TRUE){
-    # rename columns for disability categories
-    disability_codes[, Category := gsub(' - ', '.', Category)]
-    disability_codes[, Category := gsub(' ', '_', Category)]
-
+  ## Derive individual flags for each disability category
+  if (component_wise == TRUE) {
     disability_categories <- unique(disability_codes$Category)
 
-    sapply(disability_categories, function(disability_cat){
+    sapply(disability_categories, function(disability_cat) {
       res[, paste0(disability_cat) := ifelse(!genc_id %in% diagnoses$genc_id, NA, # if no diagnosis code at all for genc_id, set flag to NA
-                                 ifelse(genc_id %in% diagnoses[ # if entry in mapped diagnosis codes, set disability to TRUE, otherwise: FALSE
-                                   str_detect(diagnoses$diagnosis_code, paste0("^", disability_codes[Category == disability_cat,]$ICD_10_CA_code, collapse = '|')), ]$genc_id, TRUE, FALSE))]
+        ifelse(genc_id %in% diagnoses[ # if entry in mapped diagnosis codes, set disability to TRUE, otherwise: FALSE
+          str_detect(diagnoses$diagnosis_code, paste0("^", disability_codes[Category == disability_cat, ]$ICD_10_CA_code, collapse = "|")),
+        ]$genc_id, TRUE, FALSE)
+      )]
     })
-
   }
 
   return(res)
-
 }
