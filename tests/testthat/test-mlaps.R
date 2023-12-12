@@ -1,24 +1,3 @@
-# Helper function to create dummy lab data needed for mLAPS unit tests
-dummy_lab <- function(id, omop, value, unit, mintime){
-  res <- data.table(
-    genc_id = rep(id, length(value)),
-    test_type_mapped_omop = omop,
-    result_value = value,
-    result_unit = rep(unit, length(value)),
-    collection_date_time =  format(as.POSIXct(mintime, tz = "UTC") + sample(0:(24*60*60 - 1), size=length(value), replace = TRUE),"%Y-%m-%d %H:%M")
-  )
-  return(res)
-}
-
-# Helper function to create dummy admdad data needed for mLAPS unit tests
-dummy_admdad <- function(id, admtime){
-  res <- data.table(
-    genc_id = id,
-    admission_date_time = format(as.POSIXct(admtime, tz = "UTC"),"%Y-%m-%d %H:%M")
-  )
-  return(res)
-}
-
 ####### test 1
 testthat::test_that("Scoring scheme for each test is correct", {
   id <- 1
@@ -31,7 +10,7 @@ testthat::test_that("Scoring scheme for each test is correct", {
   admdad <- dummy_admdad(id, admtime)
   lab <- dummy_lab(id, omop, value, unit, mintime)
 
-  res <- mlaps(admdad, lab, hours_offset = 0, componentwise = T)
+  res <- mlaps(admdad, lab, hours_after_admission = 0, component_wise = TRUE)
   testthat::expect_equal(res$score, c(16, 6, 0, 10, 14, 5, 23, 0, 18, 10, 12, 0))
 })
 
@@ -49,15 +28,15 @@ testthat::test_that("Only the max value within specified time window is taken", 
   lab <- dummy_lab(id, omop,value,unit, mintime)
 
   #pre-admission: hours_offset=0
-  res <- mlaps(admdad, lab, hours_offset = 0, componentwise = F)
+  res <- mlaps(admdad, lab, hours_after_admission = 0, component_wise = FALSE)
   testthat::expect_equal(nrow(res), 0)
 
   #within 24 hours: hours_offset=24
-  res <- mlaps(admdad, lab, hours_offset = 24, componentwise = F)
+  res <- mlaps(admdad, lab, hours_after_admission = 24, component_wise = FALSE)
   testthat::expect_equal(res$mlaps, 19)
 
   #within 36 hours: hours_offset=36
-  res <- mlaps(admdad, lab, hours_offset = 36, componentwise = F)
+  res <- mlaps(admdad, lab, hours_after_admission = 36, component_wise = FALSE)
   testthat::expect_equal(res$mlaps, 24)
 })
 
@@ -73,7 +52,7 @@ testthat::test_that("Only the max is taken for multiple glucose random tests", {
   admdad <- dummy_admdad(id, admtime)
   lab <- dummy_lab(id, omop, value, unit, mintime)
 
-  res <- mlaps(admdad, lab, hours_offset = 0, componentwise = T)
+  res <- mlaps(admdad, lab, hours_after_admission = 0, component_wise = TRUE)
   testthat::expect_equal(res$score, 16)
 })
 
@@ -89,7 +68,7 @@ testthat::test_that("BUN/creatinine is added", {
   admdad <- dummy_admdad(id, admtime)
   lab <- dummy_lab(id, omop,value,unit, mintime)
 
-  res <- mlaps(admdad, lab, hours_offset = 0, componentwise = T)
+  res <- mlaps(admdad, lab, hours_after_admission = 0, component_wise = TRUE)
   testthat::expect_equal(res$score, c(7, 19, 6))
 
   ## only one of the two tests is present
@@ -103,7 +82,7 @@ testthat::test_that("BUN/creatinine is added", {
   admdad <- dummy_admdad(id, admtime)
   lab <- dummy_lab(id, omop,value,unit, mintime)
 
-  res <- mlaps(admdad, lab, hours_offset = 0, componentwise = F)
+  res <- mlaps(admdad, lab, hours_after_admission = 0, component_wise = FALSE)
   testthat::expect_equal(res$mlaps, 19)
 
   ##
@@ -117,7 +96,7 @@ testthat::test_that("BUN/creatinine is added", {
   admdad <- dummy_admdad(id, admtime)
   lab <- dummy_lab(id, omop,value,unit, mintime)
 
-  res <- mlaps(admdad, lab, hours_offset = 0, componentwise = F)
+  res <- mlaps(admdad, lab, hours_after_admission = 0, component_wise = FALSE)
   testthat::expect_equal(res$mlaps, 7)
 })
 
@@ -133,7 +112,7 @@ testthat::test_that("Special unit for Hematocrit is converted into percentages",
   admdad <- dummy_admdad(id, admtime)
   lab <- dummy_lab(id, omop,value,unit, mintime)
 
-  res <- mlaps(admdad, lab, hours_offset = 0, componentwise = T)
+  res <- mlaps(admdad, lab, hours_after_admission = 0, component_wise = TRUE)
   testthat::expect_equal(res$score, 7)
 
   id <- 1
@@ -146,7 +125,7 @@ testthat::test_that("Special unit for Hematocrit is converted into percentages",
   admdad <- dummy_admdad(id, admtime)
   lab <- dummy_lab(id, omop,value,unit, mintime)
 
-  res <- mlaps(admdad, lab, hours_offset = 0, componentwise = T)
+  res <- mlaps(admdad, lab, hours_after_admission = 0, component_wise = TRUE)
   testthat::expect_equal(res$score, 6)
 })
 
@@ -163,9 +142,9 @@ testthat::test_that("Special cases in result_value are properly handled", {
   admdad <- dummy_admdad(id, admtime)
   lab <- dummy_lab(id, omop,value,unit, mintime)
 
-  res <- mlaps(admdad, lab, hours_offset = 0, componentwise = T)
+  res <- mlaps(admdad, lab, hours_after_admission = 0, component_wise = TRUE)
   testthat::expect_equal(res$score, c(NA, 5, NA, 0, NA, 0))
 
-  res <- mlaps(admdad, lab, hours_offset = 0, componentwise = F)
+  res <- mlaps(admdad, lab, hours_after_admission = 0, component_wise = FALSE)
   testthat::expect_equal(res$mlaps, 5)
 })

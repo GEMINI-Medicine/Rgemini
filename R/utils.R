@@ -242,7 +242,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 return_hospital_field <- function(db) {
 
   admdad <- find_db_tablename(db, "admdad", verbose = FALSE)
-  fields <- dbListFields(db, admdad)
+  fields <- fields <- dbGetQuery(db, paste0("SELECT column_name FROM information_schema.columns WHERE table_name = '", admdad,"';"))
 
   if ("hospital_id" %in% fields) {
     return("hospital_id")

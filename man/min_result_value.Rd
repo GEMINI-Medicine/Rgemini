@@ -19,6 +19,6 @@ Calculates minima when input vector is not empty, else returns NA.
 }
 \details{
 This is a helper function to suppress default warning message from `base::min()`` function
-when all elements in the input vector is NA, which can be problemetic for unit testing.
+when all elements in the input vector is NA, which can be problematic for unit testing.
 Default to remove NA values in minima calculation.
 }

@@ -77,17 +77,17 @@ laps_assign_test <- function(x, breaks, points) {
 #' @param db (`DBIConnection`)\cr
 #' RPostgres DB connection.
 #'
-#' @param cohort (`numeric`)\cr
-#' A numeric vector of `genc_ids` to restrict the calculation to.
+#' @param cohort (`data.frame` or `data.table`)\cr
+#' Containing a column of `genc_ids` to restrict the calculation to.
 #'
 #' @param hours_after_admission (`numeric`)\cr
 #' Consider lab tests collected **up to** `hours_after_admission` hours after inpatient admission in the calculation.
-#' Default `hours_after_admission` is set to 0, where only lab tests collected at Emergency Department (before inpatient admission) is considered in mLAPS calculation.
+#' Default `hours_after_admission` is set to 0, where only lab tests collected at Emergency Department (before inpatient admission) are considered in mLAPS calculation.
 #' Since not all encounters are admitted through Emergency Department, depending on research question, it can be relevant to consider lab tests collected in early inpatient admission.
 #' Typically, `hours_after_admission` can be set to 24 to consider any lab tests collected at Emergency Department and 24 hours after inpatient admission.
 #'
-#' @param output_laps_components (`logical`)\cr
-#' Does not aggregate the score and instead outputs for each LAPS component (test), its contribution
+#' @param component_wise (`logical`)\cr
+#' Does not aggregate the score and instead outputs for each LAPS component (test) its contribution
 #' to the overall score.
 #'
 #' @return (`data.frame`)\cr
@@ -104,13 +104,30 @@ laps_assign_test <- function(x, breaks, points) {
 #' @importFrom purrr map2_df
 #' @export
 #'
+#' @example
+#' \dontrun{
+#' drv <- DBI::dbDriver("PostgreSQL")
+#' db <- DBI::dbConnect(
+#'   drv,
+#'   dbname = "db_name",
+#'   host = "172.XX.XX.XXX",
+#'   port = 1234,
+#'   user = getPass::getPass("Enter Username"),
+#'   password = getPass::getPass("Enter Password")
+#'   )
+#'
+#' cohort <- DBI::dbGetQuery(db, "SELECT genc_id FROM public.admdad LIMIT 200;")
+#'
+#' laps <- loop_laps(db, cohort = cohort)
+#' }
+#'
 #' @references
 #' When the function is used, please cite the following:
 #' https://doi.org/10.1097/MLR.0b013e3181589bb6
 #' https://doi.org/10.1007/s11606-023-08245-w
 #' https://doi.org/10.1101/2023.01.06.23284273
 #'
-loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, output_laps_components = FALSE) {
+loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_wise = FALSE) {
 
   hospital_field <- return_hospital_field(db)
 
@@ -124,7 +141,7 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, output_laps
         hospital_field, "AS hospital_id",
       "FROM admdad",
       if (!is.null(cohort)) {
-        paste("WHERE genc_id IN (", paste(cohort, collapse = ", "), ")")
+        paste("WHERE genc_id IN (", paste(cohort$genc_id, collapse = ", "), ")")
       }
     )
   ) %>%
@@ -154,7 +171,7 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, output_laps
           paste0("AND a.", hospital_field, " = '", hospital_id, "'"),
           "AND EXTRACT(YEAR FROM a.discharge_date_time::DATE) = ", year,
           if (!is.null(cohort)) {
-            paste("AND l.genc_id IN (", paste(cohort, collapse = ", "), ")")
+            paste("AND l.genc_id IN (", paste(cohort$genc_id, collapse = ", "), ")")
           }
         )
       ) %>%
@@ -164,7 +181,7 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, output_laps
         admdad %>% dplyr::filter(hospital_id == hospital_id, year == year),
         lab,
         hours_after_admission = hours_after_admission,
-        componentwise = output_laps_components
+        component_wise = component_wise
       )
     }
   )
@@ -180,7 +197,7 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, output_laps
 #' Modified Laboratory based Acute Physiology Score (mLAPS) uses 14 lab test values.
 #' In this modified version, High senstive Troponin tests are ignored and treated as normal.
 #'
-#' @param admdad (`data.frame`)\cr
+#' @param ipadmdad (`data.frame`)\cr
 #' Table equivalent to a subset of the `admdad` table defined in the
 #' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
 #'
@@ -190,11 +207,11 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, output_laps
 #'
 #' @param hours_after_admission (`numeric`)\cr
 #' Consider lab tests collected **up to** `hours_after_admission` hours after inpatient admission in the calculation.
-#' Default `hours_after_admission` is set to 0, where only lab tests collected at Emergency Department (before inpatient admission) is considered in mLAPS calculation.
+#' Default `hours_after_admission` is set to 0, where only lab tests collected at Emergency Department (before inpatient admission) are considered in mLAPS calculation.
 #' Since not all encounters are admitted through Emergency Department, depending on research question, it can be relevant to consider lab tests collected in early inpatient admission.
 #' Typically, `hours_after_admission` can be set to 24 to consider any lab tests collected at Emergency Department and 24 hours after inpatient admission.
 #'
-#' @param componentwise (`logical`)\cr
+#' @param component_wise (`logical`)\cr
 #' Does not aggregate the score and instead outputs for each LAPS component (test), its contribution
 #' to the overall score.
 #'
@@ -208,6 +225,16 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, output_laps
 #'     `genc_id` (`numeric`),\cr
 #'     `mlaps` (`numeric`) sum of max scores for each relevant test for this encounter.
 #'
+#' @note
+#' When an encounter has multiple recorded lab results for a given "LAPS-relevant" test, the test result which results in the
+#' *worst* possible LAPS contribution is taken for a conservative estimate.
+#'
+#' Patients without entries in the lab table within `hours_of_admission` are not returned.
+#' For those encounters which were not returned, it may be reasonable to impute their LAPS score with zero
+#' if lab data was in principle available for their site and time period.
+#' If lab data was unavailable, it might be more accurate to assign the LAPS score for these encounters as `NA`.
+#' In general it is recommended to take care and be intentional when imputing LAPS scores.
+#'
 #' @importFrom lubridate ymd_hm hours
 #' @export
 #'
@@ -217,13 +244,13 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, output_laps
 #' https://doi.org/10.1007/s11606-023-08245-w
 #' https://doi.org/10.1101/2023.01.06.23284273
 #'
-mlaps <- function(admdad, lab, hours_after_admission = 0, componentwise = FALSE) {
+mlaps <- function(ipadmdad, lab, hours_after_admission = 0, component_wise = FALSE) {
 
   lab <- lab %>%
     select(test_type_mapped_omop, genc_id, result_value, result_unit, collection_date_time) %>%
     filter(test_type_mapped_omop %in% LAPS_OMOP_CONCEPTS) %>%
     left_join(
-      admdad %>% select(genc_id, admission_date_time),
+      ipadmdad %>% select(genc_id, admission_date_time),
       by = "genc_id"
     ) %>%
     filter(lubridate::ymd_hm(collection_date_time) < (lubridate::ymd_hm(admission_date_time) + lubridate::hours(hours_after_admission)))
@@ -346,7 +373,7 @@ mlaps <- function(admdad, lab, hours_after_admission = 0, componentwise = FALSE)
   )
 
 
-  if (componentwise) {
+  if (component_wise) {
     return(laps)
   }
 
@@ -363,7 +390,7 @@ mlaps <- function(admdad, lab, hours_after_admission = 0, componentwise = FALSE)
 #'
 #' @details
 #' This is a helper function to suppress default warning message from `base::min()`` function
-#' when all elements in the input vector is NA, which can be problemetic for unit testing.
+#' when all elements in the input vector is NA, which can be problematic for unit testing.
 #' Default to remove NA values in minima calculation.
 #'
 #' @param x (`numeric`)\cr
@@ -381,7 +408,7 @@ min_result_value <- function(x) {
 #'
 #' @details
 #' This is a helper function to suppress default warning message from `base::max()`` function
-#' when all elements in the input vector is NA, which can be problemetic for unit testing.
+#' when all elements in the input vector is NA, which can be problematic for unit testing.
 #' Default to remove NA values in maxima calculation.
 #'
 #' @param x (`numeric`)\cr

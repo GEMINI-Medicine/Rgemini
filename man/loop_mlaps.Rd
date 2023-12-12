@@ -8,24 +8,24 @@ loop_mlaps(
   db,
   cohort = NULL,
   hours_after_admission = 0,
-  output_laps_components = FALSE
+  component_wise = FALSE
 )
 }
 \arguments{
 \item{db}{(\code{DBIConnection})\cr
 RPostgres DB connection.}
 
-\item{cohort}{(\code{numeric})\cr
-A numeric vector of \code{genc_ids} to restrict the calculation to.}
+\item{cohort}{(\code{data.frame} or \code{data.table})\cr
+Containing a column of \code{genc_ids} to restrict the calculation to.}
 
 \item{hours_after_admission}{(\code{numeric})\cr
 Consider lab tests collected \strong{up to} \code{hours_after_admission} hours after inpatient admission in the calculation.
-Default \code{hours_after_admission} is set to 0, where only lab tests collected at Emergency Department (before inpatient admission) is considered in mLAPS calculation.
+Default \code{hours_after_admission} is set to 0, where only lab tests collected at Emergency Department (before inpatient admission) are considered in mLAPS calculation.
 Since not all encounters are admitted through Emergency Department, depending on research question, it can be relevant to consider lab tests collected in early inpatient admission.
 Typically, \code{hours_after_admission} can be set to 24 to consider any lab tests collected at Emergency Department and 24 hours after inpatient admission.}
 
-\item{output_laps_components}{(\code{logical})\cr
-Does not aggregate the score and instead outputs for each LAPS component (test), its contribution
+\item{component_wise}{(\code{logical})\cr
+Does not aggregate the score and instead outputs for each LAPS component (test) its contribution
 to the overall score.}
 }
 \value{

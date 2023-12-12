@@ -4,10 +4,10 @@
 \alias{mlaps}
 \title{mLAPS}
 \usage{
-mlaps(admdad, lab, hours_after_admission = 0, componentwise = FALSE)
+mlaps(ipadmdad, lab, hours_after_admission = 0, component_wise = FALSE)
 }
 \arguments{
-\item{admdad}{(\code{data.frame})\cr
+\item{ipadmdad}{(\code{data.frame})\cr
 Table equivalent to a subset of the \code{admdad} table defined in the
 \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.}
 
@@ -17,11 +17,11 @@ Table equivalent to a subset of the \code{lab} table defined in the
 
 \item{hours_after_admission}{(\code{numeric})\cr
 Consider lab tests collected \strong{up to} \code{hours_after_admission} hours after inpatient admission in the calculation.
-Default \code{hours_after_admission} is set to 0, where only lab tests collected at Emergency Department (before inpatient admission) is considered in mLAPS calculation.
+Default \code{hours_after_admission} is set to 0, where only lab tests collected at Emergency Department (before inpatient admission) are considered in mLAPS calculation.
 Since not all encounters are admitted through Emergency Department, depending on research question, it can be relevant to consider lab tests collected in early inpatient admission.
 Typically, \code{hours_after_admission} can be set to 24 to consider any lab tests collected at Emergency Department and 24 hours after inpatient admission.}
 
-\item{componentwise}{(\code{logical})\cr
+\item{component_wise}{(\code{logical})\cr
 Does not aggregate the score and instead outputs for each LAPS component (test), its contribution
 to the overall score.}
 }
@@ -42,6 +42,16 @@ mLAPS
 \details{
 Modified Laboratory based Acute Physiology Score (mLAPS) uses 14 lab test values.
 In this modified version, High senstive Troponin tests are ignored and treated as normal.
+}
+\note{
+When an encounter has multiple recorded lab results for a given "LAPS-relevant" test, the test result which results in the
+\emph{worst} possible LAPS contribution is taken for a conservative estimate.
+
+Patients without entries in the lab table within \code{hours_of_admission} are not returned.
+For those encounters which were not returned, it may be reasonable to impute their LAPS score with zero
+if lab data was in principle available for their site and time period.
+If lab data was unavailable, it might be more accurate to assign the LAPS score for these encounters as \code{NA}.
+In general it is recommended to take care and be intentional when imputing LAPS scores.
 }
 \references{
 When the function is used, please cite the following:
