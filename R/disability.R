@@ -49,7 +49,7 @@
 #' lower compared to in-patient diagnoses. Thus, users may want to
 #' exclude ER diagnoses in certain situations.
 #'
-#' @warning
+#' @section Warning:
 #' This function does not differentiate between diagnosis types. That is, the
 #' disability flags are derived based on all diagnosis codes that are provided
 #' as input to this function. By default, users should include all diagnosis
