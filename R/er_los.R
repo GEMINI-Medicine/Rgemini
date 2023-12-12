@@ -45,6 +45,7 @@
 #' \dontrun{
 #' er_los(cohort = ipadmdad, er = er)
 #' }
+#'
 er_los <- function(cohort, er) {
 
   ###### Check user inputs ######
