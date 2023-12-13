@@ -212,7 +212,7 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
 #' Typically, `hours_after_admission` can be set to 24 to consider any lab tests collected at Emergency Department and 24 hours after inpatient admission.
 #'
 #' @param component_wise (`logical`)\cr
-#' Does not aggregate the score and instead outputs for each LAPS component (test), its contribution
+#' Does not aggregate the score and instead outputs for each LAPS component (test) its contribution
 #' to the overall score.
 #'
 #' @return (`data.frame`)\cr
