@@ -54,7 +54,7 @@ The function closely adheres to the CIHI HFRS with the following adaptations:
 \item{Score format : }{Integer scores are returned representing the sum of the number of frailty deficits.
 These scores can be easily converted to the different formats (i.e. continuous fractions, 8 risk groups, binary) defined by CIHI HFRS.
 For example, dividing the returned score by 36 (maximum number of deficits possible) gives the continuous CIHI HFRS.
-Users interested in further categorizing the scores should refer to \href{https://doi.org/10.1503/cmaj.220926}{Amuah et al, 2023} and \href{https://www.cihi.ca/sites/default/files/document/cihi-hospital-frailty-risk-measure-meth-notes-en.pdf}{CIHI methodology}.
+Users interested in further categorizing the scores should refer to \href{https://doi.org/10.1503/cmaj.220926}{Amuah et al, 2023}.
 }
 }
 }
