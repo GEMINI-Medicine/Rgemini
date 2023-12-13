@@ -21,6 +21,7 @@ reference:
   - n_imaging
   - n_routine_bloodwork
   - n_rbc_transfusions
+  - er_los
 - title: Data Transformation
   desc: These functions aid in querying the data, either by applying filters or mapping values.
 - contents:
