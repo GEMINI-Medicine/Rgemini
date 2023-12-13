@@ -43,13 +43,15 @@ name of interest.
 
 Currently, the function only supports a subset of table names (see below) and
 expects the relevant tables in all databases to only differ based on their
-suffix (e.g., "admdad" vs. "admdad_subset"). Specifically, for most table
-names, the function uses \code{grepl("^tablename", drm_table)} to look for table
-names that \emph{start with} the same name as specified in DRM (e.g., 'admdad').
-Exceptions are the "lab" and "transfusion" tables. Because there are other
-tables with similar names (e.g., "transfusion_mapping" table), the function
-specifically looks for tables called either "lab"/"transfusion" or
-"lab_subset"/"transfusion_subset" (for HPC datacuts).
+suffix (e.g., "ipintervention" vs. "ipintervention_subset"). For some tables,
+the function uses \code{grepl("^tablename", drm_table)} to look for table
+names that \emph{start with} the same name as specified in DRM (e.g., any that
+start with "ipintervention").
+For other tables, the function uses a stricter search to avoid finding
+multiple matches: Specifically, for "admdad", "lab", and "transfusion", the
+function tries to identify tables with the exact same name (i.e.,
+"admdad/lab/transfusion") or the corresponding table name with a "_subset"
+suffix (for HPC datacuts).
 }
 \examples{
 \dontrun{

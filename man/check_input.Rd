@@ -34,11 +34,28 @@ specify:
 \item \code{"data.frame"}
 \item \code{"DBI" | "dbcon" | "PostgreSQL"} for DB connection input
 \item \code{"list"}
+\item \code{"Date"}, \code{"POSIXct"}, \code{"POSIXt"}
+\item ...
 }
 
 If an input object can be one of several acceptable types (e.g.,
 \code{data.table} OR \code{data.frame}), types should be provided as a character vector
-(e.g., \code{argtype = c("data.frame", "data.table")}).}
+(e.g., \code{argtype = c("data.frame", "data.table")}).
+
+If \code{argtype} is \code{"integer"}, the tests will pass
+\enumerate{
+\item if \code{class(input) == "integer"} or
+\item if \code{class(input) == "numeric"} and the number is an integer
+}
+
+If \code{argtype} is \code{"numeric"}, inputs that are of class \code{"integer"} will also
+pass. In other words, integers are treated as a special case of numeric in
+the case of \code{argtype}. Therefore, checks with
+\code{argtype = c("integer", "numeric")} (i.e., input should be either integer
+\emph{or} numeric) are not meaningful and should be avoided. Instead, users should
+specify if inputs need to be an \code{"integer"} specifically
+(\code{argtype = "integer"}), or if they just need to be any \code{"numeric"} input
+(\code{argtype = "numeric"}).}
 
 \item{length}{(\code{numeric})\cr
 Optional input specifying the expected length of a given input argument
@@ -69,7 +86,13 @@ elements should correspond to the order of the entries in \code{colnames}.
 If a column can have multiple acceptable types, types should be separated by
 \code{|} (e.g., \code{coltypes = c("integer|numeric", "character|POSIXct")})). For any
 columns that do not have to be of a particular type, simply specify as \code{""}
-(e.g., \code{coltypes = c("integer|numeric", "")}).}
+(e.g., \code{coltypes = c("integer|numeric", "")}).
+
+Note: As opposed to \code{argtype}, \code{coltypes} need to strictly correspond to the
+type that is returned by \code{class(column)}. That means that type \code{"integer"} is
+\emph{not} a special case of \code{"numeric"}, but is treated as a separate type. This
+is relevant for \code{genc_id} columns, which are of class \code{"integer"}, and
+therefore \code{coltype = "numeric"} will return an error.}
 
 \item{unique}{(\code{logical})\cr
 Optional input if argtype is \code{"data.frame"} or \code{"data.table"}. Flag
