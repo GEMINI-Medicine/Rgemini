@@ -1,12 +1,12 @@
-
 # Rgemini `develop`
-* Adds a `n_missing` function to check number of missingness.
+* Adds `n_missing` function to check number of missingness.
 
 * New utility function checking user inputs
 
 * Adds core `mlaps` function and wrapper function to run over multiple sites and years.
 
-* Adds a `er_los` function to calculate emergency room length-of-stay.
+* Adds `er_los` function to calculate emergency room length-of-stay.
+
 
 # Rgemini 0.3.1
 
