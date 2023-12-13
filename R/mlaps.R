@@ -110,7 +110,7 @@ laps_assign_test <- function(x, breaks, points) {
 #' db <- DBI::dbConnect(
 #'   drv,
 #'   dbname = "db_name",
-#'   host = "172.XX.XX.XXX",
+#'   host = "domain_name.ca",
 #'   port = 1234,
 #'   user = getPass::getPass("Enter Username"),
 #'   password = getPass::getPass("Enter Password")
