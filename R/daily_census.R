@@ -131,7 +131,7 @@
 daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_var = NULL,
                          capacity_func = "median", buffer = 30, time_of_day = "08:00:00") {
 
-  #######  Check user inputs  #######
+
   ## If no time_period input provided, use min/max discharge dates
   if (is.null(time_period)) {
     time_period_start <- min(as.Date(cohort$discharge_date_time))
@@ -151,46 +151,50 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
   cat(paste0("\n*** Calculating daily census for input table ", deparse(substitute(cohort)),
              " for time period from ", time_period_start, " to ", time_period_end, " ***\n "))
 
-  ## cohort provided as data.frame/data.table?
-  if (!any(class(cohort) %in% c("data.frame", "data.table"))) {
-    stop("Invalid user input for argument 'cohort'.
-         Please provide a data frame (or data table) where each row corresponds to a unique encounter.")
-  }
-
   ## For internal users: if hospital_num doesn't exist, rename hospital_id to num
   if (!"hospital_num" %in% names(cohort) & "hospital_id" %in% names(cohort)){
     cohort$hospital_num <- cohort$hospital_id
   }
 
-  ## Missing columns in cohort?
-  if (any(!c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time") %in% names(cohort))) {
-    stop("Input table 'cohort' is missing at least one of the following variables:
-    'genc_id', 'hospital_num', 'admission_date_time', and/or 'discharge_date_time'.
-    Please refer to the function documentation for more details.")
-  }
+  #######  Check user inputs  #######
+  ## check cohort input
+  check_input(cohort, c("data.table", "data.frame"),
+              colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
+              coltypes = c("", "", "character", "character"),
+              unique = TRUE) # make sure there are no duplicate entries in input table
 
   ## if grouping variable is specified, does it exist in cohort?
-  if (!is.null(group_var) & any(!group_var %in% names(cohort))) {
-    stop(paste0("Missing grouping variable(s). Specified group_var '",
-                group_var[!group_var %in% names(cohort)], "' does not exist in the input table."),
-         immediate. = TRUE)
-  }
-  if (!is.null(group_var) & any(group_var == "hospital_num")) {
-    warning(paste0("Ignoring grouping variable 'hospital_num'.
+  if (!is.null(group_var)) {
+    check_input(cohort, c("data.table", "data.frame"),
+                colnames = group_var)
+
+    # if hospital_num specified as grouping var, show warning
+    if (!is.null(group_var) & any(group_var == "hospital_num")) {
+      warning(paste0("Ignoring grouping variable 'hospital_num'.
     Daily census is automatically calculated separately for each hospital.
     Only specify a grouping variable if additional grouping by variables other than hospital is required."),
-            immediate. = TRUE)
+              immediate. = TRUE)
 
-    # remove hospital_num from grouping variables
-    group_var[group_var == "hospital_num"] <- NA
+      # remove hospital_num from grouping variables
+      group_var[group_var == "hospital_num"] <- NA
+    }
   }
 
-  ## check for duplicated genc_ids (e.g., if created long format df)
-  if (sum(duplicated(cohort$genc_id)) > 0) {
-    stop("Duplicated genc_ids. Please make sure that each row in the cohort table refers to a unique encounter.")
+  ## scu_exclude provided as data.frame/data.table?
+  if (!is.null(scu_exclude)){
+    check_input(scu_exclude, c("data.table", "data.frame"),
+                colnames = c("genc_id", "scu_admit_date_time", "scu_discharge_date_time"),
+                coltypes = c("", "character", "character"))
   }
 
+  ## Valid input for capacity_func?
+  check_input(capacity_func, "character", categories = c("median", "mode", "mean","max"))
 
+  ## Buffer needs to be non-negative integer
+  check_input(buffer, "integer", interval = c(0, Inf))
+
+
+  ### Additional sanity checks
   ## Check if dates specified in time period are reasonable
   if (time_period_start > time_period_end) {
     stop("Invalid user input for argument 'time_period'.
@@ -210,33 +214,7 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
         Please adjust the time period input accordingly."))
   }
 
-  ## scu_exclude provided as data.frame/data.table?
-  if (!is.null(scu_exclude) & !any(class(scu_exclude) %in% c("data.frame", "data.table"))) {
-    stop("Invalid user input for argument 'scu_exclude'.
-    Please provide a table containing the relevant SCU encounters that should be excluded from the census calculation.")
-  }
 
-  ## Missing columns in scu_exclude?
-  if (!is.null(scu_exclude) &
-      any(!c("genc_id", "scu_admit_date_time", "scu_discharge_date_time") %in% names(scu_exclude))) {
-    stop("Input table 'scu_exclude' is missing at least one of the following variables:
-    'genc_id', 'scu_admit_date_time', and/or 'scu_discharge_date_time'
-    Please refer to the function documentation for more details.")
-  }
-
-  ## Valid input for capacity_func?
-  if (!capacity_func %in% c("median", "mode", "mean","max")) {
-    stop("Invalid user input for argument 'capacity_func'. Valid input options are 'median', 'mode', 'mean', or 'max'.
-    Please refer to the function documentation for more details.")
-  }
-
-  ## Buffer needs to be positive integer
-  ## Error message if readmission window is not a positive integer
-  if (!is.numeric(buffer) | (round(buffer) != buffer) | buffer < 0) {
-    stop("Invalid user input for argument 'buffer'.
-      Buffer needs to be specified as a positive integer, indicating the number of days to be excluded at the end of the data avilability period.
-      Please refer to the function documentation for more details.")
-  }
 
   ## Check if valid time_of_day input
   tryCatch(
