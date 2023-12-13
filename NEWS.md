@@ -2,11 +2,14 @@
 
 * Switch function `frailty_score()` to calculate the CIHI Hospital Frailty Risk Score for each encounter.
 * Deprecates function `frailty_score()` that calculates the UK Hospital Frailty Risk Score.
+* New utility function checking user inputs
+
 
 # Rgemini 0.3.1
 
 * Allows the user to specify the number of digits to round percentages to in cell suppression of categorical variables, without forcing rounding to integer.
 * Allows user to render only one level for binary variables in `table1`.
+* Fixes singularity due to missing levels in `table1`.
 * Fixes `find_db_tablename` and `readmission` for DBs with foreign data wrappers.
 
 # Rgemini 0.3.0
