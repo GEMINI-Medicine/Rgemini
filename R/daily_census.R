@@ -259,15 +259,16 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
   #####  Prepare SCU data  #####
   if (!is.null(scu_exclude)) {
 
-    cat("Applying exclusion of SCU encounters.\n")
-    cat("SCU entries where 'scu_unit_number = 99' are removed from scu_exclude.\n")
-
     scu_exclude <- coerce_to_datatable(scu_exclude)
     scu_exclude[scu_exclude == ""] <- NA
     scu_exclude <- scu_exclude[genc_id %in% cohort$genc_id, ] # only keep genc_ids that are relevant for cohort
 
     ## Exclude SCU unit 99 ("no SCU")
-    scu_exclude <- scu_exclude[scu_unit_number != 99, .(genc_id,scu_admit_date_time,scu_discharge_date_time)]
+    # Note this is only relevant for older DBs, newer DBs do not contain SCU unit numbers 99
+    if (nrow(scu_exclude[as.numeric(scu_unit_number) != 99, ]) > 0) {
+      cat("SCU entries where `scu_unit_number = 99` are removed from `scu_exclude` table.\n")
+      scu_exclude <- scu_exclude[as.numeric(scu_unit_number) != 99, .(genc_id,scu_admit_date_time,scu_discharge_date_time)]
+    }
 
     ## make sure dates are in correct format
     # date formats that are missing HM information cannot be removed from census -> are set to NA
@@ -280,8 +281,13 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
     if (nrow(check_scu) > 0) {
       warning(
         paste0("Identified "), nrow(check_scu),
-        " SCU entries with invalid or missing admission or discharge date-time in scu_exclude. These entries
-            cannot be excluded from the census calculation and have therefore been removed."
+        " rows with invalid or missing SCU admission or discharge date-time in `scu_exclude`.
+        These SCU entries cannot be excluded from the census calculation, and therefore, the corresponding
+        `genc_ids` will be counted towards the census during each day of their hospitalization, potentially
+        resulting in an overestimate of the daily census.
+        Please check whether missingness of SCU discharge/admission date-time systematically
+        varies by hospital/grouping variable, and consider whether this might bias your results.",
+        immediate. = TRUE
       )
     }
 
