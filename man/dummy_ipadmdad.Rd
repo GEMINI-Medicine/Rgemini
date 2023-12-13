@@ -104,6 +104,5 @@ data for random intercept models).
 # Simulate 10,000 encounters from 10 hospitals for fiscal years 2018-2020.
 ipadmdad <- dummy_ipadmdad(n = 10000, n_hospitals = 10, time_period = c(2018, 2020))
 
-
 }
 \keyword{internal}
