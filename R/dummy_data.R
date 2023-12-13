@@ -24,53 +24,58 @@
 #'
 #' @examples
 #' ### Simulate 100 ICD-10 codes based on the 2011 version.
-#' \dontrun{ sample_icd(100, source="comorbidity") }
+#' \dontrun{
+#' sample_icd(100, source = "comorbidity")
+#' }
 #'
 #' ### Simulate 100 ICD-10 codes starting with "C2" or "E10" based on the 2011 version.
-#' \dontrun{ sample_icd(100, source="comorbidity", pattern="^C2|^E10") }
+#' \dontrun{
+#' sample_icd(100, source = "comorbidity", pattern = "^C2|^E10")
+#' }
 #'
 #' ### Simulate 50 ICD-10-CA codes based on codes found in the `lookup_icd10_ca_description` table
 #' \dontrun{
 #' drv <- dbDriver("PostgreSQL")
 #' dbcon <- DBI::dbConnect(drv,
-#'                         dbname = "db",
-#'                         host = "172.XX.XX.XXX",
-#'                         port = 1234,
-#'                         user = getPass("Enter user:"),
-#'                         password = getPass("password"))
-#' sample_icd(50, source="icd_lookup", dbcon=dbcon)
+#'   dbname = "db",
+#'   host = "172.XX.XX.XXX",
+#'   port = 1234,
+#'   user = getPass("Enter user:"),
+#'   password = getPass("password")
+#' )
+#' sample_icd(50, source = "icd_lookup", dbcon = dbcon)
 #' }
 #'
 sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NULL) {
   switch(source,
-         comorbidity = {
-           comorb <- comorbidity::icd10_2011 %>% as.data.table()
-           if (!is.null(pattern)) {
-             comorb <- comorb[grepl(toupper(pattern), Code.clean)]
-           }
-           if (nrow(comorb) > 0) {
-             sample(x = comorb$Code.clean, size = n, replace = TRUE)
-           } else {
-             stop("No matching diagnoses found for the specified pattern")
-           }
-         },
-         icd_lookup = {
-           if (!is.null(dbcon)) {
-             lookup <- RPostgreSQL::dbGetQuery(dbcon, "SELECT diagnosis_code  FROM lookup_icd10_ca_description where type != 'category'") %>% as.data.table()
+    comorbidity = {
+      comorb <- comorbidity::icd10_2011 %>% as.data.table()
+      if (!is.null(pattern)) {
+        comorb <- comorb[grepl(toupper(pattern), Code.clean)]
+      }
+      if (nrow(comorb) > 0) {
+        sample(x = comorb$Code.clean, size = n, replace = TRUE)
+      } else {
+        stop("No matching diagnoses found for the specified pattern")
+      }
+    },
+    icd_lookup = {
+      if (!is.null(dbcon)) {
+        lookup <- RPostgreSQL::dbGetQuery(dbcon, "SELECT diagnosis_code  FROM lookup_icd10_ca_description where type != 'category'") %>% as.data.table()
 
-             if (!is.null(pattern)) {
-               lookup <- lookup[grepl(toupper(pattern), diagnosis_code)]
-             }
+        if (!is.null(pattern)) {
+          lookup <- lookup[grepl(toupper(pattern), diagnosis_code)]
+        }
 
-             if (nrow(lookup) > 0) {
-               sample(x = lookup$diagnosis_code, size = n, replace = TRUE)
-             } else {
-               stop("No matching diagnoses found for the specified pattern")
-             }
-           } else {
-             stop("Invalid input for 'dbcon' argument. Database connection is required for sampling from `lookup_icd10_ca_to_ccsr` table\n")
-           }
-         }
+        if (nrow(lookup) > 0) {
+          sample(x = lookup$diagnosis_code, size = n, replace = TRUE)
+        } else {
+          stop("No matching diagnoses found for the specified pattern")
+        }
+      } else {
+        stop("Invalid input for 'dbcon' argument. Database connection is required for sampling from `lookup_icd10_ca_to_ccsr` table\n")
+      }
+    }
   )
 }
 
@@ -130,35 +135,40 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #' @examples
 #'
 #' ### Simulate a erdiagnosis table for 5 unique subjects with total 20 records:
-#' \dontrun{ set.seed(1)
-#'           erdiag <- dummy_diag(nid=5, nrow=20, ipdiagnosis=F) }
+#' \dontrun{
+#' set.seed(1)
+#' erdiag <- dummy_diag(nid = 5, nrow = 20, ipdiagnosis = F)
+#' }
 #'
 #' ### Simulate a ipdiagnosis table with diagnosis codes starting with "E11":
-#' \dontrun{ set.seed(1)
-#'           ipdiag <- dummy_diag(nid=5, nrow=20, ipdiagnosis=T, pattern ="^E11") }
+#' \dontrun{
+#' set.seed(1)
+#' ipdiag <- dummy_diag(nid = 5, nrow = 20, ipdiagnosis = T, pattern = "^E11")
+#' }
 #'
 #' ### Simulate a ipdiagnosis table with random diagnosis codes in diagnosis type 3 or 6 only:
-#' \dontrun{ set.seed(1)
-#'           ipdiag <- dummy_diag(nid=5, nrow=20, diagnosis_type=(c("3", "6"))) %>%
-#'              filter(diagnosis_type!="M") # remove default rows with diagnosis_type="M" from each ID
+#' \dontrun{
+#' set.seed(1)
+#' ipdiag <- dummy_diag(nid = 5, nrow = 20, diagnosis_type = (c("3", "6"))) %>%
+#'   filter(diagnosis_type != "M") # remove default rows with diagnosis_type="M" from each ID
 #' }
 #'
 #' ### Simulate a ipdiagnosis table with ICD-10-CA codes:
 #' \dontrun{
 #' drv <- dbDriver("PostgreSQL")
 #' dbcon <- DBI::dbConnect(drv,
-#'                         dbname = "db",
-#'                         host = "172.XX.XX.XXX",
-#'                         port = 1234,
-#'                         user = getPass("Enter user:"),
-#'                         password = getPass("password"))
+#'   dbname = "db",
+#'   host = "172.XX.XX.XXX",
+#'   port = 1234,
+#'   user = getPass("Enter user:"),
+#'   password = getPass("password")
+#' )
 #'
 #' set.seed(1)
-#' ipdiag <- dummy_diag(nid=5, nrow=20, ipdiagnosis=T, dbcon=dbcon, source="icd_lookup")}
+#' ipdiag <- dummy_diag(nid = 5, nrow = 20, ipdiagnosis = T, dbcon = dbcon, source = "icd_lookup")
+#' }
 #'
-
 dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = NULL, ...) {
-
   df1 <- data.table(genc_id = 1:nid, diagnosis_type = "M") # ensure each id has a type M diagnosis
 
   if (!is.null(diagnosis_type)) {
@@ -170,8 +180,8 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
     df2 <- data.table(
       genc_id = sample(1:nid, size = (nrow - nid), replace = TRUE),
       diagnosis_type = sample(c("1", "2", "3", "4", "5", "6", "9", "W", "X", "Y"),
-                              size = (nrow - nid), replace = TRUE,
-                              prob = c(0.43, 0.07, 0.40, 0.005, 0.0002, 0.002, 0.07, 0.02, 0.0006, 0.00003)
+        size = (nrow - nid), replace = TRUE,
+        prob = c(0.43, 0.07, 0.40, 0.005, 0.0002, 0.002, 0.07, 0.02, 0.0006, 0.00003)
       )
     )
   }
@@ -184,9 +194,8 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
       diagnosis_prefix = sample(c("", "N", "Q", "6"), size = nrow, replace = TRUE, prob = c(0.9, 0.05, 0.02, 0.01))
     )
 
-  if (ipdiagnosis==FALSE) {
-
-    if(!is.null(diagnosis_type)){
+  if (ipdiagnosis == FALSE) {
+    if (!is.null(diagnosis_type)) {
       er_diagnosis_type <- sample(diagnosis_type, size = nrow, replace = TRUE)
     } else {
       er_diagnosis_type <- sample(c("", "M", "9", "3", "O"), size = nrow, replace = TRUE, prob = c(0.53, 0.38, 0.06, 0.02, 0.01))
@@ -295,60 +304,60 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 #' # Simulate 10,000 encounters from 10 hospitals for fiscal years 2018-2020.
 #' ipadmdad <- dummy_ipadmdad(n = 10000, n_hospitals = 10, time_period = c(2018, 2020))
 #'
-#'
 dummy_ipadmdad <- function(n = 1000,
                            n_hospitals = 10,
                            time_period = c(2015, 2023)) {
-
-
   ############### CHECKS: Make sure n is at least n_hospitals * length(time_period)
-  if (n < n_hospitals*length(time_period)){
+  if (n < n_hospitals * length(time_period)) {
     stop("Invalid user input.
     Number of encounters `n` should at least be equal to `n_hospitals` * `length(time_period)`")
   }
 
   ############### PREPARE OUTPUT TABLE ###############
   ## create all combinations of hospitals and fiscal years
-  hospital_num <- seq(1,n_hospitals,1)
-  year <- seq(time_period[1],time_period[2],1)
+  hospital_num <- seq(1, n_hospitals, 1)
+  year <- seq(time_period[1], time_period[2], 1)
 
   data <- expand.grid(hospital_num = hospital_num, year = year) %>% data.table()
 
   # randomly draw number of encounters per hospital*year combo
   # make sure they add up to desired total number of encounters
-  data[ , n := rmultinom(1, n, rep.int(1 / nrow(data), nrow(data)))]
+  data[, n := rmultinom(1, n, rep.int(1 / nrow(data), nrow(data)))]
   sum(data$n)
 
   # blow up row number according to encounter per combo
-  data <- data[rep(seq(nrow(data)), data$n),]
+  data <- data[rep(seq(nrow(data)), data$n), ]
 
   # turn year variable into actual date by randomly drawing date_time
   add_random_datetime <- function(year) {
     start_date <- paste0(year, "-04-01 00:00 UTC") # start each fisc year on Apr 1
-    end_date <- paste0(year+1, "-03-31 23:59 UTC")   # end of fisc year
+    end_date <- paste0(year + 1, "-03-31 23:59 UTC") # end of fisc year
 
-    random_datetime <- format(as.POSIXct(runif(length(year), as.POSIXct(start_date), as.POSIXct(end_date))),
-                              origin = "1970-01-01", format = "%Y-%m-%d %H:%M") #
+    random_datetime <- format(
+      as.POSIXct(runif(length(year), as.POSIXct(start_date), as.POSIXct(end_date)),
+        origin = "1970-01-01"
+      ),
+      format = "%Y-%m-%d %H:%M"
+    )
+
     return(random_datetime)
   }
 
   data[, discharge_date_time := add_random_datetime(year)]
 
   # add genc_id from 1-n
-  data <- data[order(discharge_date_time),]
-  data[ , genc_id := seq(1,nrow(data),1)]
+  data <- data[order(discharge_date_time), ]
+  data[, genc_id := seq(1, nrow(data), 1)]
 
 
   ############### DEFINE VARIABLE DISTRIBUTIONS ###############
   ## AGE
   # create left-skewed distribution, truncated from 18-110
-  age_distr <- function(n=10000, xi=95, omega=30, alpha=-10) {
-
+  age_distr <- function(n = 10000, xi = 95, omega = 30, alpha = -10) {
     age <- rsn(n, xi, omega, alpha)
 
     # truncate at [18, 110]
     age <- as.integer(age[age >= 18 & age <= 110])
-
   }
 
 
@@ -357,26 +366,29 @@ dummy_ipadmdad <- function(n = 1000,
   # simulated as being clustered by hospital (i.e., each hospital will be
   # simulated as random intercept, i.e., different location parameter)
   add_vars <- function(hosp_data) {
-
     n_enc <- nrow(hosp_data)
 
     ## AGE
     # create new age distribution for each hospital where location parameter xi
     # varies to create a random intercept by site
     age <- age_distr(xi = rnorm(1, 95, 5))
-    hosp_data[, age := sample(age, n_enc, replace=TRUE)]
+    hosp_data[, age := sample(age, n_enc, replace = TRUE)]
 
     ## GENDER (F/M/Other)
-    prob <- data.table("gender" = c("F", "M", "O"),
-                       "p" = c(.501, .498, 0.001 + 1e-5)) # add small constant to Os to ensure it's not rounded to 0 below
+    prob <- data.table(
+      "gender" = c("F", "M", "O"),
+      "p" = c(.501, .498, 0.001 + 1e-5)
+    ) # add small constant to Os to ensure it's not rounded to 0 below
     # Introduce random hospital-level variability
-    prob[ , p := t(rdirichlet(1, alpha = prob$p / 0.005))] # 0.005 = level of variability
+    prob[, p := t(rdirichlet(1, alpha = prob$p / 0.005))] # 0.005 = level of variability
     hosp_data[, gender := sample(prob$gender, n_enc, replace = TRUE, prob$p / sum(prob$p))] # make sure probs add up to 1 (see addition of constant above)
 
     ## DISCHARGE DISPOSITION
-    prob <- data.table("discharge_disposition" = c(4, 5, 8, 9, 10, 20, 30, 40, 61, 62, 65, 66, 67, 72, 73, 74, 90),
-                       "p" = c(.275, .386,  0, 0, .143, 0.002, .045, .040, .001+1e-5, .028, 0.001+1e-5, 0.001+1e-5, 0, .079, .001+1e-5, 0.001+1e-5, .001)) # add small constant to Os to ensure it's not rounded to 0 below
-    prob[ , p := t(rdirichlet(1, alpha = prob$p / 0.005))] # 0.005 = level of hospital-level variability
+    prob <- data.table(
+      "discharge_disposition" = c(4, 5, 8, 9, 10, 20, 30, 40, 61, 62, 65, 66, 67, 72, 73, 74, 90),
+      "p" = c(.275, .386, 0, 0, .143, 0.002, .045, .040, .001 + 1e-5, .028, 0.001 + 1e-5, 0.001 + 1e-5, 0, .079, .001 + 1e-5, 0.001 + 1e-5, .001)
+    ) # add small constant to Os to ensure it's not rounded to 0 below
+    prob[, p := t(rdirichlet(1, alpha = prob$p / 0.005))] # 0.005 = level of hospital-level variability
     hosp_data[, discharge_disposition := as.integer(sample(prob$discharge_disposition, n_enc, replace = TRUE, prob$p / sum(prob$p)))] # make sure probs add up to 1 (see addition of constant above)
 
     ## Simulate LOS to derive ADMISSION_DATE_TIME
@@ -386,9 +398,11 @@ dummy_ipadmdad <- function(n = 1000,
 
     ## Alternate level of care (ALC) & days spent in ALC
     # ALC flag
-    prob <- data.table("alc_service_transfer_flag" = c("FALSE", "TRUE", NA),
-                       "p" = c(.85, .11, .04))
-    prob[ , p := t(rdirichlet(1, alpha = prob$p / 0.05))] # 0.05 = level of variability
+    prob <- data.table(
+      "alc_service_transfer_flag" = c("FALSE", "TRUE", NA),
+      "p" = c(.85, .11, .04)
+    )
+    prob[, p := t(rdirichlet(1, alpha = prob$p / 0.05))] # 0.05 = level of variability
     hosp_data[, alc_service_transfer_flag := sample(prob$alc_service_transfer_flag, n_enc, replace = TRUE, prob$p / sum(prob$p))] # make sure probs add up to 1 (see addition of constant above)
 
     # Days spent in ALC (as integer)
@@ -396,21 +410,27 @@ dummy_ipadmdad <- function(n = 1000,
     hosp_data[alc_service_transfer_flag == "FALSE", number_of_alc_days := sample(c(0, NA), 1, prob = c(.8, .2))]
     # If ALC = TRUE, ALC days are drawn from uniform distribution between 0 and LOS (divided by 1.5 because ALC should be < LOS)
     # Note: because ALC is rounded UP, this results in some entries where ALC > LOS (especially for cases with short LOS); this mimics entries we find in our real data as well
-    hosp_data[alc_service_transfer_flag == "TRUE", number_of_alc_days := ceiling(runif(.N, 0, ceiling(los/1.5)))]
+    hosp_data[alc_service_transfer_flag == "TRUE", number_of_alc_days := ceiling(runif(.N, 0, ceiling(los / 1.5)))]
     # for cases where number_of_alc_days != NA, alc_service_transfer_flag is NA anywhere from 0-100% by site (mostly 0 or 100, but some in-between), so let's mimic that
-    hosp_data[genc_id %in% hosp_data[!is.na(number_of_alc_days)][
-      sample(.N, size = round(sample(c(0, .25, .50, .75, 1), prob = c(.59, .05, .05, .01, .3), 1)*.N)), 'genc_id'],
-      alc_service_transfer_flag := NA]
+    hosp_data[
+      genc_id %in% hosp_data[!is.na(number_of_alc_days)][
+        sample(.N, size = round(sample(c(0, .25, .50, .75, 1), prob = c(.59, .05, .05, .01, .3), 1) * .N)), "genc_id"
+      ],
+      alc_service_transfer_flag := NA
+    ]
 
     # randomly recode values referring to FALSE/TRUE to simulate real messiness of ALC coding
-    coding <- t(data.table(code1 = c("FALSE", "TRUE"),
-                           code2 = c("0", "1"),
-                           code3 = c("0", "99"),
-                           code4 = c("N", "Y"),
-                           code5 = c("n", "y"),
-                           code6 = c("false", "true"),
-                           code7 = c("non-ALC", "ALC"),
-                           code8 = c(NA, "Y")) # this is intentional, some sites only code "true", everything else is missing...
+    coding <- t(
+      data.table(
+        code1 = c("FALSE", "TRUE"),
+        code2 = c("0", "1"),
+        code3 = c("0", "99"),
+        code4 = c("N", "Y"),
+        code5 = c("n", "y"),
+        code6 = c("false", "true"),
+        code7 = c("non-ALC", "ALC"),
+        code8 = c(NA, "Y")
+      ) # this is intentional, some sites only code "true", everything else is missing...
     )
     code <- sample(1:nrow(coding), 1)
 
@@ -432,21 +452,22 @@ dummy_ipadmdad <- function(n = 1000,
   data <- do.call(rbind, data_all)
 
   ## Select relevant output variables
-  data <- data[order(genc_id), .(genc_id,
-                                 hospital_num,
-                                 admission_date_time,
-                                 discharge_date_time,
-                                 age,
-                                 gender,
-                                 discharge_disposition,
-                                 alc_service_transfer_flag,
-                                 number_of_alc_days)]
+  data <- data[order(genc_id), .(
+    genc_id,
+    hospital_num,
+    admission_date_time,
+    discharge_date_time,
+    age,
+    gender,
+    discharge_disposition,
+    alc_service_transfer_flag,
+    number_of_alc_days
+  )]
 
   # Return as data.frame (instead of data.table) as this is what SQL queries return
   data <- as.data.frame(data)
 
   return(data)
-
 }
 
 
@@ -479,15 +500,15 @@ dummy_ipadmdad <- function(n = 1000,
 #' @export
 #'
 #' @examples
-#' lab <- dummy_lab(1, 3024641, c(7,8,15,30), "mmol/L", "2023-01-02 08:00")
+#' lab <- dummy_lab(1, 3024641, c(7, 8, 15, 30), "mmol/L", "2023-01-02 08:00")
 #'
-dummy_lab <- function(id, omop, value, unit, mintime){
+dummy_lab <- function(id, omop, value, unit, mintime) {
   res <- data.table(
     genc_id = rep(id, length(value)),
     test_type_mapped_omop = omop,
     result_value = value,
     result_unit = rep(unit, length(value)),
-    collection_date_time =  format(as.POSIXct(mintime, tz = "UTC") + sample(0:(24*60*60 - 1), size=length(value), replace = TRUE),"%Y-%m-%d %H:%M")
+    collection_date_time = format(as.POSIXct(mintime, tz = "UTC") + sample(0:(24 * 60 * 60 - 1), size = length(value), replace = TRUE), "%Y-%m-%d %H:%M")
   )
   return(res)
 }
@@ -514,10 +535,10 @@ dummy_lab <- function(id, omop, value, unit, mintime){
 #' @examples
 #' admdad <- dummy_admdad(1, "2023-01-02 00:00")
 #'
-dummy_admdad <- function(id, admtime){
+dummy_admdad <- function(id, admtime) {
   res <- data.table(
     genc_id = id,
-    admission_date_time = format(as.POSIXct(admtime, tz = "UTC"),"%Y-%m-%d %H:%M")
+    admission_date_time = format(as.POSIXct(admtime, tz = "UTC"), "%Y-%m-%d %H:%M")
   )
   return(res)
 }
