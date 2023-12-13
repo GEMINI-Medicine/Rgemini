@@ -79,14 +79,14 @@ The simulated encounter-level variables that are returned by this function
 are currently: Admission date-time, discharge date-time, age, gender,
 discharge disposition, transfer to an alternate level of care (ALC), and ALC
 days. The distribution of these simulated variables roughly mimics the real
-distribution of each variable observed in the GIM cohort from 2015-2022
-(based on \code{drm_cleandb_v2}). Admission date-time is simulated in conjunction
-with discharge date-time to mimic realistic length of stay. All other
-variables are simulated independently of each other, i.e., there is no
-correlation between age, gender, discharge disposition etc. that may exist in
-the real data. One exception to this is \code{number_of_alc_days}, which is only >
-0 for entries where \code{alc_service_transfer_flag == TRUE} and the length of ALC
-is capped at the total length of stay.
+distribution of each variable observed in the GIM cohort from 2015-2022.
+Admission date-time is simulated in conjunction with discharge date-time to
+mimic realistic length of stay. All other variables are simulated
+independently of each other, i.e., there is no correlation between age,
+gender, discharge disposition etc. that may exist in the real data. One
+exception to this is \code{number_of_alc_days}, which is only > 0 for entries
+where \code{alc_service_transfer_flag == TRUE} and the length of ALC is capped at
+the total length of stay.
 
 The function simulates patient populations that differ across hospitals. That
 is, patient characteristics are simulated separately for each hospital, with
@@ -101,11 +101,9 @@ characteristics at different sites (i.e., function can be used to simulate
 data for random intercept models).
 }
 \examples{
-\dontrun{
 # Simulate 10,000 encounters from 10 hospitals for fiscal years 2018-2020.
-dummy_ipadmdad(n = 10000, n_hospitals = 10, time_period = c(2018, 2020))
+ipadmdad <- dummy_ipadmdad(n = 10000, n_hospitals = 10, time_period = c(2018, 2020))
 
-}
 
 }
 \keyword{internal}
