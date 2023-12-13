@@ -34,7 +34,9 @@ reference:
 - title: Dummy Data
   desc: Helper functions designed to produce sample data.
 - contents:
+  - dummy_admdad
   - dummy_diag
+  - dummy_lab
   - sample_icd
 - title: Utility Functions
 - contents:
@@ -42,4 +44,4 @@ reference:
   - matches("ni")
   - find_db_tablename
   - coerce_to_datatable
-  - count_missing
+  - n_missing
