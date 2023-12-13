@@ -25,6 +25,8 @@ Imports:
     tidyr, 
     timeDate,
     fuzzyjoin
+    MCMCpack,
+    sn
 Suggests: 
     ggplot2,
     kableExtra,
