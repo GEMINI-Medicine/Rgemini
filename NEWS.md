@@ -1,8 +1,10 @@
 # Rgemini `develop`
+* Adds a `n_missing` function to check number of missingness.
 
 * Switch function `frailty_score()` to calculate the CIHI Hospital Frailty Risk Score for each encounter.
 * Deprecates function `frailty_score()` that calculates the UK Hospital Frailty Risk Score.
 * New utility function checking user inputs
+* Adds core `mlaps` function and wrapper function to run over multiple sites and years.
 
 
 # Rgemini 0.3.1

@@ -37,19 +37,93 @@ NULL
 
 
 #' @title
-#' Count missing
+#' Number of missingness
 #'
 #' @description
-#' This function checks the number of missingness in a vector, returns the
-#' results in the exact number (percentage)
+#' This function checks number of missingness in a `vector`, or a `data.frame`
+#' or `data table`. It returns the results in exact number (percentage) or
+#' returns the index of missingness
 #'
-#' @param x (`vector`)
+#' @param x (`vector` or `data.frame` or `data.table`)
+#' the object to be checked
+#'
+#' @param na_strings (`character`)
+#' a character vector of strings which are to be interpreted as `NA` values.
+#' The default for `n_missing` is "", which will treat empty strings as `NA`.
+#'
+#' @param index (`logical`)
+#' If true the function returns the index of the missing values instead of the
+#' number (percentage). For `vector` input, a logical vector of same length will
+#' be returned. For `data.frame` or `data.table` input, the function returns a
+#' vector with length equal to the number of rows of input table and any
+#' missingness in the row will result in a returned value of `TRUE` for the row.
+#'
+#' @return (`character` or `logical`)
+#' For `vector` input, a `character` vector the same length of `x` where
+#' each value represents whether that particular element is missing.
+#' For `data.frame` or `data.table` input, a `logical` vector of which the
+#' length is the number of rows of input table and each value represents
+#' whether any element of the row is missing.
 #'
 #' @export
-count_missing <- function(x) {
-  result <- sum(is.na(x) | x == "")
-  myperc(result, length(x), 0, 1)
+#'
+#' @examples
+#' df <- data.frame(
+#'   x = c(1, 2, NA, 4, 5),
+#'   y = as.POSIXct(c("2023-12-01 15:00", "2021-07-09 19:30", "2020-01-02 09:00",
+#'                    "1998-08-23 15:23", NA)),
+#'   z = c("NA", NA, "a", " ", ""),
+#'   v = as.Date(c("2023-10-23", "2012-06-30", NA, "2023-08-12", "2009-01-01"))
+#' )
+#' n_missing(df)
+#' n_missing(df$z)
+#' n_missing(df, na_strings = c("", "NA", " "))
+#' n_missing(df$z, index = TRUE)
+#' n_missing(df, na_strings = c("", "NA", " "), index = TRUE)
+#'
+n_missing <- function(x, na_strings = c(""), index = FALSE) {
+
+  ##### Define function to identify missingness in vector ######
+  is_missing <- function(x, na_strings) {
+    return(is.na(x) | x %in% na_strings)
+  }
+
+  ## Define function to count missingness in vector ###
+  count_missing <- function(x, na_strings) {
+    len_missing <- sum(is_missing(x, na_strings = na_strings))
+    len_x <- length(x)
+    return(
+      paste0(
+        len_missing,
+        " (",
+        sprintf(paste0("%.", 1, "f"), len_missing / len_x * 100),
+        "%)"
+      )
+    )
+  }
+
+  ## Compute number of missingness or index
+  if (any(class(x) %in% c("data.frame", "data.table"))) {
+    if (index) {
+      return(Reduce(`|`, lapply(x, is_missing, na_strings = na_strings)))
+    } else {
+      return(apply(x, length(dim(x)), count_missing, na_strings = na_strings))
+    }
+  } else {
+    if (index) {
+      return(is_missing(x, na_strings = na_strings))
+    } else {
+      return(count_missing(x, na_strings = na_strings))
+    }
+  }
+
 }
+
+
+#' @rdname n_missing
+#' @export
+#'
+mi2 <- n_missing
 
 
 #' @title
@@ -61,6 +135,7 @@ count_missing <- function(x) {
 #'
 #' @examples
 #' lunique(c(1, 1, 2, 2, 2, 3))
+
 lunique <- function(x) {
   length(unique(x))
 }
@@ -109,13 +184,15 @@ coerce_to_datatable <- function(data) {
 #'
 #' Currently, the function only supports a subset of table names (see below) and
 #' expects the relevant tables in all databases to only differ based on their
-#' suffix (e.g., "admdad" vs. "admdad_subset"). Specifically, for most table
-#' names, the function uses `grepl("^tablename", drm_table)` to look for table
-#' names that *start with* the same name as specified in DRM (e.g., 'admdad').
-#' Exceptions are the "lab" and "transfusion" tables. Because there are other
-#' tables with similar names (e.g., "transfusion_mapping" table), the function
-#' specifically looks for tables called either "lab"/"transfusion" or
-#' "lab_subset"/"transfusion_subset" (for HPC datacuts).
+#' suffix (e.g., "ipintervention" vs. "ipintervention_subset"). For some tables,
+#' the function uses `grepl("^tablename", drm_table)` to look for table
+#' names that *start with* the same name as specified in DRM (e.g., any that
+#' start with "ipintervention").
+#' For other tables, the function uses a stricter search to avoid finding
+#' multiple matches: Specifically, for "admdad", "lab", and "transfusion", the
+#' function tries to identify tables with the exact same name (i.e.,
+#' "admdad/lab/transfusion") or the corresponding table name with a "_subset"
+#' suffix (for HPC datacuts).
 #'
 #' @param dbcon (`DBIConnection`)\cr
 #' A database connection to any GEMINI database.
@@ -170,9 +247,10 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 
   ## Define search criteria for different tables
   search_fn <- function(table_names, table = drm_table) {
-    if (drm_table %in% c("lab", "transfusion")) {
-      # for lab & transfusion table table: check for specific table names
-      # lab/lab_subset and transfusion/transfusion_subset
+
+    if (drm_table %in% c("lab", "transfusion", "admdad")) {
+      # for lab & transfusion table table:
+      # check for specific table names lab/lab_subset and transfusion/transfusion_subset
       # (otherwise, lab/transfusion_mapping or other tables might be returned)
       res <- table_names[table_names %in% c(table, paste0(table, "subset"))]
     } else {
@@ -237,6 +315,35 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
   return(table_name)
 }
 
+
+#' @title
+#' Return Hospital Field
+#'
+#' @description
+#' To accommodate differences in column names between databases, find the name of the column corresponding to
+#' the hospital for downstream queries.
+#'
+#' @param db (`DBIConnection`)\cr
+#' RPostgres DB connection.
+#'
+#' @return (`character`)\cr
+#' `hospital_id` or `hospital_num`, with preference given to `hospital_id` if it exists.
+#'
+return_hospital_field <- function(db) {
+
+  admdad <- find_db_tablename(db, "admdad", verbose = FALSE)
+  fields <- dbGetQuery(db, paste0("SELECT column_name FROM information_schema.columns WHERE table_name = '", admdad,"';"))$column_name
+
+  if ("hospital_id" %in% fields) {
+    return("hospital_id")
+
+  } else if ("hospital_num" %in% fields) {
+    return("hospital_num")
+
+  } else {
+    error("A field corresponding to the hospital was not found.")
+  }
+}
 
 
 #' @title
