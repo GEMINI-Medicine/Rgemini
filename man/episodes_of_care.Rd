@@ -80,7 +80,7 @@ concepts is needed for proper use of the function: transfer coded vs. transfer o
 drv <- dbDriver("PostgreSQL")
 dbcon <- DBI::dbConnect(drv,
                         dbname = "db",
-                        host = "172.XX.XX.XXX",
+                        host = "domain_name.ca",
                         port = 1234,
                         user = getPass("Enter user:"),
                         password = getPass("password"))
