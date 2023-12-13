@@ -1,6 +1,7 @@
 # Rgemini `develop`
 
-* Adds a `er_los` function to calculate emergency room length-of-stay.
+* New utility function checking user inputs
+* Adds function `er_los` to calculate emergency room length-of-stay.
 
 # Rgemini 0.3.1
 

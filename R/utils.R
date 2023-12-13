@@ -278,10 +278,25 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' - `"data.frame"`
 #' - `"DBI" | "dbcon" | "PostgreSQL"` for DB connection input
 #' - `"list"`
+#' - `"Date"`, `"POSIXct"`, `"POSIXt"`
+#' - ...
 #'
 #' If an input object can be one of several acceptable types (e.g.,
 #' `data.table` OR `data.frame`), types should be provided as a character vector
 #' (e.g., `argtype = c("data.frame", "data.table")`).
+#'
+#' If `argtype` is `"integer"`, the tests will pass
+#' 1) if `class(input) == "integer"` or
+#' 2) if `class(input) == "numeric"` and the number is an integer
+#'
+#' If `argtype` is `"numeric"`, inputs that are of class `"integer"` will also
+#' pass. In other words, integers are treated as a special case of numeric in
+#' the case of `argtype`. Therefore, checks with
+#' `argtype = c("integer", "numeric")` (i.e., input should be either integer
+#' *or* numeric) are not meaningful and should be avoided. Instead, users should
+#' specify if inputs need to be an `"integer"` specifically
+#' (`argtype = "integer"`), or if they just need to be any `"numeric"` input
+#' (`argtype = "numeric"`).
 #'
 #' @param length (`numeric`)\cr
 #' Optional input specifying the expected length of a given input argument
@@ -313,6 +328,12 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' `|` (e.g., `coltypes = c("integer|numeric", "character|POSIXct")`)). For any
 #' columns that do not have to be of a particular type, simply specify as `""`
 #' (e.g., `coltypes = c("integer|numeric", "")`).
+#'
+#' Note: As opposed to `argtype`, `coltypes` need to strictly correspond to the
+#' type that is returned by `class(column)`. That means that type `"integer"` is
+#' *not* a special case of `"numeric"`, but is treated as a separate type. This
+#' is relevant for `genc_id` columns, which are of class `"integer"`, and
+#' therefore `coltype = "numeric"` will return an error.
 #'
 #' @param unique (`logical`)\cr
 #' Optional input if argtype is `"data.frame"` or `"data.table"`. Flag
@@ -408,6 +429,7 @@ check_input <- function(arginput, argtype,
 
   ## Function defining all input checks
   run_checks <- function(arginput, argname) {
+
     ###### CHECK 1 (for all input types): Check if type is correct
     ## For DB connections
     if (any(grepl("dbi|con|posgre|sql", argtype, ignore.case = TRUE))) {
@@ -431,7 +453,8 @@ check_input <- function(arginput, argtype,
 
       ## For all other inputs
     } else if ((any(argtype == "integer") && !all(is_integer(arginput))) ||
-      !any(argtype == "integer") && !any(class(arginput) %in% argtype)) {
+      (!any(argtype == "integer") && !any(class(arginput) %in% argtype) &&
+        (!(any(argtype == "numeric") && all(is_integer(arginput)))))) { # in case argtype is "numeric" and provided input is "integer", don't show error
       stop(
         paste0(
           "Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
