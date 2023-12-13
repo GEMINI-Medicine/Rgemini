@@ -23,8 +23,8 @@ Imports:
     table1, 
     tidyr, 
     timeDate,
-	MCMCpack,
-	sn
+    MCMCpack,
+    sn
 Suggests: 
     ggplot2,
     kableExtra,

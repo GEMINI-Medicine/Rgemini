@@ -215,14 +215,14 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 #' are currently: Admission date-time, discharge date-time, age, gender,
 #' discharge disposition, transfer to an alternate level of care (ALC), and ALC
 #' days. The distribution of these simulated variables roughly mimics the real
-#' distribution of each variable observed in the GIM cohort from 2015-2022
-#' (based on `drm_cleandb_v2`). Admission date-time is simulated in conjunction
-#' with discharge date-time to mimic realistic length of stay. All other
-#' variables are simulated independently of each other, i.e., there is no
-#' correlation between age, gender, discharge disposition etc. that may exist in
-#' the real data. One exception to this is `number_of_alc_days`, which is only >
-#' 0 for entries where `alc_service_transfer_flag == TRUE` and the length of ALC
-#' is capped at the total length of stay.
+#' distribution of each variable observed in the GIM cohort from 2015-2022.
+#' Admission date-time is simulated in conjunction with discharge date-time to
+#' mimic realistic length of stay. All other variables are simulated
+#' independently of each other, i.e., there is no correlation between age,
+#' gender, discharge disposition etc. that may exist in the real data. One
+#' exception to this is `number_of_alc_days`, which is only > 0 for entries
+#' where `alc_service_transfer_flag == TRUE` and the length of ALC is capped at
+#' the total length of stay.
 #'
 #' The function simulates patient populations that differ across hospitals. That
 #' is, patient characteristics are simulated separately for each hospital, with
@@ -292,18 +292,16 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 #' @export
 #'
 #' @examples
-#' \dontrun{
 #' # Simulate 10,000 encounters from 10 hospitals for fiscal years 2018-2020.
-#' dummy_ipadmdad(n = 10000, n_hospitals = 10, time_period = c(2018, 2020))
+#' ipadmdad <- dummy_ipadmdad(n = 10000, n_hospitals = 10, time_period = c(2018, 2020))
 #'
-#' }
 #'
 dummy_ipadmdad <- function(n = 1000,
                            n_hospitals = 10,
                            time_period = c(2015, 2023)) {
 
 
-  ############### CHECKS: Make sure n_encounters is at least n_hospitals * length(time_period)
+  ############### CHECKS: Make sure n is at least n_hospitals * length(time_period)
   if (n < n_hospitals*length(time_period)){
     stop("Invalid user input.
     Number of encounters `n` should at least be equal to `n_hospitals` * `length(time_period)`")
@@ -318,7 +316,7 @@ dummy_ipadmdad <- function(n = 1000,
 
   # randomly draw number of encounters per hospital*year combo
   # make sure they add up to desired total number of encounters
-  data[ , n := rmultinom(1, n_encounters, rep.int(1 / nrow(data), nrow(data)))]
+  data[ , n := rmultinom(1, n, rep.int(1 / nrow(data), nrow(data)))]
   sum(data$n)
 
   # blow up row number according to encounter per combo
@@ -329,7 +327,8 @@ dummy_ipadmdad <- function(n = 1000,
     start_date <- paste0(year, "-04-01 00:00 UTC") # start each fisc year on Apr 1
     end_date <- paste0(year+1, "-03-31 23:59 UTC")   # end of fisc year
 
-    random_datetime <- format(as.POSIXct(runif(length(year), as.POSIXct(start_date), as.POSIXct(end_date))), format = "%Y-%m-%d %H:%M") #
+    random_datetime <- format(as.POSIXct(runif(length(year), as.POSIXct(start_date), as.POSIXct(end_date))),
+                              origin = "1970-01-01", format = "%Y-%m-%d %H:%M") #
     return(random_datetime)
   }
 
