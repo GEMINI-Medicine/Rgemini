@@ -154,6 +154,9 @@ diagnoses_at_admission <- function(ipdiag, erdiag) {
 #' @export
 #'
 comorbidity_index <- function(ipdiag, erdiag, map, weights, at_admission = TRUE, raw_comorbidities = FALSE) {
+  ipdiag <- coerce_to_datatable(ipdiag)
+  erdiag <- coerce_to_datatable(erdiag)
+
   diagnoses <- if (at_admission) {
     diagnoses_at_admission(ipdiag, erdiag)
   } else {
@@ -221,10 +224,12 @@ charlson_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_
     raw_comorbidities = raw_comorbidities
   )
 
-  if (at_admission) {
-    names(res) <- c("genc_id", "admit_charlson_derived")
-  } else {
-    names(res) <- c("genc_id", "all_charlson_derived")
+  if (!raw_comorbidities) {
+    if (at_admission) {
+      names(res) <- c("genc_id", "admit_charlson_derived")
+    } else {
+      names(res) <- c("genc_id", "all_charlson_derived")
+    }
   }
 
   return(res)
@@ -265,10 +270,12 @@ elixhauser_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, ra
     raw_comorbidities = raw_comorbidities
   )
 
-  if (at_admission) {
-    names(res) <- c("genc_id", "admit_elixhauser_derived")
-  } else {
-    names(res) <- c("genc_id", "all_elixhauser_derived")
+  if (!raw_comorbidities) {
+    if (at_admission) {
+      names(res) <- c("genc_id", "admit_elixhauser_derived")
+    } else {
+      names(res) <- c("genc_id", "all_elixhauser_derived")
+    }
   }
 
   return(res)
