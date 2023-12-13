@@ -15,6 +15,7 @@ Imports:
     dplyr, 
     janitor, 
     lubridate, 
+    purrr,
     reshape2,
     RPostgreSQL,
     stddiff, 
