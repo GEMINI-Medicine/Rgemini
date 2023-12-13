@@ -42,4 +42,4 @@ reference:
   - matches("ni")
   - find_db_tablename
   - coerce_to_datatable
-  - count_missing
+  - n_missing

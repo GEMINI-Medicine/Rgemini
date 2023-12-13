@@ -1,4 +1,5 @@
 # Rgemini `develop`
+* Adds a `n_missing` function to check number of missingness.
 
 * New utility function checking user inputs
 
