@@ -3,7 +3,8 @@ test_that("correct inputs pass checks", {
   # example function with expected input types
   my_function_correct <- function(input1 = TRUE, # logical
                                   input2 = -1.5, # numeric
-                                  input3 = 2, # integer
+                                  input3 = 2, # numeric integer
+                                  input3a = 1L, # class integer
                                   input4 = "all", # character
                                   input5 = data.frame( # data.frame
                                     genc_id = as.integer(5),
@@ -25,6 +26,11 @@ test_that("correct inputs pass checks", {
 
     expect_no_error(
       check_input(input3, "integer", interval = c(1, Inf))
+    )
+
+    # note: When passing inputs of class = "integer", "numeric" test should pass
+    expect_no_error(
+      check_input(input3a, argtype = "numeric")
     )
 
     expect_no_error(

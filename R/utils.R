@@ -283,6 +283,18 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' `data.table` OR `data.frame`), types should be provided as a character vector
 #' (e.g., `argtype = c("data.frame", "data.table")`).
 #'
+#' If `argtype` is `"integer"`, the tests will pass
+#' 1) if `class(input) == "integer"` or
+#' 2) if `class(input) == "numeric"` and the number is an integer
+#'
+#' If `argtype` is `"numeric"`, inputs that are of class `"integer"` will also
+#' pass. In other words, integers are treated as a special case of numeric by
+#' this function. Therefore, checks with `argtype = c("integer", "numeric")`
+#' (i.e., input should be either integer *or* numeric) are not meaningful and
+#' should be avoided. Instead, users should specify if inputs need to be an
+#' `"integer"` specifically (`argtype = "integer"`), or if they just need to be
+#' any `"numeric"` input (`argtype = "numeric"`).
+#'
 #' @param length (`numeric`)\cr
 #' Optional input specifying the expected length of a given input argument
 #' (e.g., use `length = 2` to check if a vector/list contains 2 elements).
@@ -408,6 +420,7 @@ check_input <- function(arginput, argtype,
 
   ## Function defining all input checks
   run_checks <- function(arginput, argname) {
+
     ###### CHECK 1 (for all input types): Check if type is correct
     ## For DB connections
     if (any(grepl("dbi|con|posgre|sql", argtype, ignore.case = TRUE))) {
@@ -431,7 +444,8 @@ check_input <- function(arginput, argtype,
 
       ## For all other inputs
     } else if ((any(argtype == "integer") && !all(is_integer(arginput))) ||
-      !any(argtype == "integer") && !any(class(arginput) %in% argtype)) {
+      (!any(argtype == "integer") && !any(class(arginput) %in% argtype) &&
+        (!(any(argtype == "numeric") && all(is_integer(arginput)))))) { # in case argtype is "numeric" and provided input is "integer", don't show error
       stop(
         paste0(
           "Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
