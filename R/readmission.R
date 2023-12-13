@@ -143,17 +143,14 @@ readmission <- function(dbcon,
                         restricted_cohort = NULL,
                         readm_win = c(7, 30)) {
 
-  cat("\nThis function may take a few minutes to run...\n")
 
-  ### Error message if invalid DB connection
-  if (!RPostgreSQL::isPostgresqlIdCurrent(dbcon)) {
-    stop("\n Please input a valid database connection")
-  }
-
-  ## Error message if readmission window is not a positive integer
-  if (any(round(readm_win) != readm_win) || any(readm_win < 1)) {
-    stop("At least one value in `readm_win` is not a positive integer.
-    Please provide all readmission windows in full days (e.g., for 7- and 30-day readmission: `readm_win = c(7,30)`).")
+  ## check user inputs
+  check_input(dbcon, "DBI")
+  check_input(list(elective_admit, death, MAID, palliative, chemo, mental, obstetric, signout), "logical")
+  check_input(readm_win, "integer", interval = c(1, Inf)) # readmission window needs to be positive integer
+  if (!is.null(restricted_cohort)){
+    check_input(restricted_cohort, c("data.table", "data.frame"),
+                colnames = "genc_id")
   }
 
   ## Warning if death == FALSE
@@ -172,7 +169,7 @@ readmission <- function(dbcon,
             immediate. = TRUE)
   }
 
-
+  cat("\nThis function may take a few minutes to run...\n")
 
   ############ Derive epicare = episode of care based on transfers ############
   cat("\nDeriving episodes of care ...\n")
