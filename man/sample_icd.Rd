@@ -30,21 +30,26 @@ This function simulates ICD-10 diagnosis codes at random or by user specified pa
 }
 \examples{
 ### Simulate 100 ICD-10 codes based on the 2011 version.
-\dontrun{ sample_icd(100, source="comorbidity") }
+\dontrun{
+sample_icd(100, source = "comorbidity")
+}
 
 ### Simulate 100 ICD-10 codes starting with "C2" or "E10" based on the 2011 version.
-\dontrun{ sample_icd(100, source="comorbidity", pattern="^C2|^E10") }
+\dontrun{
+sample_icd(100, source = "comorbidity", pattern = "^C2|^E10")
+}
 
 ### Simulate 50 ICD-10-CA codes based on codes found in the `lookup_icd10_ca_description` table
 \dontrun{
 drv <- dbDriver("PostgreSQL")
 dbcon <- DBI::dbConnect(drv,
-                        dbname = "db",
-                        host = "172.XX.XX.XXX",
-                        port = 1234,
-                        user = getPass("Enter user:"),
-                        password = getPass("password"))
-sample_icd(50, source="icd_lookup", dbcon=dbcon)
+  dbname = "db",
+  host = "172.XX.XX.XXX",
+  port = 1234,
+  user = getPass("Enter user:"),
+  password = getPass("password")
+)
+sample_icd(50, source = "icd_lookup", dbcon = dbcon)
 }
 
 }
