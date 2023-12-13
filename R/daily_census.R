@@ -96,6 +96,23 @@
 #' Default is 8am (`time_of_day = "8:00:00"`). Other times can be specified as a character (e.g., `"10:30"` for 10.30am)
 #' or as numeric input (e.g., `14` for 2pm).
 #'
+#' @param include_zero (`logical`)
+#' Flag indicating whether days with census counts of `0` should be treated as real 0s or whether they should be returned
+#' as `census = NA`. Note that this is only relevant for edge cases where this function is applied to small cohorts or if
+#' users specify a `group_var` with small samples resulting in counts of 0 on some days. In those cases,
+#' the decision on whether or not to include 0s can affect the estimated typical capacity (and thus, the `capacity_ratio`
+#' output).
+#'
+#' By default (`include_zero = TRUE`), the function will return days where no `genc_ids` were hospitalized as `census = 0`.
+#' This is the desired behavior in cases where counts of 0 patients are conceptually meaningful. For example, when users
+#' want to analyze how many patients with a rare condition are in hospital on a typical day, days where `census = 0`
+#' represent true counts of 0 patients (assuming the cohort provides sufficient coverage of all hospitalized patients).
+#'
+#' In other scenarios, users may want to disregard days where `census = 0` by specifying `include_zero = FALSE`.
+#' For example, when looking at daily census counts per physician, days where `census = 0` likely reflect days
+#' where a given physician was not on service. Therefore, those days should not be included in the estimate of
+#' physicians' typical patient volume.
+#'
 #' @return (`data.table`)\cr
 #' data.table with the daily counts of hospitalized patients (`census`) at each hospital. Additionally, the
 #' `capacity_ratio` (`census` relative to the typical occupancy during the time period of interest) will be returned.
@@ -128,8 +145,15 @@
 #' ipadm_census <- daily_census(ipadm)
 #' }
 #'
-daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_var = NULL,
-                         capacity_func = "median", buffer = 30, time_of_day = "08:00:00") {
+daily_census <- function(cohort,
+                         time_period = NULL,
+                         scu_exclude = NULL,
+                         group_var = NULL,
+                         capacity_func = "median",
+                         buffer = 30,
+                         time_of_day = "08:00:00",
+                         include_zero = TRUE) {
+
   ## If no time_period input provided, use min/max discharge dates
   if (is.null(time_period)) {
     time_period_start <- min(as.Date(cohort$discharge_date_time))
@@ -380,16 +404,21 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
       }
 
 
-      ## Fill in missing time points (if any) with 0 - different from buffer (see below)
+      ## Fill in missing time points (if any) with 0/NA, depending on include_zero flag [different from buffer (see below)]
       # This only applies to time points that are within a site's [min-max] available dates
-      # in current census table, days with 0 counts don't exist (missing rows), so we'll need to fill them in and set to 0
-      # (because data were in principle available, but no encounters were identified)
+      # in current census table, days with 0 counts don't exist (missing rows), so we'll need to fill them in and set to
+      # 0/NA, depending on whether we want to consider 0s as true 0s, or whether we want to ignore them
       # Note: this is only relevant for small cohorts/subgroups, in which case some entries may have 0 counts on some days
+      # Decision is relevant because it effects capacity_ratio estimates
       # get all columns specifying grouping variables (hospital_num + group_vars)
       group_cols <- colnames(census[, -c("census", "date_time")])
       # create all combos of dates with columns specifying grouping variables
       append <- setDT(crossing(date_time = time_int$date_time, distinct(census[, ..group_cols])))
-      append[, census := 0]
+      if (include_zero == TRUE) {
+        append[, census := 0]
+      } else {
+        append[, census := NA]
+      }
 
       ## find date-group combos that don't exist in census table
       append <- anti_join(append, census, by = colnames(append[, -c("census")]))
@@ -436,7 +465,8 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
         central_func <- match.fun(capacity_func)
       }
 
-      # Note 1: 0 counts are included in capacity estimate
+      # Note 1: If `include_zeros = TRUE`, days where `census = 0` are included in capacity estimate
+      #         If `include_zeros = FALSE`, days with 0 counts have been set to `NA` so will not be counted here
       # Note 2: if grouping variable is specified, capacity ratio is calculated separately for each group
       if (all(is.na(census$census))) { # there are edge cases where all entries are NA due to buffer
         census[, capacity_ratio := NA] # in that case, set capacity ratio to NA as well
