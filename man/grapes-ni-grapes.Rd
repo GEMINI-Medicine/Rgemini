@@ -22,6 +22,6 @@ value represents whether that particular element in \code{x} exists in \code{y}.
 Infix function for the opposite of \code{\%in\%}.
 }
 \examples{
-c('x', 'y') \%ni\% 'x'
+c("x", "y") \%ni\% "x"
 
 }
