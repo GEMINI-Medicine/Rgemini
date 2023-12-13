@@ -73,12 +73,20 @@ The CIHI frailty score was developed and validated based on all diagnoses presen
 Excluding diagnoses in NACRS was found to underestimate frailty levels (Amuah et al, 2023).
 }
 
+\section{Notes}{
+
+The previous \code{frailty_score()} function calculates the UK HFRS (Gilbert, 2018), and it now deprecated.
+Using a similar approach as the UK HFRS, the CIHI HFRS was developed and validated based on Canadian cohorts, making it particularly suited for GEMINI data.
+The UK version remains available in \code{Rgemini} version 0.3.1 and earlier but will not receive future maintenance.
+Users interested in the UK version should refer to the original publications for important differences in diagnostic coding practices and age threshold.
+}
+
 \examples{
 \dontrun{
-cohort_dum <- data.frame(genc_id=c(1, 2, 3), age=c(64, 65, 80))
-ipdiag_dum <- dummy_diag(nid=3, nrow=10, ipdiagnosis=T, pattern ="C20$|R460$") # frailty conditions
-erdiag_dum <- dummy_diag(nid=3, nrow=5, ipdiagnosis=F, pattern ="M121$") # not a frailty condition
-frailty_score(cohort_dum, ipdiag_dum, erdiag_dum, component_wise = F)
+cohort_dum <- data.table(genc_id=c(1, 2, 3), age=c(64, 65, 80))
+ipdiag_dum <- dummy_diag(nid=3, nrow=10, ipdiagnosis=TRUE, pattern = "C20$|R460$") # frailty conditions
+erdiag_dum <- dummy_diag(nid=3, nrow=5, ipdiagnosis=FALSE, pattern = "M121$") # not a frailty condition
+frailty_score(cohort_dum, ipdiag_dum, erdiag_dum, component_wise = FALSE)
 }
 
 }
