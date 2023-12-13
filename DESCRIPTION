@@ -24,7 +24,7 @@ Imports:
     table1, 
     tidyr, 
     timeDate,
-    fuzzyjoin
+    fuzzyjoin,
     MCMCpack,
     sn
 Suggests: 
