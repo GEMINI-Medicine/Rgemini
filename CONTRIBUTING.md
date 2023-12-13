@@ -14,13 +14,15 @@ We welcome contributions to `Rgemini` by all GEMINI team members. To submit a co
 
 6. If appropriate, add unit tests in the `tests/testthat/` directory.
 
-7. If adding new functions with new documentation, run `devtools::document()` and update the `_pkgdown.yml` file by adding the new function to the appropriate reference section.
+7. If adding new functions with new documentation, update the `_pkgdown.yml` file by adding the new function to the appropriate reference section. Note that the `Rgemini` repository currently has a CI/CD workflow to generate and commit documentation on any pushed commit, but `devtools::document()` can also be run during development to debug locally. 
 
-8. Submit a [pull request](https://help.github.com/articles/using-pull-requests) into the `develop` branch.
+8. Note that any new package data should be saved as a `.rda` file in the `data/` directory, and should be documented with `roxygen` in `data.R`.
 
-9. Ask a team member to review the changes (see guidelines for reviewers below) and implement additional changes based on the reviewer's feedback.
+9. Submit a [pull request](https://help.github.com/articles/using-pull-requests) into the `develop` branch.
 
-10. Once the reviewer has approved the pull request, squash all commits and merge the branch into `develop`, close the issue, and delete the branch you developed on.
+10. Ask a team member to review the changes (see guidelines for reviewers below) and implement additional changes based on the reviewer's feedback.
+
+11. Once the reviewer has approved the pull request, squash all commits and merge the branch into `develop`, close the issue, and delete the branch you developed on.
 
 
 # Reviewing code
