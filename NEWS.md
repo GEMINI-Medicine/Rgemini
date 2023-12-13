@@ -3,6 +3,8 @@
 
 * New utility function checking user inputs
 
+* Adds core `mlaps` function and wrapper function to run over multiple sites and years.
+
 # Rgemini 0.3.1
 
 * Allows the user to specify the number of digits to round percentages to in cell suppression of categorical variables, without forcing rounding to integer.

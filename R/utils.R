@@ -187,13 +187,15 @@ coerce_to_datatable <- function(data) {
 #'
 #' Currently, the function only supports a subset of table names (see below) and
 #' expects the relevant tables in all databases to only differ based on their
-#' suffix (e.g., "admdad" vs. "admdad_subset"). Specifically, for most table
-#' names, the function uses `grepl("^tablename", drm_table)` to look for table
-#' names that *start with* the same name as specified in DRM (e.g., 'admdad').
-#' Exceptions are the "lab" and "transfusion" tables. Because there are other
-#' tables with similar names (e.g., "transfusion_mapping" table), the function
-#' specifically looks for tables called either "lab"/"transfusion" or
-#' "lab_subset"/"transfusion_subset" (for HPC datacuts).
+#' suffix (e.g., "ipintervention" vs. "ipintervention_subset"). For some tables,
+#' the function uses `grepl("^tablename", drm_table)` to look for table
+#' names that *start with* the same name as specified in DRM (e.g., any that
+#' start with "ipintervention").
+#' For other tables, the function uses a stricter search to avoid finding
+#' multiple matches: Specifically, for "admdad", "lab", and "transfusion", the
+#' function tries to identify tables with the exact same name (i.e.,
+#' "admdad/lab/transfusion") or the corresponding table name with a "_subset"
+#' suffix (for HPC datacuts).
 #'
 #' @param dbcon (`DBIConnection`)\cr
 #' A database connection to any GEMINI database.
@@ -248,9 +250,10 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 
   ## Define search criteria for different tables
   search_fn <- function(table_names, table = drm_table) {
-    if (drm_table %in% c("lab", "transfusion")) {
-      # for lab & transfusion table table: check for specific table names
-      # lab/lab_subset and transfusion/transfusion_subset
+
+    if (drm_table %in% c("lab", "transfusion", "admdad")) {
+      # for lab & transfusion table table:
+      # check for specific table names lab/lab_subset and transfusion/transfusion_subset
       # (otherwise, lab/transfusion_mapping or other tables might be returned)
       res <- table_names[table_names %in% c(table, paste0(table, "subset"))]
     } else {
@@ -315,6 +318,35 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
   return(table_name)
 }
 
+
+#' @title
+#' Return Hospital Field
+#'
+#' @description
+#' To accommodate differences in column names between databases, find the name of the column corresponding to
+#' the hospital for downstream queries.
+#'
+#' @param db (`DBIConnection`)\cr
+#' RPostgres DB connection.
+#'
+#' @return (`character`)\cr
+#' `hospital_id` or `hospital_num`, with preference given to `hospital_id` if it exists.
+#'
+return_hospital_field <- function(db) {
+
+  admdad <- find_db_tablename(db, "admdad", verbose = FALSE)
+  fields <- dbGetQuery(db, paste0("SELECT column_name FROM information_schema.columns WHERE table_name = '", admdad,"';"))$column_name
+
+  if ("hospital_id" %in% fields) {
+    return("hospital_id")
+
+  } else if ("hospital_num" %in% fields) {
+    return("hospital_num")
+
+  } else {
+    error("A field corresponding to the hospital was not found.")
+  }
+}
 
 
 #' @title
