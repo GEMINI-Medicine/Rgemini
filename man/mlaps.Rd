@@ -22,7 +22,7 @@ Since not all encounters are admitted through Emergency Department, depending on
 Typically, \code{hours_after_admission} can be set to 24 to consider any lab tests collected at Emergency Department and 24 hours after inpatient admission.}
 
 \item{component_wise}{(\code{logical})\cr
-Does not aggregate the score and instead outputs for each LAPS component (test), its contribution
+Does not aggregate the score and instead outputs for each LAPS component (test) its contribution
 to the overall score.}
 }
 \value{

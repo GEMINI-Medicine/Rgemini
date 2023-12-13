@@ -49,4 +49,5 @@ For these encounters, a value of 0 will be assigned to the derived fields.
 \dontrun{
 er_los(cohort = ipadmdad, er = er)
 }
+
 }
