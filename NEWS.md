@@ -8,6 +8,8 @@
 * Adds `er_los` function to calculate emergency room length-of-stay.
 
 
+* New function to simulate "ipadmdad" data with random hospital-level intercepts
+
 # Rgemini 0.3.1
 
 * Allows the user to specify the number of digits to round percentages to in cell suppression of categorical variables, without forcing rounding to integer.

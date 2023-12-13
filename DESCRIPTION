@@ -2,7 +2,7 @@ Package: Rgemini
 Type: Package
 Title: R Functions for GEMINI Data
 Version: 0.3.1
-Author: The GEMINI team
+Author: GEMINI
 Maintainer: GEMINIdata <Gemini.data@unityhealth.to>
 Description: Common functions for GEMINI data analyses.
 License: MIT + file LICENSE
@@ -23,7 +23,9 @@ Imports:
     stringr, 
     table1, 
     tidyr, 
-    timeDate
+    timeDate,
+    MCMCpack,
+    sn
 Suggests: 
     ggplot2,
     kableExtra,

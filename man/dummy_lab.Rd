@@ -31,6 +31,6 @@ Designed to mimic the most important elements of the GEMINI lab table as defined
 \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
 }
 \examples{
-lab <- dummy_lab(1, 3024641, c(7,8,15,30), "mmol/L", "2023-01-02 08:00")
+lab <- dummy_lab(1, 3024641, c(7, 8, 15, 30), "mmol/L", "2023-01-02 08:00")
 
 }
