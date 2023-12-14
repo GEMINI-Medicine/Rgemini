@@ -16,9 +16,9 @@
 #' encounters for a given patient.
 #'
 #' By setting `component_wise` to `TRUE`, users can choose to return all
-#' identified diagnosis codes for encounters with a disability, together with a
-#' description of the disability diagnosis and the corresponding disability
-#' category (e.g., physical/sensory/developmental - see below).
+#' identified diagnosis codes for encounters with a disability, together with
+#' the disability category each code was matched with (e.g., physical/sensory/
+#' developmental disability - see below).
 #'
 #' @param cohort (`data.frame` or `data.table`)
 #' Cohort table with all relevant encounters of interest, where each row
@@ -38,8 +38,9 @@
 #' to increase sensitivity. However, in certain scenarios, users may choose to
 #' only include IP diagnoses by specifying `erdiag = NULL`. This may be useful
 #' when comparing cohorts with different rates of ER admissions. Additionally,
-#' please note that the reliability of ER diagnosis codes has been shown to be
-#' lower compared to in-patient diagnoses. Thus, users may want to
+#' ER diagnoses may be less reliable than in-patient diagnoses due to shorter
+#' length of stay in ER and lower availability of diagnostic tools & resources
+#' (e.g., advanced imaging results etc.). Thus, users may want to
 #' exclude ER diagnoses in certain situations.
 #'
 #' @param component_wise (`logical`)
@@ -48,17 +49,16 @@
 #' *any* disability (`FALSE/TRUE/NA`).
 #'
 #' If `component_wise == TRUE`, for each `genc_id` with a disability,
-#' all identified disability diagnosis codes are returned in long format. All
-#' codes will be returned with their description and one of the following 7
-#' disability categories:
-#' - Physical disability: Congenital Anomalies
-#' - Physical disability: Musculoskeletal disorders
-#' - Physical disability: Neurological disorders
-#' - Physical disability: Permanent Injuries
-#' - Sensory disabilities: Hearing impairments
-#' - Sensory disabilities: Vision impairments
+#' all identified disability diagnosis codes are returned in long format. An
+#' additional column `disability_category` is returned containing
+#' one of the following 7 disability categories for each diagnosis:
+#' - Physical disability - Congenital Anomalies
+#' - Physical disability - Musculoskeletal disorders
+#' - Physical disability - Neurological disorders
+#' - Physical disability - Permanent Injuries
+#' - Sensory disabilities - Hearing impairments
+#' - Sensory disabilities - Vision impairments
 #' - Developmental Disabilities
-#'
 #'
 #' @section Warning:
 #' This function does not differentiate between diagnosis types. That is, the
@@ -71,18 +71,19 @@
 #' more details, see [CIHI diagnosis type definitions](https://www.cihi.ca/sites/default/files/document/diagnosis-type-definitions-en.pdf).
 #'
 #' @return `data.table`
-#' This function returns a table with all encounters identified by the `cohort`
-#' table input and an additional derived field `disability` (`logical`)
-#' indicating whether any diagnosis code for a disability was identified.
-#' If a `genc_id` does not have any entry in the diagnosis table at all,
-#' `disability = NA`. Note that this is very rare: If no additional filtering
-#' was performed, >99.9% of `genc_ids` should have an entry in the `ipdiagnosis`
-#' (and >99.9% of `genc_ids` that were admitted via ER should have an entry in
-#' the `erdiagnosis` table).
-#' If `component_wise = TRUE`, 7 additional columns will be returned containing
-#' flags for the individual physicial/sensory/developmental disability
-#' categories.
+#' If `component_wise == FALSE`, returns a table with all encounters identified
+#' by the `cohort` table input and an additional derived field `disability`
+#' (`logical`) indicating whether any diagnosis code for a disability was
+#' identified. If a `genc_id` does not have any entry in the diagnosis table at
+#' all, `disability = NA`. Note that this is very rare: If no additional
+#' filtering was performed, >99.9% of `genc_ids` should have an entry in the
+#' `ipdiagnosis` (and >99.9% of `genc_ids` that were admitted via ER should have
+#' an entry in the `erdiagnosis` table).
 #'
+#' If `component_wise == TRUE`, will only return `genc_ids` with a disability.
+#' The output is returned in long format, where each row corresponds to a
+#' disability diagnosis (`diagnosis_code`) and its corresponding
+#' `disability_category` (`character`).
 #'
 #' @examples
 #' \dontrun{
@@ -105,7 +106,7 @@
 #' # not including ER diagnosis codes
 #' disability(cohort = ipadmdad, ipdiag = ipdiagnosis, erdiag = NULL)
 #'
-#' # returning component-wise disability flags
+#' # returning component-wise disability categories
 #' disability(ipadmdad, ipdiagnosis, erdiagnosis, component_wise = TRUE)
 #' }
 #'
@@ -158,22 +159,22 @@ disability <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
   data(mapping_disability, package = "Rgemini")
   disability_codes <- mapping_disability %>% data.table()
 
-
+  ## Prepare output
   if (component_wise == TRUE) {
 
     ## Derive all disability categories for genc_ids with disability
     res <- diagnoses %>%
       fuzzyjoin::regex_left_join(disability_codes, by = "diagnosis_code", ignore_case = TRUE) %>% # identify any codes starting with mapped codes
       data.table() %>%
-      .[!is.na(disability_category), .(genc_id, diagnosis_code.y, diagnosis_code_desc, disability_category)] # filter to encounters with diagnosis mapped to frailty conditions
-    setnames(res, 'diagnosis_code.y', 'diagnosis_code')
+      .[!is.na(disability_category), .(genc_id, diagnosis_code.x, disability_category)] # filter to encounters with diagnosis mapped to frailty conditions
+    setnames(res, 'diagnosis_code.x', 'diagnosis_code')
 
   } else {
 
     ## Derive global flag for any disability per genc_id
     res[, disability := ifelse(!genc_id %in% diagnoses$genc_id, NA, # if no diagnosis code at all for genc_id, set flag to NA
                                ifelse(genc_id %in% diagnoses[ # if entry in mapped diagnosis codes, set disability to TRUE, otherwise: FALSE
-                                 str_detect(diagnoses$diagnosis_code, paste0("^", disability_codes$ICD_10_CA_code, collapse = "|")),
+                                 str_detect(diagnosis_code, paste0("^", disability_codes$diagnosis_code, collapse = "|")),
                                ]$genc_id, TRUE, FALSE)
     )]
 
