@@ -13,7 +13,8 @@
 #'
 #' The function closely adheres to the CIHI HFRS with the following adaptations:
 #' \itemize{
-#'  \item{No look-back period: }{Score is computed at encounter level. The 2-year look-back in the CIHI HFRS is not implemented. This adaptation systematically underestimates frailty but ensures comparable scores across time and hospitals considering variations in data availability}
+#'  \item{No look-back period: }{Score is computed at encounter level. The 2-year look-back in the CIHI HFRS is not implemented. 
+#'  This adaptation systematically underestimates frailty but ensures comparable scores across time and hospitals considering variations in data availability}
 #'  \item{Score format : }{Integer scores are returned representing the sum of the number of frailty deficits.
 #'  These scores can be easily converted to the different formats (i.e. continuous fractions, 8 risk groups, binary) defined by CIHI HFRS.
 #'  For example, dividing the returned score by 36 (maximum number of deficits possible) gives the continuous CIHI HFRS.
@@ -65,7 +66,7 @@
 #' Excluding diagnoses in NACRS was found to underestimate frailty levels (Amuah et al, 2023).
 #'
 #' @section Notes:
-#' The previous `frailty_score()` function calculates the UK HFRS (Gilbert, 2018), and it now deprecated.
+#' The previous `frailty_score()` function calculates the UK HFRS (Gilbert, 2018), and it is now deprecated.
 #' Using a similar approach as the UK HFRS, the CIHI HFRS was developed and validated based on Canadian cohorts, making it particularly suited for GEMINI data.
 #' The UK version remains available in `Rgemini` version 0.3.1 and earlier but will not receive future maintenance.
 #' Users interested in the UK version should refer to the original publications for important differences in diagnostic coding practices and age threshold.
@@ -95,15 +96,25 @@ frailty_score  <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
   frailty_map <- mapping_cihi_hfrs_icd %>% mutate(diagnosis_code = gsub("\\.", "", icd10ca)) %>% data.table()
 
   # input checks
-    cohort <- coerce_to_datatable(cohort)
-    ipdiag <- coerce_to_datatable(ipdiag)
-    if (!is.null(erdiag)) {erdiag <- coerce_to_datatable(erdiag)}
-    elig_enc <- unique(cohort[age >= 65, ]$genc_id)
+  check_input(cohort, c("data.table", "data.frame"), 
+              colnames = c("genc_id", "age"),
+              coltypes = c("", "numeric"))
+  
+  check_input(ipdiag, c("data.table", "data.frame"),
+              colnames = c("genc_id", "diagnosis_code"),
+              coltypes = c("", "character"))
+  
+  if (!is.null(erdiag)){
+    check_input(erdiag, c("data.table", "data.frame"),
+                colnames = c("genc_id", "er_diagnosis_code"),
+                coltypes = c("", "character"))}
+  
+  cohort <- coerce_to_datatable(cohort)
+  ipdiag <- coerce_to_datatable(ipdiag)
+  if (!is.null(erdiag)) {erdiag <- coerce_to_datatable(erdiag)}
+  elig_enc <- unique(cohort[age >= 65, ]$genc_id)
 
-  if (!all(c("genc_id", "age") %in% colnames(cohort))) {
-    stop("Cohort must be a dataframe with columns:\n", "genc_id, age")
-    }
-
+    
   # clean and merge all diagnosis codes; return a warning if EXPLICITLY set to NULL by user
   if (is.null(erdiag)) {
     warning(
