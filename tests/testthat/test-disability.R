@@ -1,4 +1,4 @@
-test_that("global and component-wise flags align", {
+test_that("global and component-wise outputs align", {
 
   ## Check 1: Make sure that global & component-wise flags don't contradict each other
   # create dummy data
@@ -7,20 +7,16 @@ test_that("global and component-wise flags align", {
   erdiagnosis <- dummy_diag(nid = 80, nrow = 200, ipdiagnosis = FALSE)
   cohort <- data.table(genc_id = c(unique(ipdiagnosis$genc_id), 888, 999)) # add some genc_ids with no diagnosis entries
 
-  check1 <- disability(cohort, ipdiag = ipdiagnosis, erdiag = erdiagnosis, component_wise = TRUE)
+  check1_no_cat <- disability(cohort, ipdiag = ipdiagnosis, erdiag = erdiagnosis, component_wise = FALSE)
+  check1_cat <- disability(cohort, ipdiag = ipdiagnosis, erdiag = erdiagnosis, component_wise = TRUE)
 
+  ## All genc_ids where global disability flag = TRUE should exist in component-wise output (and v.v.)
+  expect_true(all(check1_no_cat[disability == TRUE]$genc_id %in% check1_cat$genc_id == TRUE))
+  expect_true(all(check1_no_cat[disability == FALSE]$genc_id %in% check1_cat$genc_id == FALSE))
+  expect_true(all(check1_cat$genc_id %in% check1_no_cat[disability == TRUE]$genc_id == TRUE))
 
-  ## For each row where disability = TRUE, at least one disability component should be TRUE
-  expect_true(unique(check1[disability==TRUE, rowSums(.SD, na.rm = TRUE) > 0, .SDcols = setdiff(names(check1), c('genc_id', 'disability'))]))
-
-  ## For each row where disability = FALSE, none of the disability components should be TRUE
-  expect_false(unique(check1[disability==FALSE, rowSums(.SD, na.rm = TRUE) > 0, .SDcols = setdiff(names(check1), c('genc_id', 'disability'))]))
-
-  ## For each row where disability = NA, all disability components should be NA
-  expect_equal(unique(check1[is.na(disability), rowSums(!is.na(.SD), na.rm = TRUE), .SDcols = setdiff(names(check1), c('genc_id', 'disability'))]), 0)
-
-  ## If no entry in diagnosis table, disability should be NA
-  expect_equal(unique(check1[genc_id == 888 | genc_id == 999, disability]), NA)
+  ## If no entry in diagnosis table, disability should be NA in global disability output
+  expect_equal(unique(check1_no_cat[genc_id == 888 | genc_id == 999, disability]), NA)
 
 })
 
@@ -33,21 +29,23 @@ test_that("returned with disability = TRUE", {
                                            diagnosis_code = c('F7001', 'Q8723','Q66', 'E2204', 'M23836', 'G60', 'G242','S029', 'Z998', 'H90132', 'Q150', 'E10352')),
                        erdiag = NULL, component_wise = TRUE)
 
-  expect_true(all(check2$disability == TRUE))
-  expect_true(check2[genc_id == 1, Developmental_disability])
-  expect_true(check2[genc_id == 2, Physical_disability.Musculoskeletal_disorder])
-  expect_true(check2[genc_id == 2, Physical_disability.Congenital_anomaly])
-  expect_true(check2[genc_id == 3, Physical_disability.Neurological_disorder])
-  expect_true(check2[genc_id == 4, Physical_disability.Neurological_disorder])
-  expect_true(check2[genc_id == 5, Physical_disability.Permanent_injury])
-  expect_true(check2[genc_id == 5, Sensory_disability.Hearing_impairment])
-  expect_true(check2[genc_id == 5, Sensory_disability.Vision_impairment])
+  expect_true(nrow(check2) == 12) # all rows from cohort input should be returned
 
-  expect_equal(rowSums(check2[genc_id == 1, -c('genc_id', 'disability')]), 1)
-  expect_equal(rowSums(check2[genc_id == 2, -c('genc_id', 'disability')]), 2)
-  expect_equal(rowSums(check2[genc_id == 3, -c('genc_id', 'disability')]), 1)
-  expect_equal(rowSums(check2[genc_id == 4, -c('genc_id', 'disability')]), 1)
-  expect_equal(rowSums(check2[genc_id == 5, -c('genc_id', 'disability')]), 3)
+  # check number of returned rows per genc_id
+  expect_true(nrow(check2[genc_id == 1,]) == 2)
+  expect_true(nrow(check2[genc_id == 2,]) == 3)
+  expect_true(nrow(check2[genc_id == 3,]) == 1)
+  expect_true(nrow(check2[genc_id == 4,]) == 1)
+  expect_true(nrow(check2[genc_id == 5,]) == 5)
+
+  # check disability categories
+  expect_true(unique(check2[diagnosis_code %in% c("F7001", "Q8723"), disability_category]) == "Developmental Disabilities")
+  expect_true(check2[diagnosis_code %in% c("Q66"), disability_category] == "Physical disability - Congenital Anomalies")
+  expect_true(unique(check2[diagnosis_code %in% c("E2204", "M23836"), disability_category]) == "Physical disability - Musculoskeletal disorders")
+  expect_true(unique(check2[diagnosis_code %in% c("G60", "G242"), disability_category]) == "Physical disability - Neurological disorders")
+  expect_true(unique(check2[diagnosis_code %in% c("S029", "Z998"), disability_category]) == "Physical disability - Permanent Injuries")
+  expect_true(check2[diagnosis_code %in% c("H90132"), disability_category] == "Sensory disabilities - Hearing impairments")
+  expect_true(unique(check2[diagnosis_code %in% c("Q150", "E10352"), disability_category]) == "Sensory disabilities - Vision impairments")
 
   })
 
