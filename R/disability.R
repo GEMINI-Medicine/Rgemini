@@ -122,22 +122,22 @@ disability <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
 
   ############# CHECK & PREPARE DATA #############
   if (is.null(erdiag)) {
-    cat("\n*** Based on the input you provided, only in-patient diagnoses (ipdiag) will be included in the calculation of the disability flag.
+    cat("\n*** Based on the input you provided, only in-patient diagnoses (ipdiag) will be included in the derived disability indicator.
     If you want to include ER diagnoses, please provide the correspondig table as an input to `erdiag`. ***\n")
   }
 
-  ## check that cohort contains genc_ids -> add these once check_input function from branch #26 has been reviewed
-  # check_input(cohort, c("data.table", "data.frame"), colnames = c("genc_id"))
+  ## check that cohort contains genc_ids
+  check_input(cohort, c("data.table", "data.frame"), colnames = c("genc_id"))
 
   ## check that ipdiag/erdiag contains genc_id & diagnosis_code
-  # check_input(ipdiag, c("data.table", "data.frame"),
-  #             colnames = c("genc_id", "diagnosis_code"),
-  #             coltypes = c("", "character"))
-  # if (!is.null(erdiag)){
-  #  check_input(erdiag, c("data.table", "data.frame"),
-  #              colnames = c("genc_id", "er_diagnosis_code"),
-  #              coltypes = c("", "character"))
-  # }
+  check_input(ipdiag, c("data.table", "data.frame"),
+              colnames = c("genc_id", "diagnosis_code"),
+              coltypes = c("", "character"))
+  if (!is.null(erdiag)){
+   check_input(erdiag, c("data.table", "data.frame"),
+               colnames = c("genc_id", "er_diagnosis_code"),
+               coltypes = c("", "character"))
+  }
 
   ## Prepare output - should have 1 row per genc_id in cohort file
   res <- cohort %>%
