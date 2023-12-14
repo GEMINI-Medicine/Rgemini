@@ -87,11 +87,12 @@
 #' \dontrun{
 #' drv <- dbDriver("PostgreSQL")
 #' dbcon <- DBI::dbConnect(drv,
-#'                         dbname = "db",
-#'                         host = "domain_name.ca",
-#'                         port = 1234,
-#'                         user = getPass("Enter user:"),
-#'                         password = getPass("password"))
+#'   dbname = "db",
+#'   host = "domain_name.ca",
+#'   port = 1234,
+#'   user = getPass("Enter user:"),
+#'   password = getPass("password")
+#' )
 #'
 #' ipadm <- dbGetQuery(dbcon, "select * from admdad") %>% data.table()
 #' ipdiagnosis <- dbGetQuery(dbcon, "select * from ipdiagnosis") %>% data.table()
@@ -107,7 +108,6 @@
 covid_flag <- function(cohort,
                        ipdiag,
                        erdiag) {
-
   ############# CHECK & PREPARE DATA #############
   if (is.null(erdiag)) {
     cat("\n*** Based on the input you provided, only in-patient diagnoses (ipdiag) will be included in the derived COVID flags.
@@ -119,12 +119,14 @@ covid_flag <- function(cohort,
 
   ## check that ipdiag/erdiag contains genc_id & diagnosis_code
   check_input(ipdiag, c("data.table", "data.frame"),
-              colnames = c("genc_id", "diagnosis_code"),
-              coltypes = c("", "character"))
-  if (!is.null(erdiag)){
+    colnames = c("genc_id", "diagnosis_code"),
+    coltypes = c("", "character")
+  )
+  if (!is.null(erdiag)) {
     check_input(erdiag, c("data.table", "data.frame"),
-                colnames = c("genc_id", "er_diagnosis_code"),
-                coltypes = c("", "character"))
+      colnames = c("genc_id", "er_diagnosis_code"),
+      coltypes = c("", "character")
+    )
   }
 
 
@@ -146,10 +148,12 @@ covid_flag <- function(cohort,
 
   ## add flags
   res[, covid_icd_confirmed_flag := ifelse(!genc_id %in% diagnoses$genc_id, NA, # if no diagnosis code at all for genc_id, set flag to NA
-                                           ifelse(genc_id %in% diagnoses[grep("^U071", diagnosis_code)]$genc_id, TRUE, FALSE))]# if confirmed COVID diagnosis
+    ifelse(genc_id %in% diagnoses[grep("^U071", diagnosis_code)]$genc_id, TRUE, FALSE) # if confirmed COVID diagnosis
+  )]
 
   res[, covid_icd_suspected_flag := ifelse(!genc_id %in% diagnoses$genc_id, NA, # if no diagnosis code at all for genc_id, set flag to NA
-                                           ifelse(genc_id %in% diagnoses[grep("^U072", diagnosis_code)]$genc_id, TRUE, FALSE))]# if suspected COVID diagnosis
+    ifelse(genc_id %in% diagnoses[grep("^U072", diagnosis_code)]$genc_id, TRUE, FALSE) # if suspected COVID diagnosis
+  )]
 
 
   return(res)
