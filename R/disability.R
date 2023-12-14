@@ -15,11 +15,10 @@
 #' check whether chronic conditions are coded consistently across different
 #' encounters for a given patient.
 #'
-#' In addition to returning a global disability flag indicating whether a
-#' `genc_id` was diagnosed with *any* disability, users may choose to return
-#' individual flags for different disability categories (e.g., physical/sensory/
-#' developmental disabilities) by using `component_wise = TRUE`.
-#'
+#' By setting `component_wise` to `TRUE`, users can choose to return all
+#' identified diagnosis codes for encounters with a disability, together with a
+#' description of the disability diagnosis and the corresponding disability
+#' category (e.g., physical/sensory/developmental - see below).
 #'
 #' @param cohort (`data.frame` or `data.table`)
 #' Cohort table with all relevant encounters of interest, where each row
@@ -44,10 +43,14 @@
 #' exclude ER diagnoses in certain situations.
 #'
 #' @param component_wise (`logical`)
-#' If `FALSE`, only a single (global) disability flag will be returned
-#' indicating whether `genc_id` was diagnosed with *any* disability.
-#' If `TRUE`, 7 additional columns will be returned with an individual flag for
-#' each of the following disability categories:
+#' If `component_wise == FALSE` (default), only a single (global) disability
+#' flag will be returned indicating whether each `genc_id` was diagnosed with
+#' *any* disability (`FALSE/TRUE/NA`).
+#'
+#' If `component_wise == TRUE`, for each `genc_id` with a disability,
+#' all identified disability diagnosis codes are returned in long format. All
+#' codes will be returned with their description and one of the following 7
+#' disability categories:
 #' - Physical disability: Congenital Anomalies
 #' - Physical disability: Musculoskeletal disorders
 #' - Physical disability: Neurological disorders
@@ -155,24 +158,25 @@ disability <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
   data(mapping_disability, package = "Rgemini")
   disability_codes <- mapping_disability %>% data.table()
 
-  ## Derive flag for any disability
-  res[, disability := ifelse(!genc_id %in% diagnoses$genc_id, NA, # if no diagnosis code at all for genc_id, set flag to NA
-    ifelse(genc_id %in% diagnoses[ # if entry in mapped diagnosis codes, set disability to TRUE, otherwise: FALSE
-      str_detect(diagnoses$diagnosis_code, paste0("^", disability_codes$ICD_10_CA_code, collapse = "|")),
-    ]$genc_id, TRUE, FALSE)
-  )]
 
-  ## Derive individual flags for each disability category
   if (component_wise == TRUE) {
-    disability_categories <- unique(disability_codes$Category)
 
-    sapply(disability_categories, function(disability_cat) {
-      res[, paste0(disability_cat) := ifelse(!genc_id %in% diagnoses$genc_id, NA, # if no diagnosis code at all for genc_id, set flag to NA
-        ifelse(genc_id %in% diagnoses[ # if entry in mapped diagnosis codes, set disability to TRUE, otherwise: FALSE
-          str_detect(diagnoses$diagnosis_code, paste0("^", disability_codes[Category == disability_cat, ]$ICD_10_CA_code, collapse = "|")),
-        ]$genc_id, TRUE, FALSE)
-      )]
-    })
+    ## Derive all disability categories for genc_ids with disability
+    res <- diagnoses %>%
+      fuzzyjoin::regex_left_join(disability_codes, by = "diagnosis_code", ignore_case = TRUE) %>% # identify any codes starting with mapped codes
+      data.table() %>%
+      .[!is.na(disability_category), .(genc_id, diagnosis_code.y, diagnosis_code_desc, disability_category)] # filter to encounters with diagnosis mapped to frailty conditions
+    setnames(res, 'diagnosis_code.y', 'diagnosis_code')
+
+  } else {
+
+    ## Derive global flag for any disability per genc_id
+    res[, disability := ifelse(!genc_id %in% diagnoses$genc_id, NA, # if no diagnosis code at all for genc_id, set flag to NA
+                               ifelse(genc_id %in% diagnoses[ # if entry in mapped diagnosis codes, set disability to TRUE, otherwise: FALSE
+                                 str_detect(diagnoses$diagnosis_code, paste0("^", disability_codes$ICD_10_CA_code, collapse = "|")),
+                               ]$genc_id, TRUE, FALSE)
+    )]
+
   }
 
   return(res)
