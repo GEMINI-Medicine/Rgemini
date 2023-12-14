@@ -96,6 +96,23 @@
 #' Default is 8am (`time_of_day = "8:00:00"`). Other times can be specified as a character (e.g., `"10:30"` for 10.30am)
 #' or as numeric input (e.g., `14` for 2pm).
 #'
+#' @param include_zero (`logical`)
+#' Flag indicating whether days with census counts of `0` should be treated as real 0s or whether they should be returned
+#' as `census = NA`. Note that this is only relevant for edge cases where this function is applied to small cohorts or if
+#' users specify a `group_var` with small samples resulting in counts of 0 on some days. In those cases,
+#' the decision on whether or not to include 0s can affect the estimated typical capacity (and thus, the `capacity_ratio`
+#' output).
+#'
+#' By default (`include_zero = TRUE`), the function will return days where no `genc_ids` were hospitalized as `census = 0`.
+#' This is the desired behavior in cases where counts of 0 patients are conceptually meaningful. For example, when users
+#' want to analyze how many patients with a rare condition are in hospital on a typical day, days where `census = 0`
+#' represent true counts of 0 patients (assuming the cohort provides sufficient coverage of all hospitalized patients).
+#'
+#' In other scenarios, users may want to disregard days where `census = 0` by specifying `include_zero = FALSE`.
+#' For example, when looking at daily census counts per physician, days where `census = 0` likely reflect days
+#' where a given physician was not on service. Therefore, those days should not be included in the estimate of
+#' physicians' typical patient volume.
+#'
 #' @return (`data.table`)\cr
 #' data.table with the daily counts of hospitalized patients (`census`) at each hospital. Additionally, the
 #' `capacity_ratio` (`census` relative to the typical occupancy during the time period of interest) will be returned.
@@ -127,53 +144,64 @@
 #' ipadm_census <- daily_census(ipadm)
 #' }
 #'
-
-daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_var = NULL,
-                         capacity_func = "median", buffer = 30, time_of_day = "08:00:00") {
-
+daily_census <- function(cohort,
+                         time_period = NULL,
+                         scu_exclude = NULL,
+                         group_var = NULL,
+                         capacity_func = "median",
+                         buffer = 30,
+                         time_of_day = "08:00:00",
+                         include_zero = TRUE) {
 
   ## If no time_period input provided, use min/max discharge dates
   if (is.null(time_period)) {
     time_period_start <- min(as.Date(cohort$discharge_date_time))
     time_period_end <- max(as.Date(cohort$discharge_date_time))
   } else {
-    tryCatch({ # if time period is provided, make sure it can be converted to date
-      time_period_start <- as.Date(time_period[1])
-      time_period_end <- as.Date(time_period[2])
-    },
-    error = function(e) {
-      stop("Invalid user input for argument 'time_period'.
+    tryCatch(
+      { # if time period is provided, make sure it can be converted to date
+        time_period_start <- as.Date(time_period[1])
+        time_period_end <- as.Date(time_period[2])
+      },
+      error = function(e) {
+        stop("Invalid user input for argument 'time_period'.
           Please specify the time period of interest as a character vector containing a start date [1] and an end date [2],
           specified in 'yyyy-mm-dd' format, e.g., time_period = c('2018-01-01','2019-01-01').")
-    })
+      }
+    )
   }
 
-  cat(paste0("\n*** Calculating daily census for input table ", deparse(substitute(cohort)),
-             " for time period from ", time_period_start, " to ", time_period_end, " ***\n "))
+  cat(paste0(
+    "\n*** Calculating daily census for input table ", deparse(substitute(cohort)),
+    " for time period from ", time_period_start, " to ", time_period_end, " ***\n "
+  ))
 
   ## For internal users: if hospital_num doesn't exist, rename hospital_id to num
-  if (!"hospital_num" %in% names(cohort) & "hospital_id" %in% names(cohort)){
+  if (!"hospital_num" %in% names(cohort) && "hospital_id" %in% names(cohort)) {
     cohort$hospital_num <- cohort$hospital_id
   }
 
   #######  Check user inputs  #######
   ## check cohort input
   check_input(cohort, c("data.table", "data.frame"),
-              colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
-              coltypes = c("", "", "character", "character"),
-              unique = TRUE) # make sure there are no duplicate entries in input table
+    colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
+    coltypes = c("", "", "character", "character"),
+    unique = TRUE
+  ) # make sure there are no duplicate entries in input table
 
   ## if grouping variable is specified, does it exist in cohort?
   if (!is.null(group_var)) {
     check_input(cohort, c("data.table", "data.frame"),
-                colnames = group_var)
+      colnames = group_var
+    )
 
     # if hospital_num specified as grouping var, show warning
-    if (!is.null(group_var) & any(group_var == "hospital_num")) {
+    if (!is.null(group_var) && any(group_var == "hospital_num")) {
       warning(paste0("Ignoring grouping variable 'hospital_num'.
     Daily census is automatically calculated separately for each hospital.
-    Only specify a grouping variable if additional grouping by variables other than hospital is required."),
-              immediate. = TRUE)
+    Only specify a grouping variable if additional grouping by variables other than hospital is required.\n"),
+        immediate. = TRUE
+      )
 
       # remove hospital_num from grouping variables
       group_var[group_var == "hospital_num"] <- NA
@@ -181,14 +209,15 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
   }
 
   ## scu_exclude provided as data.frame/data.table?
-  if (!is.null(scu_exclude)){
+  if (!is.null(scu_exclude)) {
     check_input(scu_exclude, c("data.table", "data.frame"),
-                colnames = c("genc_id", "scu_admit_date_time", "scu_discharge_date_time"),
-                coltypes = c("", "character", "character"))
+      colnames = c("genc_id", "scu_admit_date_time", "scu_discharge_date_time"),
+      coltypes = c("", "character", "character")
+    )
   }
 
   ## Valid input for capacity_func?
-  check_input(capacity_func, "character", categories = c("median", "mode", "mean","max"))
+  check_input(capacity_func, "character", categories = c("median", "mode", "mean", "max"))
 
   ## Buffer needs to be non-negative integer
   check_input(buffer, "integer", interval = c(0, Inf))
@@ -202,16 +231,20 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
   }
   # time_period_start needs to be >= earliest discharge date
   if (time_period_start < min(as.Date(cohort$discharge_date_time))) {
-    stop(paste0("Invalid user input for argument 'time_period'.
+    stop(paste0(
+      "Invalid user input for argument 'time_period'.
         The start of the time period you specified (", time_period[1], ") is earlier than the earliest discharge date in the cohort (",
-                min(as.Date(cohort$discharge_date_time)), ").\nPlease adjust the time period input accordingly."))
+      min(as.Date(cohort$discharge_date_time)), ").\nPlease adjust the time period input accordingly."
+    ))
   }
   # time_period_end needs to be <= latest discharge date
   if (time_period_end > max(as.Date(cohort$discharge_date_time))) {
-    stop(paste0("Invalid user input for argument 'time_period'.
+    stop(paste0(
+      "Invalid user input for argument 'time_period'.
         The end of the time period you specified (", time_period[2], ") is later than the latest discharge date in the cohort (",
-                max(as.Date(cohort$discharge_date_time)), ").
-        Please adjust the time period input accordingly."))
+      max(as.Date(cohort$discharge_date_time)), ").
+        Please adjust the time period input accordingly."
+    ))
   }
 
 
@@ -238,7 +271,7 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
 
   ## Filter cohort by relevant time period
   cohort <- cohort[discharge_date_time >= time_period_start &
-                     discharge_date_time <= time_period_end + hms(time_of_day), ]
+    discharge_date_time <= time_period_end + hms(time_of_day), ]
 
   ## make these key variables to be used as 'interval' in foverlaps function below
   setkey(cohort, "admission_date_time", "discharge_date_time")
@@ -246,11 +279,15 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
   ##  Quality check: any encounters with admission date-time > discharge date-time?
   # Note: These need to be excluded to avoid issues in foverlaps function below
   if (nrow(cohort[admission_date_time > discharge_date_time, ]) > 0) {
-    warning(paste0(nrow(cohort[admission_date_time > discharge_date_time, ]),
-                   " encounters with admission_date_time > discharge_date_time.
+    warning(
+      paste0(
+        nrow(cohort[admission_date_time > discharge_date_time, ]),
+        " encounters with admission_date_time > discharge_date_time.
     This likely reflects a data quality issue and should only affect a small percentage of the overall cohort.
-    Any encounters with admission_date_time > discharge_date_time have been excluded from the census calculation. "),
-            immediate. = TRUE)
+    Any encounters with admission_date_time > discharge_date_time have been excluded from the census calculation.\n"
+      ),
+      immediate. = TRUE
+    )
     cohort <- cohort[cohort$admission_date_time <= cohort$discharge_date_time, ]
   }
 
@@ -258,16 +295,17 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
 
   #####  Prepare SCU data  #####
   if (!is.null(scu_exclude)) {
-
-    cat("Applying exclusion of SCU encounters.\n")
-    cat("SCU entries where 'scu_unit_number = 99' are removed from scu_exclude.\n")
-
     scu_exclude <- coerce_to_datatable(scu_exclude)
     scu_exclude[scu_exclude == ""] <- NA
-    scu_exclude <- scu_exclude[genc_id %in% cohort$genc_id, ] # only keep genc_ids that are relevant for cohort
+    # only keep genc_ids that are relevant for cohort
+    scu_exclude <- scu_exclude[genc_id %in% cohort$genc_id, .(genc_id, scu_unit_number, scu_admit_date_time, scu_discharge_date_time)]
 
     ## Exclude SCU unit 99 ("no SCU")
-    scu_exclude <- scu_exclude[scu_unit_number != 99, .(genc_id,scu_admit_date_time,scu_discharge_date_time)]
+    # Note this is only relevant for older DBs, newer DBs do not contain SCU unit numbers 99
+    if (nrow(scu_exclude[as.numeric(scu_unit_number) == 99, ]) > 0) {
+      cat("SCU entries where `scu_unit_number = 99` are removed from `scu_exclude` table.\n")
+      scu_exclude <- scu_exclude[as.numeric(scu_unit_number) != 99, ]
+    }
 
     ## make sure dates are in correct format
     # date formats that are missing HM information cannot be removed from census -> are set to NA
@@ -276,12 +314,17 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
 
     ## check for missing/invalid SCU times
     check_scu <- scu_exclude[is.na(scu_admit_date_time) | is.na(scu_discharge_date_time) |
-                             scu_admit_date_time > scu_discharge_date_time, ]
+      scu_admit_date_time > scu_discharge_date_time, ]
     if (nrow(check_scu) > 0) {
       warning(
         paste0("Identified "), nrow(check_scu),
-        " SCU entries with invalid or missing admission or discharge date-time in scu_exclude. These entries
-            cannot be excluded from the census calculation and have therefore been removed."
+        " rows with invalid or missing SCU admission or discharge date-time in `scu_exclude`.
+        These SCU entries cannot be excluded from the census calculation, and therefore, the corresponding
+        `genc_ids` will be counted towards the census during each day of their hospitalization, potentially
+        resulting in an overestimate of the daily census.
+        Please check whether missingness of SCU discharge/admission date-time systematically
+        varies by hospital/grouping variable, and consider whether this might bias your results.\n",
+        immediate. = TRUE
       )
     }
 
@@ -290,7 +333,7 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
 
     ## remove all times outside relevant time period of interest
     scu_exclude <- scu_exclude[scu_discharge_date_time >= time_period_start &
-                             scu_admit_date_time <= time_period_end + hms(time_of_day), ]
+      scu_admit_date_time <= time_period_end + hms(time_of_day), ]
 
     ## remove all where SCU discharge < admission
     scu_exclude <- scu_exclude[scu_discharge_date_time >= scu_admit_date_time, ]
@@ -303,8 +346,7 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
   #######  Get census  #######
   ## function is applied to individual hospitals (see below)
   get_census <- function(data, time_period_start, time_period_end, group_var, scu_exclude) {
-
-    if (nrow(data) > 0){ # skip if table is empty (can happen for some time period x hospital_num combos)
+    if (nrow(data) > 0) { # skip if table is empty (can happen for some time period x hospital_num combos)
 
       ## Find min & max available date for each site
       min_date <- as.Date(min(data$discharge_date_time))
@@ -314,8 +356,9 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
       # beginning of time period: either earliest discharge date of site or time_period_start, whichever is later
       # end of time period: either latest discharge date of site or time_period_end, whichever is earlier
       ts <- seq(max(min_date, time_period_start),
-                min(max_date, time_period_end),
-                by = "day") + hms(time_of_day) # add time of day (8am by default)
+        min(max_date, time_period_end),
+        by = "day"
+      ) + hms(time_of_day) # add time of day (8am by default)
 
 
       ## foverlaps (below) checks for overlaps between intervals
@@ -328,11 +371,11 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
 
       ## use fast binary-search based overlap join as efficient way to check for overlap between intervals
       census <- foverlaps(time_int, data,
-                          by.x = c("date_time", "date_time_end"),
-                          by.y = c("admission_date_time", "discharge_date_time"),
-                          nomatch = 0L,
-                          type = "within", # intervals overlap if admission <= date_time AND discharge >= date_time_end (=date_time)
-                          mult = "all"
+        by.x = c("date_time", "date_time_end"),
+        by.y = c("admission_date_time", "discharge_date_time"),
+        nomatch = 0L,
+        type = "within", # intervals overlap if admission <= date_time AND discharge >= date_time_end (=date_time)
+        mult = "all"
       )
 
 
@@ -340,10 +383,10 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
       if (!is.null(scu_exclude)) {
         ## calculate SCU census
         scu_census <- foverlaps(time_int, scu_exclude[genc_id %in% census$genc_id, ],
-                                by.x = c("date_time", "date_time_end"),
-                                by.y = c("scu_admit_date_time", "scu_discharge_date_time"),
-                                nomatch = 0L,
-                                type = "within", mult = "all"
+          by.x = c("date_time", "date_time_end"),
+          by.y = c("scu_admit_date_time", "scu_discharge_date_time"),
+          nomatch = 0L,
+          type = "within", mult = "all"
         )
 
         ## remove all SCU entries from census counts
@@ -360,16 +403,21 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
       }
 
 
-      ## Fill in missing time points (if any) with 0 - different from buffer (see below)
+      ## Fill in missing time points (if any) with 0/NA, depending on include_zero flag [different from buffer (see below)]
       # This only applies to time points that are within a site's [min-max] available dates
-      # in current census table, days with 0 counts don't exist (missing rows), so we'll need to fill them in and set to 0
-      # (because data were in principle available, but no encounters were identified)
+      # in current census table, days with 0 counts don't exist (missing rows), so we'll need to fill them in and set to
+      # 0/NA, depending on whether we want to consider 0s as true 0s, or whether we want to ignore them
       # Note: this is only relevant for small cohorts/subgroups, in which case some entries may have 0 counts on some days
+      # Decision is relevant because it effects capacity_ratio estimates
       # get all columns specifying grouping variables (hospital_num + group_vars)
       group_cols <- colnames(census[, -c("census", "date_time")])
       # create all combos of dates with columns specifying grouping variables
       append <- setDT(crossing(date_time = time_int$date_time, distinct(census[, ..group_cols])))
-      append[, census := 0]
+      if (include_zero == TRUE) {
+        append[, census := 0]
+      } else {
+        append[, census := NA]
+      }
 
       ## find date-group combos that don't exist in census table
       append <- anti_join(append, census, by = colnames(append[, -c("census")]))
@@ -398,8 +446,8 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
       ## Get capacity ratio = census/capacity where capacity is either typical or max occupancy
       # no built-in mode function, so need to define it here
       if (capacity_func == "mode") {
-        central_func <- function(vals,na.rm = TRUE) {
-          if (na.rm){
+        central_func <- function(vals, na.rm = TRUE) {
+          if (na.rm) {
             vals <- vals[!is.na(vals)]
           }
           unique_vals <- unique(vals)
@@ -416,12 +464,13 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
         central_func <- match.fun(capacity_func)
       }
 
-      # Note 1: 0 counts are included in capacity estimate
+      # Note 1: If `include_zeros = TRUE`, days where `census = 0` are included in capacity estimate
+      #         If `include_zeros = FALSE`, days with 0 counts have been set to `NA` so will not be counted here
       # Note 2: if grouping variable is specified, capacity ratio is calculated separately for each group
-      if (all(is.na(census$census))){ # there are edge cases where all entries are NA due to buffer
+      if (all(is.na(census$census))) { # there are edge cases where all entries are NA due to buffer
         census[, capacity_ratio := NA] # in that case, set capacity ratio to NA as well
       } else {
-        census[, capacity_ratio := census / central_func(census,na.rm=T), by = group_cols]
+        census[, capacity_ratio := census / central_func(census, na.rm = TRUE), by = group_cols]
       }
 
       return(census)
@@ -434,10 +483,10 @@ daily_census <- function(cohort, time_period = NULL, scu_exclude = NULL, group_v
   # note: split data by hospital before running foverlaps to avoid working with massive tables
   cohort_hospitals <- split(cohort, cohort$hospital_num)
   census <- lapply(cohort_hospitals, get_census,
-                   time_period_start = time_period_start,
-                   time_period_end = time_period_end,
-                   group_var = group_var,
-                   scu_exclude = scu_exclude
+    time_period_start = time_period_start,
+    time_period_end = time_period_end,
+    group_var = group_var,
+    scu_exclude = scu_exclude
   )
 
   ##  Combine all

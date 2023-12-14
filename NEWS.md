@@ -9,6 +9,7 @@
 
 
 * New function to simulate "ipadmdad" data with random hospital-level intercepts
+* Enhanced `daily_census` function to allow exclusion of days with 0 counts
 
 # Rgemini 0.3.1
 
