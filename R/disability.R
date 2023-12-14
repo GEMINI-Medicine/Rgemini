@@ -37,11 +37,7 @@
 #' Typically, ER diagnoses should be included when deriving disability in order
 #' to increase sensitivity. However, in certain scenarios, users may choose to
 #' only include IP diagnoses by specifying `erdiag = NULL`. This may be useful
-#' when comparing cohorts with different rates of ER admissions. Additionally,
-#' ER diagnoses may be less reliable than in-patient diagnoses due to shorter
-#' length of stay in ER and lower availability of diagnostic tools & resources
-#' (e.g., advanced imaging results etc.). Thus, users may want to
-#' exclude ER diagnoses in certain situations.
+#' when comparing cohorts with different rates of ER admissions.
 #'
 #' @param component_wise (`logical`)
 #' If `component_wise == FALSE` (default), only a single (global) disability
