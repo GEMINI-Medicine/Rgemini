@@ -112,7 +112,7 @@
 #' severe maternal morbidity or mortality in Ontario, Canada. JAMA Network Open,
 #' 4(2), e2034993-e2034993.
 #'
-#' @importFrom stringr str_detect
+#' @importFrom fuzzyjoin regex_left_join
 #' @export
 #'
 disability <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
@@ -136,11 +136,6 @@ disability <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
                coltypes = c("", "character"))
   }
 
-  ## Prepare output - should have 1 row per genc_id in cohort file
-  res <- cohort %>%
-    select(genc_id) %>%
-    distinct() %>%
-    data.table()
 
   ## Ensure ipdiag/erdiag are in data.table format before proceeding
   diagnoses <- coerce_to_datatable(ipdiag[, c("genc_id", "diagnosis_code")])
@@ -152,29 +147,36 @@ disability <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
   }
 
   ## Read file with disability codes from data folder
-  data(mapping_disability, package = "Rgemini")
+  #data(mapping_disability, package = "Rgemini")
+  load("H:/GitHub/Rgemini/data/mapping_disability.rda")
   disability_codes <- mapping_disability %>% data.table()
 
-  ## Prepare output
-  if (component_wise == TRUE) {
+  ## Get encounters with disability
+  res_component <- diagnoses %>%
+    regex_left_join(disability_codes, by = "diagnosis_code", ignore_case = TRUE) %>% # identify any codes starting with mapped codes
+    data.table() %>%
+    .[!is.na(disability_category), .(genc_id, diagnosis_code.x, disability_category)] # filter to encounters with diagnosis mapped to frailty conditions
+  setnames(res_component, 'diagnosis_code.x', 'diagnosis_code')
 
-    ## Derive all disability categories for genc_ids with disability
-    res <- diagnoses %>%
-      fuzzyjoin::regex_left_join(disability_codes, by = "diagnosis_code", ignore_case = TRUE) %>% # identify any codes starting with mapped codes
-      data.table() %>%
-      .[!is.na(disability_category), .(genc_id, diagnosis_code.x, disability_category)] # filter to encounters with diagnosis mapped to frailty conditions
-    setnames(res, 'diagnosis_code.x', 'diagnosis_code')
+  ## Prepare output based on component-wise flag
+  if (component_wise == FALSE) {
+    ## Output with single row per genc_id in cohort file & global disability flag
+    res <- cohort %>%
+      select(genc_id) %>%
+      distinct() %>%
+      data.table()
+
+    res[, disability := ifelse(!genc_id %in% diagnoses$genc_id, NA, # if no diagnosis code at all for genc_id, set flag to NA
+                               ifelse(genc_id %in% res_component$genc_id, TRUE, FALSE))] # if entry in mapped diagnosis codes, set disability to TRUE, otherwise: FALSE
+
+    return(res)
 
   } else {
 
-    ## Derive global flag for any disability per genc_id
-    res[, disability := ifelse(!genc_id %in% diagnoses$genc_id, NA, # if no diagnosis code at all for genc_id, set flag to NA
-                               ifelse(genc_id %in% diagnoses[ # if entry in mapped diagnosis codes, set disability to TRUE, otherwise: FALSE
-                                 str_detect(diagnosis_code, paste0("^", disability_codes$diagnosis_code, collapse = "|")),
-                               ]$genc_id, TRUE, FALSE)
-    )]
+    ## Return component-wise output with disability categories (sort by genc_id)
+    res_component <- res_component[order(genc_id, diagnosis_code)]
+    return(res_component)
 
   }
 
-  return(res)
 }
