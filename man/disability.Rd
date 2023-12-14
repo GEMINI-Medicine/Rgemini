@@ -25,8 +25,9 @@ Typically, ER diagnoses should be included when deriving disability in order
 to increase sensitivity. However, in certain scenarios, users may choose to
 only include IP diagnoses by specifying \code{erdiag = NULL}. This may be useful
 when comparing cohorts with different rates of ER admissions. Additionally,
-please note that the reliability of ER diagnosis codes has been shown to be
-lower compared to in-patient diagnoses. Thus, users may want to
+ER diagnoses may be less reliable than in-patient diagnoses due to shorter
+length of stay in ER and lower availability of diagnostic tools & resources
+(e.g., advanced imaging results etc.). Thus, users may want to
 exclude ER diagnoses in certain situations.}
 
 \item{component_wise}{(\code{logical})
@@ -35,32 +36,34 @@ flag will be returned indicating whether each \code{genc_id} was diagnosed with
 \emph{any} disability (\code{FALSE/TRUE/NA}).
 
 If \code{component_wise == TRUE}, for each \code{genc_id} with a disability,
-all identified disability diagnosis codes are returned in long format. All
-codes will be returned with their description and one of the following 7
-disability categories:
+all identified disability diagnosis codes are returned in long format. An
+additional column \code{disability_category} is returned containing
+one of the following 7 disability categories for each diagnosis:
 \itemize{
-\item Physical disability: Congenital Anomalies
-\item Physical disability: Musculoskeletal disorders
-\item Physical disability: Neurological disorders
-\item Physical disability: Permanent Injuries
-\item Sensory disabilities: Hearing impairments
-\item Sensory disabilities: Vision impairments
+\item Physical disability - Congenital Anomalies
+\item Physical disability - Musculoskeletal disorders
+\item Physical disability - Neurological disorders
+\item Physical disability - Permanent Injuries
+\item Sensory disabilities - Hearing impairments
+\item Sensory disabilities - Vision impairments
 \item Developmental Disabilities
 }}
 }
 \value{
 \code{data.table}
-This function returns a table with all encounters identified by the \code{cohort}
-table input and an additional derived field \code{disability} (\code{logical})
-indicating whether any diagnosis code for a disability was identified.
-If a \code{genc_id} does not have any entry in the diagnosis table at all,
-\code{disability = NA}. Note that this is very rare: If no additional filtering
-was performed, >99.9\% of \code{genc_ids} should have an entry in the \code{ipdiagnosis}
-(and >99.9\% of \code{genc_ids} that were admitted via ER should have an entry in
-the \code{erdiagnosis} table).
-If \code{component_wise = TRUE}, 7 additional columns will be returned containing
-flags for the individual physicial/sensory/developmental disability
-categories.
+If \code{component_wise == FALSE}, returns a table with all encounters identified
+by the \code{cohort} table input and an additional derived field \code{disability}
+(\code{logical}) indicating whether any diagnosis code for a disability was
+identified. If a \code{genc_id} does not have any entry in the diagnosis table at
+all, \code{disability = NA}. Note that this is very rare: If no additional
+filtering was performed, >99.9\% of \code{genc_ids} should have an entry in the
+\code{ipdiagnosis} (and >99.9\% of \code{genc_ids} that were admitted via ER should have
+an entry in the \code{erdiagnosis} table).
+
+If \code{component_wise == TRUE}, will only return \code{genc_ids} with a disability.
+The output is returned in long format, where each row corresponds to a
+disability diagnosis (\code{diagnosis_code}) and its corresponding
+\code{disability_category} (\code{character}).
 }
 \description{
 This function identifies whether or not an encounter had any ICD-10-CA
@@ -77,9 +80,9 @@ check whether chronic conditions are coded consistently across different
 encounters for a given patient.
 
 By setting \code{component_wise} to \code{TRUE}, users can choose to return all
-identified diagnosis codes for encounters with a disability, together with a
-description of the disability diagnosis and the corresponding disability
-category (e.g., physical/sensory/developmental - see below).
+identified diagnosis codes for encounters with a disability, together with
+the disability category each code was matched with (e.g., physical/sensory/
+developmental disability - see below).
 }
 \section{Warning}{
 
@@ -114,7 +117,7 @@ disability(cohort = ipadmdad, ipdiag = ipdiagnosis, erdiag = erdiagnosis)
 # not including ER diagnosis codes
 disability(cohort = ipadmdad, ipdiag = ipdiagnosis, erdiag = NULL)
 
-# returning component-wise disability flags
+# returning component-wise disability categories
 disability(ipadmdad, ipdiagnosis, erdiagnosis, component_wise = TRUE)
 }
 
