@@ -30,10 +30,14 @@ lower compared to in-patient diagnoses. Thus, users may want to
 exclude ER diagnoses in certain situations.}
 
 \item{component_wise}{(\code{logical})
-If \code{FALSE}, only a single (global) disability flag will be returned
-indicating whether \code{genc_id} was diagnosed with \emph{any} disability.
-If \code{TRUE}, 7 additional columns will be returned with an individual flag for
-each of the following disability categories:
+If \code{component_wise == FALSE} (default), only a single (global) disability
+flag will be returned indicating whether each \code{genc_id} was diagnosed with
+\emph{any} disability (\code{FALSE/TRUE/NA}).
+
+If \code{component_wise == TRUE}, for each \code{genc_id} with a disability,
+all identified disability diagnosis codes are returned in long format. All
+codes will be returned with their description and one of the following 7
+disability categories:
 \itemize{
 \item Physical disability: Congenital Anomalies
 \item Physical disability: Musculoskeletal disorders
@@ -72,10 +76,10 @@ searches for relevant diagnosis codes at the encounter level and does not
 check whether chronic conditions are coded consistently across different
 encounters for a given patient.
 
-In addition to returning a global disability flag indicating whether a
-\code{genc_id} was diagnosed with \emph{any} disability, users may choose to return
-individual flags for different disability categories (e.g., physical/sensory/
-developmental disabilities) by using \code{component_wise = TRUE}.
+By setting \code{component_wise} to \code{TRUE}, users can choose to return all
+identified diagnosis codes for encounters with a disability, together with a
+description of the disability diagnosis and the corresponding disability
+category (e.g., physical/sensory/developmental - see below).
 }
 \section{Warning}{
 
