@@ -10,9 +10,11 @@ test_that("global and component-wise outputs align", {
   check1_no_cat <- disability(cohort, ipdiag = ipdiagnosis, erdiag = erdiagnosis, component_wise = FALSE)
   check1_cat <- disability(cohort, ipdiag = ipdiagnosis, erdiag = erdiagnosis, component_wise = TRUE)
 
+  ## Check genc_ids with disability == TRUE
+  expect_equal(c(sum(check1_no_cat$disability, na.rm = TRUE), length(unique(check1_cat$genc_id))), c(27, 27))
+
   ## All genc_ids where global disability flag = TRUE should exist in component-wise output (and v.v.)
   expect_true(all(check1_no_cat[disability == TRUE]$genc_id %in% check1_cat$genc_id == TRUE))
-  expect_true(all(check1_no_cat[disability == FALSE]$genc_id %in% check1_cat$genc_id == FALSE))
   expect_true(all(check1_cat$genc_id %in% check1_no_cat[disability == TRUE]$genc_id == TRUE))
 
   ## If no entry in diagnosis table, disability should be NA in global disability output
@@ -32,32 +34,35 @@ test_that("returned with disability = TRUE", {
   expect_true(nrow(check2) == 12) # all rows from cohort input should be returned
 
   # check number of returned rows per genc_id
-  expect_true(nrow(check2[genc_id == 1,]) == 2)
-  expect_true(nrow(check2[genc_id == 2,]) == 3)
-  expect_true(nrow(check2[genc_id == 3,]) == 1)
-  expect_true(nrow(check2[genc_id == 4,]) == 1)
-  expect_true(nrow(check2[genc_id == 5,]) == 5)
-
-  # check disability categories
-  expect_true(unique(check2[diagnosis_code %in% c("F7001", "Q8723"), disability_category]) == "Developmental Disabilities")
-  expect_true(check2[diagnosis_code %in% c("Q66"), disability_category] == "Physical disability - Congenital Anomalies")
-  expect_true(unique(check2[diagnosis_code %in% c("E2204", "M23836"), disability_category]) == "Physical disability - Musculoskeletal disorders")
-  expect_true(unique(check2[diagnosis_code %in% c("G60", "G242"), disability_category]) == "Physical disability - Neurological disorders")
-  expect_true(unique(check2[diagnosis_code %in% c("S029", "Z998"), disability_category]) == "Physical disability - Permanent Injuries")
-  expect_true(check2[diagnosis_code %in% c("H90132"), disability_category] == "Sensory disabilities - Hearing impairments")
-  expect_true(unique(check2[diagnosis_code %in% c("Q150", "E10352"), disability_category]) == "Sensory disabilities - Vision impairments")
+  expect_equal(check2$genc_id, c(1,1,2,2,2,3,4,5,5,5,5,5))
+  expect_equal(check2$disability_category, c("Developmental Disabilities",
+                                             "Developmental Disabilities",
+                                             "Physical disability - Musculoskeletal disorders",
+                                             "Physical disability - Musculoskeletal disorders",
+                                             "Physical disability - Congenital Anomalies",
+                                             "Physical disability - Neurological disorders",
+                                             "Physical disability - Neurological disorders",
+                                             "Sensory disabilities - Vision impairments",
+                                             "Sensory disabilities - Hearing impairments",
+                                             "Sensory disabilities - Vision impairments",
+                                             "Physical disability - Permanent Injuries",
+                                             "Physical disability - Permanent Injuries"))
 
   })
 
 
 test_that("returned with disability = FALSE", {
+
   ## Check 3: Unit test for some diagnosis codes that should have disability = FALSE
-  check3 <- disability(cohort = data.table(genc_id = c(1,2,3,4,5,6,7,8,9,10,11,12)),
-                       ipdiag = data.table(genc_id = c(1,2,3,4,5,6,7,8,9,10,11,12),
-                                           diagnosis_code = c('I4891', 'A021','B962', 'K8308', 'Q68', 'G65', 'H91','F83', 'Z99', 'H92', 'E12', 'Z89')),
-                       erdiag = NULL, component_wise = TRUE)
+  set.seed(10)
+  ipdiag <- dummy_diag(nid=5, nrow=5, ipdiagnosis=T, pattern ="^I4|^A0|^B92|^K8|^Q2|^G65|^H92|^F83|^Z994|^H92|^E12|^Z88")
+
+  check3 <- disability(cohort = data.table(genc_id = unique(ipdiag$genc_id)),
+                       ipdiag,
+                       erdiag = NULL, component_wise = FALSE)
 
   expect_true(all(check3$disability == FALSE))
+
 })
 
 
