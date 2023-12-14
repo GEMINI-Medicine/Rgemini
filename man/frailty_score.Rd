@@ -50,7 +50,8 @@ When none of the frailty deficits is present in an individual, a score of zero i
 
 The function closely adheres to the CIHI HFRS with the following adaptations:
 \itemize{
-\item{No look-back period: }{Score is computed at encounter level. The 2-year look-back in the CIHI HFRS is not implemented. This adaptation systematically underestimates frailty but ensures comparable scores across time and hospitals considering variations in data availability}
+\item{No look-back period: }{Score is computed at encounter level. The 2-year look-back in the CIHI HFRS is not implemented.
+This adaptation systematically underestimates frailty but ensures comparable scores across time and hospitals considering variations in data availability}
 \item{Score format : }{Integer scores are returned representing the sum of the number of frailty deficits.
 These scores can be easily converted to the different formats (i.e. continuous fractions, 8 risk groups, binary) defined by CIHI HFRS.
 For example, dividing the returned score by 36 (maximum number of deficits possible) gives the continuous CIHI HFRS.
@@ -75,7 +76,7 @@ Excluding diagnoses in NACRS was found to underestimate frailty levels (Amuah et
 
 \section{Notes}{
 
-The previous \code{frailty_score()} function calculates the UK HFRS (Gilbert, 2018), and it now deprecated.
+The previous \code{frailty_score()} function calculates the UK HFRS (Gilbert, 2018), and it is now deprecated.
 Using a similar approach as the UK HFRS, the CIHI HFRS was developed and validated based on Canadian cohorts, making it particularly suited for GEMINI data.
 The UK version remains available in \code{Rgemini} version 0.3.1 and earlier but will not receive future maintenance.
 Users interested in the UK version should refer to the original publications for important differences in diagnostic coding practices and age threshold.
