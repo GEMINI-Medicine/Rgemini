@@ -40,21 +40,22 @@ If \code{component_wise == TRUE}:
 }
 \description{
 \code{frailty_score} returns the number of frailty conditions for hospital admissions based on the CIHI hospital frailty risk score (HFRS).
+By setting \code{component_wise} to \code{TRUE}, function alternatively returns identified frailty-related diagnosis codes and their corresponding frailty conditions.
 }
 \details{
 The CIHI HFRS is a contextual measure of frailty for patients aged 65 years and older.
-It categorizes a list of ICD-10-CA diagnosis codes into 36 distinct frailty-related deficits.
-The level of frailty is determined as the cumulative number of distinct frailty deficits (an equal-weight algorithm) present in an individual.
-ALL diagnoses are included to the calculation (i.e. all emergency department (ER) and in-patient (IP) diagnoses at, all diagnosis types).
-When none of the frailty deficits is present in an individual, a score of zero is assigned.
+It categorizes a list of ICD-10-CA diagnosis codes into 36 distinct frailty-related conditions.
+The level of frailty is determined as the cumulative number of distinct frailty conditions (an equal-weight algorithm) present in an individual.
+ALL diagnoses are included to the calculation (i.e. all emergency department (ER) and in-patient (IP) diagnoses, all diagnosis types).
+When none of the frailty conditions is present in an individual, a score of zero is assigned.
 
 The function closely adheres to the CIHI HFRS with the following adaptations:
 \itemize{
 \item{No look-back period: }{Score is computed at encounter level. The 2-year look-back in the CIHI HFRS is not implemented.
 This adaptation systematically underestimates frailty but ensures comparable scores across time and hospitals considering variations in data availability}
-\item{Score format : }{Integer scores are returned representing the sum of the number of frailty deficits.
+\item{Score format : }{Integer scores are returned representing the sum of the number of frailty conditions.
 These scores can be easily converted to the different formats (i.e. continuous fractions, 8 risk groups, binary) defined by CIHI HFRS.
-For example, dividing the returned score by 36 (maximum number of deficits possible) gives the continuous CIHI HFRS.
+For example, dividing the returned score by 36 (maximum number of conditions possible) gives the continuous CIHI HFRS.
 Users interested in further categorizing the scores should refer to \href{https://doi.org/10.1503/cmaj.220926}{Amuah et al, 2023}.
 }
 }
@@ -76,7 +77,11 @@ Excluding diagnoses in NACRS was found to underestimate frailty levels (Amuah et
 
 \section{Notes}{
 
-The previous \code{frailty_score()} function calculates the UK HFRS (Gilbert, 2018), and it is now deprecated.
+The original development paper of CIHI HFRS maped 595 ICD-10-CA diagnosis codes to frailty-related conditions.
+Three codes (Z96.62, U07.1 and U07.2) were added to this mapping in the CIHI methodology notes.
+This function uses the mapping (598 diagnosis codes) in the CIHI methodology notes to identify frailty conditions.
+
+The previous \code{frailty_score()} function calculated the UK HFRS (Gilbert, 2018), and it is now deprecated.
 Using a similar approach as the UK HFRS, the CIHI HFRS was developed and validated based on Canadian cohorts, making it particularly suited for GEMINI data.
 The UK version remains available in \code{Rgemini} version 0.3.1 and earlier but will not receive future maintenance.
 Users interested in the UK version should refer to the original publications for important differences in diagnostic coding practices and age threshold.
