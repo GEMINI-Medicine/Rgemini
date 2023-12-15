@@ -27,14 +27,13 @@ only include IP diagnoses by specifying \code{erdiag = NULL}. This may be useful
 when comparing cohorts with different rates of ER admissions.}
 
 \item{component_wise}{(\code{logical})
-If \code{component_wise == FALSE} (default), only a single (global) disability
-flag will be returned indicating whether each \code{genc_id} was diagnosed with
-\emph{any} disability (\code{FALSE/TRUE/NA}).
+If \code{component_wise == FALSE} (default), the function calculates a single
+(global) disability flag indicating whether each \code{genc_id} was diagnosed with
+\emph{any} disability.
 
 If \code{component_wise == TRUE}, for each \code{genc_id} with a disability,
-all identified disability diagnosis codes are returned in long format. An
-additional column \code{disability_category} is returned containing
-one of the following 7 disability categories for each diagnosis:
+all identified disability diagnosis codes are returned, together with one of
+the following 7 disability categories:
 \itemize{
 \item Physical disability - Congenital Anomalies
 \item Physical disability - Musculoskeletal disorders
@@ -80,7 +79,7 @@ identified diagnosis codes for encounters with a disability, together with
 the disability category each code was matched with (e.g., physical/sensory/
 developmental disability - see below).
 }
-\section{Warning}{
+\section{Notes}{
 
 This function does not differentiate between diagnosis types. That is, the
 disability flags are derived based on all diagnosis codes that are provided
