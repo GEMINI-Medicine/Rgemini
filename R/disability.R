@@ -40,14 +40,13 @@
 #' when comparing cohorts with different rates of ER admissions.
 #'
 #' @param component_wise (`logical`)
-#' If `component_wise == FALSE` (default), only a single (global) disability
-#' flag will be returned indicating whether each `genc_id` was diagnosed with
-#' *any* disability (`FALSE/TRUE/NA`).
+#' If `component_wise == FALSE` (default), the function calculates a single
+#' (global) disability flag indicating whether each `genc_id` was diagnosed with
+#' *any* disability.
 #'
 #' If `component_wise == TRUE`, for each `genc_id` with a disability,
-#' all identified disability diagnosis codes are returned in long format. An
-#' additional column `disability_category` is returned containing
-#' one of the following 7 disability categories for each diagnosis:
+#' all identified disability diagnosis codes are returned, together with one of
+#' the following 7 disability categories:
 #' - Physical disability - Congenital Anomalies
 #' - Physical disability - Musculoskeletal disorders
 #' - Physical disability - Neurological disorders
@@ -56,7 +55,7 @@
 #' - Sensory disabilities - Vision impairments
 #' - Developmental Disabilities
 #'
-#' @section Warning:
+#' @section Notes:
 #' This function does not differentiate between diagnosis types. That is, the
 #' disability flags are derived based on all diagnosis codes that are provided
 #' as input to this function. By default, users should include all diagnosis
