@@ -13,6 +13,10 @@
 #' @param erdiag (`data.table`)\cr
 #' `erdiagnosis` table as defined in the
 #' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' Typically, ER diagnoses should be included when deriving Charlson Comorbidity
+#' in order to increase sensitivity. However, in certain scenarios, users may
+#' choose to only include IP diagnoses by specifying `erdiag = NULL`. This may
+#' be useful when comparing cohorts with different rates of ER admissions.
 #'
 #' @return (`data.table`)\cr
 #' All encounters by `genc_id` with `diagnosis_type` and `diagnosis_code` for all diagnoses at admission.
@@ -22,12 +26,14 @@
 diagnoses_at_admission <- function(ipdiag, erdiag) {
 
   ipdiag <- coerce_to_datatable(ipdiag)
-  erdiag <- coerce_to_datatable(erdiag)
 
-  ### Synchronize varnames between ipdiag and erdiag
+  if (!is.null(erdiag)){
+    erdiag <- coerce_to_datatable(erdiag)
 
-  erdiag[, ":="(diagnosis_code = er_diagnosis_code)]
-  erdiag[, ":="(diagnosis_type = er_diagnosis_type)]
+    ### Synchronize varnames between ipdiag and erdiag
+    erdiag[, ":="(diagnosis_code = er_diagnosis_code)]
+    erdiag[, ":="(diagnosis_type = er_diagnosis_type)]
+  }
 
   ### Process inpatient diagnoses at admission
 
@@ -117,7 +123,11 @@ diagnoses_at_admission <- function(ipdiag, erdiag) {
     .[, exclude := NULL]
 
   ### Combine er-diagnoses and inpatient-diagnoses as diagnoses at admission
-  res <- rbind(ipcharl[, -c("genc_diag")], erdiag[, c("genc_id", "diagnosis_code", "diagnosis_type")])
+  if (!is.null(erdiag)){
+    res <- rbind(ipcharl[, -c("genc_diag")], erdiag[, c("genc_id", "diagnosis_code", "diagnosis_type")])
+  } else {
+    res <- ipcharl[, -c("genc_diag")]
+  }
 
   return(res)
 }
@@ -157,13 +167,34 @@ diagnoses_at_admission <- function(ipdiag, erdiag) {
 #' @export
 #'
 charlson_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_comorbidities = FALSE) {
+
+  ## users can set erdiag to NULL to exclude ER diagnoses; but warning will be shown
+  if (is.null(erdiag)) {
+    cat("\n*** Based on the input you provided, only in-patient diagnoses (ipdiag) will be included in the Charlson Comorbidity Index.
+    If you want to include ER diagnoses, please provide the correspondig table as an input to `erdiag`. ***\n")
+  }
+
+  ## check that ipdiag/erdiag contains genc_id & diagnosis_code
+  check_input(ipdiag, c("data.table", "data.frame"),
+              colnames = c("genc_id", "diagnosis_code"),
+              coltypes = c("", "character"))
+  if (!is.null(erdiag)){
+    check_input(erdiag, c("data.table", "data.frame"),
+                colnames = c("genc_id", "er_diagnosis_code"),
+                coltypes = c("", "character"))
+  }
+
+
   diagnoses <- if (at_admission) {
     diagnoses_at_admission(ipdiag, erdiag)
   } else {
-    rbind(
-      erdiag[, .(genc_id, "diagnosis_code" = er_diagnosis_code, "diagnosis_type" = er_diagnosis_type)],
-      ipdiag[, .(genc_id, diagnosis_code, diagnosis_type)]
-      )
+    if (!is.null(erdiag)){
+      rbind(
+        erdiag[, .(genc_id, "diagnosis_code" = er_diagnosis_code, "diagnosis_type" = er_diagnosis_type)],
+        ipdiag[, .(genc_id, diagnosis_code, diagnosis_type)]
+      ) } else {
+        diagnoses <- ipdiag[, .(genc_id, diagnosis_code, diagnosis_type)]
+      }
   }
 
   charlson <- comorbidity(
