@@ -8,6 +8,7 @@ reference:
   - matches("charlson")
   - covid_flag
   - daily_census
+  - disability
   - frailty_score
   - day_time_of_admission
   - hospital_fiscal_year
@@ -21,6 +22,7 @@ reference:
   - n_imaging
   - n_routine_bloodwork
   - n_rbc_transfusions
+  - er_los
 - title: Data Transformation
   desc: These functions aid in querying the data, either by applying filters or mapping values.
 - contents:
@@ -34,12 +36,15 @@ reference:
 - title: Dummy Data
   desc: Helper functions designed to produce sample data.
 - contents:
+  - dummy_admdad
   - dummy_diag
+  - dummy_lab
   - sample_icd
+  - dummy_ipadmdad
 - title: Utility Functions
 - contents:
   - lunique
   - matches("ni")
   - find_db_tablename
   - coerce_to_datatable
-  - count_missing
+  - n_missing

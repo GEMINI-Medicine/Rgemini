@@ -1,7 +1,23 @@
+# Rgemini `develop`
+* Adds `n_missing` function to check number of missingness.
+
+* New utility function checking user inputs
+
+* Adds core `mlaps` function and wrapper function to run over multiple sites and years.
+
+* Adds `er_los` function to calculate emergency room length-of-stay.
+
+
+* New function to simulate "ipadmdad" data with random hospital-level intercepts
+* Enhanced `daily_census` function to allow exclusion of days with 0 counts
+
+* New function `disability()` that derives disability flag for each encounter.
+
 # Rgemini 0.3.1
 
 * Allows the user to specify the number of digits to round percentages to in cell suppression of categorical variables, without forcing rounding to integer.
 * Allows user to render only one level for binary variables in `table1`.
+* Fixes singularity due to missing levels in `table1`.
 * Fixes `find_db_tablename` and `readmission` for DBs with foreign data wrappers.
 
 # Rgemini 0.3.0

@@ -25,6 +25,7 @@ If the installation method above does not work, try one of the following:
 1. Install using `pak::pkg_install("GEMINI-Medicine/Rgemini")`.
 2. `git clone` the package to some directory such as `/path/to/repo`, and run `devtools::install("/path/to/repo", build_vignettes = TRUE)`.
 3. Download the latest source tarball from the [package releases](https://github.com/GEMINI-Medicine/Rgemini/tags) to some directory such as `/path/to/tarball` and run `install.packages("/path/to/tarball", repos = NULL, type="source")`.
+4. Try configuring secure downloads as described in [this blog post](https://support.posit.co/hc/en-us/articles/206827897-Secure-Package-Downloads-for-R37).
 
 If none of the above methods work, please create a post on our [discussion board](https://github.com/GEMINI-Medicine/Rgemini/discussions/categories/q-a).
 
@@ -52,7 +53,7 @@ drv <- DBI::dbDriver("PostgreSQL")
 db <- DBI::dbConnect(
   drv,
   dbname = "db_name",
-  host = "172.XX.XX.XXX",
+  host = "domain_name.ca",
   port = 1234,
   user = getPass::getPass("Enter Username"),
   password = getPass::getPass("Enter Password")
@@ -105,3 +106,5 @@ Usually we accumulate a series of changes on develop and release them all at onc
 If you find `Rgemini` useful, please cite it in your publications using `citation("Rgemini")`:
 
 > The GEMINI team (2023). Rgemini: R Functions for GEMINI Data. R package version 0.3.0. https://gemini-medicine.github.io/Rgemini/
+
+Note that particular functions may require additional citations. Please consult the references in function-specific documentation whenever applicable.
