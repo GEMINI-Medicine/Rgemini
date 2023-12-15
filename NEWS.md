@@ -11,6 +11,8 @@
 * New function to simulate "ipadmdad" data with random hospital-level intercepts
 * Enhanced `daily_census` function to allow exclusion of days with 0 counts
 
+* New function `disability()` that derives disability flag for each encounter.
+
 # Rgemini 0.3.1
 
 * Allows the user to specify the number of digits to round percentages to in cell suppression of categorical variables, without forcing rounding to integer.

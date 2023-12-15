@@ -17,3 +17,10 @@ NULL
 #' @name dummy_ccsr
 #' @docType data
 NULL
+
+
+#' Mapping data for `disability` function
+#'
+#' @name mapping_disability
+#' @docType data
+NULL
