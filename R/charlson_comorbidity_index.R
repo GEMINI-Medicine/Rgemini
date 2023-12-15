@@ -6,11 +6,11 @@
 #'
 #' Specifically page 19 for inclusion/exclusion criteria.
 #'
-#' @param ipdiag (`data.table`)\cr
+#' @param ipdiag (`data.table` or `data.frame`)\cr
 #' `ipdiagnosis` table as defined in the
 #' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
 #'
-#' @param erdiag (`data.table`)\cr
+#' @param erdiag (`data.table` or `data.frame`)\cr
 #' `erdiagnosis` table as defined in the
 #' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
 #' Typically, ER diagnoses should be included when deriving Charlson Comorbidity
