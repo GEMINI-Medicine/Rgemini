@@ -29,6 +29,8 @@ Imports:
     sn
 Suggests: 
     ggplot2,
+	ggthemes,
+	grid,
     kableExtra,
     knitr,
     rmarkdown,
