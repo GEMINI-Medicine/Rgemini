@@ -584,18 +584,3 @@ NULL
 #'
 NULL
 
-
-#' @title
-#' Dummy ipadmdad data
-#'
-#' @description
-#' Used to generate a subset of variables from the "ipadmdad" table. Simulates
-#' clustering by hospital where patient populations have different
-#' characteristics at different sites (i.e., function can be used to simulate
-#' data for random intercept models).
-#'
-#' @keywords internal
-#' @name dummy_ipadmdad
-#' @docType data
-#'
-NULL
