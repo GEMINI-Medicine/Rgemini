@@ -224,7 +224,7 @@ coerce_to_datatable <- function(data) {
 #' drv <- dbDriver("PostgreSQL")
 #' dbcon <- DBI::dbConnect(drv,
 #'   dbname = "db",
-#'   host = "172.XX.XX.XXX",
+#'   host = "domain_name.ca",
 #'   port = 1234,
 #'   user = getPass("Enter user:"),
 #'   password = getPass("password")
@@ -547,7 +547,7 @@ check_input <- function(arginput, argtype,
             "We recommend the following method to establish a DB connection:\n",
             "drv <- dbDriver('PostgreSQL')\n",
             "dbcon <- DBI::dbConnect(drv, dbname = 'db_name', ",
-            "host = 'domain_name.net', port = 1234, ",
+            "host = 'domain_name.ca', port = 1234, ",
             "user = getPass('Enter user:'), password = getPass('password'))\n",
             "\nPlease refer to the function documentation for more details."
           ),
