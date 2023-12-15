@@ -18,7 +18,11 @@ charlson_comorbidity_index(
 
 \item{erdiag}{(\code{data.table})\cr
 \code{erdiagnosis} table as defined in the
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.}
+\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+Typically, ER diagnoses should be included when deriving Charlson Comorbidity
+in order to increase sensitivity. However, in certain scenarios, users may
+choose to only include IP diagnoses by specifying \code{erdiag = NULL}. This may
+be useful when comparing cohorts with different rates of ER admissions.}
 
 \item{at_admission}{(\code{logical})\cr
 Whether to calculate the charlson score for all comorbidities or for only pre-admit comorbidities.}
