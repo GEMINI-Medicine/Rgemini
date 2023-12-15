@@ -19,6 +19,13 @@ NULL
 NULL
 
 
+#' Mapping data for `frailty_score` function
+#'
+#' @name mapping_cihi_frailty
+#' @docType data
+NULL
+
+
 #' Mapping data for `disability` function
 #'
 #' @name mapping_disability
