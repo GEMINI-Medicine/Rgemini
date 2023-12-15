@@ -12,11 +12,11 @@ charlson_comorbidity_index(
 )
 }
 \arguments{
-\item{ipdiag}{(\code{data.table})\cr
+\item{ipdiag}{(\code{data.table} or \code{data.frame})\cr
 \code{ipdiagnosis} table as defined in the
 \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.}
 
-\item{erdiag}{(\code{data.table})\cr
+\item{erdiag}{(\code{data.table} or \code{data.frame})\cr
 \code{erdiagnosis} table as defined in the
 \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
 Typically, ER diagnoses should be included when deriving Charlson Comorbidity
