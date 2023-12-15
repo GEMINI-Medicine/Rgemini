@@ -24,3 +24,10 @@ NULL
 #' @name mapping_cihi_frailty
 #' @docType data
 NULL
+
+
+#' Mapping data for `disability` function
+#'
+#' @name mapping_disability
+#' @docType data
+NULL
