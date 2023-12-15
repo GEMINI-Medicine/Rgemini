@@ -157,17 +157,19 @@ comorbidity_index <- function(ipdiag, erdiag, map, weights, at_admission = TRUE,
   ipdiag <- coerce_to_datatable(ipdiag)
   erdiag <- coerce_to_datatable(erdiag)
 
-  diagnoses <- if (at_admission) {
+  all_diagnoses <- rbind(
+    erdiag[, .(genc_id, "diagnosis_code" = er_diagnosis_code, "diagnosis_type" = er_diagnosis_type)],
+    ipdiag[, .(genc_id, diagnosis_code, diagnosis_type)]
+  )
+
+  diagnoses_of_interest <- if (at_admission) {
     diagnoses_at_admission(ipdiag, erdiag)
   } else {
-    rbind(
-      erdiag[, .(genc_id, "diagnosis_code" = er_diagnosis_code, "diagnosis_type" = er_diagnosis_type)],
-      ipdiag[, .(genc_id, diagnosis_code, diagnosis_type)]
-    )
+    all_diagnoses
   }
 
   comorbidities <- comorbidity(
-    x = diagnoses,
+    x = diagnoses_of_interest,
     id = "genc_id",
     code = "diagnosis_code",
     map = map,
@@ -184,7 +186,14 @@ comorbidity_index <- function(ipdiag, erdiag, map, weights, at_admission = TRUE,
 
   scores <- score(comorbidities, weights = weights, assign0 = TRUE)
 
-  res <- cbind(comorbidities$genc_id, scores) %>% as.data.table()
+  res <- cbind(genc_id = comorbidities$genc_id, scores) %>% as.data.table()
+
+  if (at_admission) {
+    res <- all_diagnoses %>%
+      select(genc_id) %>%
+      full_join(res, by = c("genc_id" = "genc_id")) %>%
+      tidyr::replace_na(list(score = 0))
+  }
 
   return(res)
 }
@@ -225,11 +234,8 @@ charlson_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_
   )
 
   if (!raw_comorbidities) {
-    if (at_admission) {
-      names(res) <- c("genc_id", "admit_charlson_derived")
-    } else {
-      names(res) <- c("genc_id", "all_charlson_derived")
-    }
+    res <- res %>%
+      rename_with(~ if_else(at_admission, "admit_charlson_derived", "all_charlson_derived"), "scores")
   }
 
   return(res)
@@ -271,11 +277,8 @@ elixhauser_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, ra
   )
 
   if (!raw_comorbidities) {
-    if (at_admission) {
-      names(res) <- c("genc_id", "admit_elixhauser_derived")
-    } else {
-      names(res) <- c("genc_id", "all_elixhauser_derived")
-    }
+    res <- res %>%
+      rename_with(~ if_else(at_admission, "admit_elixhauser_derived", "all_elixhauser_derived"), "scores")
   }
 
   return(res)
