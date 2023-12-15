@@ -224,6 +224,7 @@ comorbidity_index <- function(ipdiag, erdiag, map, weights, at_admission = TRUE,
 #' }
 #'
 charlson_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_comorbidities = FALSE) {
+
   res <- comorbidity_index(
     ipdiag = ipdiag,
     erdiag = erdiag,
@@ -267,6 +268,7 @@ charlson_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_
 #' }
 #'
 elixhauser_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_comorbidities = FALSE) {
+
   res <- comorbidity_index(
     ipdiag = ipdiag,
     erdiag = erdiag,
