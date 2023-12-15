@@ -21,6 +21,6 @@ NULL
 
 #' Mapping data for `frailty_score` function
 #'
-#' @name mapping_cihi_hfrs_icd
+#' @name mapping_cihi_frailty
 #' @docType data
 NULL

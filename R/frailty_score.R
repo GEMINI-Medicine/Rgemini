@@ -67,9 +67,9 @@
 #' Excluding diagnoses in NACRS was found to underestimate frailty levels (Amuah et al, 2023).
 #'
 #' @section Notes:
-#' The original development paper of CIHI HFRS maped 595 ICD-10-CA diagnosis codes to frailty-related conditions. 
+#' The original development paper of CIHI HFRS maped 595 ICD-10-CA diagnosis codes to frailty conditions. 
 #' Three codes (Z96.62, U07.1 and U07.2) were added to this mapping in the CIHI methodology notes.
-#' This function uses the mapping (598 diagnosis codes) in the CIHI methodology notes to identify frailty conditions.
+#' This function uses the mapping of 598 ICD-10-CA diagnosis codes in the CIHI methodology notes to identify frailty conditions.
 #'
 #' The previous `frailty_score()` function calculated the UK HFRS (Gilbert, 2018), and it is now deprecated.
 #' Using a similar approach as the UK HFRS, the CIHI HFRS was developed and validated based on Canadian cohorts, making it particularly suited for GEMINI data.
@@ -97,8 +97,8 @@
 frailty_score  <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
 
   # load CIHI HFRS-ICD mapping from package data folder
-  data("mapping_cihi_hfrs_icd", package = "Rgemini")
-  frailty_map <- mapping_cihi_hfrs_icd %>% mutate(diagnosis_code = gsub("\\.", "", icd10ca)) %>% data.table()
+  data("mapping_cihi_frailty", package = "Rgemini")
+  frailty_map <- mapping_cihi_frailty %>% mutate(diagnosis_code = gsub("\\.", "", icd10ca)) %>% data.table()
 
   # input checks
   check_input(cohort, c("data.table", "data.frame"), 
