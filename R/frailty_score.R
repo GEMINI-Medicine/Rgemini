@@ -1,152 +1,179 @@
 #' @title
-#' Compute frailty score using ICD-10-CA
+#' Compute CIHI Hospital Frailty Risk Score
 #'
 #' @description
-#' `frailty_score` returns frailty risk score for hospital admissions calculated based on ICD-10-CA diagnoses codes.
+#' `frailty_score` returns the number of frailty conditions for hospital admissions based on the CIHI hospital frailty risk score (HFRS).
+#' By setting `component_wise` to `TRUE`, function alternatively returns identified frailty-related diagnosis codes and their corresponding frailty conditions.
 #'
 #' @details
-#' This function takes a list of ICD-10-CA and generates a numeric field corresponding to frailty risk
-#' score for each admission.
-#' This function can take any `data.table` with ICD-10-CA codes.
-#' Historically, scores have been calculated based on partition of ICD-10-CA codes.
+#' The CIHI HFRS is a contextual measure of frailty for patients aged 65 years and older.
+#' It categorizes a list of ICD-10-CA diagnosis codes into 36 distinct frailty-related conditions.
+#' The level of frailty is determined as the cumulative number of distinct frailty conditions (an equal-weight algorithm) present in an individual.
+#' ALL diagnoses are included to the calculation (i.e. all emergency department (ER) and in-patient (IP) diagnoses, all diagnosis types).
+#' When none of the frailty conditions is present in an individual, a score of zero is assigned.
 #'
-#' Researchers may want to focus on frailty risk scores based on in-patient (IP) diagnoses because
-#' emergency department (ED) diagnoses have lower sensitivity/specificity for certain conditions and
-#' are less reliably filled compared to IP diagnoses. In general, there will be overlap between IP and
-#' ED diagnoses codes. ED diagnoses codes to compute frailty risk score can be used to evaluate frailty
-#' risk upon admission to IP services.
-#'
-#' This function does not differentiate between diagnosis types.
-#'
-#' @note
-#' The original frailty risk score was developed based on ICD-10 codes instead of ICD-10-CA.
-#' However, ICD-10-CA version codes are identical to the ICD-10 counterpart up to 4 character levels
-#' and the frailty risk score only uses the first three characters of ICD-10.
-#'
-#' Please refer to the references in this page for more details.
-#'
-#' @section Warning:
-#' This function returns a `data.table` with `genc_id` and three numeric fields.
-#' The function will return NA values if `genc_id` in the `cohort` table is not found
-#' in the `ipdiagnosis` or `eddiagnosis` tables.
-#'
-#' `frailty_score_derived` is NA if either `ip_frailty_score_derived` or `er_frailty_score_derived` are NA.
-#' When one tries to left-join the output of this function with another table (another list of admissions in the left),
-#' make sure list of admissions (or patient ids) aligns in both tables.
-#'
-#' @param cohort (`data.frame` or `data.table`)
-#' Cohort table with all relevant encounters of interest, where each row
-#' corresponds to a single encounter. Must contain GEMINI Encounter ID
-#' (`genc_id`).
-#' @param ipdiagnosis (`data.table`)
-#' `ipdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
-#' This table must contain the `genc_id` and `diagnosis_code` (as ICD-10-CA) fields in long format table only.
-#' The diagnosis codes must be free from any punctuation or special characters.
-#' @param eddiagnosis (`data.table`)
-#' `eddiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
-#' This table must contain the `genc_id` and `er_diagnosis_code` (as ICD-10-CA) fields in long format table only.
-#' The diagnosis codes must be free from any punctuation or special characters.
-#'
-#' @return `data.table`
-#' This function returns a table with all encounters identified by the `cohort` table input and
-#' additional derived numeric fields for `ip_frailty_score_derived`, `er_frailty_score_derived`
-#' and `frailty_score_derived`
+#' The function closely adheres to the CIHI HFRS with the following adaptations:
 #' \itemize{
-#'  \item{ip_frailty_score_derived : }{Frailty risk score calculated only using IP diagnoses codes from `ipdiagnosis` table}
-#'  \item{er_frailty_score_derived : }{Frailty risk score calculated only using ED diagnoses codes from `eddiagnosis` table}
-#'  \item{frailty_score_derived : }{Frailty risk score calculated using both IP & ED diagnoses codes}
+#'  \item{No look-back period: }{Score is computed at encounter level. The 2-year look-back in the CIHI HFRS is not implemented. 
+#'  This adaptation systematically underestimates frailty but ensures comparable scores across time and hospitals considering variations in data availability}
+#'  \item{Score format: }{Integer scores are returned representing the sum of the number of frailty conditions.
+#'  These scores can be easily converted to the different formats (i.e. continuous fractions, 8 risk groups, binary) defined by CIHI HFRS.
+#'  For example, dividing the returned score by 36 (maximum number of conditions possible) gives the continuous CIHI HFRS.
+#'  Users interested in further categorizing the scores should refer to [Amuah et al, 2023](https://doi.org/10.1503/cmaj.220926).
+#'  }
 #' }
-#' If frailty risk score is < 5, the patient is low-risk
-#' If frailty risk score is between 5 and 15, the patient is intermediate risk
-#' If frailty risk score is > 15.0, the patient is high risk
 #'
+#' @param cohort (`data.table`, `data.frame`)\cr
+#' Cohort table with encounters of interest and their corresponding age.
+#' Each row corresponds to a single encounter.
+#' Must contain GEMINI encounter ID (`genc_id`), and age of the encounter (`age`).
+#'
+#' @param ipdiag (`data.table`, `data.frame`)\cr
+#' `ipdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' This table must contain the `genc_id` and `diagnosis_code` fields in long format.
+#' The diagnosis codes must be free from any punctuation or special characters.
+#'
+#' @param erdiag (`data.table`, `data.frame`)\cr
+#' `erdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' This table must contain the `genc_id` and `er_diagnosis_code` fields in long format.
+#' The diagnosis codes must be free from punctuation or special characters.
+#'
+#' @param component_wise (`logical`)\cr
+#' Default is FALSE. When TRUE, the function does not aggregate the score and instead outputs a table in long format that
+#' shows the frailty conditions contributed to the score for each encounter.
+#' Encounters with no frailty conditions found (frailty_score_derived=0) are excluded.
+#'
+#' @return (`data.frame`)\cr
+#' If `component_wise == FALSE`:
+#'     `genc_id` (`numeric`),\cr
+#'     `frailty_score_derived` (`numeric`) total number of frailty conditions for the encounter.
+#'
+#' If `component_wise == TRUE`:
+#'     `genc_id` (`numeric`),\cr
+#'     `diagnosis_code` (`character`),\cr ICD-10-CA diagnosis codes associated with the encounter
+#'     `frailty_categories` (`character`)\cr frailty category of the ICD-10-CA code mapped to
+#'
+#' @section Warnings:
+#' A warning message is returned when the user-provided cohort includes encounters not qualified for assessing frailty.
+#' Encounters below the age cutoff for frailty assessment are excluded from the results.
+#' Encounters with no diagnosis data are excluded from the results.
+#' The size of exclusion is detailed in the warning message.
+#' `frailty_score_derived` for these encounters are NAs, when joining the result table to the original cohort.
+#'
+#' A warning message is returned if `erdiag` is explicitly set to `NULL`.
+#' It's possible to exclude diagnoses at the emergency department from the consideration by explicitly specifying `erdiag=NULL`.
+#' However, excluding any types of diagnoses is not recommended.
+#' The CIHI frailty score was developed and validated based on all diagnoses present in medical records (both NACRS and DAD).
+#' Excluding diagnoses in NACRS was found to underestimate frailty levels (Amuah et al, 2023).
+#'
+#' @section Notes:
+#' The original development paper of CIHI HFRS maped 595 ICD-10-CA diagnosis codes to frailty conditions. 
+#' Three codes (Z96.62, U07.1 and U07.2) were added to this mapping in the CIHI methodology notes.
+#' This function uses the mapping of 598 ICD-10-CA diagnosis codes in the CIHI methodology notes to identify frailty conditions.
+#'
+#' The previous `frailty_score()` function calculated the UK HFRS (Gilbert, 2018), and it is now deprecated.
+#' Using a similar approach as the UK HFRS, the CIHI HFRS was developed and validated based on Canadian cohorts, making it particularly suited for GEMINI data.
+#' The UK version remains available in `Rgemini` version 0.3.1 and earlier but will not receive future maintenance.
+#' Users interested in the UK version should refer to the original publications for important differences in diagnostic coding practices and age threshold.
+#' 
 #' @references
-#' Gilbert T, Neuburger J, Kraindler J, et al. Development and validation of a
-#' Hospital Frailty Risk Score focusing on older people in acute care settings using
-#' electronic hospital records: an observational study. Lancet 2018; published online
-#' April 26. http://dx.doi.org/10.1016/S0140-6736(18)30668-8.
+#' UK HFRS: Gilbert T, et al. Lancet, 2018. http://dx.doi.org/10.1016/S0140-6736(18)30668-8
+#' CIHI HFRS: Amuah JE, et al. CMAJ, 2023. https://doi.org/10.1503/cmaj.220926
+#' CIHI methodology notes: https://www.cihi.ca/sites/default/files/document/cihi-hospital-frailty-risk-measure-meth-notes-en.pdf
+#' We recommend referencing both original articles (UK HFRS and CIHI HFRS) when using this function.
+#
+#' @examples
+#' \dontrun{
+#' cohort_dum <- data.table(genc_id=c(1, 2, 3), age=c(64, 65, 80))
+#' ipdiag_dum <- dummy_diag(nid=3, nrow=10, ipdiagnosis=TRUE, pattern = "C20$|R460$") # frailty conditions
+#' erdiag_dum <- dummy_diag(nid=3, nrow=5, ipdiagnosis=FALSE, pattern = "M121$") # not a frailty condition
+#' frailty_score(cohort_dum, ipdiag_dum, erdiag_dum, component_wise = FALSE)
+#' }
 #'
+#' @importFrom fuzzyjoin regex_left_join 
+#' 
 #' @export
-frailty_score <- function(cohort,
-                          ipdiagnosis,
-                          eddiagnosis) {
 
-  ## Ensure user inputs are in data.table format before proceeding
+frailty_score  <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
+
+  # load CIHI HFRS-ICD mapping from package data folder
+  data("mapping_cihi_frailty", package = "Rgemini")
+  frailty_map <- mapping_cihi_frailty %>% mutate(diagnosis_code = gsub("\\.", "", icd10ca)) %>% data.table()
+
+  # input checks
+  check_input(cohort, c("data.table", "data.frame"), 
+              colnames = c("genc_id", "age"),
+              coltypes = c("", "numeric|integer"))
+  
+  check_input(ipdiag, c("data.table", "data.frame"),
+              colnames = c("genc_id", "diagnosis_code"),
+              coltypes = c("", "character"))
+  
+  if (!is.null(erdiag)){
+    check_input(erdiag, c("data.table", "data.frame"),
+                colnames = c("genc_id", "er_diagnosis_code"),
+                coltypes = c("", "character"))}
+  
   cohort <- coerce_to_datatable(cohort)
-  ipdiagnosis <- coerce_to_datatable(ipdiagnosis)
-  eddiagnosis <- coerce_to_datatable(eddiagnosis)
+  ipdiag <- coerce_to_datatable(ipdiag)
+  if (!is.null(erdiag)) {erdiag <- coerce_to_datatable(erdiag)}
+  elig_enc <- unique(cohort[age >= 65, ]$genc_id)
 
-  ## remap variable names in case field names change in the database
-  res <- cohort[, .(idvar1 = genc_id)]
+    
+  # clean and merge all diagnosis codes; return a warning if EXPLICITLY set to NULL by user
+  if (is.null(erdiag)) {
+    warning(
+      "\nBased on user input, `erdiag` is set to NULL. This is NOT recommended. The CIHI frailty score was developed and validated based on diagnosis codes from both NACRS and DAD. Excluding erdiagnosis can underestimate the level of frailty (see references in documentation for details).\n"
+      )
+    } else {
+    erdiag <- erdiag[genc_id %in% elig_enc, .(genc_id, er_diagnosis_code)] %>% rename(diagnosis_code = er_diagnosis_code)
+    }
 
-  ipdiag <- ipdiagnosis[, .(id = genc_id,
-                            diagcode = diagnosis_code)]
+  ipdiag <- ipdiag[genc_id %in% elig_enc, .(genc_id, diagnosis_code)]
 
-  eddiag <- eddiagnosis[, .(id = genc_id,
-                            diagcode = er_diagnosis_code)]
+  alldiag <- rbind(ipdiag, erdiag)
 
-  ## Frailty score mapping for first 3 character of ICD-10. This table can be found in the reference provided.
-  frailty_score <-
-    structure(list(diagcode = c("F00", "G81", "G30", "I69", "R29", "N39",
-                           "F05", "W19", "S00", "R31", "B96", "R41", "R26", "I67", "R56",
-                           "R40", "T83", "S06", "S42", "E87", "M25", "E86", "R54", "Z50",
-                           "F03", "W18", "Z75", "F01", "S80", "L03", "H54", "E53", "Z60",
-                           "G20", "R55", "S22", "K59", "N17", "L89", "Z22", "B95", "L97",
-                           "R44", "K26", "I95", "N19", "A41", "Z87", "J96", "X59", "M19",
-                           "G40", "M81", "S72", "S32", "E16", "R94", "N18", "R33", "R69",
-                           "N28", "R32", "G31", "Y95", "S09", "R45", "G45", "Z74", "M79",
-                           "W06", "S01", "A04", "A09", "J18", "J69", "R47", "E55", "Z93",
-                           "R02", "R63", "H91", "W10", "W01", "E05", "M41", "R13", "Z99",
-                           "U80", "M80", "K92", "I63", "N20", "F10", "Y84", "R00", "J22",
-                           "Z73", "R79", "Z91", "S51", "F32", "M48", "E83", "M15", "D64",
-                           "L08", "R11", "K52", "R50"),
+  # Calculate score
+  frailty <- alldiag %>%
+    regex_left_join(frailty_map, by = "diagnosis_code", ignore_case = TRUE) %>% # per CIHI manual frailty conditions are identified by 595 icd-10-ca codes and any codes starting with these codes
+    data.table() %>%
+    .[!is.na(frailty_categories), .(genc_id, diagnosis_code.x, diagnosis_code.y, frailty_categories)] # filter to encounters with diagnosis mapped to frailty conditions
 
-                   score = c("7.1", "4.4", "4.0", "3.7",
-                             "3.6", "3.2", "3.2", "3.2", "3.2", "3.0", "2.9", "2.7", "2.6",
-                             "2.6", "2.6", "2.5", "2.4", "2.4", "2.3", "2.3", "2.3", "2.3",
-                             "2.2", "2.1", "2.1", "2.1", "2.0", "2.0", "2.0", "2.0", "1.9",
-                             "1.9", "1.8", "1.8", "1.8", "1.8", "1.8", "1.8", "1.7", "1.7",
-                             "1.7", "1.6", "1.6", "1.6", "1.6", "1.6", "1.6", "1.5", "1.5",
-                             "1.5", "1.5", "1.5", "1.4", "1.4", "1.4", "1.4", "1.4", "1.4",
-                             "1.3", "1.3", "1.3", "1.2", "1.2", "1.2", "1.2", "1.2", "1.2",
-                             "1.1", "1.1", "1.1", "1.1", "1.1", "1.1", "1.1", "1.0", "1.0",
-                             "1.0", "1.0", "1.0", "0.9", "0.9", "0.9", "0.9", "0.9", "0.9",
-                             "0.8", "0.8", "0.8", "0.8", "0.8", "0.8", "0.7", "0.7", "0.7",
-                             "0.7", "0.7", "0.6", "0.6", "0.5", "0.5", "0.5", "0.5", "0.4",
-                             "0.4", "0.4", "0.4", "0.3", "0.3", "0.1")))
+  ## Derive score (# of unique frailty categories) to encounters w/ diagnoses mapped
+  res_score <- frailty[, .(frailty_score_derived = length(unique(frailty_categories))), genc_id]
 
-  frailty_score <- data.frame(frailty_score)
+  ## Assign score=0 to encounters w/o diagnosis mapped to frailty conditions
+  res_0 <- alldiag[!(genc_id %in% res_score$genc_id), .(genc_id)] %>% .[, frailty_score_derived := 0] %>% distinct()
 
-  ### Assign scores by merging first 3 characters
-  ipdiag[, diagcode := stringr::str_sub(diagcode, 1, 3)]
-  eddiag[, diagcode := stringr::str_sub(diagcode, 1, 3)]
-  alldiag <- rbind(ipdiag, eddiag)
+  res <- rbind(res_score, res_0) # combine
 
-  ipdiag <- merge(ipdiag, frailty_score, by = "diagcode", all.x = TRUE) %>%
-    .[, .(diagcode, id, score)] %>%
-    unique %>%
-    .[, .(stat = sum(as.numeric(score), na.rm = TRUE)), id]
+  ## component_wise result (available only for encounters w/ diagnoses mapped)
+  res_component <- frailty[, .(genc_id, diagnosis_code.x, frailty_categories)] %>% rename(diagnosis_code = diagnosis_code.x)
 
-  eddiag <- merge(eddiag, frailty_score, by = "diagcode", all.x = TRUE) %>%
-    .[, .(diagcode, id, score)] %>%
-    unique %>%
-    .[, .(stat = sum(as.numeric(score), na.rm = TRUE)), id]
+  # Warnings on output
+  if (length(elig_enc) < length(unique(cohort$genc_id))) {  # exclusion of encounters w/ age<65
+    warning(paste0(
+      "\n",
+      length(unique(cohort[age < 65, ]$genc_id)), " of ", length(unique(cohort$genc_id)),
+      " (", round(100 * length(unique(cohort[age < 65, ]$genc_id)) / length(unique(cohort$genc_id)), 1), "%) ",
+      "encounters in the user-provided cohort are under the age of 65 and do not qualify for CIHI frailty score. These encounters have been excluded from the results.\n"
+    ))
+  }
 
-  alldiag <- merge(alldiag, frailty_score, by = "diagcode", all.x = TRUE) %>%
-    .[, .(diagcode, id, score)] %>%
-    unique %>%
-    .[, .(stat = sum(as.numeric(score), na.rm = TRUE)), id]
+  if (length(elig_enc) > length(res$genc_id)) { # exclusion of encounters w/o diagnosis data
+    warning(paste0(
+      "\n",
+      (length(elig_enc) - length(res$genc_id)), " of ", length(elig_enc),
+      " (", round(100 * (length(elig_enc) - length(res$genc_id)) / length(elig_enc), 1), "%) ",
+      "age-qualified encounters in the user-provided cohort do not have diagnosis data and have been excluded from the results.\n"
+    ))
+  }
 
+  # Outputs
+  if (component_wise) {
+    return(res_component)
+    }
 
-  ### merge with admission list and NA rules
-  res <- merge(res, ipdiag[, .(id, ip_frailty_score_derived = stat)], by.x = "idvar1", by.y = "id", all.x = TRUE)
-  res <- merge(res, eddiag[, .(id, er_frailty_score_derived = stat)], by.x = "idvar1", by.y = "id", all.x = TRUE)
-  res <- merge(res, alldiag[, .(id, frailty_score_derived = stat)], by.x = "idvar1", by.y = "id", all.x = TRUE)
+  return(res_score)
 
-  res[(is.na(ip_frailty_score_derived) | is.na(er_frailty_score_derived)), frailty_score_derived := NA][]
-
-  data.table::setnames(res,
-                       old = c("idvar1"),
-                       new = c("genc_id"))
-  return(res)
 }
