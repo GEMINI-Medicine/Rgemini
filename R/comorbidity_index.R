@@ -181,6 +181,13 @@ comorbidity_index <- function(ipdiag, erdiag, map, weights, at_admission = TRUE,
       attr(comorbidities, "variable.labels") <- paste(attr(comorbidities, "variable.labels"), "(at admission)")
     }
 
+    # return 0 for any encounter without diagnoses at admission
+    comorbidities <- all_diagnoses %>%
+      select(genc_id) %>%
+      unique() %>%
+      full_join(comorbidities, by = c("genc_id" = "genc_id")) %>%
+      mutate(across(setdiff(names(comorbidities), "genc_id"), ~tidyr::replace_na(., 0)))
+
     return(comorbidities)
   }
 
@@ -191,6 +198,7 @@ comorbidity_index <- function(ipdiag, erdiag, map, weights, at_admission = TRUE,
   if (at_admission) {
     res <- all_diagnoses %>%
       select(genc_id) %>%
+      unique() %>%
       full_join(res, by = c("genc_id" = "genc_id")) %>%
       tidyr::replace_na(list(score = 0))
   }
