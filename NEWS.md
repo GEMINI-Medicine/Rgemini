@@ -10,6 +10,7 @@
 * Enhanced `daily_census` function to allow exclusion of days with 0 counts
 * New function `disability()` that derives disability flag for each encounter.
 * Adds function to calculate Elixhauser comorbidity scores `elixhauser_comorbidity_index()`.
+* Standardizes citation format in function references section.
 
 # Rgemini 0.3.1
 
