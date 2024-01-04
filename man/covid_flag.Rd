@@ -106,5 +106,5 @@ covid <- covid_flag(cohort = ipadm, diagnosis = dx)
 
 }
 \references{
-https://www.cihi.ca/en/covid-19-resources/covid-19-data-collection-and-coding-direction
+\href{https://www.cihi.ca/en/covid-19-resources/covid-19-data-collection-and-coding-direction}{CIHI COVID-19 data collection and coding direction}
 }
