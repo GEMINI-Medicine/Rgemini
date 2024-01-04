@@ -243,7 +243,7 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
 #'\itemize{
 #'  \item{Escobar G, et al. Med Care, 2008. https://doi.org/10.1097/MLR.0b013e3181589bb6}
 #'  \item{Roberts SB, et al. J Gen Intern Med, 2023. https://doi.org/10.1007/s11606-023-08245-w}
-#'  \item{Roberts SB, et al. medRxiv [Preprint], 2023. https://doi.org/10.1101/2023.01.06.23284273}
+#'  \item{Roberts SB, et al. medRxiv \[Preprint\], 2023. https://doi.org/10.1101/2023.01.06.23284273}
 #' }
 #'
 mlaps <- function(ipadmdad, lab, hours_after_admission = 0, component_wise = FALSE) {
