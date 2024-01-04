@@ -77,10 +77,12 @@
 #' Users interested in the UK version should refer to the original publications for important differences in diagnostic coding practices and age threshold.
 #' 
 #' @references
-#' UK HFRS: Gilbert T, et al. Lancet, 2018. http://dx.doi.org/10.1016/S0140-6736(18)30668-8
-#' CIHI HFRS: Amuah JE, et al. CMAJ, 2023. https://doi.org/10.1503/cmaj.220926
-#' CIHI methodology notes: https://www.cihi.ca/sites/default/files/document/cihi-hospital-frailty-risk-measure-meth-notes-en.pdf
-#' We recommend referencing both original articles (UK HFRS and CIHI HFRS) when using this function.
+#' We recommend referencing both original articles (UK HFRS and CIHI HFRS) when using this function:
+#'\itemize{
+#'  \item{UK HFRS: Gilbert T, et al. Lancet, 2018. http://dx.doi.org/10.1016/S0140-6736(18)30668-8}
+#'  \item{CIHI HFRS: Amuah JE, et al. CMAJ, 2023. https://doi.org/10.1503/cmaj.220926}
+#'  \item{[CIHI methodology notes](https://www.cihi.ca/sites/default/files/document/cihi-hospital-frailty-risk-measure-meth-notes-en.pdf)}
+#' }
 #
 #' @examples
 #' \dontrun{
