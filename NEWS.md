@@ -10,6 +10,7 @@
 
 * New function to simulate "ipadmdad" data with random hospital-level intercepts
 * Enhanced `daily_census` function to allow exclusion of days with 0 counts
+* Additional input argument in `covid_flag()` for inclusion of ER diagnoses
 
 # Rgemini 0.3.1
 
