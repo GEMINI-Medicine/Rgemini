@@ -22,7 +22,6 @@
 #' but the associated COVID-19 tests are inconclusive,
 #' not available, or not performed.
 #'
-#'
 #' @details
 #' Below is the current ICD-10-CA diagnosis codes related to COVID-19.
 #' For more details, please refer to the references in this page.
