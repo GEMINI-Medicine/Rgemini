@@ -248,7 +248,7 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 #' up pseudo-randomly between hospitals to ensure roughly equal sample size at
 #' each hospital.
 #'
-#' @param fisc_years (`numeric`)\cr
+#' @param time_period (`numeric`)\cr
 #' A numeric vector containing the time period, specified as fiscal years
 #' (starting in April each year). For example, `c(2015, 2019)` generates data
 #' from 2015-04-01 to 2020-03-31.
@@ -584,18 +584,3 @@ NULL
 #'
 NULL
 
-
-#' @title
-#' Dummy ipadmdad data
-#'
-#' @description
-#' Used to generate a subset of variables from the "ipadmdad" table. Simulates
-#' clustering by hospital where patient populations have different
-#' characteristics at different sites (i.e., function can be used to simulate
-#' data for random intercept models).
-#'
-#' @keywords internal
-#' @name dummy_ipadmdad
-#' @docType data
-#'
-NULL
