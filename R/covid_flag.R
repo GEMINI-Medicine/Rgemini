@@ -10,7 +10,12 @@
 #' using ICD-10-CA U07.1 and U07.2 respectively.
 #'
 #' A confirmed COVID-19 diagnosis (U07.1) is coded when
-#' there is a positive COVID-19 test, regardless of the the test type.
+#' there is a positive COVID-19 test. Effective April 1 2023, U07.1 is coded
+#' when COVID-19 was confirmed by any COVID-19 test, including polymerase chain
+#' reaction (PCR) tests, point-of-care molecular tests (POCT), or rapid antigen
+#' tests (RAT). For data prior to April 1, 2023, U07.1 was only coded when
+#' COVID-19 was confirmed by a PCR lab test (for details, see
+#' [CIHI diagnosis type definitions](https://www.cihi.ca/sites/default/files/document/mapping-covid-19-codes-icd-10-ca-to-base-icd-10-job-aid-en.pdf)).
 #'
 #' A suspected COVID-19 diagnosis (U07.2) is coded when an
 #' encounter is clinically or epidemiological diagnosed
