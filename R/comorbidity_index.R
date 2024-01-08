@@ -227,8 +227,8 @@ comorbidity_index <- function(ipdiag, erdiag, map, weights, at_admission = TRUE,
 #'
 #' @references
 #' \itemize{
-#'  \item{[Quan et al. 2011](http://dx.doi.org/10.1093/aje/kwq433)}
-#'  \item{[Gasparini, 2018](https://doi.org/10.21105/joss.00648)}
+#'  \item{Quan H, et al. Am J Epidemiol, 2011. https://doi.org/10.1093/aje/kwq433}
+#'  \item{Gasparini A. JOSS, 2018. https://doi.org/10.21105/joss.00648}
 #' }
 #'
 charlson_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_comorbidities = FALSE) {
@@ -271,8 +271,8 @@ charlson_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_
 #'
 #' @references
 #' \itemize{
-#'  \item{[Elixhauser A et al. 1998](https://pubmed.ncbi.nlm.nih.gov/19433995/)}
-#'  \item{[Gasparini, 2018](https://doi.org/10.21105/joss.00648)}
+#'  \item{Elixhauser A, et al. Med Care, 1998. https://doi.org/10.1097/MLR.0b013e31819432e5}
+#'  \item{Gasparini A. JOSS, 2018. https://doi.org/10.21105/joss.00648}
 #' }
 #'
 elixhauser_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_comorbidities = FALSE) {

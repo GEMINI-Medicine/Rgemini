@@ -106,10 +106,7 @@
 #' }
 #'
 #' @references
-#' Brown, H. K., Ray, J. G., Chen, S., Guttmann, A., Havercamp, S. M., Parish,
-#' S., ... & Lunsky, Y. (2021). Association of preexisting disability with
-#' severe maternal morbidity or mortality in Ontario, Canada. JAMA Network Open,
-#' 4(2), e2034993-e2034993.
+#' Brown HK, et al. JAMA Netw Open, 2021. https://doi.org/10.1001/jamanetworkopen.2020.34993 
 #'
 #' @importFrom fuzzyjoin regex_left_join
 #' @export

@@ -90,7 +90,7 @@ epicare_table <- episodes_of_care(dbcon)
 
 }
 \references{
-\href{https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital}{CIHI guidelines}
+\href{https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital}{CIHI readmission guidelines}
 }
 \seealso{
 \code{vignette("epicare_and_readmission", package = "Rgemini")}

@@ -11,6 +11,7 @@
 * Additional input argument in `covid_flag()` for inclusion of ER diagnoses
 * New function `disability()` that derives disability flag for each encounter.
 * Adds function to calculate Elixhauser comorbidity scores `elixhauser_comorbidity_index()`.
+* Standardizes citation format in function references section.
 
 # Rgemini 0.3.1
 

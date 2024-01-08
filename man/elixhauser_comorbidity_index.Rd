@@ -48,7 +48,7 @@ This affects comorbidities present in a patient with different degrees of severi
 }
 \references{
 \itemize{
-\item{\href{https://pubmed.ncbi.nlm.nih.gov/19433995/}{Elixhauser A et al. 1998}}
-\item{\href{https://doi.org/10.21105/joss.00648}{Gasparini, 2018}}
+\item{Elixhauser A, et al. Med Care, 1998. https://doi.org/10.1097/MLR.0b013e31819432e5}
+\item{Gasparini A. JOSS, 2018. https://doi.org/10.21105/joss.00648}
 }
 }

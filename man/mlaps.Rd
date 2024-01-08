@@ -55,7 +55,9 @@ In general it is recommended to take care and be intentional when imputing LAPS 
 }
 \references{
 When the function is used, please cite the following:
-https://doi.org/10.1097/MLR.0b013e3181589bb6
-https://doi.org/10.1007/s11606-023-08245-w
-https://doi.org/10.1101/2023.01.06.23284273
+\itemize{
+\item{Escobar G, et al. Med Care, 2008. https://doi.org/10.1097/MLR.0b013e3181589bb6}
+\item{Roberts SB, et al. J Gen Intern Med, 2023. https://doi.org/10.1007/s11606-023-08245-w}
+\item{Roberts SB, et al. medRxiv (preprint), 2023. https://doi.org/10.1101/2023.01.06.23284273}
+}
 }
