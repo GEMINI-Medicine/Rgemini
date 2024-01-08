@@ -52,15 +52,16 @@
 #' additional derived numeric field labelled as "n_routine_bloodwork_derived"
 #'
 #' @export
-#' 
+#'
 
 n_routine_bloodwork <- function(dbcon,
                                 cohort) {
   cohort <- coerce_to_datatable(cohort)
 
-  cat("\n***Note:***
-  The output of this function is based on manual mapping of Sodium and Heamoglobin tests by a GEMINI Subject Matter Expert.
-  Sodium and Hemoglobin are prioritized and mapped for all encounters. However, please carefully check mapping coverage for your cohort of interest, or contact the GEMINI team if you require additional support.\n")
+  mapping_message(
+    "Sodium and Hemoglobin tests",
+    "Note however that Sodium and Hemoglobin are prioritized and mapped for all encounters.\n"
+    )
 
   cat("\nThis function may take a few minutes to run...\n\n")
 

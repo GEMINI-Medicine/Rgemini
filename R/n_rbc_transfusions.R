@@ -48,9 +48,8 @@
 n_rbc_transfusions <-function(dbcon,
                             cohort) {
 
-  cat("\n***Note:***
-  The output of this function is based on manual mapping of RBC transfusions by a GEMINI Subject Matter Expert.
-  Please carefully check mapping coverage for your cohort of interest, or contact the GEMINI team if you require additional support.\n")
+
+  mapping_message("RBC transfusions")
 
   cat("\nThis function may take a few minutes to run...\n\n")
 
