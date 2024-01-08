@@ -164,7 +164,6 @@ diagnoses_at_admission <- function(ipdiag, erdiag) {
 #' @export
 #'
 comorbidity_index <- function(ipdiag, erdiag, map, weights, at_admission = TRUE, raw_comorbidities = FALSE) {
-
   ### users can set erdiag to NULL to exclude ER diagnoses; but warning will be shown
   if (is.null(erdiag)) {
     cat("\n*** Based on the input you provided, only in-patient diagnoses (ipdiag) will be included in the comorbidity index.
