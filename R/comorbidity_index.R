@@ -122,10 +122,9 @@ diagnoses_at_admission <- function(ipdiag, erdiag) {
     .[, exclude := NULL]
 
   ### Combine er-diagnoses and inpatient-diagnoses as diagnoses at admission
+  res <- ipcharl[, -c("genc_diag")]
   if (!is.null(erdiag)){
-    res <- rbind(ipcharl[, -c("genc_diag")], erdiag[, c("genc_id", "diagnosis_code", "diagnosis_type")])
-  } else {
-    res <- ipcharl[, -c("genc_diag")]
+    res <- rbind(res, erdiag[, c("genc_id", "diagnosis_code", "diagnosis_type")])
   }
 
   return(res)
