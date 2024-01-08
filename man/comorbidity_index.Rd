@@ -14,13 +14,17 @@ comorbidity_index(
 )
 }
 \arguments{
-\item{ipdiag}{(\code{data.table})\cr
+\item{ipdiag}{(\code{data.table} or \code{data.frame})\cr
 \code{ipdiagnosis} table as defined in the
 \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.}
 
-\item{erdiag}{(\code{data.table})\cr
+\item{erdiag}{(\code{data.table} or \code{data.frame})\cr
 \code{erdiagnosis} table as defined in the
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.}
+\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+Typically, ER diagnoses should be included when deriving comorbidity in order
+to increase sensitivity. However, in certain scenarios, users may choose to
+only include IP diagnoses by specifying \code{erdiag = NULL}. This may be useful
+when comparing cohorts with different rates of ER admissions.}
 
 \item{map}{String denoting the mapping algorithm to be used (values are case-insensitive).
 Possible values are the Charlson score with either ICD-10 or ICD-9-CM codes (\code{charlson_icd10_quan}, \code{charlson_icd9_quan}) and the Elixhauser score, again using either ICD-10 or ICD-9-CM (\code{elixhauser_icd10_quan}, \code{elixhauser_icd9_quan}).

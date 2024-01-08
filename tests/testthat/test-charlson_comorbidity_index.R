@@ -32,9 +32,7 @@ test_that("exclude type 6 and include MRDx if not also type 2", {
     diagnosis_type = c("M", 6)
   )
 
-  ercols <- c("genc_id", "er_diagnosis_code", "er_diagnosis_type")
-  erdiag <- data.table(matrix(nrow = 0, ncol = length(ercols)))
-  colnames(erdiag) <- ercols
+  erdiag <- NULL
 
   res <- diagnoses_at_admission(ipdiag, erdiag)
 
