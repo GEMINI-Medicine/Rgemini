@@ -58,10 +58,7 @@ n_routine_bloodwork <- function(dbcon,
                                 cohort) {
   cohort <- coerce_to_datatable(cohort)
 
-  mapping_message(
-    "Sodium and Hemoglobin tests",
-    "Note however that Sodium and Hemoglobin are prioritized and mapped for all encounters.\n"
-    )
+  mapping_message("Sodium and Hemoglobin tests")
 
   cat("\nThis function may take a few minutes to run...\n\n")
 

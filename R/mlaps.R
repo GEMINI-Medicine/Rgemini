@@ -246,6 +246,8 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
 #'
 mlaps <- function(ipadmdad, lab, hours_after_admission = 0, component_wise = FALSE) {
 
+  mapping_message("lab tests")
+
   lab <- lab %>%
     select(test_type_mapped_omop, genc_id, result_value, result_unit, collection_date_time) %>%
     filter(test_type_mapped_omop %in% LAPS_OMOP_CONCEPTS) %>%
