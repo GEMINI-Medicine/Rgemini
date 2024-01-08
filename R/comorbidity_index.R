@@ -184,15 +184,14 @@ comorbidity_index <- function(ipdiag, erdiag, map, weights, at_admission = TRUE,
 
   ipdiag <- coerce_to_datatable(ipdiag)
 
+  all_diagnoses <- ipdiag[, .(genc_id, diagnosis_code, diagnosis_type)]
   if (!is.null(erdiag)){
     erdiag <- coerce_to_datatable(erdiag)
 
     all_diagnoses <- rbind(
-      erdiag[, .(genc_id, "diagnosis_code" = er_diagnosis_code, "diagnosis_type" = er_diagnosis_type)],
-      ipdiag[, .(genc_id, diagnosis_code, diagnosis_type)]
+      all_diagnoses,
+      erdiag[, .(genc_id, "diagnosis_code" = er_diagnosis_code, "diagnosis_type" = er_diagnosis_type)]
     )
-  } else {
-    all_diagnoses <- ipdiag[, .(genc_id, diagnosis_code, diagnosis_type)]
   }
 
   diagnoses_of_interest <- if (at_admission) {
