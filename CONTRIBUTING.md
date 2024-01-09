@@ -18,11 +18,13 @@ We welcome contributions to `Rgemini` by all GEMINI team members. To submit a co
 
 8. Note that any new package data should be saved as a `.rda` file in the `data/` directory, and should be documented with `roxygen` in `data.R`.
 
-9. Submit a [pull request](https://help.github.com/articles/using-pull-requests) into the `develop` branch.
+9. Function derived from journal article publications requiring citations upon use (e.g. clinical scores) should include a `references` section in `roxygen`. The citation format is: `1st_author_last_name 1st_author_initial, et al. Journal Abbreviation, Year. https://doi.org/xxxx.`. URLs should be presented as-is without hyperlinking and DOI URLs should be used whenever possible. Note that commonly known online resources (e.g. links CIHI documentations, data dictionary) might not require a `references` section and can be included as hyperlinks in any `roxygen` section.
 
-10. Ask a team member to review the changes (see guidelines for reviewers below) and implement additional changes based on the reviewer's feedback.
+10. Submit a [pull request](https://help.github.com/articles/using-pull-requests) into the `develop` branch.
 
-11. Once the reviewer has approved the pull request, squash all commits and merge the branch into `develop`, close the issue, and delete the branch you developed on.
+11. Ask a team member to review the changes (see guidelines for reviewers below) and implement additional changes based on the reviewer's feedback.
+
+12. Once the reviewer has approved the pull request, squash all commits and merge the branch into `develop`, close the issue, and delete the branch you developed on.
 
 
 # Reviewing code

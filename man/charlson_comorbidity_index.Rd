@@ -52,7 +52,7 @@ This affects comorbidities present in a patient with different degrees of severi
 }
 \references{
 \itemize{
-\item{\href{http://dx.doi.org/10.1093/aje/kwq433}{Quan et al. 2011}}
-\item{\href{https://doi.org/10.21105/joss.00648}{Gasparini, 2018}}
+\item{Quan H, et al. Am J Epidemiol, 2011. https://doi.org/10.1093/aje/kwq433}
+\item{Gasparini A. JOSS, 2018. https://doi.org/10.21105/joss.00648}
 }
 }

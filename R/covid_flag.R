@@ -106,7 +106,7 @@
 #' }
 #'
 #' @references
-#' https://www.cihi.ca/en/covid-19-resources/covid-19-data-collection-and-coding-direction
+#' [CIHI COVID-19 data collection and coding direction](https://www.cihi.ca/en/covid-19-resources/covid-19-data-collection-and-coding-direction)
 #'
 #' @export
 covid_flag <- function(cohort,

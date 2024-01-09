@@ -12,6 +12,8 @@
 * New function `disability()` that derives disability flag for each encounter.
 * Adds function to calculate Elixhauser comorbidity scores `elixhauser_comorbidity_index()`.
 * Adds utility function to generate warning about mapped values.
+* Standardizes citation format in function references section.
+
 
 # Rgemini 0.3.1
 
