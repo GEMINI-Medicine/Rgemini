@@ -691,3 +691,30 @@ check_input <- function(arginput, argtype,
   ### Run checks on all input arguments (if multiple)
   check_all <- Map(run_checks, arginput, argnames)
 }
+
+
+#' @title
+#' Mapping Message
+#'
+#' @description
+#' Message to display to inform the user that the function being used relies on
+#' GEMINI SME mapped values.
+#'
+#' @param what (`character`)\cr
+#' Which values were mapped.
+#'
+#' @param addtl (`character`)\cr
+#' An additional, specific message to append to the generic message.
+#'
+#' @return
+#' Prints a message to the console.
+#'
+mapping_message <- function(what, addtl = NULL) {
+  msg <- paste(
+    "\n***Note:***\nThe output of this function is based on manual mapping of", what, "by a GEMINI Subject Matter Expert.\n",
+    "Please carefully check mapping coverage for your cohort of interest, or contact the GEMINI team if you require additional support.\n",
+    addtl
+  )
+
+  cat(msg)
+}
