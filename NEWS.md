@@ -8,9 +8,12 @@
 * Adds `er_los` function to calculate emergency room length-of-stay.
 * New function to simulate "ipadmdad" data with random hospital-level intercepts
 * Enhanced `daily_census` function to allow exclusion of days with 0 counts
+* Additional input argument in `covid_flag()` for inclusion of ER diagnoses
 * New function `disability()` that derives disability flag for each encounter.
 * Adds function to calculate Elixhauser comorbidity scores `elixhauser_comorbidity_index()`.
+* Adds utility function to generate warning about mapped values.
 * Standardizes citation format in function references section.
+
 
 # Rgemini 0.3.1
 

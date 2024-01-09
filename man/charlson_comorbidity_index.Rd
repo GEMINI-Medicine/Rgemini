@@ -12,13 +12,17 @@ charlson_comorbidity_index(
 )
 }
 \arguments{
-\item{ipdiag}{(\code{data.table})\cr
+\item{ipdiag}{(\code{data.table} or \code{data.frame})\cr
 \code{ipdiagnosis} table as defined in the
 \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.}
 
-\item{erdiag}{(\code{data.table})\cr
+\item{erdiag}{(\code{data.table} or \code{data.frame})\cr
 \code{erdiagnosis} table as defined in the
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.}
+\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+Typically, ER diagnoses should be included when deriving comorbidity in order
+to increase sensitivity. However, in certain scenarios, users may choose to
+only include IP diagnoses by specifying \code{erdiag = NULL}. This may be useful
+when comparing cohorts with different rates of ER admissions.}
 
 \item{at_admission}{(\code{logical})\cr
 Whether to calculate the score for all comorbidities or for only pre-admit comorbidities.}

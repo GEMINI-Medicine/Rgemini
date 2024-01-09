@@ -6,13 +6,17 @@
 #'
 #' Specifically page 19 for inclusion/exclusion criteria.
 #'
-#' @param ipdiag (`data.table`)\cr
+#' @param ipdiag (`data.table` or `data.frame`)\cr
 #' `ipdiagnosis` table as defined in the
 #' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
 #'
-#' @param erdiag (`data.table`)\cr
+#' @param erdiag (`data.table` or `data.frame`)\cr
 #' `erdiagnosis` table as defined in the
 #' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' Typically, ER diagnoses should be included when deriving comorbidity in order
+#' to increase sensitivity. However, in certain scenarios, users may choose to
+#' only include IP diagnoses by specifying `erdiag = NULL`. This may be useful
+#' when comparing cohorts with different rates of ER admissions.
 #'
 #' @return (`data.table`)\cr
 #' All encounters by `genc_id` with `diagnosis_type` and `diagnosis_code` for all diagnoses at admission.
@@ -21,12 +25,14 @@
 #'
 diagnoses_at_admission <- function(ipdiag, erdiag) {
   ipdiag <- coerce_to_datatable(ipdiag)
-  erdiag <- coerce_to_datatable(erdiag)
 
-  ### Synchronize varnames between ipdiag and erdiag
+  if (!is.null(erdiag)){
+    erdiag <- coerce_to_datatable(erdiag)
 
-  erdiag[, ":="(diagnosis_code = er_diagnosis_code)]
-  erdiag[, ":="(diagnosis_type = er_diagnosis_type)]
+    ### Synchronize varnames between ipdiag and erdiag
+    erdiag[, ":="(diagnosis_code = er_diagnosis_code)]
+    erdiag[, ":="(diagnosis_type = er_diagnosis_type)]
+  }
 
   ### Process inpatient diagnoses at admission
 
@@ -116,7 +122,10 @@ diagnoses_at_admission <- function(ipdiag, erdiag) {
     .[, exclude := NULL]
 
   ### Combine er-diagnoses and inpatient-diagnoses as diagnoses at admission
-  res <- rbind(ipcharl[, -c("genc_diag")], erdiag[, c("genc_id", "diagnosis_code", "diagnosis_type")])
+  res <- ipcharl[, -c("genc_diag")]
+  if (!is.null(erdiag)){
+    res <- rbind(res, erdiag[, c("genc_id", "diagnosis_code", "diagnosis_type")])
+  }
 
   return(res)
 }
@@ -154,13 +163,35 @@ diagnoses_at_admission <- function(ipdiag, erdiag) {
 #' @export
 #'
 comorbidity_index <- function(ipdiag, erdiag, map, weights, at_admission = TRUE, raw_comorbidities = FALSE) {
-  ipdiag <- coerce_to_datatable(ipdiag)
-  erdiag <- coerce_to_datatable(erdiag)
+  ### users can set erdiag to NULL to exclude ER diagnoses; but warning will be shown
+  if (is.null(erdiag)) {
+    cat("\n*** Based on the input you provided, only in-patient diagnoses (ipdiag) will be included in the comorbidity index.
+    If you want to include ER diagnoses, please provide the correspondig table as an input to `erdiag`. ***\n")
+  }
 
-  all_diagnoses <- rbind(
-    erdiag[, .(genc_id, "diagnosis_code" = er_diagnosis_code, "diagnosis_type" = er_diagnosis_type)],
-    ipdiag[, .(genc_id, diagnosis_code, diagnosis_type)]
-  )
+  ### check that ipdiag/erdiag contains genc_id & diagnosis_code
+  check_input(ipdiag, c("data.table", "data.frame"),
+              colnames = c("genc_id", "diagnosis_code"),
+              coltypes = c("", "character"))
+
+  if (!is.null(erdiag)){
+    check_input(erdiag, c("data.table", "data.frame"),
+                colnames = c("genc_id", "er_diagnosis_code"),
+                coltypes = c("", "character"))
+  }
+
+
+  ipdiag <- coerce_to_datatable(ipdiag)
+
+  all_diagnoses <- ipdiag[, .(genc_id, diagnosis_code, diagnosis_type)]
+  if (!is.null(erdiag)){
+    erdiag <- coerce_to_datatable(erdiag)
+
+    all_diagnoses <- rbind(
+      all_diagnoses,
+      erdiag[, .(genc_id, "diagnosis_code" = er_diagnosis_code, "diagnosis_type" = er_diagnosis_type)]
+    )
+  }
 
   diagnoses_of_interest <- if (at_admission) {
     diagnoses_at_admission(ipdiag, erdiag)

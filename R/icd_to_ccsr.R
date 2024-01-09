@@ -128,10 +128,7 @@
 #' }
 icd_to_ccsr <- function(dbcon, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, replace_invalidpdx = TRUE) {
 
-  cat("\n***Note:***
-  The output of this function is based on GEMINI-derived mappings of ICD-10-CA codes to CCSR categories.
-  Please carefully check mapping coverage for your cohort of interest, or contact the GEMINI team if you require additional support.\n")
-
+  mapping_message("ICD-10-CA codes to CCSR categories")
 
   cat(paste0(
     "\nObtaining CCSR categories for ICD-10-CA codes in input table ",
