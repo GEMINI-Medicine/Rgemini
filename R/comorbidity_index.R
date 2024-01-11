@@ -231,7 +231,7 @@ comorbidity_index <- function(ipdiag, erdiag, map, weights, at_admission = TRUE,
       select(genc_id) %>%
       unique() %>%
       full_join(res, by = c("genc_id" = "genc_id")) %>%
-      tidyr::replace_na(list(score = 0))
+      tidyr::replace_na(list(scores = 0))
   }
 
   return(res)
