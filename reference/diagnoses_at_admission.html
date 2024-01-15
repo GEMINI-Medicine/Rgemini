@@ -12,7 +12,7 @@ Specifically page 19 for inclusion/exclusion criteria."><!-- mathjax --><script 
     
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,13 +63,17 @@ Specifically page 19 for inclusion/exclusion criteria."><!-- mathjax --><script 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>ipdiag</dt>
-<dd><p>(<code>data.table</code>)<br><code>ipdiagnosis</code> table as defined in the
+<dd><p>(<code>data.table</code> or <code>data.frame</code>)<br><code>ipdiagnosis</code> table as defined in the
 <a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>.</p></dd>
 
 
 <dt>erdiag</dt>
-<dd><p>(<code>data.table</code>)<br><code>erdiagnosis</code> table as defined in the
-<a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>.</p></dd>
+<dd><p>(<code>data.table</code> or <code>data.frame</code>)<br><code>erdiagnosis</code> table as defined in the
+<a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>.
+Typically, ER diagnoses should be included when deriving comorbidity in order
+to increase sensitivity. However, in certain scenarios, users may choose to
+only include IP diagnoses by specifying <code>erdiag = NULL</code>. This may be useful
+when comparing cohorts with different rates of ER admissions.</p></dd>
 
 </dl></div>
     <div class="section level2">

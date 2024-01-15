@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -100,6 +100,14 @@ reflect a real indicator of capacity, but rather a measure of whether
 occupancy is above/below typical occupancy <em>for a certain group of
 patients</em> (also see <a href="#grouping"><em>section on group_var
 input</em></a> below).</p>
+<p>Moreover, users should use caution when analyzing cohorts with small
+sample size or when including grouping variables that can result in
+counts of 0 on some days. In that case, users need to make an informed
+decision about whether <code>census = 0</code> is meaningful within the
+context of their research question, or whether days with patient counts
+of 0 should be returned as <code>census = NA</code> (i.e., those days
+are excluded from the <code>capacity_ratio</code> estimate; also see <a href="#include_zero"><em>section on include_zero input</em></a>
+below).</p>
 </div>
 <div class="section level2">
 <h2 id="running-daily_census-with-default-arguments">Running <code>daily_census()</code> with default arguments<a class="anchor" aria-label="anchor" href="#running-daily_census-with-default-arguments"></a>
@@ -348,7 +356,7 @@ and age (&lt;65 vs. 65+):</p>
 <span><span class="co"># Compute census by gender &amp; age categories</span></span>
 <span><span class="va">census_output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/daily_census.html">daily_census</a></span><span class="op">(</span><span class="va">admdad</span>, group_var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gender"</span>,<span class="st">"age_cat"</span><span class="op">)</span><span class="op">)</span> </span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">census_output</span>,<span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">census_output</span>, <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
 <blockquote>
 <p><strong>Mock output table showing census grouping by age &amp; gender
 categories:</strong></p>
@@ -518,6 +526,26 @@ actual buffer period that is applied within the function depends on a
 combination of the specified time period, data availability per site,
 and the buffer argument in order to ensure that the maximum amount of
 available data are used in the census calculation.</p>
+</div>
+<div class="section level3">
+<h3 id="include_zero">
+<code>include_zero</code><a class="anchor" aria-label="anchor" href="#include_zero"></a>
+</h3>
+<p>By default, the function includes days where <code>census = 0</code>
+in the output (<code>include_zero = TRUE</code>). This means that census
+counts on those days are considered to be true 0s (i.e., “no patient was
+hospitalized”), and therefore, 0s are included in the capacity ratio
+estimate. For example, when analyzing cohorts of patients with a rare
+disease, days where no patients with that disease were in hospital are
+conceptually meaningful and should be counted towards the typical
+occupancy. By contrast, when analyzing the daily census counts per
+physician, days where <code>census = 0</code> likely reflect days where
+a given physician was not on service. Therefore, those days should not
+be included in the estimate of physicians’ typical patient volume, and
+thus, users should set <code>include_zero</code> to <code>FALSE</code>
+(i.e., <code>census</code> counts and <code>capacity_ratio</code> will
+be returned as <code>NA</code> for days where no patient was associated
+with a given physician).</p>
 </div>
 </div>
 <div class="section level2">

@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -85,6 +85,7 @@
 <li>
 <code>git clone</code> the package to some directory such as <code>/path/to/repo</code>, and run <code>devtools::install("/path/to/repo", build_vignettes = TRUE)</code>.</li>
 <li>Download the latest source tarball from the <a href="https://github.com/GEMINI-Medicine/Rgemini/tags" class="external-link">package releases</a> to some directory such as <code>/path/to/tarball</code> and run <code>install.packages("/path/to/tarball", repos = NULL, type="source")</code>.</li>
+<li>Try configuring secure downloads as described in <a href="https://support.posit.co/hc/en-us/articles/206827897-Secure-Package-Downloads-for-R37" class="external-link">this blog post</a>.</li>
 </ol>
 <p>If none of the above methods work, please create a post on our <a href="https://github.com/GEMINI-Medicine/Rgemini/discussions/categories/q-a" class="external-link">discussion board</a>.</p>
 </div>
@@ -110,7 +111,7 @@
 <span><span class="va">db</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span></span>
 <span>  <span class="va">drv</span>,</span>
 <span>  dbname <span class="op">=</span> <span class="st">"db_name"</span>,</span>
-<span>  host <span class="op">=</span> <span class="st">"172.XX.XX.XXX"</span>,</span>
+<span>  host <span class="op">=</span> <span class="st">"domain_name.ca"</span>,</span>
 <span>  port <span class="op">=</span> <span class="fl">1234</span>,</span>
 <span>  user <span class="op">=</span> <span class="fu">getPass</span><span class="fu">::</span><span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter Username"</span><span class="op">)</span>,</span>
 <span>  password <span class="op">=</span> <span class="fu">getPass</span><span class="fu">::</span><span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter Password"</span><span class="op">)</span></span>
@@ -164,6 +165,7 @@
 <blockquote>
 <p>The GEMINI team (2023). Rgemini: R Functions for GEMINI Data. R package version 0.3.0. <a href="https://gemini-medicine.github.io/Rgemini/" class="uri">https://gemini-medicine.github.io/Rgemini/</a></p>
 </blockquote>
+<p>Note that particular functions may require additional citations. Please consult the references in function-specific documentation whenever applicable.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="license">

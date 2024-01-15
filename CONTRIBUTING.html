@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,6 +57,9 @@
 <li><p>Commit all changes to this newly created branch and include the issue number in each commit message.</p></li>
 <li><p>Once you finish code development, add a new item at the top of <code>NEWS.md</code> concisely describing what’s changed.</p></li>
 <li><p>If appropriate, add unit tests in the <code>tests/testthat/</code> directory.</p></li>
+<li><p>If adding new functions with new documentation, update the <code>_pkgdown.yml</code> file by adding the new function to the appropriate reference section. Note that the <code>Rgemini</code> repository currently has a CI/CD workflow to generate and commit documentation on any pushed commit, but <code>devtools::document()</code> can also be run during development to debug locally.</p></li>
+<li><p>Note that any new package data should be saved as a <code>.rda</code> file in the <code>data/</code> directory, and should be documented with <code>roxygen</code> in <code>data.R</code>.</p></li>
+<li><p>Function derived from journal article publications requiring citations upon use (e.g. clinical scores) should include a <code>references</code> section in <code>roxygen</code>. The citation format is: <code>1st_author_last_name 1st_author_initial, et al. Journal Abbreviation, Year. https://doi.org/xxxx.</code>. URLs should be presented as-is without hyperlinking and DOI URLs should be used whenever possible. Note that commonly known online resources (e.g. links CIHI documentations, data dictionary) might not require a <code>references</code> section and can be included as hyperlinks in any <code>roxygen</code> section.</p></li>
 <li><p>Submit a <a href="https://help.github.com/articles/using-pull-requests" class="external-link">pull request</a> into the <code>develop</code> branch.</p></li>
 <li><p>Ask a team member to review the changes (see guidelines for reviewers below) and implement additional changes based on the reviewer’s feedback.</p></li>
 <li><p>Once the reviewer has approved the pull request, squash all commits and merge the branch into <code>develop</code>, close the issue, and delete the branch you developed on.</p></li>
@@ -81,7 +84,7 @@
 <li><p>Decide on a new version number based on the guidelines <a href="https://github.com/GEMINI-Medicine/Rgemini#package-versions" class="external-link">here</a>.</p></li>
 <li><p>Update the version number in the <code>NEWS.md</code> and <code>DESCRIPTION</code> files.</p></li>
 <li><p>Run <code>devtools::document()</code> in R to make sure all documentation is up to date.</p></li>
-<li><p>Run <code>rcmdcheck::rcmdcheck()</code> or <code>devtools::check()</code> and make sure no errors or warnings are returned.</p></li>
+<li><p>Run <code><a href="http://r-lib.github.io/rcmdcheck/reference/rcmdcheck.html" class="external-link">rcmdcheck::rcmdcheck()</a></code> or <code>devtools::check()</code> and make sure no errors or warnings are returned.</p></li>
 <li><p>If everything looks good, approve the pull request and merge <code>develop</code> into <code>master</code>.</p></li>
 <li><p>Add a new tag to the repository corresponding to the updated version number.</p></li>
 <li><p>Notify the team about the updated version. Ideally, all members should immediately update to the newest version of <code>Rgemini</code>.</p></li>

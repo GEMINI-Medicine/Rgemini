@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -64,6 +64,16 @@
         <dd>Compute Charlson comorbidity index (CCI) score</dd>
       </dl><dl><dt>
           
+          <code><a href="comorbidity_index.html">comorbidity_index()</a></code> 
+        </dt>
+        <dd>Compute Comorbidity Index</dd>
+      </dl><dl><dt>
+          
+          <code><a href="elixhauser_comorbidity_index.html">elixhauser_comorbidity_index()</a></code> 
+        </dt>
+        <dd>Compute Elixhauser comorbidity score</dd>
+      </dl><dl><dt>
+          
           <code><a href="covid_flag.html">covid_flag()</a></code> 
         </dt>
         <dd>COVID Flag</dd>
@@ -74,9 +84,14 @@
         <dd>Compute daily census</dd>
       </dl><dl><dt>
           
+          <code><a href="disability.html">disability()</a></code> 
+        </dt>
+        <dd>Identify encounters with disability</dd>
+      </dl><dl><dt>
+          
           <code><a href="frailty_score.html">frailty_score()</a></code> 
         </dt>
-        <dd>Compute frailty score using ICD-10-CA</dd>
+        <dd>Compute CIHI Hospital Frailty Risk Score</dd>
       </dl><dl><dt>
           
           <code><a href="day_time_of_admission.html">day_time_of_admission()</a></code> 
@@ -134,6 +149,11 @@
         <dd>Compute the number of radiology tests per encounter</dd>
       </dl><dl><dt>
           
+          <code><a href="n_missing.html">n_missing()</a></code> <code><a href="n_missing.html">mi2()</a></code> 
+        </dt>
+        <dd>Number of missingness</dd>
+      </dl><dl><dt>
+          
           <code><a href="n_routine_bloodwork.html">n_routine_bloodwork()</a></code> 
         </dt>
         <dd>Compute the number of routine bloodwork tests per encounter</dd>
@@ -142,6 +162,26 @@
           <code><a href="n_rbc_transfusions.html">n_rbc_transfusions()</a></code> 
         </dt>
         <dd>Count the number Red Blood Cell (RBC) Transfusions per encounter</dd>
+      </dl><dl><dt>
+          
+          <code><a href="er_los.html">er_los()</a></code> 
+        </dt>
+        <dd>Compute Length of Stay in Emergency Room</dd>
+      </dl><dl><dt>
+          
+          <code><a href="laps_assign_test.html">laps_assign_test()</a></code> 
+        </dt>
+        <dd>Assign score to LAPS component</dd>
+      </dl><dl><dt>
+          
+          <code><a href="loop_mlaps.html">loop_mlaps()</a></code> 
+        </dt>
+        <dd>Loop mLAPS</dd>
+      </dl><dl><dt>
+          
+          <code><a href="mlaps.html">mlaps()</a></code> 
+        </dt>
+        <dd>mLAPS</dd>
       </dl></div><div class="section level2">
       <h2 id="data-transformation">Data Transformation<a class="anchor" aria-label="anchor" href="#data-transformation"></a></h2>
       
@@ -163,6 +203,16 @@
           <code><a href="icd_to_ccsr.html">icd_to_ccsr()</a></code> 
         </dt>
         <dd>Identify CCSR categories for ICD-10-CA diagnosis codes</dd>
+      </dl><dl><dt>
+          
+          <code><a href="max_result_value.html">max_result_value()</a></code> 
+        </dt>
+        <dd>Calculates maxima when input vector is not empty, else returns NA.</dd>
+      </dl><dl><dt>
+          
+          <code><a href="min_result_value.html">min_result_value()</a></code> 
+        </dt>
+        <dd>Calculates minima when input vector is not empty, else returns NA.</dd>
       </dl></div><div class="section level2">
       <h2 id="cell-suppression">Cell Suppression<a class="anchor" aria-label="anchor" href="#cell-suppression"></a></h2>
       
@@ -242,14 +292,50 @@
 
       <dl><dt>
           
+          <code><a href="dummy_admdad.html">dummy_admdad()</a></code> 
+        </dt>
+        <dd>Generated simulated administrative data</dd>
+      </dl><dl><dt>
+          
           <code><a href="dummy_diag.html">dummy_diag()</a></code> 
         </dt>
         <dd>Generate Simulated Diagnosis Data Table</dd>
       </dl><dl><dt>
           
+          <code><a href="dummy_ipadmdad.html">dummy_ipadmdad()</a></code> 
+        </dt>
+        <dd>Simulate ipadmdad data</dd>
+      </dl><dl><dt>
+          
+          <code><a href="dummy_lab.html">dummy_lab()</a></code> 
+        </dt>
+        <dd>Generated simulated lab data</dd>
+      </dl><dl><dt>
+          
           <code><a href="sample_icd.html">sample_icd()</a></code> 
         </dt>
         <dd>Simulate ICD-10 Diagnosis Codes</dd>
+      </dl></div><div class="section level2">
+      <h2 id="mapping-files">Mapping files<a class="anchor" aria-label="anchor" href="#mapping-files"></a></h2>
+      
+      <p class="section-desc"></p><p>Files containing variable mappings.</p>
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="mapping_cihi_frailty.html">mapping_cihi_frailty</a></code> 
+        </dt>
+        <dd>Mapping data for <code>frailty_score</code> function</dd>
+      </dl><dl><dt>
+          
+          <code><a href="mapping_disability.html">mapping_disability</a></code> 
+        </dt>
+        <dd>Mapping data for <code>disability</code> function</dd>
       </dl></div><div class="section level2">
       <h2 id="utility-functions">Utility Functions<a class="anchor" aria-label="anchor" href="#utility-functions"></a></h2>
       
@@ -283,9 +369,19 @@
         <dd>Coerce to <code>data.table</code></dd>
       </dl><dl><dt>
           
-          <code><a href="count_missing.html">count_missing()</a></code> 
+          <code><a href="return_hospital_field.html">return_hospital_field()</a></code> 
         </dt>
-        <dd>Count missing</dd>
+        <dd>Return Hospital Field</dd>
+      </dl><dl><dt>
+          
+          <code><a href="check_input.html">check_input()</a></code> 
+        </dt>
+        <dd>Check user inputs</dd>
+      </dl><dl><dt>
+          
+          <code><a href="mapping_message.html">mapping_message()</a></code> 
+        </dt>
+        <dd>Mapping Message</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>

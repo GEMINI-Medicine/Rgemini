@@ -28,7 +28,7 @@ a standardized measure of patient counts, rather than a measure of true capacity
     
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -88,7 +88,8 @@ a standardized measure of patient counts, rather than a measure of true capacity
 <span>  group_var <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  capacity_func <span class="op">=</span> <span class="st">"median"</span>,</span>
 <span>  buffer <span class="op">=</span> <span class="fl">30</span>,</span>
-<span>  time_of_day <span class="op">=</span> <span class="st">"08:00:00"</span></span>
+<span>  time_of_day <span class="op">=</span> <span class="st">"08:00:00"</span>,</span>
+<span>  include_zero <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -182,6 +183,23 @@ Optional input specifying the time of the day the census/capacity ratio should b
 Default is 8am (<code>time_of_day = "8:00:00"</code>). Other times can be specified as a character (e.g., <code>"10:30"</code> for 10.30am)
 or as numeric input (e.g., <code>14</code> for 2pm).</p></dd>
 
+
+<dt>include_zero</dt>
+<dd><p>(<code>logical</code>)
+Flag indicating whether days with census counts of <code>0</code> should be treated as real 0s or whether they should be returned
+as <code>census = NA</code>. Note that this is only relevant for edge cases where this function is applied to small cohorts or if
+users specify a <code>group_var</code> with small samples resulting in counts of 0 on some days. In those cases,
+the decision on whether or not to include 0s can affect the estimated typical capacity (and thus, the <code>capacity_ratio</code>
+output).</p>
+<p>By default (<code>include_zero = TRUE</code>), the function will return days where no <code>genc_ids</code> were hospitalized as <code>census = 0</code>.
+This is the desired behavior in cases where counts of 0 patients are conceptually meaningful. For example, when users
+want to analyze how many patients with a rare condition are in hospital on a typical day, days where <code>census = 0</code>
+represent true counts of 0 patients (assuming the cohort provides sufficient coverage of all hospitalized patients).</p>
+<p>In other scenarios, users may want to disregard days where <code>census = 0</code> by specifying <code>include_zero = FALSE</code>.
+For example, when looking at daily census counts per physician, days where <code>census = 0</code> likely reflect days
+where a given physician was not on service. Therefore, those days should not be included in the estimate of
+physicians' typical patient volume.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -208,7 +226,7 @@ For any dates inside the buffer period, <code>census</code> and <code>capacity_r
 <span class="r-in"><span><span class="va">drv</span> <span class="op">&lt;-</span> <span class="fu">dbDriver</span><span class="op">(</span><span class="st">"PostgreSQL"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">dbcon</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="va">drv</span>,</span></span>
 <span class="r-in"><span>                        dbname <span class="op">=</span> <span class="st">"db"</span>,</span></span>
-<span class="r-in"><span>                        host <span class="op">=</span> <span class="st">"172.XX.XX.XXX"</span>,</span></span>
+<span class="r-in"><span>                        host <span class="op">=</span> <span class="st">"domain_name.ca"</span>,</span></span>
 <span class="r-in"><span>                        port <span class="op">=</span> <span class="fl">1234</span>,</span></span>
 <span class="r-in"><span>                        user <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter user:"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                        password <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"password"</span><span class="op">)</span><span class="op">)</span></span></span>

@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,9 +48,26 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.1" id="rgemini-041">Rgemini 0.4.1<a class="anchor" aria-label="anchor" href="#rgemini-041"></a></h2>
+<ul><li>Adds <code>n_missing</code> function to check number of missingness.</li>
+<li>Switch function <code><a href="../reference/frailty_score.html">frailty_score()</a></code> to calculate the CIHI Hospital Frailty Risk Score for each encounter.</li>
+<li>Deprecates function <code><a href="../reference/frailty_score.html">frailty_score()</a></code> that calculates the UK Hospital Frailty Risk Score.</li>
+<li>New utility function checking user inputs</li>
+<li>Adds core <code>mlaps</code> function and wrapper function to run over multiple sites and years.</li>
+<li>Adds <code>er_los</code> function to calculate emergency room length-of-stay.</li>
+<li>New function to simulate “ipadmdad” data with random hospital-level intercepts</li>
+<li>Enhanced <code>daily_census</code> function to allow exclusion of days with 0 counts</li>
+<li>Additional input argument in <code><a href="../reference/covid_flag.html">covid_flag()</a></code> for inclusion of ER diagnoses</li>
+<li>New function <code><a href="../reference/disability.html">disability()</a></code> that derives disability flag for each encounter.</li>
+<li>Adds function to calculate Elixhauser comorbidity scores <code><a href="../reference/elixhauser_comorbidity_index.html">elixhauser_comorbidity_index()</a></code>.</li>
+<li>Adds utility function to generate warning about mapped values.</li>
+<li>Standardizes citation format in function references section.</li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.1" id="rgemini-031">Rgemini 0.3.1<a class="anchor" aria-label="anchor" href="#rgemini-031"></a></h2>
 <ul><li>Allows the user to specify the number of digits to round percentages to in cell suppression of categorical variables, without forcing rounding to integer.</li>
 <li>Allows user to render only one level for binary variables in <code>table1</code>.</li>
+<li>Fixes singularity due to missing levels in <code>table1</code>.</li>
 <li>Fixes <code>find_db_tablename</code> and <code>readmission</code> for DBs with foreign data wrappers.</li>
 </ul></div>
     <div class="section level2">
