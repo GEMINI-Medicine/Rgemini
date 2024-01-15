@@ -21,9 +21,11 @@ reference:
   - in_hospital_mortality
   - length_of_stay
   - n_imaging
+  - n_missing
   - n_routine_bloodwork
   - n_rbc_transfusions
   - er_los
+  - mlaps
 - title: Data Transformation
   desc: These functions aid in querying the data, either by applying filters or mapping values.
 - contents:
@@ -48,4 +50,6 @@ reference:
   - matches("ni")
   - find_db_tablename
   - coerce_to_datatable
-  - n_missing
+  - return_hospital_field
+  - check_input
+  - mapping_message
