@@ -62,7 +62,7 @@
 <li><p>Function derived from journal article publications requiring citations upon use (e.g. clinical scores) should include a <code>references</code> section in <code>roxygen</code>. The citation format is: <code>1st_author_last_name 1st_author_initial, et al. Journal Abbreviation, Year. https://doi.org/xxxx.</code>. URLs should be presented as-is without hyperlinking and DOI URLs should be used whenever possible. Note that commonly known online resources (e.g. links CIHI documentations, data dictionary) might not require a <code>references</code> section and can be included as hyperlinks in any <code>roxygen</code> section.</p></li>
 <li><p>Submit a <a href="https://help.github.com/articles/using-pull-requests" class="external-link">pull request</a> into the <code>develop</code> branch.</p></li>
 <li><p>Ask a team member to review the changes (see guidelines for reviewers below) and implement additional changes based on the reviewer’s feedback.</p></li>
-<li><p>Once the reviewer has approved the pull request, squash all commits and merge the branch into <code>develop</code>, close the issue, and delete the branch you developed on.</p></li>
+<li><p>Once the reviewer has approved the pull request, squash all commits (confirm the PR # is referenced in the squash commit message) and merge the branch into <code>develop</code>, close the issue, and delete the branch you developed on.</p></li>
 </ol></div>
 <div class="section level1">
 <h1 id="reviewing-code">Reviewing code<a class="anchor" aria-label="anchor" href="#reviewing-code"></a></h1>
@@ -85,7 +85,7 @@
 <li><p>Update the version number in the <code>NEWS.md</code> and <code>DESCRIPTION</code> files.</p></li>
 <li><p>Run <code>devtools::document()</code> in R to make sure all documentation is up to date.</p></li>
 <li><p>Run <code><a href="http://r-lib.github.io/rcmdcheck/reference/rcmdcheck.html" class="external-link">rcmdcheck::rcmdcheck()</a></code> or <code>devtools::check()</code> and make sure no errors or warnings are returned.</p></li>
-<li><p>If everything looks good, approve the pull request and merge <code>develop</code> into <code>master</code>.</p></li>
+<li><p>If everything looks good, approve the pull request and merge <code>develop</code> into <code>master</code> (without squashing commits).</p></li>
 <li><p>Add a new tag to the repository corresponding to the updated version number.</p></li>
 <li><p>Notify the team about the updated version. Ideally, all members should immediately update to the newest version of <code>Rgemini</code>.</p></li>
 <li><p>Update for HPC4Health users: Please submit a request on the <a href="https://app.smartsheet.com/sheets/p7P77qF97wcxgr2V4Cr6Vjqw3vjhCpRMQQH3Jwm1" class="external-link">HPC4Health File Transfer Log</a>. The systems team will then transfer the updated package to Nexus, allowing HPC4Health users to install the newest version of <code>Rgemini</code>.</p></li>
