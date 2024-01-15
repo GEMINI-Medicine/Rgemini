@@ -39,6 +39,11 @@ reference:
   - max_pairwise_smd
 - title: Dummy Data
   desc: Helper functions designed to produce sample data.
+  - dummy_admdad
+  - dummy_diag
+  - dummy_ipadmdad
+  - dummy_lab
+  - sample_icd
 - title: Mapping files
   desc: Files containing variable mappings.
 - contents:
