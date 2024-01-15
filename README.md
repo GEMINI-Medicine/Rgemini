@@ -105,6 +105,6 @@ Usually we accumulate a series of changes on develop and release them all at onc
 
 If you find `Rgemini` useful, please cite it in your publications using `citation("Rgemini")`:
 
-> The GEMINI team (2023). Rgemini: R Functions for GEMINI Data. R package version 0.3.0. https://gemini-medicine.github.io/Rgemini/
+> The GEMINI team (2023). Rgemini: R Functions for GEMINI Data. R package version 0.4.0. https://gemini-medicine.github.io/Rgemini/
 
 Note that particular functions may require additional citations. Please consult the references in function-specific documentation whenever applicable.

@@ -5,11 +5,10 @@ template:
 reference:
 - title: Derived Variables
 - contents:
-  - matches("charlson")
+  - matches("comorbidity")
   - covid_flag
   - daily_census
   - disability
-  - elixhauser_comorbidity_index
   - frailty_score
   - day_time_of_admission
   - hospital_fiscal_year
@@ -25,12 +24,14 @@ reference:
   - n_routine_bloodwork
   - n_rbc_transfusions
   - er_los
-  - mlaps
+  - matches("laps")
 - title: Data Transformation
   desc: These functions aid in querying the data, either by applying filters or mapping values.
 - contents:
   - diagnoses_at_admission
   - icd_to_ccsr
+  - max_result_value
+  - min_result_value
 - title: Cell Suppression
   desc: This includes all helper functions associated with producing a Table 1.
 - contents:
@@ -41,9 +42,14 @@ reference:
 - contents:
   - dummy_admdad
   - dummy_diag
+  - dummy_ipadmdad
   - dummy_lab
   - sample_icd
-  - dummy_ipadmdad
+- title: Mapping files
+  desc: Files containing variable mappings.
+- contents:
+  - mapping_cihi_frailty
+  - mapping_disability
 - title: Utility Functions
 - contents:
   - lunique
