@@ -39,7 +39,7 @@ reference:
   - max_pairwise_smd
 - title: Dummy Data
   desc: Helper functions designed to produce sample data.
- - title: Mapping files
+- title: Mapping files
   desc: Files containing variable mappings.
 - contents:
   - mapping_cihi_frailty
