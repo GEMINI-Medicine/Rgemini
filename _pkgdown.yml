@@ -39,6 +39,7 @@ reference:
   - max_pairwise_smd
 - title: Dummy Data
   desc: Helper functions designed to produce sample data.
+- contents:
   - dummy_admdad
   - dummy_diag
   - dummy_ipadmdad
