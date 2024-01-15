@@ -1,7 +1,25 @@
+# Rgemini 0.4.1
+
+* Adds `n_missing` function to check number of missingness.
+* Switch function `frailty_score()` to calculate the CIHI Hospital Frailty Risk Score for each encounter.
+* Deprecates function `frailty_score()` that calculates the UK Hospital Frailty Risk Score.
+* New utility function checking user inputs
+* Adds core `mlaps` function and wrapper function to run over multiple sites and years.
+* Adds `er_los` function to calculate emergency room length-of-stay.
+* New function to simulate "ipadmdad" data with random hospital-level intercepts
+* Enhanced `daily_census` function to allow exclusion of days with 0 counts
+* Additional input argument in `covid_flag()` for inclusion of ER diagnoses
+* New function `disability()` that derives disability flag for each encounter.
+* Adds function to calculate Elixhauser comorbidity scores `elixhauser_comorbidity_index()`.
+* Adds utility function to generate warning about mapped values.
+* Standardizes citation format in function references section.
+
+
 # Rgemini 0.3.1
 
 * Allows the user to specify the number of digits to round percentages to in cell suppression of categorical variables, without forcing rounding to integer.
 * Allows user to render only one level for binary variables in `table1`.
+* Fixes singularity due to missing levels in `table1`.
 * Fixes `find_db_tablename` and `readmission` for DBs with foreign data wrappers.
 
 # Rgemini 0.3.0

@@ -11,7 +11,8 @@ daily_census(
   group_var = NULL,
   capacity_func = "median",
   buffer = 30,
-  time_of_day = "08:00:00"
+  time_of_day = "08:00:00",
+  include_zero = TRUE
 )
 }
 \arguments{
@@ -101,6 +102,23 @@ additional buffer is applied.}
 Optional input specifying the time of the day the census/capacity ratio should be calculated at.
 Default is 8am (\code{time_of_day = "8:00:00"}). Other times can be specified as a character (e.g., \code{"10:30"} for 10.30am)
 or as numeric input (e.g., \code{14} for 2pm).}
+
+\item{include_zero}{(\code{logical})
+Flag indicating whether days with census counts of \code{0} should be treated as real 0s or whether they should be returned
+as \code{census = NA}. Note that this is only relevant for edge cases where this function is applied to small cohorts or if
+users specify a \code{group_var} with small samples resulting in counts of 0 on some days. In those cases,
+the decision on whether or not to include 0s can affect the estimated typical capacity (and thus, the \code{capacity_ratio}
+output).
+
+By default (\code{include_zero = TRUE}), the function will return days where no \code{genc_ids} were hospitalized as \code{census = 0}.
+This is the desired behavior in cases where counts of 0 patients are conceptually meaningful. For example, when users
+want to analyze how many patients with a rare condition are in hospital on a typical day, days where \code{census = 0}
+represent true counts of 0 patients (assuming the cohort provides sufficient coverage of all hospitalized patients).
+
+In other scenarios, users may want to disregard days where \code{census = 0} by specifying \code{include_zero = FALSE}.
+For example, when looking at daily census counts per physician, days where \code{census = 0} likely reflect days
+where a given physician was not on service. Therefore, those days should not be included in the estimate of
+physicians' typical patient volume.}
 }
 \value{
 (\code{data.table})\cr
@@ -128,7 +146,7 @@ a standardized measure of patient counts, rather than a measure of true capacity
 drv <- dbDriver("PostgreSQL")
 dbcon <- DBI::dbConnect(drv,
                         dbname = "db",
-                        host = "172.XX.XX.XXX",
+                        host = "domain_name.ca",
                         port = 1234,
                         user = getPass("Enter user:"),
                         password = getPass("password"))

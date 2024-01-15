@@ -4,7 +4,7 @@
 \alias{covid_flag}
 \title{COVID Flag}
 \usage{
-covid_flag(cohort, diagnosis)
+covid_flag(cohort, ipdiag, erdiag)
 }
 \arguments{
 \item{cohort}{(\code{data.frame} or \code{data.table})
@@ -12,50 +12,54 @@ Cohort table with all relevant encounters of interest, where each row
 corresponds to a single encounter. Must contain GEMINI Encounter ID
 (\code{genc_id}).}
 
-\item{diagnosis}{(\code{data.frame} or \code{data.table})
-A table equivalent to DRM table "ipdiagnosis".
-Must contain two fields: \code{genc_id} and \code{diagnosis_code} (as ICD-10-CA). The
-function handles long format table only. Diagnosis codes must be free from
-any special characters.
-If user wishes to use DRM table "erdiagnosis" instead or in combination with
-"ipdiagnosis", be sure to rename field \code{er_diagnosis_code} to
-\code{diagnosis_code}.}
+\item{ipdiag}{(\code{data.table})
+\code{ipdiagnosis} table as defined in the \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+This table must contain \code{genc_id} and \code{diagnosis_code} (as ICD-10-CA
+alphanumeric code) in long format.}
+
+\item{erdiag}{(\code{data.table})
+\code{erdiagnosis} table as defined in the \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+This table must contain \code{genc_id} and \code{er_diagnosis_code} (as ICD-10-CA
+alphanumeric code) in long format.
+Typically, ER diagnoses should be included when deriving the COVID flags in
+order to increase sensitivity. However, in certain scenarios, users may
+choose to only include IP diagnoses by specifying \code{erdiag = NULL}. This may
+be useful when comparing cohorts with different rates of ER admissions.}
 }
 \value{
-data.table with the same number of rows as input "cohort" with additional
-derived boolean fields labelled as "covid_icd_confirmed_flag"
-and "covid_icd_suspected_flag". Possible values are TRUE, FALSE or NA.
-NA indicates that an encounter does not have a diagnosis code
-in diagnosis table.
+data.table with the same number of rows as input \code{cohort} with additional
+derived boolean fields labelled as \code{"covid_icd_confirmed_flag"}
+and \code{"covid_icd_suspected_flag"}. Possible values are \code{TRUE}, \code{FALSE} or
+\code{NA}. \code{NA} indicates that an encounter does not have a diagnosis code
+in the diagnosis table input.
+
+When one tries to left-join the output of this function with another table
+(another list of admissions in the left),
+make sure list of admissions (or patient) aligns in both tables.
 }
 \description{
-\code{covid_flag} returns COVID-19 diagnoses status
-for hospital admissions based on ICD-10-CA
+\code{covid_flag} returns COVID-19 diagnosis status
+for each \code{genc_id} based on ICD-10-CA diagnosis codes.
 
-Return a dataframe with two separate flags identifying
+Returns a table with two separate flags identifying
 encounters with confirmed and suspected COVID-19 diagnoses
-using ICD-10-CA U071 and U072 respectively
+using ICD-10-CA U07.1 and U07.2 respectively.
 
-A confirmed COVID-19 diagnosis (U071) is coded when
-there is a positive COVID-19 test regardless of the the test type.
+A confirmed COVID-19 diagnosis (U07.1) is coded when
+there is a positive COVID-19 test. Effective April 1 2023, U07.1 is coded
+when COVID-19 was confirmed by any COVID-19 test, including polymerase chain
+reaction (PCR) tests, point-of-care molecular tests (POCT), or rapid antigen
+tests (RAT). For data prior to April 1, 2023, U07.1 was only coded when
+COVID-19 was confirmed by a PCR lab test (for details, see
+\href{https://www.cihi.ca/sites/default/files/document/mapping-covid-19-codes-icd-10-ca-to-base-icd-10-job-aid-en.pdf}{CIHI diagnosis type definitions}).
 
-A suspected COVID-19 diagnosis (U072) is coded when an
+A suspected COVID-19 diagnosis (U07.2) is coded when an
 encounter is clinically or epidemiological diagnosed
 but the associated COVID-19 tests are inconclusive,
 not available, or not performed.
 }
 \details{
-This function takes a list of admissions and the list of ICD-10-CA
-to generate boolean fields indicating whether
-each admission had confirmed or suspected COVID-19 diagnoses.
-
-Function can take any data frame object but coerced into data.table
-with ICD-10-CA but these flags were meant to be calculated based on
-in-patient diagnoses (ED diagnoses have lower sensitivity/specificity
-for certain conditions).
-Function does not differentiate between diagnosis type.
-
-Below is the current ICD-10-CA codings related to COVID-19.
+Below is the current ICD-10-CA diagnosis codes related to COVID-19.
 For more details, please refer to the references in this page.
 
 \itemize{
@@ -77,34 +81,37 @@ medicaments and biological substances causing
 adverse effects in therapeutic use.}
 }
 }
-\section{Warning}{
+\section{Note}{
 
-Function returns data.table with \code{genc_id} field and two boolen fields. NA
-value in the output indicates that the encounter did not have any entry in
-the diagnosis table.
-When one tries to left-join the output of this function with another table
-(another list of admissions in the left),
-make sure list of admissions (or patient) aligns in both tables.
+This function does not differentiate between diagnosis types. That is, the
+COVID flags are derived based on all diagnosis codes that are provided
+as input to this function. By default, users should include all diagnosis
+types to identify COVID. However, if users wish to include only
+certain diagnosis types (e.g., type-M for most responsible discharge
+diagnosis), the \code{ipdiag} and \code{erdiag} input tables should be filtered
+accordingly based on \code{diagnosis_type} \emph{prior to running this function} (for
+more details, see \href{https://www.cihi.ca/sites/default/files/document/diagnosis-type-definitions-en.pdf}{CIHI diagnosis type definitions}.
 }
 
 \examples{
 \dontrun{
 drv <- dbDriver("PostgreSQL")
 dbcon <- DBI::dbConnect(drv,
-                        dbname = "db",
-                        host = "172.XX.XX.XXX",
-                        port = 1234,
-                        user = getPass("Enter user:"),
-                        password = getPass("password"))
+  dbname = "db",
+  host = "domain_name.ca",
+  port = 1234,
+  user = getPass("Enter user:"),
+  password = getPass("password")
+)
 
 ipadm <- dbGetQuery(dbcon, "select * from admdad") \%>\% data.table()
+ipdiagnosis <- dbGetQuery(dbcon, "select * from ipdiagnosis") \%>\% data.table()
+erdiagnosis <- dbGetQuery(dbcon, "select * from erdiagnosis") \%>\% data.table()
 
-dx <- dbGetQuery(dbcon, "select * from ipdiagnosis") \%>\% data.table()
-
-covid <- covid_flag(cohort = ipadm, diagnosis = dx)
+covid <- covid_flag(cohort = ipadm, ipdiag = ipdiagnosis, erdiag = )
 }
 
 }
 \references{
-https://www.cihi.ca/en/covid-19-resources/covid-19-data-collection-and-coding-direction
+\href{https://www.cihi.ca/en/covid-19-resources/covid-19-data-collection-and-coding-direction}{CIHI COVID-19 data collection and coding direction}
 }

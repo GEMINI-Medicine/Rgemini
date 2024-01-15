@@ -80,7 +80,7 @@ concepts is needed for proper use of the function: transfer coded vs. transfer o
 drv <- dbDriver("PostgreSQL")
 dbcon <- DBI::dbConnect(drv,
                         dbname = "db",
-                        host = "172.XX.XX.XXX",
+                        host = "domain_name.ca",
                         port = 1234,
                         user = getPass("Enter user:"),
                         password = getPass("password"))
@@ -90,7 +90,7 @@ epicare_table <- episodes_of_care(dbcon)
 
 }
 \references{
-\href{https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital}{CIHI guidelines}
+\href{https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital}{CIHI readmission guidelines}
 }
 \seealso{
 \code{vignette("epicare_and_readmission", package = "Rgemini")}
