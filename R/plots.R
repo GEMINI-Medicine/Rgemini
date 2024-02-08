@@ -2,123 +2,122 @@
 #' Plot histograms of multiple variables
 #'
 #' @description
-#' This function ...
+#' This function facilitates plotting of multiple histograms for different
+#' variables at the same time.
 #'
-#' @param cohort (`data.frame` | `data.table`)\cr Table containing cohort data.
-#' @param vars (`character`)\cr Character vector of variables to be plotted.
+#' @section Note:
+#' These plots are not meant as publication-ready figures, but rather as a quick
+#' and easy means of illustrating useful distributional information about a
+#' wide range of variables with a single line of code.
+#'
+#' @param data (`data.frame` | `data.table`)\cr
+#' Table containing data to be plotted.
+#'
+#' @param plot_vars (`character` | `list`)\cr
+#' Character vector or list of variables to be plotted.
+#'
+#' @param show_stats (`logical`)\cr
+#' Flag indicating whether to show descriptive stats above each plot.
 #'
 #' @return (`ggplot`)\cr A ggplot figure containing histograms of all variables
 #' specified in `vars`.
-
+#'
 #' @import ggplot2
 #' @importFrom ggpubr ggarrange
 #' @export
 #'
 #' @examples
 #'
-#' \dontrun{
+#' # simulate GEMINI ipadmdad table
+#' admdad <- dummy_ipadmdad(n = 10000,
+#'                          n_hospitals = 20,
+#'                          time_period = c(2015, 2022)
+#'                          )
 #'
+#' # plot histograms
+#' plot_histograms(data = admdad,
+#'                 plot_vars = c("age", "gender", "discharge_disposition", "number_of_alc_days")
 #'
-#' }
-#'
-plot_histograms <- function(cohort, vars, binwidth) {
+plot_histograms <- function(data, plot_vars, show_stats = TRUE) {
 
+  ## plotting function
   plot_hist <- function(var){
 
-    if (class(cohort[[var$varname]]) %in% c("numeric", "integer")){
-      # for continuous/numeric variables
-      sub_fig <- ggplot(cohort, aes(x=get(var$varname)))  +
-        geom_histogram(color = "black", fill = "lightblue", binwidth = var$binwidth) +
-        scale_x_continuous(breaks = seq(10,110,10)) +
-        labs(title = var$varname, subtitle = paste0(
-          "Median = ", round(median(cohort[[var$varname]]), digits = 2),
-          " [Q1 = ", round(quantile(cohort[[var$varname]], 0.25), digits = 2),
-          ", Q3 = ", round(quantile(cohort[[var$varname]], 0.75), digits = 2), "]"))
+    ## for continuous/numeric variables
+    if (any(var$class %in% c("numeric", "integer"),
+        is.null(var$class) && class(data[[var$plot_var]]) %in% c("numeric", "integer"))) {
 
-    } else if (class(cohort[[var$varname]]) %in% c("character","logical")){
-      # for categorical/binary variables
-      sub_fig <- ggplot(cohort, aes(x=as.factor(cohort[[var$varname]]))) +
+      sub_fig <- ggplot(data, aes(x = get(var$plot_var)))  +
+        geom_histogram(color = "black", fill = "lightblue", binwidth = var$binwidth) +
+        labs(title = var$varlabel)
+
+      if (!is.null(var$breaks)){
+        sub_fig <- sub_fig +
+          scale_x_continuous(breaks = var$breaks, limits = c(min(var$breaks), max(var$breaks)))
+      }
+
+      if (show_stats == TRUE) {
+
+        if (!is.null(var$normal) && var$normal == TRUE){
+          sub_fig <- sub_fig +
+            labs(subtitle = paste0(
+              "Mean = ", round(mean(data[[var$plot_var]], na.rm = TRUE), digits = 2),
+              " (SD = ", round(sd(data[[var$plot_var]], na.rm = TRUE), digits = 2), ")",
+              "\nMissing: ", n_missing(data[[var$plot_var]])))
+        } else {
+          sub_fig <- sub_fig +
+            labs(subtitle = paste0(
+              "Median = ", round(median(data[[var$plot_var]], na.rm = TRUE), digits = 2),
+              " [Q1 = ", round(quantile(data[[var$plot_var]], 0.25, na.rm = TRUE), digits = 2),
+              ", Q3 = ", round(quantile(data[[var$plot_var]], 0.75, na.rm = TRUE), digits = 2), "]",
+              "\nMissing: ", n_missing(data[[var$plot_var]])))
+        }
+      }
+
+
+      ## for categorical/binary variables
+    } else if (any(var$class %in% c("character","logical"),
+               is.null(var$class) && class(data[[var$plot_var]]) %in% c("character","logical"))) {
+
+      sub_fig <- ggplot(data, aes(x=as.factor(data[[var$plot_var]]))) +
         geom_bar(color = "black", fill = "lightblue") +
-        geom_text(stat = "count", aes(label = scales::percent(round(..count../sum(..count..), digits = 3))),
-                  vjust = -0.2, hjust = 0.5, size = 3) +
-        labs(title = var$varname)
+        labs(title = var$varlabel)
+
+      if (show_stats == TRUE) {
+        sub_fig <- sub_fig + geom_text(stat = "count", aes(label = scales::percent(round(..count../sum(..count..), digits = 3))),
+                                       vjust = -0.2, hjust = 0.5, size = 3) +
+          labs(subtitle = paste0("Missing: ", n_missing(data[[var$plot_var]])))
+      }
+
     }
 
     sub_fig <- sub_fig +
-      xlab(var$varname) +
+      xlab(var$plot_var) +
       theme_minimal(base_size = 10)
 
     return(sub_fig)
   }
 
-  # if variables are provided as character vector, turn into list
-  if (class(vars) == "character"){
-    vars <- setNames(lapply(vars, function(x) list()), vars)
+
+  ## if variables are provided as character vector, turn into list
+  if (class(plot_vars) == "character"){
+    plot_vars <- setNames(lapply(plot_vars, function(x) list()), plot_vars)
+    # add plot_var as list item
+    plot_vars <- Map(c, plot_vars, plot_var = names(plot_vars))
   }
-  # add varnames as list item
-  vars <- Map(c, vars, varname = names(vars))
 
-  # create figure for each variable
-  sub_figs <- lapply(vars, plot_hist)
+  ## add varlabel as list item
+  # same as plot_vars names if provided as character vector
+  plot_vars <- Map(c, plot_vars, varlabel = names(plot_vars))
 
-  fig <- suppressWarnings(ggarrange(plotlist = sub_figs))#, ncol = 3, nrow = 2))
+
+  ## create figure for each variable
+  sub_figs <- lapply(plot_vars, plot_hist)
+
+  fig <- suppressWarnings(ggarrange(plotlist = sub_figs))
 
   return(fig)
 
 }
 
 
-#
-# fig_age <- ggplot(data, aes(x=age))  +
-#   geom_histogram(color = "black", fill = "lightblue", binwidth = 5) + #, binwidth = 5) +
-#   scale_x_continuous(breaks = seq(10,110,10)) +
-#   labs(title = "Age", subtitle = paste0(
-#     "Median = ", median(data$age),
-#     " [Q1 = ", quantile(data$age, 0.25),
-#     ", Q3 = ", quantile(data$age, 0.75), "]")) +
-#   theme_minimal(base_size = 10)
-#
-# fig_gender <- ggplot(data, aes(x=as.factor(gender))) +
-#   geom_bar(color = "black", fill = "lightblue") +
-#   geom_text(stat = "count", aes(label = scales::percent(round(..count../sum(..count..), digits = 3))),
-#             vjust = -0.2, hjust = 0.5, size = 3) +
-#   labs(title = "Gender") + xlab("gender") +
-#   theme_minimal(base_size = 10)
-#
-# fig_discharge_disp <- ggplot(data, aes(x=as.factor(discharge_disposition))) +
-#   geom_bar(color = "black", fill = "lightblue") +
-#   geom_text(stat = "count", aes(label = scales::percent(round(..count../sum(..count..), digits = 3))),
-#             vjust = -0.2, hjust = 0.5, size = 3) +
-#   labs(title = "Discharge disposition") + xlab("discharge_disposition") +
-#   theme_minimal(base_size = 10)
-#
-# # re-derive LOS based on discharge-admission date time as sanity check
-# data[, los_days_derived := length_of_stay(data)$los_days_derived]
-# fig_los <- ggplot(data, aes(x=los_days_derived)) +
-#   geom_histogram(color = "black", fill = "lightblue", binwidth = 2.5) +
-#   scale_x_continuous(breaks = seq(0,100,10), limits = c(NA, 105)) +
-#   labs(title = "Length of stay (derived)", subtitle = paste0(
-#     "Median = ", round(median(data$los_days_derived), digits = 2),
-#     " [Q1 = ", round(quantile(data$los_days_derived, 0.25), digits = 2),
-#     ", Q3 = ", round(quantile(data$los_days_derived, 0.75), digits = 2), "]")) +
-#   theme_minimal(base_size = 10)
-#
-# fig_alc <- ggplot(data, aes(x=alc_service_transfer_flag)) +
-#   geom_bar(color = "black", fill = "lightblue") +
-#   geom_text(stat = "count", aes(label = scales::percent(round(..count../sum(..count..), digits = 3))),
-#             vjust = -0.2, hjust = 0.5, size = 3) +
-#   labs(title = "ALC transfer") + xlab("alc_service_transfer_flag") +
-#   theme_minimal(base_size = 10)
-#
-# fig_alc_days <- ggplot(data, aes(x=number_of_alc_days)) +
-#   geom_histogram(color = "black", fill = "lightblue", binwidth = 2.5) +
-#   scale_x_continuous(breaks = seq(0,100,10), limits = c(NA, 105)) +
-#   labs(title = "ALC days", subtitle = paste0(
-#     "Median = ", round(median(data$number_of_alc_days, na.rm = TRUE), digits = 2),
-#     " [Q1 = ", round(quantile(data$number_of_alc_days, na.rm = TRUE, 0.25), digits = 2),
-#     ", Q3 = ", round(quantile(data$number_of_alc_days, na.rm = TRUE, 0.75), digits = 2), "]")) +
-#   theme_minimal(base_size = 10)
-
-
-#fig <- suppressWarnings(ggarrange(fig_age, fig_gender, fig_discharge_disp, fig_los, fig_alc, fig_alc_days,
-#                                  ncol = 3, nrow = 2))
