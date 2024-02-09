@@ -4,25 +4,43 @@
 \alias{plot_histograms}
 \title{Plot histograms of multiple variables}
 \usage{
-plot_histograms(cohort, vars, binwidth)
+plot_histograms(data, plot_vars, show_stats = TRUE)
 }
 \arguments{
-\item{cohort}{(\code{data.frame} | \code{data.table})\cr Table containing cohort data.}
+\item{data}{(\code{data.frame} | \code{data.table})\cr
+Table containing data to be plotted.}
 
-\item{vars}{(\code{character})\cr Character vector of variables to be plotted.}
+\item{plot_vars}{(\code{character} | \code{list})\cr
+Character vector or list of variables to be plotted.}
+
+\item{show_stats}{(\code{logical})\cr
+Flag indicating whether to show descriptive stats above each plot.}
 }
 \value{
 (\code{ggplot})\cr A ggplot figure containing histograms of all variables
 specified in \code{vars}.
 }
 \description{
-This function ...
+This function facilitates plotting of multiple histograms for different
+variables at the same time.
 }
+\section{Note}{
+
+These plots are not meant as publication-ready figures, but rather as a quick
+and easy means of illustrating useful distributional information about a
+wide range of variables with a single line of code.
+}
+
 \examples{
 
-\dontrun{
+# simulate GEMINI ipadmdad table
+admdad <- dummy_ipadmdad(n = 10000,
+                         n_hospitals = 20,
+                         time_period = c(2015, 2022)
+                         )
 
-
-}
+# plot histograms
+plot_histograms(data = admdad,
+                plot_vars = c("age", "gender", "discharge_disposition", "number_of_alc_days")
 
 }
