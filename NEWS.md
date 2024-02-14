@@ -1,7 +1,3 @@
-# Rgemini 0.4.1
-
-* Small bug fix in `Rgemini:::check_input`
-
 # Rgemini 0.4.0
 
 * Adds `n_missing()` function to check number of missingness.

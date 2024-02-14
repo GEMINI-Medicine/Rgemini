@@ -61,7 +61,6 @@ test_that("correct inputs pass checks", {
                   unique = TRUE)
     )
 
-
     expect_no_error(
       check_input(input7, "dbi")
     )

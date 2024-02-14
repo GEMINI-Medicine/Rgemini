@@ -24,7 +24,8 @@ We welcome contributions to `Rgemini` by all GEMINI team members. To submit a co
 
 11. Ask a team member to review the changes (see guidelines for reviewers below) and implement additional changes based on the reviewer's feedback.
 
-12. Once the reviewer has approved the pull request, squash all commits and merge the branch into `develop`, close the issue, and delete the branch you developed on.
+12. Once the reviewer has approved the pull request, squash all commits (confirm the PR # is referenced in the squash commit message) and merge the branch into `develop`, close the issue, and delete the branch you developed on.
+
 
 
 # Reviewing code
@@ -65,7 +66,7 @@ At least one person should review the pull request into `master` and should run 
 
 7. Run `rcmdcheck::rcmdcheck()` or `devtools::check()` and make sure no errors or warnings are returned.    
 
-8. If everything looks good, approve the pull request and merge `develop` into `master`.
+8. If everything looks good, approve the pull request and merge `develop` into `master` (without squashing commits).
 
 9. Add a new tag to the repository corresponding to the updated version number. 
 
