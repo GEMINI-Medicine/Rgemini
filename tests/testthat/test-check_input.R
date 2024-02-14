@@ -52,6 +52,16 @@ test_that("correct inputs pass checks", {
                   unique = TRUE)
     )
 
+    # check data table where date-time has been pre-processed to POSIXct
+    expect_no_error(
+      check_input(input6[, discharge_date_time := lubridate::ymd_hm(discharge_date_time)],
+                  c("data.frame", "data.table"),
+                  colnames = c("genc_id", "discharge_date_time"),
+                  coltypes = c("integer", "POSIXct"),
+                  unique = TRUE)
+    )
+
+
     expect_no_error(
       check_input(input7, "dbi")
     )
