@@ -84,7 +84,7 @@
 <li><p>Decide on a new version number based on the guidelines <a href="https://github.com/GEMINI-Medicine/Rgemini#package-versions" class="external-link">here</a>.</p></li>
 <li><p>Update the version number in the <code>NEWS.md</code> and <code>DESCRIPTION</code> files.</p></li>
 <li><p>Run <code>devtools::document()</code> in R to make sure all documentation is up to date.</p></li>
-<li><p>Run <code><a href="http://r-lib.github.io/rcmdcheck/reference/rcmdcheck.html" class="external-link">rcmdcheck::rcmdcheck()</a></code> or <code>devtools::check()</code> and make sure no errors or warnings are returned.</p></li>
+<li><p>Run <code>rcmdcheck::rcmdcheck()</code> or <code>devtools::check()</code> and make sure no errors or warnings are returned.</p></li>
 <li><p>If everything looks good, approve the pull request and merge <code>develop</code> into <code>master</code> (without squashing commits).</p></li>
 <li><p>Add a new tag to the repository corresponding to the updated version number.</p></li>
 <li><p>Notify the team about the updated version. Ideally, all members should immediately update to the newest version of <code>Rgemini</code>.</p></li>
