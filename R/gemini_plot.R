@@ -14,7 +14,7 @@ fix_string_label <- function(str) {
 #' @param plot_var (`character`)\cr
 #' The name of the variable we wish to plot
 #' @param time_var (`character`)\cr
-#' The name of the variable specifying time
+#' The name of the variable specifying time. Typically "discharge_date_time".
 #' @param hosp_var (`character`)\cr
 #' The name of the variable specifying individual hospitals
 #' @param hosp_group (`character`)\cr
@@ -31,14 +31,16 @@ fix_string_label <- function(str) {
 #' - "fisc_year" for hospital fiscal year starting in April
 #' - "season"
 #'
-#' For any other custom time intervals (e.g., weeks), users can calculate any
-#' custom time interval prior to running this funciton, and then provide this
-#' variable as input to both `time_var` and `time_int`. For example, users could
-#' derive a weekly time variable called `"week"` in their `cohort` table, and
-#' then specify `time_var = "week"` and `time_int = "week"`).
-#' If `time_var` is equal to any of `c("month", "quarter", "year", "fisc_year")`,
-#' the user-provided variable in `cohort` corresponding to that variable will be
-#' used (instead of the version of that variable calculated inside this function).
+#' For any other custom time intervals (e.g., weeks), users can calculate the
+#' desired time interval prior to running this function. As long as this custom
+#' time variable exists in the `cohort` input, users can then specify this
+#' variable as the `time_int` input. For example, users could derive a weekly
+#' time variable called `"week"` in their `cohort` table, and
+#' then specify `time_int = "week"`.
+#' If `time_var` is equal to any of `c("month", "quarter", "year", "fisc_year")`
+#' and there is a user-provided variable of that same name in the `cohort`
+#' input, the function will default to the variable that exists in the user-
+#' provided input.
 #'
 #'
 #' @param func (`character`)\cr
@@ -84,7 +86,7 @@ fix_string_label <- function(str) {
 plot_hosp_time <- function(
     cohort,
     plot_var = NULL,
-    time_var,
+    time_var = "discharge_date_time",
     hosp_var = "hospital_num",
     hosp_group = NULL,
     facet_var = NULL,
@@ -99,39 +101,61 @@ plot_hosp_time <- function(
     colors = plot_colors
 ) {
 
-
-  ## Check arguments
+  ##### Check inputs #####
   if (missing(plot_var) && !grepl("^n|count", func, ignore.case = TRUE)) stop("Missing the plot variable selection")
   if (missing(time_var)) stop("Missing time variable")
-
-  # if user did not provide custom time_int variable specified by time_var
-  # derive time_int (by default year-month)
-  if (time_int != time_var){
-    if (grepl("month", time_int, ignore.case = TRUE) {
-      cohort
-    }
-  }
-
-
-
-  ## Check inputs
   Rgemini:::check_input(
     cohort,
     c("data.table", "data.frame"),
     colnames = c(plot_var, time_var, hosp_var, hosp_group, facet_var)
   )
 
+  ##### Prepare data #####
+  cohort <- cohort %>% as.data.table()
+  
+  ## Get time_int
+  # if user did not provide custom time_int variable in cohort
+  # derive time_int (by default year-month)
+  if (!time_int %in% colnames(cohort)) {
+    
+    # code below assumes that date-time variable is provided as character
+    # if provided as POSIX, turn into character here
+    if (grepl("POSIX", class(cohort[get(time_var)]))){
+      cohort[, paste(time_int) := as.character(get(time_int))]
+    }
+    
+    if (grepl("month", time_int, ignore.case = TRUE)) {
+      cohort[, paste(time_int) := ym(format(as.Date(lubridate::ymd_hm(get(time_var)), format = "%Y-%m-%d"), "%Y-%m"))]
+      
+    } else if (grepl("quarter", time_int, ignore.case = TRUE))  {
+      cohort[, paste(time_int) := paste0(lubridate::year(get(time_var)), '-Q', lubridate::quarter(get(time_var)))]
+      cohort[, paste(time_int) := factor(time_int, levels = unique(sort(time_int)))]
+      
+    } else if (grepl("year", time_int, ignore.case = TRUE))  {
+      cohort[, paste(time_int) := lubridate::year(get(time_var))]
+      
+    } else if (grepl("fisc_year", time_int, ignore.case = TRUE))  {
+      cohort[, paste(time_int) := hospital_fiscal_year(get(time_var))]
+      
+    } else if (grepl("season", time_int, ignore.case = TRUE))  {
+      cohort[, paste(time_int) := season(get(time_var))]
+      cohort[, paste(time_int) := factor(time_int, levels = unique(time_int))]
+    }
+    
+  } else {
+    cohort[, time_int := cohort[[time_int]]]
+  }
+  
+  ##### Plot colors #####
+  ## If single color is specified, will be used across all group levels
   if (length(colors) == 1 && length(unique(cohort[[hosp_group]])) > 1){
     colors <- rep(colors, length(unique(cohort[[hosp_group]])))
   }
-
   ## Use default colors if not enough color values specified for all grouping levels
   if (!is.null(hosp_group) && length(unique(cohort[[hosp_group]])) > length(colors)){
     colors <- NULL
   }
 
-  ## Prepare data
-  cohort <- cohort %>% as.data.table()
 
   if (!is.null(hosp_group)){
     cohort[[hosp_group]] <- as.factor(cohort[[hosp_group]])
@@ -142,6 +166,7 @@ plot_hosp_time <- function(
 
   ## Function aggregating data by specified grouping variables
   aggregate_data <- function(data, func, grouping){
+    
     # aggregate for each individual hospital & by hospital_type
     if (grepl("^n|count", func, ignore.case = TRUE)) {
       res <- data[, .(outcome = .N), by = grouping]
@@ -169,15 +194,15 @@ plot_hosp_time <- function(
   }
 
   ## Aggregate data by all relevant variables
-  grouping <- c(time_var, hosp_var, hosp_group, facet_var)
+  grouping <- c(time_int, hosp_var, hosp_group, facet_var)
   res <- aggregate_data(cohort, func, grouping)
 
 
   ## Aggregate data by time * group (if any, otherwise, will just aggregate across all observations)
   if (!is.null(hosp_var) && !is.null(facet_var) && hosp_var == facet_var){
-    grouping <- c(time_var, hosp_group)
+    grouping <- c(time_int, hosp_group)
   } else {
-    grouping <- c(time_var, hosp_group, facet_var)
+    grouping <- c(time_int, hosp_group, facet_var)
   }
   # for count variables, "overall" line represents median of all other lines
   if (grepl("^n|count", func, ignore.case = TRUE)){
@@ -191,14 +216,14 @@ plot_hosp_time <- function(
 
   fig <- ggplot(
     res_grouped,
-    aes(x = get(time_var), y = outcome,
+    aes(x = get(time_int), y = outcome,
         group = if (is.null(hosp_group)) overall_label else get(hosp_group),
         color = if (is.null(hosp_group)) overall_label else get(hosp_group)))
 
 
   if (!is.null(hosp_var)) {
     fig <- fig + geom_line(data = res,
-                           aes(x = get(time_var), y = outcome,
+                           aes(x = get(time_int), y = outcome,
                                group = if (is.null(hosp_var)) overall_label else get(as.character(hosp_var)),
                                color = if (is.null(hosp_group)) overall_label else get(hosp_group)),
                            linewidth = line_width,
@@ -243,7 +268,7 @@ plot_hosp_time <- function(
       limits = ylimits,
       expand = c(0,0)
     ) +
-    xlab(fix_string_label(time_var)) +
+    xlab(ifelse(time_int %in% colnames(cohort), fix_string_label(time_int), fix_string_label(paste(strsplit(time_var, "[_]")[[1]][1], time_int)))) +
     gemini_theme(base_size = ifelse(is.null(facet_var) || (!is.null(facet_var) && length(unique(cohort[[facet_var]])) < 3), 12, ceiling(25/sqrt(length(unique(cohort[[facet_var]]))))),
                  aspect_ratio = NULL) + # 0.8
     theme(axis.text.x=element_text(angle = 60, hjust = 1))
