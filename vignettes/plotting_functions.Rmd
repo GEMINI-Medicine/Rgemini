@@ -26,11 +26,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   cache = FALSE, 
   tidy = FALSE,
-  #size = "small", 
- # out.width = "100%", 
-  #fig.align = "center",
- fig.height = 3, 
- fig.width = 5
+  fig.height = 3, 
+  fig.width = 5
   
 )
 
@@ -45,9 +42,14 @@ library(data.table)
 library(lemon)
 library(grid)
 library(ggthemes)
+
+library(sn)
+library(MCMCpack)
+
 source("H:/GitHub/Rgemini/R/plots.R") 
 source("H:/GitHub/Rgemini/R/gemini_plot.R") 
 source("H:/GitHub/Rgemini/R/gemini_theme.R")
+source("H:/GitHub/Rgemini/R/dummy_data.R") 
 
 options(knitr.kable.NA = '')
 
@@ -135,7 +137,8 @@ We can plot the mean `age` of all encounters in our cohort over time, using the 
 plot_hosp_time(
   ipadmdad,
   plot_var = "age",
-  time_var = "year"
+  time_var = "discharge_date_time",
+  time_int = "season"
 )
 ```
 
@@ -327,7 +330,7 @@ my_plot + gemini_theme() + ggtitle("Plot with GEMINI theme")
 
 <!-- remove border around images -->
 <style>
-    img {
-        border: 0;
-    }
+img {
+border: 0;
+}
 </style>
