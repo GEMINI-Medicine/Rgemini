@@ -4,7 +4,7 @@
 \alias{plot_histograms}
 \title{Plot histograms of multiple variables}
 \usage{
-plot_histograms(data, plot_vars, show_stats = TRUE)
+plot_histograms(data, plot_vars = NULL, show_stats = TRUE)
 }
 \arguments{
 \item{data}{(\code{data.frame} | \code{data.table})\cr
@@ -33,8 +33,8 @@ wide range of variables with a single line of code.
 
 \examples{
 
-# simulate GEMINI ipadmdad table
-admdad <- dummy_ipadmdad(n = 10000,
+# simulate GEMINI data table
+admdad <- dummy_data(n = 10000,
                          n_hospitals = 20,
                          time_period = c(2015, 2022)
                          )

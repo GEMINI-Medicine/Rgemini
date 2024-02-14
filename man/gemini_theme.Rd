@@ -2,24 +2,18 @@
 % Please edit documentation in R/gemini_theme.R
 \name{gemini_theme}
 \alias{gemini_theme}
-\title{Gemini base theme}
+\title{GEMINI plot theme}
 \usage{
 gemini_theme(
-  base.size = 14,
-  base.family = "sans",
-  base.colour = "steelblue",
-  bg.colour = "lightgray"
+  base_size = 14,
+  base_family = "",
+  show_grid = FALSE,
+  aspect_ratio = 1
 )
 }
 \arguments{
-\item{base.size}{}
-
-\item{base.family}{}
-
-\item{base.color}{}
-
-\item{bg.color}{}
+\item{bg_colour}{}
 }
 \description{
-Gemini base theme
+GEMINI plot theme
 }
