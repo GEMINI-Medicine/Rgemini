@@ -1,3 +1,7 @@
+# Rgemini 0.4.1
+
+* Small bug fix in `Rgemini:::check_input`
+
 # Rgemini 0.4.0
 
 * Adds `n_missing()` function to check number of missingness.
@@ -13,7 +17,6 @@
 * Adds function to calculate Elixhauser comorbidity scores `elixhauser_comorbidity_index()`.
 * Adds utility function to generate warning about mapped values.
 * Standardizes citation format in function references section.
-
 
 # Rgemini 0.3.1
 
