@@ -27,6 +27,7 @@ We welcome contributions to `Rgemini` by all GEMINI team members. To submit a co
 12. Once the reviewer has approved the pull request, squash all commits (confirm the PR # is referenced in the squash commit message) and merge the branch into `develop`, close the issue, and delete the branch you developed on.
 
 
+
 # Reviewing code
 
 All pull requests should be carefully reviewed by at least one person. When reviewing code:

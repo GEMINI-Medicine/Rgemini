@@ -14,7 +14,6 @@
 * Adds utility function to generate warning about mapped values.
 * Standardizes citation format in function references section.
 
-
 # Rgemini 0.3.1
 
 * Allows the user to specify the number of digits to round percentages to in cell suppression of categorical variables, without forcing rounding to integer.

@@ -562,10 +562,10 @@ check_input <- function(arginput, argtype,
       # only show first column where incorrect type was found (if any)
       # ignore coltypes without specification ("")
       check_col_type <- function(col, coltype) {
-        if (coltype != "" && !grepl(coltype,
+        if (coltype != "" && !any(grepl(coltype,
           class(as.data.table(arginput)[[col]]),
           ignore.case = TRUE
-        )) {
+        ))) {
           stop(
             paste0(
               "Invalid user input in '", as.character(sys.calls()[[1]])[1],
