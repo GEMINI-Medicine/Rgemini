@@ -72,5 +72,4 @@ At least one person should review the pull request into `master` and should run 
 
 10. Notify the team about the updated version. Ideally, all members should immediately update to the newest version of `Rgemini`.
 
-11. Update for HPC4Health users: Please submit a request on the [HPC4Health File Transfer Log](https://app.smartsheet.com/sheets/p7P77qF97wcxgr2V4Cr6Vjqw3vjhCpRMQQH3Jwm1).
-The systems team will then transfer the updated package to Nexus, allowing HPC4Health users to install the newest version of `Rgemini`.
+11. Update for HPC4Health users: Download the `tar.gz` file of the newest package version and save it in `R:/GEMINI/HPC4Health/Rgemini versions/`. Submit a request on the [HPC4Health File Transfer Log](https://app.smartsheet.com/sheets/p7P77qF97wcxgr2V4Cr6Vjqw3vjhCpRMQQH3Jwm1) for the package file to be transferred to `/mnt/nfs/pkgs/`. Ask the systems team to send out an email to all HPC4Health users announcing the new release. 
