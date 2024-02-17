@@ -158,7 +158,7 @@ Instead of plotting the average (`func = "mean"`), users can provide any of the 
 - `"count"` or `"n"` to plot the number of rows/encounters
 
 
-For example, to plot the number of encounters:
+For example, to plot the number of encounters, simply specify `func = "n"` (no `plot_var` input needs to be provided in this case):
 
 ```{r}
 
@@ -186,16 +186,45 @@ Note that in the example of plotting `gender`, the function automatically infers
 If we wanted to plot `discharge_disposition`, which is of class `integer`, the function would by default plot the `"mean"`. However, in reality, discharge disposition represents a categorical variable, so we could run the following code to plot the percentage of encounters where `discharge_disposition %in% c(7, 72, 73, 74)` (in-hospital death).
 
 ```{r}
-
 plot_hosp_time(
   cohort = ipadmdad,
   plot_var = "discharge_disposition",
   func = "%",
   plot_cat = c(7, 72, 73, 74)
-  #plot_cat = "F"
 )
-
 ```
+
+
+Finally, the function can also be used to plot the percentage of missing data by specifying `func = "na"` or `"missing"`, which plots the percentage of all entries that are either `NA`, `""`, or `" "`:
+
+```{r}
+plot_hosp_time(
+  cohort = ipadmdad,
+  plot_var = "alc_service_transfer_flag",
+  func = "na"
+)
+```
+
+
+## `time_var` and `time_int`
+
+`time_var` specifies the variable containing the relevant date-time information. Typically, in GEMINI data, this is `"discharge_date_time"` since hospital data are pulled based on discharge dates. `time_int` specifies the time interval to use for aggregation (i.e., resolution along x-axis). By default, the function aggregates data by month, but users could also specify `"quarter"`, `"year"`, `"fisc_year"` (hospital fiscal year starting in April), or `"season"`.
+
+For example, we could plot the number of encounters by quarter:
+
+```{r}
+plot_hosp_time(
+  cohort = ipadmdad,
+  func = "n"
+)
+```
+
+
+
+### Custom `time_int`
+
+
+
 
 
 

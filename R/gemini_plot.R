@@ -108,9 +108,7 @@ plot_hosp_time <- function(
     ylimits = NULL,
     min_n = 0,
     colors = plot_colors,
-    return_data = FALSE
-) {
-
+    return_data = FALSE) {
 
   ##### Check inputs #####
   if (missing(plot_var) && !grepl("^n|count", func, ignore.case = TRUE)) stop("Missing the plot variable selection")
@@ -138,28 +136,36 @@ plot_hosp_time <- function(
 
     if (grepl("month", time_int, ignore.case = TRUE)) {
       cohort[, paste(time_int) := ym(format(as.Date(lubridate::ymd_hm(get(time_var)), format = "%Y-%m-%d"), "%Y-%m"))]
-
     } else if (grepl("quarter", time_int, ignore.case = TRUE)) {
-      cohort[, paste(time_int) := paste0(lubridate::year(get(time_var)), '-Q', lubridate::quarter(get(time_var)))]
+      cohort[, paste(time_int) := paste0(lubridate::year(get(time_var)), "-Q", lubridate::quarter(get(time_var)))]
       cohort[, paste(time_int) := factor(time_int, levels = unique(sort(time_int)))]
-
     } else if (grepl("year", time_int, ignore.case = TRUE)) {
       cohort[, paste(time_int) := lubridate::year(get(time_var))]
-
     } else if (grepl("fisc_year", time_int, ignore.case = TRUE)) {
       cohort[, paste(time_int) := hospital_fiscal_year(get(time_var))]
-
     } else if (grepl("season", time_int, ignore.case = TRUE)) {
       cohort[, paste(time_int) := season(get(time_var))]
       cohort[, paste(time_int) := factor(time_int, levels = unique(time_int))]
     }
-
   } else {
     cohort[, time_int := cohort[[time_int]]]
     time_label <- fix_string_label(time_int)
-
   }
 
+
+  ## pre-process func input into standardized version
+  if (grepl("^n$|count", func, ignore.case = TRUE)) {
+    func <- "count"
+    plot_var <- NULL
+  } else if (grepl("mean", func, ignore.case = TRUE)) {
+    func <- "mean"
+  } else if (grepl("median", func, ignore.case = TRUE)) {
+    func <- "median"
+  } else if (grepl("%|perc", func, ignore.case = TRUE)) {
+    func <- "percent"
+  } else if (grepl("missing|^na", func, ignore.case = TRUE)) {
+    func <- "missing"
+  }
 
   ##### Plot colors #####
   ## If single color is specified, will be used across all group levels
@@ -171,7 +177,6 @@ plot_hosp_time <- function(
     colors <- NULL
   }
 
-
   if (!is.null(hosp_group)) {
     cohort[[hosp_group]] <- as.factor(cohort[[hosp_group]])
   }
@@ -180,47 +185,46 @@ plot_hosp_time <- function(
   }
 
   ## check if plot_var is character/factor/logical -> plot % by default
-  func <- ifelse(!grepl("^n|count", func, ignore.case = TRUE) && (any(class(cohort[[plot_var]]) %in% c("character", "factor", "logical"))), "%", func)
+  func <- ifelse(!func %in% c("count", "missing") && (any(class(cohort[[plot_var]]) %in% c("character", "factor", "logical"))), "percent", func)
 
   ## if no plot_cat level specified, sort unique values and plot highest one
-  if (grepl("%|perc", func, ignore.case = TRUE) && is.null(plot_cat)) {
+  if (func == "percent" && is.null(plot_cat)) {
     plot_cat <- dplyr::last(sort(unique(cohort[[plot_var]])))
   }
 
-
   ## Function aggregating data by specified grouping variables
-  aggregate_data <- function(data, func, grouping){
+  aggregate_data <- function(data, func, grouping) {
 
     # aggregate for each individual hospital & by hospital_type
-    if (grepl("^n|count", func, ignore.case = TRUE)) {
+    if (func == "count") {
       res <- data[, .(outcome = .N), by = grouping]
+    } else if (func == "mean") {
+      res <- data[, .(
+        outcome = mean(as.numeric(get(plot_var)), na.rm = TRUE),
+        n = .N
+      ), by = grouping]
+    } else if (func == "median") {
+      res <- data[, .(
+        outcome = median(as.numeric(get(plot_var)), na.rm = TRUE),
+        n = .N
+      ), by = grouping]
+    } else if (func == "percent") {
+      data <- data[!is.na(get(plot_var)), ] # remove NA from denominator
 
-    } else if (grepl("mean", func, ignore.case = TRUE)) {
-      res <- data[, .(outcome = mean(as.numeric(get(plot_var)), na.rm = TRUE),
-                      n = .N), by = grouping]
+      res <- data[, .(
+        outcome = 100 * sum(get(plot_var) %in% plot_cat) / sum(.N),
+        n = .N
+      ), by = grouping]
+    } else if (func == "missing") {
 
-    } else if (grepl("median", func, ignore.case = TRUE)) {
-      res <- data[, .(outcome = median(as.numeric(get(plot_var)), na.rm = TRUE),
-                      n = .N), by = grouping]
-
-    } else if (grepl("%|perc", func, ignore.case = TRUE)) {
-
-      data <- data[!is.na(get(plot_var)),] # remove NA from denominator
-
-      res <- data[, .(outcome = 100 * sum(get(plot_var) %in% plot_cat)  / sum(.N),
-                      n = .N), by = grouping]
-
-    } else if (grepl("missing|^na", func, ignore.case = TRUE)) {
-
-      browser()
-      n_missing(get(plot_var), na_strings = c("", "NA", " "), index = TRUE)
-
-      res <- data[, .(outcome = 100 * sum(is.na(get(plot_var)))  / sum(.N),
-                      n = .N), by = grouping]
+      res <- data[, .(
+        outcome = 100 * sum(sum(n_missing(get(plot_var), na_strings = c("", "NA", " "), index = TRUE))) / sum(.N),
+        n = .N
+      ), by = grouping]
     }
 
     ## exclude observations with low cell count if min_n specified
-    if (min_n > 0 & !grepl("^n|count", func, ignore.case = TRUE)) {
+    if (min_n > 0 && func != "count") {
       res[n < min_n, outcome := NA]
     }
 
@@ -239,7 +243,7 @@ plot_hosp_time <- function(
     grouping <- c(time_int, hosp_group, facet_var)
   }
   # for count variables, "overall" line represents median of all other lines
-  if (grepl("^n|count", func, ignore.case = TRUE)){
+  if (func == "count") {
     res_grouped <- res[, .(outcome = median(outcome, na.rm = TRUE)), by = grouping]
   } else { # for all other functions, "overall" line represents mean/median etc. across all data points (per grouping var)
     res_grouped <- aggregate_data(cohort, func, grouping)
@@ -249,40 +253,43 @@ plot_hosp_time <- function(
   if (return_data) {
     return(list(res, res_grouped))
   } else {
-
     # Create the plot -- grouped
-    overall_label <- ifelse((grepl("^n|count", func, ignore.case = TRUE)), "Median", "Overall")
+    overall_label <- ifelse(func == "count", "Median", "Overall")
 
     fig <- ggplot(
       res_grouped,
-      aes(x = get(time_int), y = outcome,
-          group = if (is.null(hosp_group)) overall_label else get(hosp_group),
-          color = if (is.null(hosp_group)) overall_label else get(hosp_group)))
+      aes(
+        x = get(time_int), y = outcome,
+        group = if (is.null(hosp_group)) overall_label else get(hosp_group),
+        color = if (is.null(hosp_group)) overall_label else get(hosp_group)
+      )
+    )
 
 
     if (!is.null(hosp_var)) {
-      fig <- fig + geom_line(data = res,
-                             aes(x = get(time_int), y = outcome,
-                                 group = if (is.null(hosp_var)) overall_label else get(as.character(hosp_var)),
-                                 color = if (is.null(hosp_group)) overall_label else get(hosp_group)),
-                             linewidth = line_width,
-                             alpha = ifelse(is.null(facet_var) || ((!is.null(facet_var) && !is.null(hosp_var) && (facet_var != hosp_var))), 0.2, 1),
-                             show.legend = (!is.null(hosp_group) && (is.null(facet_var) || (!is.null(facet_var) && hosp_group != facet_var) && (!is.null(facet_var) && !is.null(hosp_var) && hosp_var != facet_var)))
+      fig <- fig + geom_line(
+        data = res,
+        aes(
+          x = get(time_int), y = outcome,
+          group = if (is.null(hosp_var)) overall_label else get(as.character(hosp_var)),
+          color = if (is.null(hosp_group)) overall_label else get(hosp_group)
+        ),
+        linewidth = line_width,
+        alpha = ifelse(is.null(facet_var) || ((!is.null(facet_var) && !is.null(hosp_var) && (facet_var != hosp_var))), 0.2, 1),
+        show.legend = (!is.null(hosp_group) && (is.null(facet_var) || (!is.null(facet_var) && hosp_group != facet_var) && (!is.null(facet_var) && !is.null(hosp_var) && hosp_var != facet_var)))
       )
 
-      if (!is.null(facet_var)){
+      if (!is.null(facet_var)) {
         fig <- fig +
-          facet_rep_wrap(~get(facet_var), scales = "fixed") +
+          facet_rep_wrap(~ get(facet_var), scales = "fixed") +
           theme(panel.spacing.y = unit(0, "lines"))
       }
-
     }
 
     if (show_overall == TRUE) {
-
       fig <- fig + geom_line(
         # average line for the group
-        linewidth = ifelse(!is.null(hosp_var) && !is.null(hosp_group) && hosp_var == hosp_group, line_width, 2*line_width),
+        linewidth = ifelse(!is.null(hosp_var) && !is.null(hosp_group) && hosp_var == hosp_group, line_width, 2 * line_width),
         show.legend = ((!is.null(hosp_group) || !is.null(hosp_var))) && (is.null(facet_var) || (!is.null(facet_var) && hosp_group != facet_var)),
         alpha = ifelse(!is.null(facet_var) && !is.null(hosp_var) && facet_var == hosp_var, 0.2, 1)
       ) + labs(color = NULL)
@@ -291,7 +298,7 @@ plot_hosp_time <- function(
 
     # Common configs for plot
     if (is.null(ylimits)) {
-      ylimits <- c(floor(min(res$outcome, na.rm = TRUE)/1.1), ceiling(max(res$outcome, na.rm = TRUE)*1.1))
+      ylimits <- c(floor(min(res$outcome, na.rm = TRUE) / 1.1), ceiling(max(res$outcome, na.rm = TRUE) * 1.1))
     } else {
       ylimits <- ylimits
     }
@@ -300,25 +307,32 @@ plot_hosp_time <- function(
     fig <- fig +
       scale_y_continuous(
         name = ifelse(!is.null(ylabel), ylabel,
-                      ifelse(grepl("%|perc", func, ignore.case = TRUE),
+                      ifelse(func == "percent",
                              paste0(fix_string_label(plot_var), " = ", paste0(plot_cat, collapse = "/"), " (%)"),
-                             ifelse(grepl("^n|count", func, ignore.case = TRUE), "N",
-                                    paste0(fix_string_label(plot_var), " (", func, ")")))),
+                             ifelse(func == "missing",
+                                    paste0(fix_string_label(plot_var), " = missing (%)"),
+                                    ifelse(func == "count", "N",
+                                           paste0(fix_string_label(plot_var), " (", func, ")"))
+                             )
+                      )
+        ),
         limits = ylimits,
-        expand = c(0,0)
+        expand = c(0, 0)
       ) +
       xlab(time_label) +
-      gemini_theme(base_size = 12, #ifelse(is.null(facet_var) || (!is.null(facet_var) && length(unique(cohort[[facet_var]])) < 3), 12, ceiling(30/sqrt(length(unique(cohort[[facet_var]]))))),
-                   aspect_ratio = NULL) + # 0.8
-      theme(axis.text.x=element_text(angle = 60, hjust = 1))
+      gemini_theme(
+        base_size = 12, # ifelse(is.null(facet_var) || (!is.null(facet_var) && length(unique(cohort[[facet_var]])) < 3), 12, ceiling(30/sqrt(length(unique(cohort[[facet_var]]))))),
+        aspect_ratio = NULL
+      ) + # 0.8
+      theme(axis.text.x = element_text(angle = 60, hjust = 1))
 
-    #scale_x_date(
+    # scale_x_date(
     #  name = paste0(" \n", fix_string_label(time_var))
-    #, breaks = seq(as.Date("2015-04-01"), as.Date("2022-06-01"), by = "1 year"), date_labels = "%Y"
-    #) +
+    # , breaks = seq(as.Date("2015-04-01"), as.Date("2022-06-01"), by = "1 year"), date_labels = "%Y"
+    # ) +
 
 
-    if (!is.null(colors)){
+    if (!is.null(colors)) {
       fig <- fig + scale_color_manual(values = colors)
     }
 
@@ -331,7 +345,5 @@ plot_hosp_time <- function(
     }
 
     return(fig)
-
   }
 }
-
