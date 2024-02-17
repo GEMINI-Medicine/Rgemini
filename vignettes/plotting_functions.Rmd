@@ -66,11 +66,11 @@ options(knitr.kable.NA = '')
 
 The plotting examples shown below are based on variables from the "ipadmdad" table. Typically, you would query this table from the GEMINI database, but for illustration purposes, let's create some dummy data using the `Rgemini` function `dummy_ipadmdad`. 
 
-Here, we are simulating an "ipadmdad" table with 10,000 encounters from 9 different hospitals and with discharge dates ranging from fiscal years 2015 to 2022:
+Here, we are simulating an "ipadmdad" table with 50,000 encounters from 9 different hospitals and with discharge dates ranging from fiscal years 2015 to 2022:
 
 ```{r}
 set.seed(999)
-ipadmdad <- dummy_ipadmdad(n = 10000, n_hospitals = 12, time_period = c(2015,2022)) %>%
+ipadmdad <- dummy_ipadmdad(n = 50000, n_hospitals = 12, time_period = c(2015,2022)) %>%
   data.table()
 ```
 
@@ -154,22 +154,21 @@ There are several ways users can customize this plot by providing additional inp
 Instead of plotting the average (`func = "mean"`), users can provide any of the following alternative `func` inputs:
 
 - `"median"`
-- `"%"` or `"perc"` to plot % of encounters in a specified category. Requires additional input `plot_cat` specifying which category/factor level to plot (by default: for logical variables, will plot rows where `plot_var` category = `TRUE`). Note: For any character/logical/factor variables, the function will automatically infer `func = "%"`. 
+- `"%"` or `"perc"` to plot % of encounters in a specified category level. Users can specify `plot_cat` to indicate which category/factor level to plot (by default, the function will sort all unique values and plot the % in the highest category level). Note: For any character/logical/factor variables, the function will automatically infer `func = "%"`. 
 - `"count"` or `"n"` to plot the number of rows/encounters
 
 
-For example, to plot the number of encounters, simply specify `func = "n"` (no `plot_var` input needs to be provided in this case):
+For example, to plot the number of encounters, simply specify `func = "n"` (no `plot_var` input needs to be provided in this case). Note that in this case, the thick "overall" line represents the median of all (individual hospital) lines, rather than the total count of rows across all sites.
 
 ```{r}
-
 plot_hosp_time(
   cohort = ipadmdad,
   func = "n"
 )
-
 ```
 
-For example, to plot the percentage of female encounters:
+
+Or to plot the percentage of female encounters:
 
 ```{r}
 
@@ -177,13 +176,16 @@ plot_hosp_time(
   cohort = ipadmdad,
   plot_var = "gender",
   plot_cat = "F"
+  #func = "%" # not required in this case because gender is a character variable, so the function infers that func should be "%"
 )
 
 ```
 
+When plotting percentages, any entries that are `NA` are automatically removed from both the numerator and denominator. 
+
 Note that in the example of plotting `gender`, the function automatically infers `func = "%"` because `gender` is of class `character`.
 
-If we wanted to plot `discharge_disposition`, which is of class `integer`, the function would by default plot the `"mean"`. However, in reality, discharge disposition represents a categorical variable, so we could run the following code to plot the percentage of encounters where `discharge_disposition %in% c(7, 72, 73, 74)` (in-hospital death).
+If we wanted to plot `discharge_disposition`, which is of class `integer`, the function would by default plot the `"mean"`. However, in reality, discharge disposition represents a categorical variable, so we could run the following code to plot the percentage of encounters where `discharge_disposition %in% c(7, 72, 73, 74)` (i.e., % of hospitalizations that resulted in in-hospital death).
 
 ```{r}
 plot_hosp_time(
@@ -215,7 +217,29 @@ For example, we could plot the number of encounters by quarter:
 ```{r}
 plot_hosp_time(
   cohort = ipadmdad,
-  func = "n"
+  func = "n",
+  time_int = "quarter"
+)
+```
+
+... or by fiscal year:
+
+```{r}
+plot_hosp_time(
+  cohort = ipadmdad,
+  func = "n",
+  time_int = "fisc_year"
+)
+```
+
+
+... or by season:
+
+```{r}
+plot_hosp_time(
+  cohort = ipadmdad,
+  func = "n",
+  time_int = "season"
 )
 ```
 
@@ -223,56 +247,21 @@ plot_hosp_time(
 
 ### Custom `time_int`
 
-
-
-
-
-
-## Plot median, by quarter
-
-Similarly, we could plot the median `age` by specifying `func = "median"` :
+Note that users can in principle specify any custom time interval as long as this is provided as a column in the `cohort` input. For example, let's say we want to plot the number of encounters that were *admitted* to hospital each day in April 2020. Users can calculate the admission date prior to running the function and then provide it as the`time_int` input:
 
 ```{r}
+
+ipadmdad[, my_date := as.Date(ymd_hm(admission_date_time))]
+
 plot_hosp_time(
-  ipadmdad,
-  plot_var = "age",
-  time_var = "year",
-  func = "median"
+  cohort = ipadmdad[my_date >= "2020-04-01" & my_date <= "2020-04-30", ],
+  func = "n",
+  time_int = "my_date"
 )
 ```
 
-## Plot number of encounters, by fiscal year
-
-Let's say we simply want to know how many encounters there were at each site. We can use `func = "count"` to plot the number of rows per hospital/time period. 
-Note that when `func = "count"`, the thick "overall" line represents the median of all (individual hospital) lines, rather than the total count of rows.
-
-Here, we are also specifying `by = "fisc_year"` to plot encounters by hospital fiscal year (starting in April) since the `dummy_ipadmdad` function simulates data by fiscal instead of calendar year.
 
 
-```{r}
-plot_hosp_time(
-  ipadmdad,
-  time_var = "year",
-  func = "count"
-)
-```
-
-## Plot categorical variables, by month
-
-For categorical variables, you can use `func = "%"` or `func = "percent"` to plot the percentage of entries in a specified category level provided as `plot_cat`. For example, if you want to plot the percentage of female encounters, you could use the following:
-
-
-```{r}
-plot_hosp_time(
-  ipadmdad,
-  plot_var = "gender",
-  func = "%",
-  plot_cat = "F",
-  time_var = "year"
-)
-```
-
-Note that for categorical variables, any entries that are `NA` will be removed from both the numerator and denominator. 
 
 
 ## View individual sites

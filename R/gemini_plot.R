@@ -135,17 +135,17 @@ plot_hosp_time <- function(
     }
 
     if (grepl("month", time_int, ignore.case = TRUE)) {
-      cohort[, paste(time_int) := ym(format(as.Date(lubridate::ymd_hm(get(time_var)), format = "%Y-%m-%d"), "%Y-%m"))]
+      cohort[, month := ym(format(as.Date(lubridate::ymd_hm(get(time_var)), format = "%Y-%m-%d"), "%Y-%m"))]
     } else if (grepl("quarter", time_int, ignore.case = TRUE)) {
-      cohort[, paste(time_int) := paste0(lubridate::year(get(time_var)), "-Q", lubridate::quarter(get(time_var)))]
-      cohort[, paste(time_int) := factor(time_int, levels = unique(sort(time_int)))]
-    } else if (grepl("year", time_int, ignore.case = TRUE)) {
-      cohort[, paste(time_int) := lubridate::year(get(time_var))]
+      cohort[, quarter := paste0(lubridate::year(get(time_var)), "-Q", lubridate::quarter(get(time_var)))]
+      cohort[, quarter := factor(quarter, levels = unique(sort(quarter)))]
+    } else if (grepl("^year", time_int, ignore.case = TRUE)) {
+      cohort[, year := lubridate::year(get(time_var))]
     } else if (grepl("fisc_year", time_int, ignore.case = TRUE)) {
-      cohort[, paste(time_int) := hospital_fiscal_year(get(time_var))]
+      cohort[, fisc_year := hospital_fiscal_year(get(time_var))]
     } else if (grepl("season", time_int, ignore.case = TRUE)) {
-      cohort[, paste(time_int) := season(get(time_var))]
-      cohort[, paste(time_int) := factor(time_int, levels = unique(time_int))]
+      cohort[, season := season(get(time_var))]
+      cohort[, season := factor(season, levels = unique(season))]
     }
   } else {
     cohort[, time_int := cohort[[time_int]]]
@@ -326,9 +326,16 @@ plot_hosp_time <- function(
       ) + # 0.8
       theme(axis.text.x = element_text(angle = 60, hjust = 1))
 
+    ## Adjust dates on x-axis
+    if (grepl("quarter", time_int, ignore.case = TRUE)) {
+      fig <- fig + scale_x_discrete(breaks = levels(cohort$quarter)[seq(1, length(levels(cohort$quarter)), by = ifelse(length(levels(cohort$quarter)) < 10 && is.null(facet_var), 1, ifelse(length(levels(cohort$quarter)) < 20, 2, 4)))],
+                       labels = levels(cohort$quarter)[seq(1, length(levels(cohort$quarter)), by = ifelse(length(levels(cohort$quarter)) < 10 && is.null(facet_var), 1, ifelse(length(levels(cohort$quarter)) < 20, 2, 4)))])
+    } else if (grepl("month", time_int, ignore.case = TRUE)) {
+      fig <- fig + scale_x_date(breaks = seq(as.Date(min(cohort$month)), as.Date(max(cohort$month)), by = ifelse(length(unique(cohort$month)) < 20 && is.null(facet_var), "1 month", ifelse(length(unique(cohort$month)) < 30, "6 months", "1 year"))), date_labels = "%b-%Y")
+    }
     # scale_x_date(
     #  name = paste0(" \n", fix_string_label(time_var))
-    # , breaks = seq(as.Date("2015-04-01"), as.Date("2022-06-01"), by = "1 year"), date_labels = "%Y"
+    # ,
     # ) +
 
 
