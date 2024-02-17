@@ -123,24 +123,80 @@ plot_histograms(
 
 Another common way to explore GEMINI data is to plot variables by individual hospitals over time. This can provide important insights into differences across sites and temporal trends. The `plot_hosp_time` function in `Rgemini` provides a simple way of creating different types of plots like that. 
 
-```{r}
-# add time variable
-ipadmdad[, year := year(discharge_date_time)] 
-```
 
+## Default plot
 
-## Plot mean, by year
-
-We can plot the mean `age` of all encounters in our cohort over time, using the following code:
+By default, the `plot_hosp_time` function plots the mean of a user-specified `plot_var` (e.g., `age`) by hospital * month. For example:
 
 ```{r}
 plot_hosp_time(
-  ipadmdad,
-  plot_var = "age",
-  time_var = "discharge_date_time",
-  time_int = "season"
+  cohort = ipadmdad,
+  plot_var = "age"
 )
 ```
+
+Each line in the plot shown above represents the mean age at an individual hospital, and the thick line represents the mean age across all sites (note: hospitals with more encounters contribute more to this line than hospitals with fewer encounters).
+
+There are several ways users can customize this plot by providing additional input arguments, which are explained in detail below. Briefly, users can provide the following input arguments:
+
+- `func`: What function to use to aggregate data (e.g., median instead of mean, percentage for categorical variable, % missing etc.)
+- `time_var`: Date-time variable of interest (default = `discharge_date_time`) 
+- `time_int`: Time interval to aggregate data by (default = `month`, but could be `quarter`, `year`, `fisc_year`, `season`, or a custom time interval)
+- `hosp_var`: Variable specifying hospital identifier (default = `"hospital_num"`)
+- `hosp_group`: Optional hospital-level grouping variable (e.g., `"hospital_type"` or `"affiliation"`)
+- `facet_var`: Optional variable to be used as `facet_wrap` (e.g., `facet_var = "hospital_num"` will plot individual subplots per hospital)
+- `min_n`: Minimum number of data points required per hospital * time_int combination. Any cells with `n < min_n` will be suppressed.
+- Plotting aesthetics like `line_width`, `ylabel`, `ylimits`, and `colors` 
+
+
+## `func` 
+
+Instead of plotting the average (`func = "mean"`), users can provide any of the following alternative `func` inputs:
+
+- `"median"`
+- `"%"` or `"perc"` to plot % of encounters in a specified category. Requires additional input `plot_cat` specifying which category/factor level to plot (by default: for logical variables, will plot rows where `plot_var` category = `TRUE`). Note: For any character/logical/factor variables, the function will automatically infer `func = "%"`. 
+- `"count"` or `"n"` to plot the number of rows/encounters
+
+
+For example, to plot the number of encounters:
+
+```{r}
+
+plot_hosp_time(
+  cohort = ipadmdad,
+  func = "n"
+)
+
+```
+
+For example, to plot the percentage of female encounters:
+
+```{r}
+
+plot_hosp_time(
+  cohort = ipadmdad,
+  plot_var = "gender",
+  plot_cat = "F"
+)
+
+```
+
+Note that in the example of plotting `gender`, the function automatically infers `func = "%"` because `gender` is of class `character`.
+
+If we wanted to plot `discharge_disposition`, which is of class `integer`, the function would by default plot the `"mean"`. However, in reality, discharge disposition represents a categorical variable, so we could run the following code to plot the percentage of encounters where `discharge_disposition %in% c(7, 72, 73, 74)` (in-hospital death).
+
+```{r}
+
+plot_hosp_time(
+  cohort = ipadmdad,
+  plot_var = "discharge_disposition",
+  func = "%",
+  plot_cat = c(7, 72, 73, 74)
+  #plot_cat = "F"
+)
+
+```
+
 
 
 ## Plot median, by quarter

@@ -1,7 +1,7 @@
 #' GEMINI plotting colors
 plot_colors <- c(
-  rgb(0, 26, 92, maxColorValue = 255),
-  rgb(47, 129, 185, maxColorValue = 255),
+  rgb(2, 32, 97, maxColorValue = 255), # GEMINI navy; rgb(0, 26, 92, maxColorValue = 255),
+  rgb(2, 176, 241, maxColorValue = 255), # GEMINI cyan; rgb(47, 129, 185, maxColorValue = 255),
   rgb(173, 216, 230, maxColorValue = 255)
 )
 
@@ -82,7 +82,7 @@ gemini_theme <- function(
 
         ## top strip for facet wrap plots
         strip.background = element_rect(fill = "grey85", colour = NA),
-        strip.text = element_text(face = "bold", size = rel(1)),
+        strip.text = element_text(face = "bold", size = rel(0.75)),
 
         aspect.ratio = aspect_ratio,
       ))
