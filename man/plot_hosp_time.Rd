@@ -13,13 +13,14 @@ plot_hosp_time(
   facet_var = NULL,
   time_int = "month",
   func = "mean",
-  plot_cat = TRUE,
+  plot_cat = NULL,
   show_overall = TRUE,
   line_width = 1,
   ylabel = NULL,
   ylimits = NULL,
   min_n = 0,
-  colors = plot_colors
+  colors = plot_colors,
+  return_data = FALSE
 )
 }
 \arguments{
@@ -73,14 +74,19 @@ of the following:
 \item "\%" or "perc" (for categorical variables), users also need to specify
 \code{plot_cat} to specify which category to plot the percentage of (see below)
 \item "n" or "count" to plot the count of rows per hospital/time period
+\item "missing" or "na"
 }}
 
-\item{plot_cat}{Required when \code{func = "\%"}. Users need to specify the level of any
-categorical variables to be plotted. For example, to plot the percentage of
-female encounters, \code{plot_cat = "F"}. By default, the function assumes that a
-user wants to plot \% of rows where category = \code{TRUE} (for logical variables).
-Can also be used for numeric variables, e.g., \code{plot_cat = 0} to plot
-encounters with Charlson Comorbidity Index = 0.}
+\item{plot_cat}{Required when \code{func = "\%"} and/or when plotting categorical/factor variables.
+Users need to specify the level of any categorical variables to be plotted.
+For example, to plot the percentage of female encounters, \code{plot_cat = "F"}.
+Multiple categories can be provided as a vector, e.g., to plot all non-male
+encounters: \code{plot_cat = c("F", "O")}. If no \code{plot_cat} is specified, the
+function will sort the unique entries of the specified \code{plot_var} and plot
+the percentage of rows matching the highest value (e.g., for logical
+variables, \verb{\% TRUE} will be plotted by default).
+\code{plot_cat} can also be used for numeric variables, e.g., \code{plot_cat = 0} to
+plot encounters with Charlson Comorbidity Index = 0.}
 
 \item{show_overall}{(\code{logical})\cr
 Flag indicating whether to plot thick line representing overall value across
@@ -101,9 +107,14 @@ combination. Data points with cell count < \code{min_n} will be suppressed.}
 
 \item{colors}{(\code{character})\cr
 Character vector specifying line color(s).}
+
+\item{return_data}{(\code{logical})\cr
+Flag indicating whether to return a list of 2 data.tables with aggregated
+data (\link{1} by hospital and \link{2} overall). If \code{FALSE} (default), will return plot.}
 }
 \value{
-ggplot figure
+By default, returns \code{ggplot} figure. If \code{return_data = TRUE}, returns
+\code{data.tables} containing aggregated data.
 }
 \description{
 Function plotting a variable of interest by hospital and over time.
