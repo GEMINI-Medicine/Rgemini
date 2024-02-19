@@ -275,7 +275,7 @@ plot_hosp_time <- function(
     }
 
     if (grepl("month", time_int, ignore.case = TRUE)) {
-      cohort[, month := ym(format(as.Date(lubridate::ymd_hm(get(time_var)), format = "%Y-%m-%d"), "%Y-%m"))]
+      cohort[, month := lubridate::ym(format(as.Date(lubridate::ymd_hm(get(time_var)), format = "%Y-%m-%d"), "%Y-%m"))]
     } else if (grepl("quarter", time_int, ignore.case = TRUE)) {
       cohort[, quarter := paste0(lubridate::year(get(time_var)), "-Q", lubridate::quarter(get(time_var)))]
       cohort[, quarter := factor(quarter, levels = unique(sort(quarter)))]
