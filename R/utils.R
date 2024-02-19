@@ -694,3 +694,17 @@ check_input <- function(arginput, argtype,
   ### Run checks on all input arguments (if multiple)
   check_all <- Map(run_checks, arginput, argnames)
 }
+
+
+#' @title
+#' Fix variable strings
+#'
+#' @description
+#' Removes any "_" from variable names and applies title case capitalization.
+#'
+#' @param str (`character`)
+#' Character string to be cleaned up
+#'
+fix_var_str <- function(str) {
+  str <- tools::toTitleCase(gsub("[_.]", " ", str))
+}
