@@ -93,7 +93,7 @@ plot_histograms <- function(data, plot_vars = NULL, show_stats = TRUE) {
       if (show_stats == TRUE) {
         sub_fig <- sub_fig +
           geom_text(stat = "count", aes(label = scales::percent(round(..count.. / sum(..count..), digits = 3))),
-                    vjust = -0.4, size = 10 / n_vars, hjust = 0.5) +
+                    vjust = -0.4, size = 8 / n_vars, hjust = 0.5) +
           labs(subtitle = paste0("Missing: ", n_missing(data[[var$plot_var]]), "\n "))
       }
 

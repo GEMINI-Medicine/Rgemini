@@ -45,9 +45,16 @@ options(knitr.kable.NA = '')
 
 ```
 
+
+*  *  *  *
+
 # Introduction
 
 `Rgemini` contains several functions that facilitate common plotting needs and allow users to create customized figures with just a few lines of code. 
+
+
+
+*  *  *  *
 
 
 # Set-up
@@ -80,7 +87,7 @@ First, let's use the `plot_histograms()` function to explore the dataset.
 
 By default, the function will plot histograms of all relevant variables in the provided `data` input (ignoring `genc_id`, and any hospital/date-time variables). It will also show some basic descriptive stats about each variable at the top of the plot.
 
-```{r, fig.height = 4, fig.width = 8.5}
+```{r, fig.height = 4, fig.width = 8}
 plot_histograms(data = ipadmdad)
 ```
 
