@@ -40,30 +40,30 @@
 #'
 plot_histograms <- function(data, plot_vars = NULL, show_stats = TRUE) {
 
-  if (is.null(plot_vars)){
+  if (is.null(plot_vars)) {
     plot_vars <- colnames(data)[!grepl("genc_id|hospital_id|hospital_num|date_time", colnames(data))]
   }
 
 
   ## plotting function
-  plot_hist <- function(var, n_vars){
+  plot_hist <- function(var, n_vars) {
 
     ## for continuous/numeric variables
     if (any(var$class %in% c("numeric", "integer"),
-        is.null(var$class) && class(data[[var$plot_var]]) %in% c("numeric", "integer"))) {
+            is.null(var$class) && class(data[[var$plot_var]]) %in% c("numeric", "integer"))) {
 
       sub_fig <- ggplot(data, aes(x = get(var$plot_var)))  +
         geom_histogram(color = "grey20", fill = gemini_colors[1], alpha = .4, binwidth = var$binwidth) +
         labs(title = var$varlabel)
 
-      if (!is.null(var$breaks)){
+      if (!is.null(var$breaks)) {
         sub_fig <- sub_fig +
-          scale_x_continuous(breaks = var$breaks, limits = c(floor(min(var$breaks)-1), ceiling(max(var$breaks)+1)))
+          scale_x_continuous(breaks = var$breaks, limits = c(floor(min(var$breaks) - 1), ceiling(max(var$breaks) + 1)))
       }
 
       if (show_stats == TRUE) {
 
-        if (!is.null(var$normal) && var$normal == TRUE){
+        if (!is.null(var$normal) && var$normal == TRUE) {
           sub_fig <- sub_fig +
             labs(subtitle = paste0(
               "Mean = ", round(mean(data[[var$plot_var]], na.rm = TRUE), digits = 2),
@@ -83,17 +83,17 @@ plot_histograms <- function(data, plot_vars = NULL, show_stats = TRUE) {
 
 
       ## for categorical/binary variables
-    } else if (any(var$class %in% c("character","logical"),
-               is.null(var$class) && class(data[[var$plot_var]]) %in% c("character","logical"))) {
+    } else if (any(var$class %in% c("character", "logical"),
+                   is.null(var$class) && class(data[[var$plot_var]]) %in% c("character", "logical"))) {
 
-      sub_fig <- ggplot(data, aes(x=as.factor(data[[var$plot_var]]))) +
+      sub_fig <- ggplot(data, aes(x = as.factor(data[[var$plot_var]]))) +
         geom_bar(color = "grey20", fill = gemini_colors[1], alpha = 0.4) +
         labs(title = var$varlabel)
 
       if (show_stats == TRUE) {
         sub_fig <- sub_fig +
-          geom_text(stat = "count", aes(label = scales::percent(round(..count../sum(..count..), digits = 3))),
-                                       vjust = -0.4, size = 10/n_vars, hjust = 0.5) +
+          geom_text(stat = "count", aes(label = scales::percent(round(..count.. / sum(..count..), digits = 3))),
+                    vjust = -0.4, size = 10 / n_vars, hjust = 0.5) +
           labs(subtitle = paste0("Missing: ", n_missing(data[[var$plot_var]]), "\n "))
       }
 
@@ -102,14 +102,14 @@ plot_histograms <- function(data, plot_vars = NULL, show_stats = TRUE) {
     sub_fig <- sub_fig +
       xlab(var$plot_var) +
       scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
-      gemini_theme(base_size = ceiling(14/sqrt(n_vars)), aspect_ratio = NULL)
+      gemini_theme(base_size = ceiling(14 / sqrt(n_vars)), aspect_ratio = NULL)
 
     return(sub_fig)
   }
 
 
   ## if variables are provided as character vector, turn into list
-  if (class(plot_vars) == "character"){
+  if (class(plot_vars) == "character") {
     plot_vars <- setNames(lapply(plot_vars, function(x) list()), plot_vars)
 
     ## add plot_var as list item
@@ -325,7 +325,11 @@ plot_hosp_time <- function(
   }
 
   ## check if plot_var is character/factor/logical -> plot % by default
-  func <- ifelse(!func %in% c("count", "missing") && (any(class(cohort[[plot_var]]) %in% c("character", "factor", "logical"))), "prct", func)
+  func <- ifelse(
+    !func %in% c("count", "missing") &&
+      (any(class(cohort[[plot_var]]) %in% c("character", "factor", "logical"))),
+    "prct", func
+  )
 
   ## if no plot_cat level specified, sort unique values and plot highest one
   if (func == "prct" && is.null(plot_cat)) {
@@ -382,10 +386,13 @@ plot_hosp_time <- function(
   } else {
     grouping <- c(time_int, hosp_group, facet_var)
   }
-  # for count variables, "overall" line represents median of all other lines
+
   if (func == "count") {
+    # for count variables, "overall" line represents median of all other lines
     res_grouped <- res[, .(outcome = median(outcome, na.rm = TRUE)), by = grouping]
-  } else { # for all other functions, "overall" line represents mean/median etc. across all data points (per grouping var)
+  } else {
+    # for all other functions, "overall" line represents mean/median etc.
+    # across all data points (per grouping var)
     res_grouped <- aggregate_data(cohort, func, grouping)
   }
 
@@ -409,7 +416,7 @@ plot_hosp_time <- function(
       )
     )
 
-
+    ## Aesthetics for individual hospital lines
     if (!is.null(hosp_var)) {
       fig <- fig + geom_line(
         data = res,
@@ -419,8 +426,11 @@ plot_hosp_time <- function(
           color = if (is.null(hosp_group)) overall_label else get(hosp_group)
         ),
         linewidth = line_width,
-        alpha = ifelse(is.null(facet_var) || ((!is.null(facet_var) && !is.null(hosp_var) && (facet_var != hosp_var))), 0.2, 1),
-        show.legend = (!is.null(hosp_group) && (is.null(facet_var) || ((!is.null(facet_var) && hosp_group != facet_var)) || ((!is.null(facet_var) && !is.null(hosp_var) && hosp_var == facet_var))))
+        alpha = ifelse(is.null(facet_var) ||
+                         ((!is.null(facet_var) && !is.null(hosp_var) && (facet_var != hosp_var))), 0.2, 1),
+        show.legend = (!is.null(hosp_group) &&
+                         (is.null(facet_var) || ((!is.null(facet_var) && hosp_group != facet_var)) ||
+                            ((!is.null(facet_var) && !is.null(hosp_var) && hosp_var == facet_var))))
       )
 
       if (!is.null(facet_var)) {
@@ -430,12 +440,19 @@ plot_hosp_time <- function(
       }
     }
 
+    ## Aesthetics for overall line
     if (show_overall == TRUE) {
       fig <- fig + geom_line(
-        # average line for the group
-        linewidth = ifelse(!is.null(hosp_var) && !is.null(hosp_group) && hosp_var == hosp_group, line_width, 2 * line_width),
-        show.legend = ((!is.null(hosp_group) || !is.null(hosp_var))) && (is.null(facet_var) || (!is.null(facet_var) && hosp_group != facet_var)),
-        alpha = ifelse(!is.null(facet_var) && !is.null(hosp_var) && facet_var == hosp_var, 0.2, 1)) +
+        linewidth = ifelse(
+          !is.null(hosp_var) && !is.null(hosp_group) && hosp_var == hosp_group,
+          line_width,
+          2 * line_width
+        ),
+        show.legend = ((!is.null(hosp_group) || !is.null(hosp_var))) &&
+          (is.null(facet_var) || (!is.null(facet_var) && hosp_group != facet_var)),
+        alpha = ifelse(
+          !is.null(facet_var) && !is.null(hosp_var) && facet_var == hosp_var, 0.2, 1)
+      ) +
         labs(color = NULL)
     }
 
@@ -465,15 +482,23 @@ plot_hosp_time <- function(
 
     ## Adjust dates on x-axis
     if (grepl("quarter", time_int, ignore.case = TRUE)) {
-      fig <- fig + scale_x_discrete(breaks = levels(cohort$quarter)[seq(1, length(levels(cohort$quarter)), by = ifelse(length(levels(cohort$quarter)) < 10 && is.null(facet_var), 1, ifelse(length(levels(cohort$quarter)) < 20, 2, 4)))],
-                                    labels = levels(cohort$quarter)[seq(1, length(levels(cohort$quarter)), by = ifelse(length(levels(cohort$quarter)) < 10 && is.null(facet_var), 1, ifelse(length(levels(cohort$quarter)) < 20, 2, 4)))])
+      fig <- fig +
+        scale_x_discrete(breaks = levels(cohort$quarter)[
+          seq(1, length(levels(cohort$quarter)),
+              by = ifelse(length(levels(cohort$quarter)) <= 8 && is.null(facet_var), 1,
+                          ifelse(length(levels(cohort$quarter)) <= 20, 2, 4)))],
+          labels = levels(cohort$quarter)[
+            seq(1, length(levels(cohort$quarter)),
+                by = ifelse(length(levels(cohort$quarter)) <= 8 && is.null(facet_var), 1,
+                            ifelse(length(levels(cohort$quarter)) <= 20, 2, 4)))])
     } else if (grepl("month", time_int, ignore.case = TRUE)) {
-      fig <- fig + scale_x_date(breaks = seq(as.Date(min(cohort$month)), as.Date(max(cohort$month)), by = ifelse(length(unique(cohort$month)) < 20 && is.null(facet_var), "1 month", ifelse(length(unique(cohort$month)) < 30, "6 months", "1 year"))), date_labels = ifelse(is.null(facet_var), "%b-%Y", "%m/%y"))
+      fig <- fig + scale_x_date(breaks = seq(
+        as.Date(min(cohort$month)),
+        as.Date(max(cohort$month)),
+        by = ifelse((is.null(facet_var) && length(unique(cohort$month)) <= 24) || (!is.null(facet_var) && length(unique(cohort$month)) <= 18), "1 month",
+                    ifelse((is.null(facet_var) && length(unique(cohort$month)) <= 60) || (!is.null(facet_var) && length(unique(cohort$month)) <= 45), "6 months", "1 year"))),
+        date_labels = ifelse(is.null(facet_var), "%b-%Y", "%m/%y"))
     }
-    # scale_x_date(
-    #  name = paste0(" \n", fix_var_str(time_var))
-    # ,
-    # ) +
 
 
     if (!is.null(colors)) {
@@ -481,13 +506,117 @@ plot_hosp_time <- function(
     }
 
 
-    if (!is.null(hosp_group) && (is.null(facet_var) || (!is.null(facet_var) && hosp_group != facet_var) || (!is.null(facet_var) && !is.null(hosp_var) && hosp_var != facet_var))) {
-      fig <- fig + labs(
-        # Legend title
-        colour = fix_var_str(hosp_group)
-      )
+    ## Legend title
+    if (!is.null(hosp_group) &&
+        (is.null(facet_var) || (!is.null(facet_var) && hosp_group != facet_var) ||
+         (!is.null(facet_var) && !is.null(hosp_var) && hosp_var != facet_var))) {
+      fig <- fig +
+        labs(colour = fix_var_str(hosp_group))
     }
 
     return(fig)
   }
 }
+
+
+
+
+#' @title
+#' GEMINI colors
+gemini_colors <- c(
+  rgb(2, 32, 97, maxColorValue = 255), # GEMINI navy
+  rgb(2, 176, 241, maxColorValue = 255), # GEMINI cyan
+  rgb(173, 216, 230, maxColorValue = 255)
+)
+
+#' @title
+#' GEMINI plot theme
+#'
+#' @description
+#' Common theme that can be applied to any ggplot object
+#'
+#' @param base_size (`numeric`)\cr
+#' @param base_family (`numeric`)\cr
+#' @param show_grid (`logical`)\cr
+#' @param aspect_ratio (`numeric`)\cr
+#' Aspect ratio of plot
+#'
+#' @import ggplot2
+#' @import grid
+#' @import ggthemes
+#'
+#' @references
+#' https://emanuelaf.github.io/own-ggplot-theme.html
+#' https://ggplot2.tidyverse.org/reference/theme.html
+#' https://rpubs.com/mclaire19/ggplot2-custom-themes
+#' https://themockup.blog/posts/2020-12-26-creating-and-using-custom-ggplot2-themes/
+#' https://stackoverflow.com/questions/34522732/changing-fonts-in-ggplot2
+#' http://www.cookbook-r.com/Graphs/Fonts/
+#' https://github.com/wch/extrafont
+#' https://github.com/koundy/ggplot_theme_Publication
+#'
+#' @return
+#' ggplot with specified theme
+#'
+#' @export
+gemini_theme <- function(
+    base_size = 14,
+    base_family = "",
+    show_grid = FALSE,
+    aspect_ratio = 1
+) {
+
+  res <- (
+    theme_foundation(
+      base_size = base_size,
+      base_family = base_family
+    ) +
+      theme(
+        plot.title = element_text(
+          face = "bold",
+          size = rel(1),
+          hjust = 0.5,
+          vjust = rel(5),
+          margin = margin(0, 0, 0, 0),
+        ),
+        text = element_text(),
+        panel.background = element_rect(colour = NA),
+        plot.background = element_rect(colour = NA),
+        panel.border = element_rect(colour = NA),
+        axis.title = element_text(face = "bold", size = rel(1)),
+        axis.title.y = element_text(angle = 90, vjust = 2),
+        axis.title.x = element_text(vjust = -0.2),
+        axis.text = element_text(size = rel(0.8), colour = "grey30"),
+        axis.line.x = element_line(colour = "black"),
+        axis.line.y = element_line(colour = "black"),
+        axis.ticks = element_line(),
+        panel.grid.major = if (show_grid) element_line(color = "grey85", linetype = 2) else element_blank(),
+        panel.grid.minor = element_blank(),
+
+
+        legend.position = "right",
+        legend.justification = "center",
+
+        #legend.direction = "horizontal",
+        #legend.box = "vertical",
+
+        legend.key = element_rect(colour = NA),
+        legend.key.size = unit(.05, "npc"),  # length of legend entry line
+
+        legend.spacing = unit(0, "mm"),
+        legend.title = element_text(face = "bold.italic", hjust = 0, size = rel(1)),
+        legend.text = element_text(size = rel(1)),
+        legend.text.align = 0,
+
+        plot.margin = unit(c(0.05, 0.05, 0.05, 0.05), "npc"),
+
+        ## top strip for facet wrap plots
+        strip.background = element_rect(fill = "grey85", colour = NA),
+        strip.text = element_text(face = "bold", size = rel(0.75)),
+
+        aspect.ratio = aspect_ratio,
+      ))
+
+  return(res)
+}
+
