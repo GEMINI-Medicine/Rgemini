@@ -526,7 +526,7 @@ plot_hosp_time <- function(
 gemini_colors <- c(
   rgb(2, 32, 97, maxColorValue = 255), # GEMINI navy
   rgb(2, 176, 241, maxColorValue = 255), # GEMINI cyan
-  rgb(173, 216, 230, maxColorValue = 255)
+  rgb(173, 216, 230, maxColorValue = 255) # THIS NEEDS TO BE CHANGED TO SOMETHING MORE EASILY DISTINGUISHABLE
 )
 
 #' @title

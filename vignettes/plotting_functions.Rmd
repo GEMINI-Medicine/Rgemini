@@ -20,36 +20,26 @@ knitr::opts_chunk$set(
   include = TRUE, 
   eval = TRUE, 
   echo = TRUE, 
-  results='asis', 
+  results = 'asis', 
   warning = FALSE, 
   message = FALSE, 
   collapse = TRUE,
   cache = FALSE, 
   tidy = FALSE,
-  fig.height = 3, 
-  fig.width = 5
+  fig.height = 4, 
+  fig.width = 6
   
 )
 
-
 # remove all of these later...
-library(Rgemini)
-library(lubridate)
 library(ggplot2)
 library(ggpubr)
-library(dplyr)
-library(data.table)
 library(lemon)
 library(grid)
 library(ggthemes)
 
-library(sn)
-library(MCMCpack)
-
 source("H:/GitHub/Rgemini/R/plots.R") 
-source("H:/GitHub/Rgemini/R/gemini_plot.R") 
-source("H:/GitHub/Rgemini/R/gemini_theme.R")
-source("H:/GitHub/Rgemini/R/dummy_data.R") 
+source("H:/GitHub/Rgemini/R/utils.R") 
 
 options(knitr.kable.NA = '')
 
@@ -66,11 +56,15 @@ options(knitr.kable.NA = '')
 
 The plotting examples shown below are based on variables from the "ipadmdad" table. Typically, you would query this table from the GEMINI database, but for illustration purposes, let's create some dummy data using the `Rgemini` function `dummy_ipadmdad`. 
 
-Here, we are simulating an "ipadmdad" table with 50,000 encounters from 9 different hospitals and with discharge dates ranging from fiscal years 2015 to 2022:
+Here, we are simulating an "ipadmdad" table with 50,000 encounters from 9 different hospitals and with discharge dates ranging from fiscal years 2018 to 2022:
 
 ```{r}
+library(Rgemini)
+library(dplyr)
+library(data.table)
+
 set.seed(999)
-ipadmdad <- dummy_ipadmdad(n = 50000, n_hospitals = 12, time_period = c(2015,2022)) %>%
+ipadmdad <- dummy_ipadmdad(n = 50000, n_hospitals = 12, time_period = c(2018, 2022)) %>%
   data.table()
 ```
 
@@ -86,7 +80,7 @@ First, let's use the `plot_histograms()` function to explore the dataset.
 
 By default, the function will plot histograms of all relevant variables in the provided `data` input (ignoring `genc_id`, and any hospital/date-time variables). It will also show some basic descriptive stats about each variable at the top of the plot.
 
-```{r, fig.height = 4, fig.width = 6}
+```{r, fig.height = 4, fig.width = 8.5}
 plot_histograms(data = ipadmdad)
 ```
 
@@ -145,8 +139,8 @@ There are several ways users can customize this plot by providing additional inp
 - `hosp_var`: Variable specifying hospital identifier (default = `"hospital_num"`)
 - `hosp_group`: Optional hospital-level grouping variable (e.g., `"hospital_type"` or `"affiliation"`)
 - `facet_var`: Optional variable to be used as `facet_wrap` (e.g., `facet_var = "hospital_num"` will plot individual subplots per hospital)
-- `min_n`: Minimum number of data points required per hospital * time_int combination. Any cells with `n < min_n` will be suppressed.
-- Plotting aesthetics like `line_width`, `ylabel`, `ylimits`, and `colors` 
+- `min_n`: Minimum number of data points required per hospital * time point combination. Any cells with `n < min_n` will be suppressed.
+- Plotting aesthetics like `line_width`, `ylabel`, `ylimits`, and `colors`(see function documentation for more details)
 
 
 ## `func` 
@@ -154,7 +148,7 @@ There are several ways users can customize this plot by providing additional inp
 Instead of plotting the average (`func = "mean"`), users can provide any of the following alternative `func` inputs:
 
 - `"median"`
-- `"%"` or `"perc"` to plot % of encounters in a specified category level. Users can specify `plot_cat` to indicate which category/factor level to plot (by default, the function will sort all unique values and plot the % in the highest category level). Note: For any character/logical/factor variables, the function will automatically infer `func = "%"`. 
+- `"%"` or `"prct"`/`"perc"` to plot % of encounters in a specified category level. Users can specify `plot_cat` to indicate which category/factor level to plot (by default, the function will sort all unique values and plot the % in the highest category level). Note: For any character/logical/factor variables, the function will automatically infer `func = "%"`. 
 - `"count"` or `"n"` to plot the number of rows/encounters
 
 
@@ -197,13 +191,14 @@ plot_hosp_time(
 ```
 
 
-Finally, the function can also be used to plot the percentage of missing data by specifying `func = "na"` or `"missing"`, which plots the percentage of all entries that are either `NA`, `""`, or `" "`:
+Finally, the function can also be used to plot the percentage of missing data by specifying `func = "na"` or `"missing"`, which plots the percentage of all entries that are either `NA`, `""`, or `" "`. Let's plot the % of encounters with missing ALC flag and rename the ylabel to `"% Missing ALC"`:
 
 ```{r}
 plot_hosp_time(
   cohort = ipadmdad,
   plot_var = "alc_service_transfer_flag",
-  func = "na"
+  func = "na",
+  ylabel = "% Missing ALC flag"
 )
 ```
 
@@ -250,7 +245,7 @@ plot_hosp_time(
 Note that users can in principle specify any custom time interval as long as this is provided as a column in the `cohort` input. For example, let's say we want to plot the number of encounters that were *admitted* to hospital each day in April 2020. Users can calculate the admission date prior to running the function and then provide it as the`time_int` input:
 
 ```{r}
-
+library(lubridate)
 ipadmdad[, my_date := as.Date(ymd_hm(admission_date_time))]
 
 plot_hosp_time(
@@ -262,19 +257,16 @@ plot_hosp_time(
 
 
 
-
-
-## View individual sites
+## View individual hospitals
 
 If you want to inspect temporal trends at individual hospitals, there are 2 different approaches:
 
-1) We could specify our hospital-level variable `hospital_num` as a `facet_var`, which will create individual subplots for each site. You could choose to plot/hide the overall line (mean age across all sites) by setting `show_overall` to either `TRUE` or `FALSE`:
+1) You could specify our hospital-level variable `hospital_num` as a `facet_var`, which will create individual subplots for each site. You could choose to plot/hide the overall line (mean age across all sites) by setting `show_overall` to either `TRUE` or `FALSE`:
 
-```{r}
+```{r fig.height = 7, fig.width = 9}
 plot_hosp_time(
   ipadmdad,
   plot_var = "age",
-  time_var = "year",
   facet_var = "hospital_num",
   show_overall = TRUE
 ) 
@@ -286,7 +278,6 @@ plot_hosp_time(
 plot_hosp_time(
   ipadmdad,
   plot_var = "age",
-  time_var = "year",
   hosp_group = "hospital_num"
 )
 ```
@@ -294,16 +285,17 @@ plot_hosp_time(
 
 ## Grouping variables (color)
 
-A more common application for the `hosp_group` is to add an additional layer of hospital-level grouping. For example, we may want to group hospitals into different types, such as academic vs. community hospitals. For illustration purposes, a random `hospital_type` is assigned to our dummy data and we can then add `hospital_type` as a `hosp_group`. The thick lines now represent the overall mean age at each hospital type. **Note that the data are aggregated across all encounters of each group level (e.g., the green line represents the mean age of all encounters at any large community site). This means that larger hospitals will contribute more to the average age than smaller hospitals.**
+A more common application for the `hosp_group` is to add an additional layer of hospital-level grouping. For example, you may want to group hospitals into different types, such as academic vs. community hospitals. For illustration purposes, a random `hospital_type` is assigned to our dummy data and we can then add `hospital_type` as a `hosp_group` varible. The thick lines now represent the overall mean age at each hospital type. Note that the data are aggregated across all encounters of each group level (e.g., the cyan line represents the mean age of all encounters at any community site). This means that larger hospitals will contribute more to the average age than smaller hospitals.
 
 ```{r}
 # assign (random) hospital grouping variable
-ipadmdad[, hospital_type := sample(c("Academic", "Community"), prob = c(.4, .6), 1, replace=TRUE), by = hospital_num] 
+ipadmdad[, hospital_type := sample(
+  c("Academic", "Community"), prob = c(.4, .6), 1, replace = TRUE
+), by = hospital_num] 
 
 plot_hosp_time(
   ipadmdad,
   plot_var = "age",
-  time_var = "year",
   hosp_group = "hospital_type"
 )
 ```
@@ -313,7 +305,6 @@ You could suppress the individual hospital lines in this plot by specifying `hos
 plot_hosp_time(
   ipadmdad,
   plot_var = "age",
-  time_var = "year",
   hosp_var = NULL,
   hosp_group = "hospital_type",
   colors = c("#86b9b0", "#c266a7")
@@ -323,15 +314,13 @@ plot_hosp_time(
 We could also apply `facet_var` here to show the individual hospitals in separate plots, with color coding reflecting the hospital type. For the purpose of this plot, we set `show_overall` to `FALSE` to avoid redundancy of information in each subplot:
 
 
-```{r}
+```{r fig.height = 7, fig.width = 9}
 plot_hosp_time(
   ipadmdad,
   plot_var = "age",
-  time_var = "year",
   hosp_group = "hospital_type",
   facet_var = "hospital_num",
-  colors = plot_colors[c(1, 3)],
-  show_overall = FALSE,
+  show_overall = FALSE
 )
 ```
 
@@ -342,7 +331,6 @@ One other alternative to illustrate differences between hospital types is to spe
 plot_hosp_time(
   ipadmdad,
   plot_var = "age",
-  time_var = "year",
   hosp_group = "hospital_type",
   facet_var = "hospital_type",
   show_overall = TRUE
@@ -354,7 +342,6 @@ You can remove the grouping by color by specifying a single color value for the 
 plot_hosp_time(
   ipadmdad,
   plot_var = "age",
-  time_var = "year",
   hosp_group = "hospital_type",
   facet_var = "hospital_type",
   show_overall = TRUE,
@@ -365,38 +352,68 @@ plot_hosp_time(
 
 ## Encounter-level grouping variables
 
-Note that the function always assumes that individual plot lines/subplot correspond to a hospital-level identifier and that `hosp_group` corresponds to a hospital-level grouping variable. If you want to apply any additional encounter-level grouping, this sould always be specified as a `facet_var` in order to make sure individual lines/color groupings still represent hospital-level variables. 
+Note that the function always assumes that individual plot lines (or subplots) correspond to a **hospital-level** identifier and that `hosp_group` corresponds to a **hospital-level** grouping variable. If you want to apply any additional encounter-level grouping, this should always be specified as a `facet_var` in order to make sure individual lines/color groupings still represent hospital-level variables. 
 
-For example, we could plot `age` separately by `gender` by specifying `gender` as a `facet_var`:
+For example, we could plot `age` separately by `gender` by specifying `gender` as a `facet_var`. Since there are not many encounters with gender = `"O"`, we may want to apply cell suppression to any data points with n < 6 by specifying `min_n = 6`:
 
-
-```{r}
+```{r fig.width = 9}
 plot_hosp_time(
   ipadmdad,
   plot_var = "age",
-  time_var = "year",
   facet_var = "gender",
-  show_overall = TRUE
+  show_overall = TRUE,
+  min_n = 6
 )
 ```
 
+## Returning aggregated data
+
+There might be situations where users want the function to return the aggregated data, instead of plotting the results. This could be useful for debugging purposes, checking for outliers, or to further process the data before plotting the results. This can easily be achieved by specifying `return_data = TRUE`:
+
+```{r}
+aggr_data <- plot_hosp_time(
+  ipadmdad,
+  hosp_group = "hospital_type",
+  func = "median",
+  plot_var = "age",
+  return_data = TRUE
+)
+```
+
+This will return a list of 2 `data.table` objects, where the 1st entry corresponds to the results aggregated by individual hospitals * time interval (e.g., `hospital_num` * `month` by default):
+
+```{r}
+knitr::kable(head(aggr_data[[1]]))
+```
+
+
+The 2nd list entry corresponds to the results aggregated by grouping variable (if any), such as `hospital_type` in this example, and time interval:
+```{r}
+knitr::kable(head(aggr_data[[2]]))
+```
+
+In both tables, `n` corresponds to the number of data points in each cell.
 
 
 *  *  *  *
 
 
-## Plotting theme
+# Plotting theme
 
-All plots shown above apply a common theme specified in the function `Rgemini::gemini_theme()`. If you like the appearance of the plots shown above, you can apply this theme to any of your other figures you create, e.g.:
+All plots shown above apply a common theme specified in the function `Rgemini::gemini_theme()`. If you like the appearance of the plots shown above, you can apply this theme to any other `ggplots` you create. `Rgemini` also contains a color palette called `gemini_colors` that you can use, e.g.:
 
 ```{r}
 my_plot <- ggplot(data = data.frame(group = c("A", "B"), mean = c(5, 7)), aes(x = group, y = mean)) +
-  geom_bar(stat = "summary") +
+  geom_bar(stat = "summary", fill = gemini_colors[1]) +
   scale_y_continuous(name = "Mean", expand = c(0, 0))
 
 my_plot + ggtitle("Original plot")
 
-my_plot + gemini_theme() + ggtitle("Plot with GEMINI theme")
+my_plot + 
+  scale_color_manual(values = gemini_colors) +
+  gemini_theme() + 
+  ggtitle("Plot with GEMINI theme")
+
 ```
 
 
