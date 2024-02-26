@@ -4,7 +4,7 @@
 \alias{icu_entry}
 \title{Compute entry to Intensive Care Unit}
 \usage{
-icu_entry(cohort, ipscu, window = c(24, 48, 72))
+icu_entry(cohort, ipscu, as_outcome = FALSE, window = c(24, 48, 72))
 }
 \arguments{
 \item{cohort}{(\code{data.table}, \code{data.frame})\cr
@@ -20,6 +20,11 @@ Table equivalent to the \code{ipscu} table defined in the
 \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
 Table must contain fields:
 GEMINI Encounter ID (\code{genc_id}), SCU admission time (\code{scu_admit_date_time}), and SCU number (\code{scu_unit_number}).}
+
+\item{as_outcome}{(\code{logical})\cr
+Whether ICU admission is as a clinical outcome or not. Default to FALSE.
+When set to TRUE, records with direct ICU admission before admitted to inpatient care
+(i.e. \verb{scu_admit_date_time`` <= }admission_date_time``) are excluded.}
 
 \item{window}{(\code{integer}, \code{vector})\cr
 Time window of ICU entry since hospital admission, in hours.
