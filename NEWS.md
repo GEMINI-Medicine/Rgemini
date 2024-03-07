@@ -1,3 +1,7 @@
+# Rgemini 0.4.2
+
+* Small bug fix in `Rgemini:::find_db_tablename`
+
 # Rgemini 0.4.1
 
 * Small bug fix in `Rgemini:::check_input`
