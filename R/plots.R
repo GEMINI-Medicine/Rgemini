@@ -331,6 +331,7 @@ plot_hosp_time <- function(
     "prct", func
   )
 
+
   ## if no plot_cat level specified, sort unique values and plot highest one
   if (func == "prct" && is.null(plot_cat)) {
     plot_cat <- dplyr::last(sort(unique(cohort[[plot_var]])))
@@ -375,9 +376,17 @@ plot_hosp_time <- function(
     return(res)
   }
 
+
   ## Aggregate data by all relevant variables
-  grouping <- c(time_int, hosp_var, hosp_group, facet_var)
+  grouping <- unique(c(time_int, hosp_var, hosp_group, facet_var))
   res <- aggregate_data(cohort, func, grouping)
+
+  # for any date*hosp combos that don't exist, merge and fill with NA so they correctly show up as empty on graph
+  append <- suppressWarnings(setDT(tidyr::crossing(unique(res[, ..time_int]), distinct(res[, -c(..time_int, "outcome", "n")]))))
+  append <- anti_join(append, res, by = grouping)
+
+  ## append missing dates
+  res <- rbind(res, append, fill = TRUE)
 
 
   ## Aggregate data by time * group (if any, otherwise, will just aggregate across all observations)
@@ -456,7 +465,6 @@ plot_hosp_time <- function(
         labs(color = NULL)
     }
 
-
     # Common configs for plot
     if (is.null(ylimits)) {
       ylimits <- c(floor(min(res$outcome, na.rm = TRUE) / 1.1), ceiling(max(res$outcome, na.rm = TRUE) * 1.1))
@@ -493,8 +501,8 @@ plot_hosp_time <- function(
                             ifelse(length(levels(cohort$quarter)) <= 20, 2, 4)))])
     } else if (grepl("month", time_int, ignore.case = TRUE)) {
       fig <- fig + scale_x_date(breaks = seq(
-        as.Date(min(cohort$month)),
-        as.Date(max(cohort$month)),
+        as.Date(min(cohort$month, na.rm = TRUE)),
+        as.Date(max(cohort$month, na.rm = TRUE)),
         by = ifelse((is.null(facet_var) && length(unique(cohort$month)) <= 24) || (!is.null(facet_var) && length(unique(cohort$month)) <= 18), "1 month",
                     ifelse((is.null(facet_var) && length(unique(cohort$month)) <= 60) || (!is.null(facet_var) && length(unique(cohort$month)) <= 45), "6 months", "1 year"))),
         date_labels = ifelse(is.null(facet_var), "%b-%Y", "%m/%y"))
