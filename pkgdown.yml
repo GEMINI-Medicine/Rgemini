@@ -1,4 +1,4 @@
-pandoc: 2.19.2
+pandoc: 3.1.11
 pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
@@ -6,7 +6,7 @@ articles:
   daily_census: daily_census.html
   epicare_and_readmission: epicare_and_readmission.html
   icd_to_ccsr: icd_to_ccsr.html
-last_built: 2024-02-15T13:22Z
+last_built: 2024-03-08T00:56Z
 urls:
   reference: https://gemini-medicine.github.io/Rgemini/reference
   article: https://gemini-medicine.github.io/Rgemini/articles
