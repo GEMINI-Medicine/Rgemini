@@ -163,7 +163,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
       # for lab & transfusion table table:
       # check for specific table names lab/lab_subset and transfusion/transfusion_subset
       # (otherwise, lab/transfusion_mapping or other tables might be returned)
-      res <- table_names[table_names %in% c(table, paste0(table, "subset"))]
+      res <- table_names[table_names %in% c(table, paste0(table, "_subset"))]
     } else {
       # for all other tables, simply search for names starting with search term
       res <- table_names[grepl(paste0("^", drm_table), table_names)]
