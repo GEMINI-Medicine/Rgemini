@@ -368,7 +368,20 @@ plot_hosp_time <- function(
       ), by = grouping]
     }
 
-    ## exclude observations with low cell count if min_n specified
+
+    # for any date*hosp combos that don't exist, merge and fill with NA so they correctly show up as empty on graph
+    append <- suppressWarnings(setDT(tidyr::crossing(unique(res[, ..time_int]), distinct(res[, -c(..time_int, "outcome", "n")]))))
+    append <- anti_join(append, res, by = grouping)
+
+    ## append missing dates
+    res <- rbind(res, append, fill = TRUE)
+
+    ## for count, impute empty time points with 0 (others will show gap in line)
+    if (func %in% c("count")) {
+      res[is.na(outcome), outcome := 0]
+    }
+
+    ## exclude observations with low cell count if min_n specified (will show up as gap on plot)
     if (min_n > 0 && func != "count") {
       res[n < min_n, outcome := NA]
     }
@@ -380,13 +393,6 @@ plot_hosp_time <- function(
   ## Aggregate data by all relevant variables
   grouping <- unique(c(time_int, hosp_var, hosp_group, facet_var))
   res <- aggregate_data(cohort, func, grouping)
-
-  # for any date*hosp combos that don't exist, merge and fill with NA so they correctly show up as empty on graph
-  append <- suppressWarnings(setDT(tidyr::crossing(unique(res[, ..time_int]), distinct(res[, -c(..time_int, "outcome", "n")]))))
-  append <- anti_join(append, res, by = grouping)
-
-  ## append missing dates
-  res <- rbind(res, append, fill = TRUE)
 
 
   ## Aggregate data by time * group (if any, otherwise, will just aggregate across all observations)
