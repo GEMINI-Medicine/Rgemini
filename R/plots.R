@@ -138,10 +138,6 @@ plot_histograms <- function(data, plot_vars = NULL, show_stats = TRUE) {
 
 
 
-
-
-
-
 #' @title
 #' Plot by hospital and time
 #'
@@ -156,7 +152,9 @@ plot_histograms <- function(data, plot_vars = NULL, show_stats = TRUE) {
 #' @param time_var (`character`)\cr
 #' The name of the variable specifying time. Typically "discharge_date_time".
 #' @param hosp_var (`character`)\cr
-#' The name of the variable specifying individual hospitals
+#' The name of the variable specifying individual hospitals. By default:
+#' `"hospital_num"` (unless `"hospital_num"` does not exist, in which case the
+#' function will check for existance of `"hospital_id"` instead).
 #' @param hosp_group (`character`)\cr
 #' The name of the variable used to group hospitals
 #' @param facet_var (`character`)\cr
@@ -181,7 +179,6 @@ plot_histograms <- function(data, plot_vars = NULL, show_stats = TRUE) {
 #' and there is a user-provided variable of that same name in the `cohort`
 #' input, the function will default to the variable that exists in the user-
 #' provided input.
-#'
 #'
 #' @param func (`character`)\cr
 #' The summary function used to aggregate data by time & hospital. Has to be one
@@ -252,6 +249,12 @@ plot_hosp_time <- function(
 
   ##### Check inputs #####
   if (missing(plot_var) && !grepl("^n|count", func, ignore.case = TRUE)) stop("Missing the plot variable selection")
+
+  # by default, use hospital_num as hospital identifier, unless it doesn't exist
+  # in cohort input (in that case, check if hospital_id exists and use that)
+  if (hosp_var == "hospital_num" && !"hospital_num" %in% colnames(cohort) && "hospital_id" %in% colnames(cohort)) {
+    hosp_var <- "hospital_id"
+  }
 
   Rgemini:::check_input(
     cohort,
