@@ -34,7 +34,9 @@ The name of the variable we wish to plot}
 The name of the variable specifying time. Typically "discharge_date_time".}
 
 \item{hosp_var}{(\code{character})\cr
-The name of the variable specifying individual hospitals}
+The name of the variable specifying individual hospitals. By default:
+\code{"hospital_num"} (unless \code{"hospital_num"} does not exist, in which case the
+function will check for existance of \code{"hospital_id"} instead).}
 
 \item{hosp_group}{(\code{character})\cr
 The name of the variable used to group hospitals}
