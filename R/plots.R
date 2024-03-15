@@ -19,6 +19,9 @@
 #' @param show_stats (`logical`)\cr
 #' Flag indicating whether to show descriptive stats above each plot.
 #'
+#' @param col (`character`)\cr
+#' Plotting color. Default is first color of `gemini_colors` palette "basic2".
+#'
 #' @return (`ggplot`)\cr A ggplot figure containing histograms of all variables
 #' specified in `vars`.
 #'
@@ -38,7 +41,10 @@
 #' plot_histograms(data = admdad,
 #'                 plot_vars = c("age", "gender", "discharge_disposition", "number_of_alc_days")
 #'
-plot_histograms <- function(data, plot_vars = NULL, show_stats = TRUE) {
+plot_histograms <- function(data,
+                            plot_vars = NULL,
+                            show_stats = TRUE,
+                            colors = gemini_colors("basic2")[1]) {
 
   if (is.null(plot_vars)) {
     plot_vars <- colnames(data)[!grepl("genc_id|hospital_id|hospital_num|date_time", colnames(data))]
@@ -53,7 +59,7 @@ plot_histograms <- function(data, plot_vars = NULL, show_stats = TRUE) {
             is.null(var$class) && class(data[[var$plot_var]]) %in% c("numeric", "integer"))) {
 
       sub_fig <- ggplot(data, aes(x = get(var$plot_var)))  +
-        geom_histogram(color = "grey20", fill = gemini_colors[1], alpha = .4, binwidth = var$binwidth) +
+        geom_histogram(color = "grey20", fill = colors, alpha = .4, binwidth = var$binwidth) +
         labs(title = var$varlabel)
 
       if (!is.null(var$breaks)) {
@@ -87,7 +93,7 @@ plot_histograms <- function(data, plot_vars = NULL, show_stats = TRUE) {
                    is.null(var$class) && class(data[[var$plot_var]]) %in% c("character", "logical"))) {
 
       sub_fig <- ggplot(data, aes(x = as.factor(data[[var$plot_var]]))) +
-        geom_bar(color = "grey20", fill = gemini_colors[1], alpha = 0.4) +
+        geom_bar(color = "grey20", fill = colors, alpha = 0.4) +
         labs(title = var$varlabel)
 
       if (show_stats == TRUE) {
@@ -205,8 +211,6 @@ plot_histograms <- function(data, plot_vars = NULL, show_stats = TRUE) {
 #' hospitals.
 #' @param line_width (`numeric`)\cr
 #' Width of individual lines. Summary line will be 2 * line_width.
-#' @param ylabel (`character`)\cr
-#' Title on y-axis
 #' @param ylimits (`numeric`)\cr
 #' Numeric vector specifying limits for y-axis e.g. c(0, 100).
 #' @param min_n (`numeric`)\cr
@@ -241,10 +245,9 @@ plot_hosp_time <- function(
     plot_cat = NULL,
     show_overall = TRUE,
     line_width = 1,
-    ylabel = NULL,
     ylimits = NULL,
     min_n = 0,
-    colors = gemini_colors,
+    colors = gemini_colors(),
     return_data = FALSE) {
 
   ##### Check inputs #####
@@ -267,7 +270,7 @@ plot_hosp_time <- function(
 
   ## Get time_int
   # if user did not provide custom time_int variable in cohort
-  # derive time_int (by default year-month)
+  # derive time_int (by default "month")
   if (!time_int %in% colnames(cohort)) {
     time_label <- fix_var_str(paste(strsplit(time_var, "[_]")[[1]][1], time_int))
 
@@ -483,17 +486,11 @@ plot_hosp_time <- function(
 
 
     fig <- fig +
-      scale_y_continuous(
-        name = ifelse(!is.null(ylabel), ylabel,
-                      ifelse(func == "prct",
-                             paste0(fix_var_str(plot_var), " = ", paste0(plot_cat, collapse = "/"), " (%)"),
-                             ifelse(func == "missing",
-                                    paste0(fix_var_str(plot_var), " = missing (%)"),
-                                    ifelse(func == "count", "N",
-                                           paste0(fix_var_str(plot_var), " (", func, ")"))
-                             )
-                      )), limits = ylimits, expand = c(0, 0)) +
-      xlab(time_label) +
+      scale_y_continuous(limits = ylimits, expand = c(0, 0)) +
+      labs(x = time_label, y = ifelse(func == "prct", paste0(fix_var_str(plot_var), " = ", paste0(plot_cat, collapse = "/"), " (%)"),
+                                      ifelse(func == "missing", paste0(fix_var_str(plot_var), " = missing (%)"),
+                                             ifelse(func == "count", "N",
+                                                    paste0(fix_var_str(plot_var), " (", func, ")"))))) +
       gemini_theme(base_size = 12, aspect_ratio = NULL) +
       theme(axis.text.x = element_text(angle = 60, hjust = 1))
 
@@ -534,17 +531,6 @@ plot_hosp_time <- function(
     return(fig)
   }
 }
-
-
-
-
-#' @title
-#' GEMINI colors
-gemini_colors <- c(
-  rgb(2, 32, 97, maxColorValue = 255), # GEMINI navy
-  rgb(2, 176, 241, maxColorValue = 255), # GEMINI cyan
-  rgb(173, 216, 230, maxColorValue = 255) # THIS NEEDS TO BE CHANGED TO SOMETHING MORE EASILY DISTINGUISHABLE
-)
 
 #' @title
 #' GEMINI plot theme
@@ -636,4 +622,9 @@ gemini_theme <- function(
 
   return(res)
 }
+
+
+
+
+
 
