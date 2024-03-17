@@ -358,16 +358,6 @@ plot_hosp_time(
   min_n = 6
 )
 
-
-plot_hosp_time(
-  ipadmdad,
-  plot_var = "age",
-  hosp_group = "gender",
-  facet_var = "hospital_num",
-  show_overall = FALSE,
-  min_n = 6
-)
-
 ```
 
 ## Returning aggregated data
@@ -375,11 +365,12 @@ plot_hosp_time(
 There might be situations where users want the function to return the aggregated data, instead of plotting the results. This could be useful for debugging purposes, checking for outliers, or to further process the data before plotting the results. This can easily be achieved by specifying `return_data = TRUE`:
 
 ```{r}
-aggr_data <- plot_hosp_time(
+res <- plot_hosp_time(
   ipadmdad,
   hosp_group = "hospital_type",
   func = "median",
   plot_var = "age",
+  show_overall = TRUE,
   return_data = TRUE
 )
 ```
@@ -387,13 +378,13 @@ aggr_data <- plot_hosp_time(
 This will return a list of 2 `data.table` objects, where the 1st entry corresponds to the results aggregated by individual hospitals * time interval (e.g., `hospital_num` * `month` by default):
 
 ```{r}
-knitr::kable(head(aggr_data[[1]]))
+knitr::kable(head(res[[1]]))
 ```
 
 
 The 2nd list entry corresponds to the results aggregated by grouping variable (if any), such as `hospital_type` in this example, and time interval:
 ```{r}
-knitr::kable(head(aggr_data[[2]]))
+knitr::kable(head(res[[2]]))
 ```
 
 In both tables, `n` corresponds to the number of data points in each cell.

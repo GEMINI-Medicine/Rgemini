@@ -421,29 +421,41 @@ plot_hosp_time <- function(
   res <- aggregate_data(cohort, func, grouping)
 
 
-  ## Aggregate data by time * group (if any, otherwise, will just aggregate across all observations)
-  if (!is.null(hosp_var) && !is.null(facet_var) && hosp_var == facet_var) {
-    grouping <- unique(c(time_int, hosp_group))
-  } else {
-    grouping <- unique(c(time_int, hosp_group, facet_var))
-  }
+  ## Get Overall: Aggregate data by time * group (if any, otherwise, will just aggregate across all observations)
+  res_grouped <- data.table()
+  if (show_overall == TRUE) {
+    if (!is.null(hosp_var) && !is.null(facet_var) && hosp_var == facet_var) {
+      grouping <- unique(c(time_int, hosp_group))
+    } else {
+      grouping <- unique(c(time_int, hosp_group, facet_var))
+    }
 
-  if (func == "count") {
-    # for count variables, "overall" line represents median of all other lines
-    res_grouped <- res[, .(outcome = median(outcome, na.rm = TRUE)), by = grouping]
-  } else {
-    # for all other functions, "overall" line represents mean/median etc.
-    # across all data points (per grouping var)
-    res_grouped <- aggregate_data(cohort, func, grouping)
+    if (func == "count") {
+      # for count variables, "overall" line represents median of all other lines
+      res_grouped <- res[, .(outcome = median(outcome, na.rm = TRUE)), by = grouping]
+    } else {
+      # for all other functions, "overall" line represents mean/median etc.
+      # across all data points (per grouping var)
+      res_grouped <- aggregate_data(cohort, func, grouping)
+    }
   }
-
 
   if (return_data) {
-    # change column names for outcome variable for clarity
+    ## change column names for outcome variable for clarity
     col_name <- ifelse(func == "count", "n", paste(func, paste0(c(plot_var, plot_cat), collapse = "_"), sep = "_"))
-    setnames(res, "outcome", col_name)
-    setnames(res_grouped, "outcome", col_name)
-    return(list(res, res_grouped))
+    setnames(res, "outcome", col_name, skip_absent = TRUE)
+    setnames(res_grouped, "outcome", col_name, skip_absent = TRUE)
+
+    ## Prepare output
+    output <- list()
+    if (nrow(res) > 0) {
+      output$data_aggr <- res
+    }
+    if (nrow(res_grouped) > 0) {
+      output$data_aggr_overall <- res_grouped
+    }
+    return(output)
+
   } else {
     # Create the plot -- grouped
     overall_label <- ifelse(func == "count", "Median", "Overall")
