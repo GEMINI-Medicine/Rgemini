@@ -213,33 +213,24 @@ plot_hosp_time(
 
 `time_var` specifies the variable containing the relevant date-time information. Typically, in GEMINI data, this is `"discharge_date_time"` since hospital data are pulled based on discharge dates. `time_int` specifies the time interval to use for aggregation (i.e., resolution along x-axis). By default, the function aggregates data by month, but users could also specify `"quarter"`, `"year"`, `"fisc_year"` (hospital fiscal year starting in April), or `"season"`.
 
-For example, we could plot the number of encounters by quarter:
+For example, we could plot the number of encounters that were discharged (default) each fiscal year:
 
 ```{r}
 plot_hosp_time(
   cohort = ipadmdad,
   func = "n",
-  time_int = "quarter"
-)
-```
-
-... or by fiscal year:
-
-```{r}
-plot_hosp_time(
-  cohort = ipadmdad,
-  func = "n",
+  #time_var = "discharge_date_time", # default
   time_int = "fisc_year"
 )
 ```
 
-
-... or by season:
+... or the number of encounters that were admitted each season:
 
 ```{r}
 plot_hosp_time(
   cohort = ipadmdad,
   func = "n",
+  time_var = "admission_date_time",
   time_int = "season"
 )
 ```
@@ -358,7 +349,6 @@ plot_hosp_time(
   min_n = 6
 )
 
-
 # plot_hosp_time(
 #   ipadmdad,
 #   plot_var = "age",
@@ -366,8 +356,7 @@ plot_hosp_time(
 #   hosp_group = "gender",
 #   time_int = "year",
 #   facet_var = "hospital_num",
-#   show_overall = FALSE,
-#   min_n = 6
+#   min_n = 20
 # )
 
 ```

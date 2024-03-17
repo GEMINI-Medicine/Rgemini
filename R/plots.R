@@ -392,8 +392,10 @@ plot_hosp_time <- function(
       res <- res[n >= min_n, ]
     }
 
-    # for any date*hosp combos that don't exist, merge and fill with NA so they correctly show up as empty on graph
-    append <- suppressWarnings(setDT(tidyr::crossing(unique(res[, ..time_int]), distinct(res[, -c(..time_int, "outcome", "n")]))))
+    ## For any date*hosp combos that don't exist, merge and fill with NA so they correctly show up as empty on graph
+    # Note: Does not include combos that don't exist at all (e.g., due to cell suppression)
+    res <- droplevels(res) # drop levels that don't exist anymore at all
+    append <- res %>% suppressWarnings(tidyr::expand(!!!res[, -c("outcome", "n")]))
     append <- anti_join(append, res, by = grouping)
 
     ## append missing dates
@@ -415,9 +417,9 @@ plot_hosp_time <- function(
   ## show warning if any groupings completely removed (due to cell suppression)
   check_excl <- function(var) {
     if (!is.null(var)) {
-      missing <- unique(cohort[[var]])[!unique(cohort[[var]]) %in% unique(res[[var]])]
+      missing <- unique(cohort[[var]])[!unique(cohort[[var]]) %in% unique(res[!is.na(outcome), get(var)])]
       if (length(missing) > 0) {
-        warning(paste0("The following levels of input variable '", var, "' were removed from this plot due to cell suppression (all n < n_min):"), immediate. = TRUE)
+        warning(paste0("The following levels of input variable '", var, "' were removed from this plot due to cell suppression (all n < ", min_n, "):"), immediate. = TRUE)
         print(as.character(missing))
       }
     }
@@ -438,7 +440,7 @@ plot_hosp_time <- function(
   ## Get Overall: Aggregate data by time * group (if any, otherwise, will just aggregate across all observations)
   res_grouped <- data.table()
   if (show_overall == TRUE) {
-    if (!is.null(hosp_var) && !is.null(facet_var) && hosp_var == facet_var) {
+    if (is.null(hosp_var) && !is.null(facet_var) && hosp_var == facet_var) {
       grouping <- unique(c(time_int, hosp_group))
     } else {
       grouping <- unique(c(time_int, hosp_group, facet_var))
