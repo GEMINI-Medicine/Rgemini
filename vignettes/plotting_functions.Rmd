@@ -204,9 +204,8 @@ Finally, the function can also be used to plot the percentage of missing data by
 plot_hosp_time(
   cohort = ipadmdad,
   plot_var = "alc_service_transfer_flag",
-  func = "na",
-  ylabel = "% Missing ALC flag"
-)
+  func = "na"
+) + labs(y = "% Missing ALC flag")
 ```
 
 
@@ -338,21 +337,8 @@ One other alternative to illustrate differences between hospital types is to spe
 plot_hosp_time(
   ipadmdad,
   plot_var = "age",
-  hosp_group = "hospital_type",
   facet_var = "hospital_type",
   show_overall = TRUE
-)
-```
-You can remove the grouping by color by specifying a single color value for the `colors` input, which will be applied to both facet plots: 
-
-```{r}
-plot_hosp_time(
-  ipadmdad,
-  plot_var = "age",
-  hosp_group = "hospital_type",
-  facet_var = "hospital_type",
-  show_overall = TRUE,
-  colors = "grey30"
 )
 ```
 
@@ -371,6 +357,17 @@ plot_hosp_time(
   show_overall = TRUE,
   min_n = 6
 )
+
+
+plot_hosp_time(
+  ipadmdad,
+  plot_var = "age",
+  hosp_group = "gender",
+  facet_var = "hospital_num",
+  show_overall = FALSE,
+  min_n = 6
+)
+
 ```
 
 ## Returning aggregated data

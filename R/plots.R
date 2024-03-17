@@ -20,7 +20,7 @@
 #' Flag indicating whether to show descriptive stats above each plot.
 #'
 #' @param col (`character`)\cr
-#' Plotting color. Default is first color of `gemini_colors` palette "basic2".
+#' Plotting color. Default is R's built-in "lightblue".
 #'
 #' @return (`ggplot`)\cr A ggplot figure containing histograms of all variables
 #' specified in `vars`.
@@ -44,10 +44,19 @@
 plot_histograms <- function(data,
                             plot_vars = NULL,
                             show_stats = TRUE,
-                            colors = gemini_colors("basic2")[1]) {
+                            colors = "lightblue") {
 
+  # by default, plot all variables, except for patient/hospital identifiers or date-times
   if (is.null(plot_vars)) {
-    plot_vars <- colnames(data)[!grepl("genc_id|hospital_id|hospital_num|date_time", colnames(data))]
+    plot_vars <- colnames(data)[
+      !grepl("genc_id|patient_id|hospital_id|hospital_num|_date|_time", colnames(data), ignore.case = TRUE)
+      ]
+  }
+
+  # show warning if trying to plot more than 9 variables
+  if (length(plot_vars) > 9) {
+    warning("Plotting histograms for > 9 variables.
+      Please consider selecting a subset of variables to improve plot appearance.", immediate. = TRUE)
   }
 
 
@@ -59,7 +68,7 @@ plot_histograms <- function(data,
             is.null(var$class) && class(data[[var$plot_var]]) %in% c("numeric", "integer"))) {
 
       sub_fig <- ggplot(data, aes(x = get(var$plot_var)))  +
-        geom_histogram(color = "grey20", fill = colors, alpha = .4, binwidth = var$binwidth) +
+        geom_histogram(color = "grey20", fill = colors, binwidth = var$binwidth) +
         labs(title = var$varlabel)
 
       if (!is.null(var$breaks)) {
@@ -93,7 +102,7 @@ plot_histograms <- function(data,
                    is.null(var$class) && class(data[[var$plot_var]]) %in% c("character", "logical"))) {
 
       sub_fig <- ggplot(data, aes(x = as.factor(data[[var$plot_var]]))) +
-        geom_bar(color = "grey20", fill = colors, alpha = 0.4) +
+        geom_bar(color = "grey20", fill = colors) +
         labs(title = var$varlabel)
 
       if (show_stats == TRUE) {
@@ -250,6 +259,7 @@ plot_hosp_time <- function(
     colors = gemini_colors(),
     return_data = FALSE) {
 
+
   ##### Check inputs #####
   if (missing(plot_var) && !grepl("^n|count", func, ignore.case = TRUE)) stop("Missing the plot variable selection")
 
@@ -382,7 +392,8 @@ plot_hosp_time <- function(
     ## append missing dates
     res <- rbind(res, append, fill = TRUE)
 
-    ## for count, impute empty time points with 0 (others will show gap in line)
+    ## for count, impute empty time points with 0, i.e., treat missing time points as true zeros
+    # (for all other funcs, missing time periods are shown as gap in timeline)
     if (func %in% c("count")) {
       res[is.na(outcome), outcome := 0]
     }
@@ -392,9 +403,18 @@ plot_hosp_time <- function(
       res[n < min_n, outcome := NA]
     }
 
+    ## show warning if missing combos found
+    # Note: This includes entries that were removed due to cell-suppression (i.e., low counts)
+    # if func = "count", empty cells are set to 0, those are not included here (are treated as "true" zeros)
+    if (nrow(res[is.na(outcome)]) > 0) {
+      warning("Some time points do not have any data or have been removed due to cell suppression.
+      This might introduce a bias in the plotted time trends. Please carefully inspect data availability & coverage by hospital.
+      Missing data found for the following combinations: ", immediate. = TRUE)
+      print(res[is.na(outcome)])# %>% select(hosp_var, time_int) %>% arrange(get(hosp_var)))
+    }
+
     return(res)
   }
-
 
   ## Aggregate data by all relevant variables
   grouping <- unique(c(time_int, hosp_var, hosp_group, facet_var))
@@ -403,9 +423,9 @@ plot_hosp_time <- function(
 
   ## Aggregate data by time * group (if any, otherwise, will just aggregate across all observations)
   if (!is.null(hosp_var) && !is.null(facet_var) && hosp_var == facet_var) {
-    grouping <- c(time_int, hosp_group)
+    grouping <- unique(c(time_int, hosp_group))
   } else {
-    grouping <- c(time_int, hosp_group, facet_var)
+    grouping <- unique(c(time_int, hosp_group, facet_var))
   }
 
   if (func == "count") {
@@ -625,6 +645,44 @@ gemini_theme <- function(
 
 
 
+#' @title
+#' GEMINI colors
+#'
+#' @description
+#' Defines various color palettes for plotting purposes.
+#' Color palettes can be explored using `scales::show_col(gemini_colors())`
+#'
+#' @param palette (`character`)\cr
+#' Name of color palette. Has to be one of the following:
+#' -
+#' -
+#'
+gemini_colors <- function(palette = "") {
+
+  if (palette == "") {
+    cols <- c(
+      "#022061", # GEMINI navy
+      "#02B0F1", # GEMINI cyan
+      "#4CAF50",
+      "#F3A924",
+      "#A6361C",
+      "#6252c6", # "#6252c6" 7B68EE
+      "#6F7B6C"
+    )
+  }
 
 
+  if (palette == "gemqin") {
+    cols <- c(
+      "#042061",
+      "#00b1f3",
+      "#C1B28F",
+      #"#A9A9A9",
+      "#92278F",
+      "#49A7A2"
+      #"#ED037C",
+    )
+  }
 
+  return(cols)
+}
