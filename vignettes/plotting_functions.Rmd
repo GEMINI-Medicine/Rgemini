@@ -358,6 +358,7 @@ plot_hosp_time(
   min_n = 6
 )
 
+
 ```
 
 ## Returning aggregated data

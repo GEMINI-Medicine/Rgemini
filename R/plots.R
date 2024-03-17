@@ -384,6 +384,13 @@ plot_hosp_time <- function(
       ), by = grouping]
     }
 
+    ## exclude observations with low cell count if min_n specified (will show up as gap on plot)
+    # Note: If this means a whole combination of variables are excluded (e.g., all hospital*time combos for gender = "0"),
+    # those will not be filled in again below; this is the desired behavior so fully empty
+    # combos aren't shown in the plots
+    if (min_n > 0 && func != "count") {
+      res <- res[n >= min_n, ]
+    }
 
     # for any date*hosp combos that don't exist, merge and fill with NA so they correctly show up as empty on graph
     append <- suppressWarnings(setDT(tidyr::crossing(unique(res[, ..time_int]), distinct(res[, -c(..time_int, "outcome", "n")]))))
@@ -396,11 +403,6 @@ plot_hosp_time <- function(
     # (for all other funcs, missing time periods are shown as gap in timeline)
     if (func %in% c("count")) {
       res[is.na(outcome), outcome := 0]
-    }
-
-    ## exclude observations with low cell count if min_n specified (will show up as gap on plot)
-    if (min_n > 0 && func != "count") {
-      res[n < min_n, outcome := NA]
     }
 
     ## show warning if missing combos found
