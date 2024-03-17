@@ -16,10 +16,9 @@ plot_hosp_time(
   plot_cat = NULL,
   show_overall = TRUE,
   line_width = 1,
-  ylabel = NULL,
   ylimits = NULL,
   min_n = 0,
-  colors = gemini_colors,
+  colors = gemini_colors(),
   return_data = FALSE
 )
 }
@@ -96,9 +95,6 @@ hospitals.}
 
 \item{line_width}{(\code{numeric})\cr
 Width of individual lines. Summary line will be 2 * line_width.}
-
-\item{ylabel}{(\code{character})\cr
-Title on y-axis}
 
 \item{ylimits}{(\code{numeric})\cr
 Numeric vector specifying limits for y-axis e.g. c(0, 100).}

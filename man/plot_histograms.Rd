@@ -4,7 +4,12 @@
 \alias{plot_histograms}
 \title{Plot histograms of multiple variables}
 \usage{
-plot_histograms(data, plot_vars = NULL, show_stats = TRUE)
+plot_histograms(
+  data,
+  plot_vars = NULL,
+  show_stats = TRUE,
+  colors = "lightblue"
+)
 }
 \arguments{
 \item{data}{(\code{data.frame} | \code{data.table})\cr
@@ -15,6 +20,9 @@ Character vector or list of variables to be plotted.}
 
 \item{show_stats}{(\code{logical})\cr
 Flag indicating whether to show descriptive stats above each plot.}
+
+\item{col}{(\code{character})\cr
+Plotting color. Default is R's built-in "lightblue".}
 }
 \value{
 (\code{ggplot})\cr A ggplot figure containing histograms of all variables
