@@ -301,13 +301,12 @@ plot_hosp_time <- function(
       cohort[, fisc_year := hospital_fiscal_year(get(time_var))]
     } else if (grepl("season", time_int, ignore.case = TRUE)) {
       cohort[, season := season(get(time_var))]
-      cohort[, season := factor(season, levels = unique(season))]
+      cohort[, season := factor(season, levels = c("Spring", "Summer", "Fall", "Winter"))]
     }
   } else {
     cohort[, time_int := cohort[[time_int]]]
     time_label <- fix_var_str(time_int)
   }
-
 
   ## pre-process func input into standardized version
   if (grepl("^n$|count", func, ignore.case = TRUE)) {
