@@ -356,6 +356,7 @@ plot_hosp_time(
 #   hosp_group = "gender",
 #   time_int = "year",
 #   facet_var = "hospital_num",
+#   show_overall = TRUE,
 #   min_n = 20
 # )
 

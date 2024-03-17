@@ -394,7 +394,7 @@ plot_hosp_time <- function(
     ## For any date*hosp combos that don't exist, merge and fill with NA so they correctly show up as empty on graph
     # Note: Does not include combos that don't exist at all (e.g., due to cell suppression)
     res <- droplevels(res) # drop levels that don't exist anymore at all
-    append <- res %>% suppressWarnings(tidyr::expand(!!!res[, -c("outcome", "n")]))
+    append <- suppressWarnings(setDT(tidyr::crossing(unique(res[, ..time_int]), distinct(res[, -c(..time_int, "outcome", "n")]))))
     append <- anti_join(append, res, by = grouping)
 
     ## append missing dates
@@ -404,6 +404,7 @@ plot_hosp_time <- function(
     # (for all other funcs, missing time periods are shown as gap in timeline)
     if (func %in% c("count")) {
       res[is.na(outcome), outcome := 0]
+      res[outcome < min_n, outcome := NA] # cell-suppression for counts (also applied to 0s!)
     }
 
     return(res)
@@ -439,7 +440,7 @@ plot_hosp_time <- function(
   ## Get Overall: Aggregate data by time * group (if any, otherwise, will just aggregate across all observations)
   res_grouped <- data.table()
   if (show_overall == TRUE) {
-    if (is.null(hosp_var) && !is.null(facet_var) && hosp_var == facet_var) {
+    if (!is.null(hosp_var) && !is.null(facet_var) && hosp_var == facet_var) {
       grouping <- unique(c(time_int, hosp_group))
     } else {
       grouping <- unique(c(time_int, hosp_group, facet_var))
