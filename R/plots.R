@@ -405,22 +405,34 @@ plot_hosp_time <- function(
       res[is.na(outcome), outcome := 0]
     }
 
-    ## show warning if missing combos found
-    # Note: This includes entries that were removed due to cell-suppression (i.e., low counts)
-    # if func = "count", empty cells are set to 0, those are not included here (are treated as "true" zeros)
-    if (nrow(res[is.na(outcome)]) > 0) {
-      warning("Some time points do not have any data or have been removed due to cell suppression.
-      This might introduce a bias in the plotted time trends. Please carefully inspect data availability & coverage by hospital.
-      Missing data found for the following combinations: ", immediate. = TRUE)
-      print(res[is.na(outcome)])# %>% select(hosp_var, time_int) %>% arrange(get(hosp_var)))
-    }
-
     return(res)
   }
 
   ## Aggregate data by all relevant variables
   grouping <- unique(c(time_int, hosp_var, hosp_group, facet_var))
   res <- aggregate_data(cohort, func, grouping)
+
+  ## show warning if any groupings completely removed (due to cell suppression)
+  check_excl <- function(var) {
+    if (!is.null(var)) {
+      missing <- unique(cohort[[var]])[!unique(cohort[[var]]) %in% unique(res[[var]])]
+      if (length(missing) > 0) {
+        warning(paste0("The following levels of input variable '", var, "' were removed from this plot due to cell suppression (all n < n_min):"), immediate. = TRUE)
+        print(as.character(missing))
+      }
+    }
+  }
+  lapply(grouping, check_excl)
+
+  ## show warning if specific combos have missing/cell-suppressed data
+  # Note: This includes entries that were removed due to cell-suppression (i.e., low counts)
+  # if func = "count", empty cells are set to 0, those are not included here (are treated as "true" zeros)
+  if (nrow(res[is.na(outcome)]) > 0) {
+    warning("Some time points do not have any data or have been removed due to cell suppression.
+      This might introduce a bias in the plotted time trends. Please carefully inspect data availability & coverage.
+      Missing data found for the following combinations: ", immediate. = TRUE)
+    print(res[is.na(outcome), -c("outcome", "n")])# %>% select(hosp_var, time_int) %>% arrange(get(hosp_var)))
+  }
 
 
   ## Get Overall: Aggregate data by time * group (if any, otherwise, will just aggregate across all observations)
@@ -462,14 +474,7 @@ plot_hosp_time <- function(
     # Create the plot -- grouped
     overall_label <- ifelse(func == "count", "Median", "Overall")
 
-    fig <- ggplot(
-      res_grouped,
-      aes(
-        x = get(time_int), y = outcome,
-        group = if (is.null(hosp_group)) overall_label else get(hosp_group),
-        color = if (is.null(hosp_group)) overall_label else get(hosp_group)
-      )
-    )
+    fig <- ggplot()
 
     ## Aesthetics for individual hospital lines
     if (!is.null(hosp_var)) {
@@ -482,7 +487,9 @@ plot_hosp_time <- function(
         ),
         linewidth = line_width,
         alpha = ifelse(is.null(facet_var) ||
-                         ((!is.null(facet_var) && !is.null(hosp_var) && (facet_var != hosp_var))), 0.2, 1),
+                         ((!is.null(facet_var) && !is.null(hosp_var) && (facet_var != hosp_var)) &&
+                            (is.null(hosp_group) ||
+                            ((!is.null(hosp_group) && !is.null(hosp_var) && (hosp_group != hosp_var))))), 0.2, 1),
         show.legend = (!is.null(hosp_group) &&
                          (is.null(facet_var) || ((!is.null(facet_var) && hosp_group != facet_var)) ||
                             ((!is.null(facet_var) && !is.null(hosp_var) && hosp_var == facet_var))))
@@ -497,17 +504,22 @@ plot_hosp_time <- function(
 
     ## Aesthetics for overall line
     if (show_overall == TRUE) {
-      fig <- fig + geom_line(
-        linewidth = ifelse(
-          !is.null(hosp_var) && !is.null(hosp_group) && hosp_var == hosp_group,
-          line_width,
-          2 * line_width
-        ),
-        show.legend = ((!is.null(hosp_group) || !is.null(hosp_var))) &&
-          (is.null(facet_var) || (!is.null(facet_var) && hosp_group != facet_var)),
-        alpha = ifelse(
-          !is.null(facet_var) && !is.null(hosp_var) && facet_var == hosp_var, 0.2, 1)
-      ) +
+      fig <- fig +
+        geom_line(data = res_grouped,
+                  aes(x = get(time_int), y = outcome,
+                      group = if (is.null(hosp_group)) overall_label else get(hosp_group),
+                      color = if (is.null(hosp_group)) overall_label else get(hosp_group)
+                      ),
+                  linewidth = ifelse(
+                    !is.null(hosp_var) && !is.null(hosp_group) && hosp_var == hosp_group,
+                    line_width,
+                    2 * line_width
+                    ),
+                  show.legend = ((!is.null(hosp_group) || !is.null(hosp_var))) &&
+                    (is.null(facet_var) || (!is.null(facet_var) && hosp_group != facet_var)),
+                  alpha = ifelse(
+                    !is.null(facet_var) && !is.null(hosp_var) && facet_var == hosp_var, 0.2, 1)
+                  ) +
         labs(color = NULL)
     }
 

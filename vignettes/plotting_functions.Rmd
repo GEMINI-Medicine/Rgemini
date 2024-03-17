@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
   eval = TRUE, 
   echo = TRUE, 
   results = 'asis', 
-  warning = FALSE, 
+  warning = TRUE, 
   message = FALSE, 
   collapse = TRUE,
   cache = FALSE, 
@@ -347,7 +347,7 @@ plot_hosp_time(
 
 Note that the function always assumes that individual plot lines (or subplots) correspond to a **hospital-level** identifier and that `hosp_group` corresponds to a **hospital-level** grouping variable. If you want to apply any additional encounter-level grouping, this should always be specified as a `facet_var` in order to make sure individual lines/color groupings still represent hospital-level variables. 
 
-For example, we could plot `age` separately by `gender` by specifying `gender` as a `facet_var`. Since there are not many encounters with gender = `"O"`, we may want to apply cell suppression to any data points with n < 6 by specifying `min_n = 6`:
+For example, we could plot `age` separately by `gender` by specifying `gender` as a `facet_var`. Since there are not many encounters with gender = `"O"`, we may want to apply cell suppression to any data points with n < 6 by specifying `min_n = 6`. In our sample data, there is no cell with `gender == "O"` that has at least 6 data points, so no figure for gender = `"0"` is shown at all here:
 
 ```{r fig.width = 9}
 plot_hosp_time(
@@ -358,6 +358,17 @@ plot_hosp_time(
   min_n = 6
 )
 
+
+# plot_hosp_time(
+#   ipadmdad,
+#   plot_var = "age",
+#   hosp_var = "gender",
+#   hosp_group = "gender",
+#   time_int = "year",
+#   facet_var = "hospital_num",
+#   show_overall = FALSE,
+#   min_n = 6
+# )
 
 ```
 
