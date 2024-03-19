@@ -216,6 +216,7 @@ plot_hosp_time(
 For example, we could plot the number of encounters that were discharged (default) each fiscal year:
 
 ```{r}
+
 plot_hosp_time(
   cohort = ipadmdad,
   func = "n",
@@ -372,7 +373,6 @@ res <- plot_hosp_time(
   hosp_group = "hospital_type",
   func = "median",
   plot_var = "age",
-  show_overall = TRUE,
   return_data = TRUE
 )
 ```
@@ -384,7 +384,7 @@ knitr::kable(head(res[[1]]))
 ```
 
 
-The 2nd list entry corresponds to the results aggregated by grouping variable (if any), such as `hospital_type` in this example, and time interval:
+The 2nd list entry corresponds to the overall results (see thick line in plots above), i.e., data aggregated by time and grouping variable (if any), such as `hospital_type` in this example:
 ```{r}
 knitr::kable(head(res[[2]]))
 ```

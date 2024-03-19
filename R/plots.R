@@ -284,14 +284,14 @@ plot_hosp_time <- function(
   if (!time_int %in% colnames(cohort)) {
     time_label <- fix_var_str(paste(strsplit(time_var, "[_]")[[1]][1], time_int))
 
-    # code below assumes that date-time variable is provided as character
-    # if provided as POSIX, turn into character here
-    if (grepl("POSIX", class(cohort[[time_var]]))) {
-      cohort[, paste(time_int) := as.character(get(time_int))]
+    # if user already provided date-time variable in POSIX/POSIXct format, keep
+    # as is, otherwise, transform into appropriate format
+    if (!any(grepl("POSIX", class(cohort[[time_var]])))) {
+      cohort[, paste(time_var) := lubridate::parse_date_time(get(time_var), orders = c("ymd HM", "ymd HMS", "ymd"))]
     }
 
     if (grepl("month", time_int, ignore.case = TRUE)) {
-      cohort[, month := lubridate::ym(format(as.Date(lubridate::ymd_hm(get(time_var)), format = "%Y-%m-%d"), "%Y-%m"))]
+      cohort[, month := lubridate::ym(format(as.Date(get(time_var), format = "%Y-%m-%d"), "%Y-%m"))]
     } else if (grepl("quarter", time_int, ignore.case = TRUE)) {
       cohort[, quarter := paste0(lubridate::year(get(time_var)), "-Q", lubridate::quarter(get(time_var)))]
       cohort[, quarter := factor(quarter, levels = unique(sort(quarter)))]
@@ -327,9 +327,9 @@ plot_hosp_time <- function(
   if (length(colors) == 1 && length(unique(cohort[[hosp_group]])) > 1) {
     colors <- rep(colors, length(unique(cohort[[hosp_group]])))
   }
-  ## Use default colors if not enough color values specified for all grouping levels
+  ## If not enough color values specified for all grouping levels, duplicate values
   if (!is.null(hosp_group) && length(unique(cohort[[hosp_group]])) > length(colors)) {
-    colors <- NULL
+    colors <- rep_len(colors, length(unique(cohort[[hosp_group]])))
   }
 
   if (!is.null(hosp_group)) {
