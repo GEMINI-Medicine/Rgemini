@@ -1,14 +1,15 @@
 #' @title
-#' Plot histograms of multiple variables
+#' Plot descriptive summary statistics of multiple variables
 #'
 #' @description
-#' This function facilitates plotting of multiple histograms for different
-#' variables at the same time.
+#' This function plots distributions (histograms/bar plots) and basic summary
+#' statistics (e.g., median [Q1, Q3], % missing etc.) for multiple variables.
 #'
 #' @section Note:
-#' These plots are not meant as publication-ready figures, but rather as a quick
-#' and easy means of illustrating useful distributional information about a
-#' wide range of variables with a single line of code.
+#' These plots are not meant as publication-ready figures. Instead, the goal of
+#' this function is to provide a quick and easy means to visually inspect the
+#' data and obtain information about distributional properties of a wide range
+#' of variables, requiring just a single line of code.
 #'
 #' @param data (`data.frame` | `data.table`)\cr
 #' Table containing data to be plotted.
@@ -19,8 +20,8 @@
 #' @param show_stats (`logical`)\cr
 #' Flag indicating whether to show descriptive stats above each plot.
 #'
-#' @param col (`character`)\cr
-#' Plotting color. Default is R's built-in "lightblue".
+#' @param color (`character`)\cr
+#' Plotting color. Default is R's built-in `"lightblue"`.
 #'
 #' @return (`ggplot`)\cr A ggplot figure containing histograms of all variables
 #' specified in `vars`.
@@ -37,14 +38,16 @@
 #'                          time_period = c(2015, 2022)
 #'                          )
 #'
-#' # plot histograms
-#' plot_histograms(data = admdad,
-#'                 plot_vars = c("age", "gender", "discharge_disposition", "number_of_alc_days")
+#' plot_summary(data = admdad,
+#'              plot_vars = c("age", "gender", "discharge_disposition", "number_of_alc_days")
 #'
-plot_histograms <- function(data,
-                            plot_vars = NULL,
-                            show_stats = TRUE,
-                            colors = "lightblue") {
+#'
+#'
+#'
+plot_summary <- function(data,
+                         plot_vars = NULL,
+                         show_stats = TRUE,
+                         color = "lightblue") {
 
   # by default, plot all variables, except for patient/hospital identifiers or date-times
   if (is.null(plot_vars)) {
@@ -68,7 +71,7 @@ plot_histograms <- function(data,
             is.null(var$class) && class(data[[var$plot_var]]) %in% c("numeric", "integer"))) {
 
       sub_fig <- ggplot(data, aes(x = get(var$plot_var)))  +
-        geom_histogram(color = "grey20", fill = colors, binwidth = var$binwidth) +
+        geom_histogram(color = "grey20", fill = color, binwidth = var$binwidth) +
         labs(title = var$varlabel)
 
       if (!is.null(var$breaks)) {
@@ -101,15 +104,23 @@ plot_histograms <- function(data,
     } else if (any(var$class %in% c("character", "logical"),
                    is.null(var$class) && class(data[[var$plot_var]]) %in% c("character", "logical"))) {
 
+      ## get missing
+      missing <- n_missing(data[[var$plot_var]])
+
+      ## exclude missing values (not included in shown %)
+      data <- data[!n_missing(data[[var$plot_var]], index = TRUE),]
+
+      ## create figure
       sub_fig <- ggplot(data, aes(x = as.factor(data[[var$plot_var]]))) +
-        geom_bar(color = "grey20", fill = colors) +
+        geom_bar(color = "grey20", fill = color) +
         labs(title = var$varlabel)
 
+      ## add stats/labels
       if (show_stats == TRUE) {
         sub_fig <- sub_fig +
           geom_text(stat = "count", aes(label = scales::percent(round(..count.. / sum(..count..), digits = 3))),
                     vjust = -0.4, size = 8 / n_vars, hjust = 0.5) +
-          labs(subtitle = paste0("Missing: ", n_missing(data[[var$plot_var]]), "\n "))
+          labs(subtitle = paste0("Missing: ", missing, "\n "))
       }
 
     }

@@ -53,7 +53,6 @@ options(knitr.kable.NA = '')
 `Rgemini` contains several functions that facilitate common plotting needs and allow users to create customized figures with just a few lines of code. 
 
 
-
 *  *  *  *
 
 
@@ -63,7 +62,7 @@ options(knitr.kable.NA = '')
 
 The plotting examples shown below are based on variables from the "ipadmdad" table. Typically, you would query this table from the GEMINI database, but for illustration purposes, let's create some dummy data using the `Rgemini` function `dummy_ipadmdad`. 
 
-Here, we are simulating an "ipadmdad" table with 50,000 encounters from 9 different hospitals and with discharge dates ranging from fiscal years 2018 to 2022:
+Here, we are simulating an "ipadmdad" table with 50,000 encounters from 12 different hospitals and with discharge dates ranging from fiscal years 2018 to 2022:
 
 ```{r}
 library(Rgemini)
@@ -76,37 +75,40 @@ ipadmdad <- dummy_ipadmdad(n = 50000, n_hospitals = 12, time_period = c(2018, 20
 ```
 
 ```{r, echo=FALSE, results='asis'}
-cat(paste0('Currently, this function only simulates a subset of variables in the "ipadmdad" table, namely: ', paste(colnames(ipadmdad), collapse = ", "), '.'))
+cat(paste0('Note: Currently, this function only simulates a subset of variables in the "ipadmdad" table, namely: ', paste(colnames(ipadmdad), collapse = ", "), '.'))
 ```
 
 *  *  *  *
 
-# Histrograms 
+# Summary plots 
 
-First, let's use the `plot_histograms()` function to explore the dataset.
+First, let's use the `plot_summary()` function to explore the dataset and gain a better understanding of the distributions of `ipadmdad` variables in our dummy cohort.
 
-By default, the function will plot histograms of all relevant variables in the provided `data` input (ignoring `genc_id`, and any hospital/date-time variables). It will also show some basic descriptive stats about each variable at the top of the plot.
+By default, the function creates histograms/bar plots for all relevant variables in the provided `data` input (ignoring any encounter-/patient-/hospital-ID variables and date-time variables). It will also show some basic descriptive stats about each variable at the top of the plot, such as % missing, and median [Q1, Q3] for continuous variables and % for categorical/character variables (excluding missing values).
 
 ```{r, fig.height = 4, fig.width = 8}
-plot_histograms(data = ipadmdad)
+plot_summary(data = ipadmdad)
 ```
 
-If you only want to plot a subset of variables, you can specify `plot_vars` as a character vector, for example:
+If your `data` input contains a large number of variables, we recommend explicitly specifying which variables you want to include in the summary plot by providing `plot_vars` as a character vector input:
 
 ```{r, eval = FALSE}
-plot_histograms(ipadmdad, plot_vars = c("discharge_disposition", "number_of_alc_days"))
+plot_summary(ipadmdad, plot_vars = c("discharge_disposition", "number_of_alc_days"))
 ```
+
+... or by simply selecting the subset of relevant columns liek this: 
+
 ```{r}
-## Note: This is equivalent to 
-plot_histograms(ipadmdad[, .(discharge_disposition, number_of_alc_days)])
+plot_summary(ipadmdad[, .(discharge_disposition, number_of_alc_days)])
 ```
+
 
 Note that in the example above, discharge disposition is treated as a numeric variable, even though it is in fact a categorical variable. Similarly, we might want to adjust the histogram for number of ALC days to only show data points up to 7 days. This can be done by providing the variables to be plotted as a `list`, which allows users to specify additional attributes, such as variable `class`. For numeric/integer variables, users can also control the `binwidth` and `breaks`, and whether or not to assume that the variable follows a `normal` distribution (in which case the descriptive statistics will show the mean [SD] instead of median [Q1, Q3]).
 
 For example, we could specify that discharge disposition should be of class `character`, and that number of ALC days should be shown with `binwidth = 1` with `breaks` from 0-7 days. Additionally, for illustration purposes, let's say we want to get the mean [SD] of ALC days by specifying `normal = TRUE`. Finally, we can also control the titles shown above each figure based on the name of each list item (e.g., "# Days in ALC" instead of "Number of Alc Days"), and we can also remove the stats/bar labels by specifying `show_stats = FALSE`:
 
 ```{r}
-plot_histograms(
+plot_summary(
   ipadmdad,
   plot_vars = list(
     `Discharge disposition` = list(plot_var = "discharge_disposition", class = "character"),
