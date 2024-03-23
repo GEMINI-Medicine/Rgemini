@@ -21,7 +21,11 @@
 #' Flag indicating whether to show descriptive stats above each plot.
 #'
 #' @param color (`character`)\cr
-#' Plotting color. Default is R's built-in `"lightblue"`.
+#' Plotting color used for "fill". Default is R's built-in `"lightblue"`.
+#'
+#' @param ... \cr
+#' Additional arguments passed to `ggpubr::ggarrange()` that allow for finer
+#' control of subplot arrangement (e.g., `ncol`, `nrow`, `widths`, `heights`).
 #'
 #' @return (`ggplot`)\cr A ggplot figure containing histograms of all variables
 #' specified in `vars`.
@@ -47,7 +51,8 @@
 plot_summary <- function(data,
                          plot_vars = NULL,
                          show_stats = TRUE,
-                         color = "lightblue") {
+                         color = "lightblue",
+                         ...) {
 
   # by default, plot all variables, except for patient/hospital identifiers or date-times
   if (is.null(plot_vars)) {
@@ -64,14 +69,23 @@ plot_summary <- function(data,
 
 
   ## plotting function
-  plot_hist <- function(var, n_vars) {
+  plot_subplots <- function(var, data, n_vars) {
+
+    ## get % missing (count any NA/""/" ")
+    missing <- n_missing(data[[var$plot_var]])
+
+    ## always exclude missing values (not included in plot/summary statistics)
+    data <- data[!n_missing(data[[var$plot_var]], index = TRUE),]
+
 
     ## for continuous/numeric variables
     if (any(var$class %in% c("numeric", "integer"),
             is.null(var$class) && class(data[[var$plot_var]]) %in% c("numeric", "integer"))) {
 
+      data[[var$plot_var]] <- as.numeric(data[[var$plot_var]])
+
       sub_fig <- ggplot(data, aes(x = get(var$plot_var)))  +
-        geom_histogram(color = "grey20", fill = color, binwidth = var$binwidth) +
+        geom_histogram(color = "grey20", fill = color, binwidth = var$binwidth, bins = var$bins, ...) +
         labs(title = var$varlabel)
 
       if (!is.null(var$breaks)) {
@@ -84,17 +98,17 @@ plot_summary <- function(data,
         if (!is.null(var$normal) && var$normal == TRUE) {
           sub_fig <- sub_fig +
             labs(subtitle = paste0(
-              "Mean = ", round(mean(data[[var$plot_var]], na.rm = TRUE), digits = 2),
-              " (SD = ", round(sd(data[[var$plot_var]], na.rm = TRUE), digits = 2), ")",
-              "\nMissing: ", n_missing(data[[var$plot_var]]),
+              "Mean = ", round(mean(data[[var$plot_var]]), digits = 2),
+              " (SD = ", round(sd(data[[var$plot_var]]), digits = 2), ")",
+              "\nMissing: ", missing,
               "\n "))
         } else {
           sub_fig <- sub_fig +
             labs(subtitle = paste0(
-              "Median = ", round(median(data[[var$plot_var]], na.rm = TRUE), digits = 2),
-              " [Q1 = ", round(quantile(data[[var$plot_var]], 0.25, na.rm = TRUE), digits = 2),
-              ", Q3 = ", round(quantile(data[[var$plot_var]], 0.75, na.rm = TRUE), digits = 2), "]",
-              "\nMissing: ", n_missing(data[[var$plot_var]]),
+              "Median = ", round(median(data[[var$plot_var]]), digits = 2),
+              " [Q1 = ", round(quantile(data[[var$plot_var]], 0.25), digits = 2),
+              ", Q3 = ", round(quantile(data[[var$plot_var]], 0.75), digits = 2), "]",
+              "\nMissing: ", missing,
               "\n "))
         }
       }
@@ -103,12 +117,6 @@ plot_summary <- function(data,
       ## for categorical/binary variables
     } else if (any(var$class %in% c("character", "logical"),
                    is.null(var$class) && class(data[[var$plot_var]]) %in% c("character", "logical"))) {
-
-      ## get missing
-      missing <- n_missing(data[[var$plot_var]])
-
-      ## exclude missing values (not included in shown %)
-      data <- data[!n_missing(data[[var$plot_var]], index = TRUE),]
 
       ## create figure
       sub_fig <- ggplot(data, aes(x = as.factor(data[[var$plot_var]]))) +
@@ -153,9 +161,10 @@ plot_summary <- function(data,
 
 
   ## create figure for each variable
-  sub_figs <- lapply(plot_vars, plot_hist, n_vars = length(plot_vars))
+  sub_figs <- lapply(plot_vars, plot_subplots, data = data, n_vars = length(plot_vars))
 
-  fig <- suppressWarnings(ggarrange(plotlist = sub_figs))
+  ## Combine subplots
+  fig <- suppressWarnings(ggarrange(plotlist = sub_figs, ...))
 
   return(fig)
 
@@ -232,7 +241,8 @@ plot_summary <- function(data,
 #' @param line_width (`numeric`)\cr
 #' Width of individual lines. Summary line will be 2 * line_width.
 #' @param ylimits (`numeric`)\cr
-#' Numeric vector specifying limits for y-axis e.g. c(0, 100).
+#' Numeric vector specifying limits for y-axis e.g. `c(0, 100)`. To specify only
+#' the lower/upper limit, use `NA` (e.g., `c(NA, 100)` to fix upper limit only).
 #' @param min_n (`numeric`)\cr
 #' Minimum number of data points required for each hospital * time point
 #' combination. Data points with cell count < `min_n` will be suppressed.
@@ -241,6 +251,11 @@ plot_summary <- function(data,
 #' @param return_data (`logical`)\cr
 #' Flag indicating whether to return a list of 2 data.tables with aggregated
 #' data ([1] by hospital and [2] overall). If `FALSE` (default), will return plot.
+#'
+#' @param ... \cr
+#' If a `facet_var` is specified: Additional arguments passed to
+#' `lemon::facet_rep_wrap()` (wrapper for `ggplot2::facet_wrap`), e.g.,
+#' `scales = "fixed"` (default) vs. `scales = "free"`, `nrow`/`ncol` etc.
 #'
 #' @import ggplot2
 #' @importFrom lemon facet_rep_wrap
@@ -268,7 +283,8 @@ plot_hosp_time <- function(
     ylimits = NULL,
     min_n = 0,
     colors = gemini_colors(),
-    return_data = FALSE) {
+    return_data = FALSE,
+    ...) {
 
 
   ##### Check inputs #####
@@ -467,6 +483,7 @@ plot_hosp_time <- function(
     }
   }
 
+
   if (return_data) {
     ## change column names for outcome variable for clarity
     col_name <- ifelse(func == "count", "n", paste(func, paste0(c(plot_var, plot_cat), collapse = "_"), sep = "_"))
@@ -484,12 +501,16 @@ plot_hosp_time <- function(
     return(output)
 
   } else {
-    # Create the plot -- grouped
-    overall_label <- ifelse(func == "count", "Median", "Overall")
 
+
+    ######### CREATE PLOT #########
     fig <- ggplot()
 
-    ## Aesthetics for individual hospital lines
+    # Label for overall summary line
+    overall_label <- ifelse(func == "count", "Median", "Overall")
+
+
+    ## Add individual hospital lines
     if (!is.null(hosp_var)) {
       fig <- fig + geom_line(
         data = res,
@@ -499,10 +520,10 @@ plot_hosp_time <- function(
           color = if (is.null(hosp_group)) overall_label else get(hosp_group)
         ),
         linewidth = line_width,
-        alpha = ifelse(is.null(facet_var) ||
+        alpha = ifelse((is.null(facet_var) ||
                          ((!is.null(facet_var) && !is.null(hosp_var) && (facet_var != hosp_var)) &&
                             (is.null(hosp_group) ||
-                            ((!is.null(hosp_group) && !is.null(hosp_var) && (hosp_group != hosp_var))))), 0.2, 1),
+                            ((!is.null(hosp_group) && !is.null(hosp_var) && (hosp_group != hosp_var)))))) && length(unique(res[[hosp_var]])) > 1, 0.2, 1),
         show.legend = (!is.null(hosp_group) &&
                          (is.null(facet_var) || ((!is.null(facet_var) && hosp_group != facet_var)) ||
                             ((!is.null(facet_var) && !is.null(hosp_var) && hosp_var == facet_var))))
@@ -510,13 +531,14 @@ plot_hosp_time <- function(
 
       if (!is.null(facet_var)) {
         fig <- fig +
-          facet_rep_wrap(~ get(facet_var), scales = "fixed") +
+          facet_rep_wrap(~ get(facet_var), ...) +
           theme(panel.spacing.y = unit(0, "lines"))
       }
     }
 
-    ## Aesthetics for overall line
-    if (show_overall == TRUE) {
+    ## Add overall summary lines
+    # Note: If only a single site is included, overall line/legend will not be shown
+    if (show_overall == TRUE && length(unique(res[[hosp_var]])) > 1) {
       fig <- fig +
         geom_line(data = res_grouped,
                   aes(x = get(time_int), y = outcome,
@@ -536,34 +558,58 @@ plot_hosp_time <- function(
         labs(color = NULL)
     }
 
-    # Common configs for plot
-    if (is.null(ylimits)) {
-      ylimits <- c(floor(min(res$outcome, na.rm = TRUE) / 1.1), ceiling(max(res$outcome, na.rm = TRUE) * 1.1))
-    } else {
-      ylimits <- ylimits
-    }
 
-
+    ######### Plot Appearance #########
+    ## Adjust labels & theme
     fig <- fig +
-      scale_y_continuous(limits = ylimits, expand = c(0, 0)) +
-      labs(x = time_label, y = ifelse(func == "prct", paste0(fix_var_str(plot_var), " = ", paste0(plot_cat, collapse = "/"), " (%)"),
-                                      ifelse(func == "missing", paste0(fix_var_str(plot_var), " = missing (%)"),
-                                             ifelse(func == "count", "N",
-                                                    paste0(fix_var_str(plot_var), " (", func, ")"))))) +
-      gemini_theme(base_size = 12, aspect_ratio = NULL) +
+      labs(x = time_label,
+           y = ifelse(func == "prct", paste0(fix_var_str(plot_var), " = ", paste0(plot_cat, collapse = "/"), " (%)"),
+                      ifelse(func == "missing", paste0(fix_var_str(plot_var), " = missing (%)"),
+                             ifelse(func == "count", "N",
+                                    paste0(fix_var_str(plot_var), " (", func, ")"))))) +
+      gemini_theme(base_size = 12) +
       theme(axis.text.x = element_text(angle = 60, hjust = 1))
 
-    ## Adjust dates on x-axis
+
+    ## Adjust y-axis
+    # If ylimit is specified, axis range will be fixed to that
+    # otherwise, range will be expanded by 5% (unless min value for count/prct/missing outcomes is 0,
+    # or max value of prct/missing outcome = 100, in which case scale is not expanded)
+    # calculating this manually here so expansion can be capped
+    # Note: For facet plots with free y-scales, 15% expansion is applied without any caps
+    if (is.null(ylimits) && (!is.null(facet_var) && !fig$facet$params$free$y)){
+      range <- max(res$outcome, na.rm = TRUE) - min(res$outcome, na.rm = TRUE)
+
+      if (is.na(ylimits[1])){
+        ylimits[1] <- min(res$outcome, na.rm = TRUE) - range*0.05
+        if (func %in% c("count", "prct", "missing")) {
+          ylimits[1] <- max(ylimits[1], 0) # make sure limit doesn't go below 0
+        }
+      }
+
+      if (is.na(ylimits[2])){
+        ylimits[2] <- max(res$outcome, na.rm = TRUE) + range*0.05
+        if (func %in% c("prct", "missing")) {
+          ylimits[2] <- min(ylimits[2], 100) # make sure limit doesn't go below 0
+        }
+      }
+    }
+
+    fig <- fig +
+      scale_y_continuous(limits = ylimits,
+                         expand = if (!is.null(facet_var) && fig$facet$params$free$y) c(.15, .15) else c(0,0))
+
+    ## Adjust x-axis
     if (grepl("quarter", time_int, ignore.case = TRUE)) {
       fig <- fig +
         scale_x_discrete(breaks = levels(cohort$quarter)[
           seq(1, length(levels(cohort$quarter)),
               by = ifelse(length(levels(cohort$quarter)) <= 8 && is.null(facet_var), 1,
-                          ifelse(length(levels(cohort$quarter)) <= 20, 2, 4)))],
+                          ifelse(length(levels(cohort$quarter)) <= 16, 2, 4)))],
           labels = levels(cohort$quarter)[
             seq(1, length(levels(cohort$quarter)),
                 by = ifelse(length(levels(cohort$quarter)) <= 8 && is.null(facet_var), 1,
-                            ifelse(length(levels(cohort$quarter)) <= 20, 2, 4)))])
+                            ifelse(length(levels(cohort$quarter)) <= 16, 2, 4)))])
     } else if (grepl("month", time_int, ignore.case = TRUE)) {
       fig <- fig + scale_x_date(breaks = seq(
         as.Date(min(cohort$month, na.rm = TRUE)),
@@ -573,7 +619,7 @@ plot_hosp_time <- function(
         date_labels = ifelse(is.null(facet_var), "%b-%Y", "%m/%y"))
     }
 
-
+    ## Apply colors
     if (!is.null(colors)) {
       fig <- fig + scale_color_manual(values = colors)
     }
@@ -602,7 +648,9 @@ plot_hosp_time <- function(
 #' @param show_grid (`logical`)\cr
 #' @param aspect_ratio (`numeric`)\cr
 #' Aspect ratio of plot
-#'
+#' @param ... \cr
+#' Additional arguments passed to `ggplot2::facet_wrap()` (if a `facet_var` is
+#' specified).
 #' @import ggplot2
 #' @import grid
 #' @import ggthemes
@@ -625,7 +673,8 @@ gemini_theme <- function(
     base_size = 14,
     base_family = "",
     show_grid = FALSE,
-    aspect_ratio = 1
+    aspect_ratio = 1,
+    ...
 ) {
 
   res <- (
@@ -677,6 +726,8 @@ gemini_theme <- function(
         strip.text = element_text(face = "bold", size = rel(0.75)),
 
         aspect.ratio = aspect_ratio,
+
+        ...
       ))
 
   return(res)

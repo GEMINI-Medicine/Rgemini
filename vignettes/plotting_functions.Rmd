@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
   include = TRUE, 
   eval = TRUE, 
   echo = TRUE, 
-  results = 'asis', 
+  #results = 'asis', 
   warning = TRUE, 
   message = FALSE, 
   collapse = TRUE,
@@ -84,7 +84,7 @@ cat(paste0('Note: Currently, this function only simulates a subset of variables 
 
 First, let's use the `plot_summary()` function to explore the dataset and gain a better understanding of the distributions of `ipadmdad` variables in our dummy cohort.
 
-By default, the function creates histograms/bar plots for all relevant variables in the provided `data` input (ignoring any encounter-/patient-/hospital-ID variables and date-time variables). It will also show some basic descriptive stats about each variable at the top of the plot, such as % missing, and median [Q1, Q3] for continuous variables and % for categorical/character variables (excluding missing values).
+By default, the function creates histograms/bar plots for all relevant variables in the provided `data` input (ignoring any encounter-/patient-/hospital-ID variables and date-time variables). It will also show some basic descriptive stats about each variable at the top of the plot, such as % missing (`NA`/`""`/`" "`), and median [Q1, Q3] for continuous variables and % for categorical/character variables. Missing values are excluded from the plots and summary statistics.
 
 ```{r, fig.height = 4, fig.width = 8}
 plot_summary(data = ipadmdad)
@@ -96,14 +96,14 @@ If your `data` input contains a large number of variables, we recommend explicit
 plot_summary(ipadmdad, plot_vars = c("discharge_disposition", "number_of_alc_days"))
 ```
 
-... or by simply selecting the subset of relevant columns liek this: 
+... or by simply selecting the subset of relevant columns like this: 
 
 ```{r}
 plot_summary(ipadmdad[, .(discharge_disposition, number_of_alc_days)])
 ```
 
 
-Note that in the example above, discharge disposition is treated as a numeric variable, even though it is in fact a categorical variable. Similarly, we might want to adjust the histogram for number of ALC days to only show data points up to 7 days. This can be done by providing the variables to be plotted as a `list`, which allows users to specify additional attributes, such as variable `class`. For numeric/integer variables, users can also control the `binwidth` and `breaks`, and whether or not to assume that the variable follows a `normal` distribution (in which case the descriptive statistics will show the mean [SD] instead of median [Q1, Q3]).
+Note that in the example above, discharge disposition is treated as a numeric variable, even though it is in fact a categorical variable. Additionally, we might want to adjust the histogram for number of ALC days to only show data points up to 7 days. This can be done by providing the variables to be plotted as a `list`, which allows users to specify additional attributes for each variable, such as its `class`. For numeric/integer variables, users can also control the `binwidth` (or `bins`) and `breaks`, and whether or not to assume that the variable follows a `normal` distribution (in which case the descriptive statistics will show mean [SD] instead of median [Q1, Q3]).
 
 For example, we could specify that discharge disposition should be of class `character`, and that number of ALC days should be shown with `binwidth = 1` with `breaks` from 0-7 days. Additionally, for illustration purposes, let's say we want to get the mean [SD] of ALC days by specifying `normal = TRUE`. Finally, we can also control the titles shown above each figure based on the name of each list item (e.g., "# Days in ALC" instead of "Number of Alc Days"), and we can also remove the stats/bar labels by specifying `show_stats = FALSE`:
 
@@ -116,6 +116,13 @@ plot_summary(
   ),
   show_stats = FALSE
 )
+```
+
+
+Finally, users can provide additional inputs that are passed to `ggpubr::ggarrange`, allowing finer control over the arrangement of the individual subplots. For example, you can specify the number of rows (`nrow`) and columns (`ncol`) for the subplots. The following will create a separate figures for each individual variable:
+
+```{r, warning = FALSE, message = FALSE, results='hide', fig.keep='all'}
+plot_summary(data = ipadmdad, ncol = 1, nrow = 1)
 ```
 
 
@@ -148,9 +155,9 @@ There are several ways users can customize this plot by providing additional inp
 - `hosp_var`: Variable specifying hospital identifier (default = `"hospital_num"`)
 - `hosp_group`: Optional hospital-level grouping variable (e.g., `"hospital_type"` or `"affiliation"`)
 - `facet_var`: Optional variable to be used as `facet_wrap` (e.g., `facet_var = "hospital_num"` will plot individual subplots per hospital)
-- `min_n`: Minimum number of data points required per hospital * time point combination. Any cells with `n < min_n` will be suppressed.
-- Plotting aesthetics like `line_width`, `ylabel`, `ylimits`, and `colors`(see function documentation for more details)
-
+- `show_overall`: Flag indicating whether or not to plot thick line showing overall value across all sites
+- `min_n`: Minimum number of data points required per hospital * time point combination. Any cells with `n < min_n` will be suppressed
+- Plotting aesthetics like `line_width`, `ylimits`, and `colors`(see function documentation for more details)
 
 ## `func` 
 
@@ -218,7 +225,6 @@ plot_hosp_time(
 For example, we could plot the number of encounters that were discharged (default) each fiscal year:
 
 ```{r}
-
 plot_hosp_time(
   cohort = ipadmdad,
   func = "n",
@@ -364,6 +370,35 @@ plot_hosp_time(
 # )
 
 ```
+
+## Additional inputs for facet plots
+
+If a `facet_var` is provided, users can provide additional input arguments that are passed to `lemon::facet_rep_wrap()` (wrapper for `ggplot2::facet_wrap()`). For example, this allows users to control the number of rows (`nrow`) and columns (`ncol`) in facet plots and whether the scales should be "fixed" (default) or "free". For example, to plot the number of encounters per quarter at each site in a 2 * 6 facet plot where the y-axis can vary across plots:
+
+```{r fig.width = 15}
+plot_hosp_time(
+  ipadmdad,
+  func = "n",
+  facet_var = "hospital_num",
+  time_int = "quarter",
+  nrow = 2,
+  scales = "free_y"
+) 
+```
+
+Note that if you additionally specify a `ylimits` input, this will overwrite `scales = "free"` as it will fix all y-limits to the specified range: 
+```{r fig.width = 15}
+plot_hosp_time(
+  ipadmdad,
+  func = "n",
+  facet_var = "hospital_num",
+  time_int = "quarter",
+  nrow = 2,
+  scales = "free_y", # does not work because ylimits are specified
+  ylimits = c(100, 300) # will fix y-limits in all plots to this range
+)
+```
+
 
 ## Returning aggregated data
 
