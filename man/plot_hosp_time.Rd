@@ -19,7 +19,8 @@ plot_hosp_time(
   ylimits = NULL,
   min_n = 0,
   colors = gemini_colors(),
-  return_data = FALSE
+  return_data = FALSE,
+  ...
 )
 }
 \arguments{
@@ -97,7 +98,8 @@ hospitals.}
 Width of individual lines. Summary line will be 2 * line_width.}
 
 \item{ylimits}{(\code{numeric})\cr
-Numeric vector specifying limits for y-axis e.g. c(0, 100).}
+Numeric vector specifying limits for y-axis e.g. \code{c(0, 100)}. To specify only
+the lower/upper limit, use \code{NA} (e.g., \code{c(NA, 100)} to fix upper limit only).}
 
 \item{min_n}{(\code{numeric})\cr
 Minimum number of data points required for each hospital * time point
@@ -109,6 +111,11 @@ Character vector specifying line color(s).}
 \item{return_data}{(\code{logical})\cr
 Flag indicating whether to return a list of 2 data.tables with aggregated
 data (\link{1} by hospital and \link{2} overall). If \code{FALSE} (default), will return plot.}
+
+\item{...}{\cr
+If a \code{facet_var} is specified: Additional arguments passed to
+\code{lemon::facet_rep_wrap()} (wrapper for \code{ggplot2::facet_wrap}), e.g.,
+\code{scales = "fixed"} (default) vs. \code{scales = "free"}, \code{nrow}/\code{ncol} etc.}
 }
 \value{
 By default, returns \code{ggplot} figure. If \code{return_data = TRUE}, returns

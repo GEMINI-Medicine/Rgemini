@@ -4,7 +4,13 @@
 \alias{plot_summary}
 \title{Plot descriptive summary statistics of multiple variables}
 \usage{
-plot_summary(data, plot_vars = NULL, show_stats = TRUE, color = "lightblue")
+plot_summary(
+  data,
+  plot_vars = NULL,
+  show_stats = TRUE,
+  color = "lightblue",
+  ...
+)
 }
 \arguments{
 \item{data}{(\code{data.frame} | \code{data.table})\cr
@@ -17,7 +23,11 @@ Character vector or list of variables to be plotted.}
 Flag indicating whether to show descriptive stats above each plot.}
 
 \item{color}{(\code{character})\cr
-Plotting color. Default is R's built-in \code{"lightblue"}.}
+Plotting color used for "fill". Default is R's built-in \code{"lightblue"}.}
+
+\item{...}{\cr
+Additional arguments passed to \code{ggpubr::ggarrange()} that allow for finer
+control of subplot arrangement (e.g., \code{ncol}, \code{nrow}, \code{widths}, \code{heights}).}
 }
 \value{
 (\code{ggplot})\cr A ggplot figure containing histograms of all variables

@@ -8,7 +8,8 @@ gemini_theme(
   base_size = 14,
   base_family = "",
   show_grid = FALSE,
-  aspect_ratio = 1
+  aspect_ratio = 1,
+  ...
 )
 }
 \arguments{
@@ -20,6 +21,10 @@ gemini_theme(
 
 \item{aspect_ratio}{(\code{numeric})\cr
 Aspect ratio of plot}
+
+\item{...}{\cr
+Additional arguments passed to \code{ggplot2::facet_wrap()} (if a \code{facet_var} is
+specified).}
 }
 \value{
 ggplot with specified theme
