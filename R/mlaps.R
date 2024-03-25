@@ -52,7 +52,7 @@ laps_assign_test <- function(x, breaks, points) {
       right = FALSE
     )
   )
-
+  
   if (sum(stringr::str_sub(x, 1, 1) %in% c("<", ">")) > 0) {
     lower_limit <- breaks[2]
     upper_limit <- breaks[length(breaks) - 1]
@@ -61,7 +61,7 @@ laps_assign_test <- function(x, breaks, points) {
     pts[is.na(pts) & startsWith(x, "<") & suppressWarnings(as.numeric(stringr::str_sub(x, 2))) <= lower_limit] <- lower_points
     pts[is.na(pts) & startsWith(x, ">") & suppressWarnings(as.numeric(stringr::str_sub(x, 2))) >= upper_limit] <- upper_points
   }
-
+  
   return(as.numeric(pts))
 }
 
@@ -128,9 +128,11 @@ laps_assign_test <- function(x, breaks, points) {
 #' https://doi.org/10.1101/2023.01.06.23284273
 #'
 loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_wise = FALSE) {
-
+  
   hospital_field <- return_hospital_field(db)
-
+  # find table corresponding to admdad
+  admdad_table <- find_db_tablename(db, "admdad", verbose = FALSE)
+  
   admdad <- DBI::dbGetQuery(
     db,
     paste(
@@ -138,19 +140,22 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
         genc_id,
         admission_date_time,
         EXTRACT(YEAR FROM discharge_date_time::DATE) AS year,",
-        hospital_field, "AS hospital_id",
-      "FROM admdad",
+      hospital_field, "AS hospital_id",
+      "FROM ", admdad_table,
       if (!is.null(cohort)) {
         paste("WHERE genc_id IN (", paste(cohort$genc_id, collapse = ", "), ")")
       }
     )
   ) %>%
     as.data.table()
-
+  
   hospital_years <- admdad %>%
     select(hospital_id, year) %>%
     unique()
-
+  
+  # find table corresponding to lab
+  lab_table <- find_db_tablename(db, "lab", verbose = FALSE)
+  
   res <- purrr::map2_df(
     hospital_years$hospital_id,
     hospital_years$year,
@@ -164,8 +169,8 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
             l.test_type_mapped_omop,
             l.result_value,
             l.result_unit
-          FROM lab l
-          INNER JOIN admdad a
+          FROM ", lab_table, "l
+          INNER JOIN ", admdad_table, " a
             ON l.genc_id = a.genc_id
           WHERE l.test_type_mapped_omop IN (", paste(LAPS_OMOP_CONCEPTS, collapse = ", "), ")",
           paste0("AND a.", hospital_field, " = '", hospital_id, "'"),
@@ -176,7 +181,7 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
         )
       ) %>%
         as.data.table()
-
+      
       res <- mlaps(
         admdad %>% dplyr::filter(hospital_id == hospital_id, year == year),
         lab,
@@ -185,7 +190,7 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
       )
     }
   )
-
+  
   return(res)
 }
 
@@ -247,9 +252,9 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
 #' }
 #'
 mlaps <- function(ipadmdad, lab, hours_after_admission = 0, component_wise = FALSE) {
-
+  
   mapping_message("lab tests")
-
+  
   lab <- lab %>%
     select(test_type_mapped_omop, genc_id, result_value, result_unit, collection_date_time) %>%
     filter(test_type_mapped_omop %in% LAPS_OMOP_CONCEPTS) %>%
@@ -258,7 +263,7 @@ mlaps <- function(ipadmdad, lab, hours_after_admission = 0, component_wise = FAL
       by = "genc_id"
     ) %>%
     filter(lubridate::ymd_hm(collection_date_time) < (lubridate::ymd_hm(admission_date_time) + lubridate::hours(hours_after_admission)))
-
+  
   laps <- lab %>%
     mutate(result_value = ifelse(
       # special treatment at some sites where Hematocrit results are expressed as a %. Hematocrit results are fractions, thus always <=1. Values > 1, if not converted, can contribute 23pts to the score.
@@ -347,21 +352,21 @@ mlaps <- function(ipadmdad, lab, hours_after_admission = 0, component_wise = FAL
     group_by(genc_id, test_type_mapped_omop) %>%
     summarise(score = max_result_value(score)) %>%
     mutate(score = ifelse(is.infinite(score), NA, score))
-
+  
   bun <- lab %>%
     dplyr::filter(test_type_mapped_omop == 3024641) %>%
     mutate(result_value = gsub("<|>", "", result_value) %>% trimws() %>% as.numeric()) %>%
     group_by(genc_id) %>%
     summarise(max_bun = max_result_value(result_value)) %>%
     mutate(max_bun = ifelse(is.infinite(max_bun), NA, max_bun))
-
+  
   creatinine <- lab %>%
     dplyr::filter(test_type_mapped_omop == 3020564) %>%
     mutate(result_value = gsub("<|>", "", result_value) %>% trimws() %>% as.numeric()) %>%
     group_by(genc_id) %>%
     summarise(min_creatinine = min_result_value(result_value)) %>%
     mutate(min_creatinine = ifelse(is.infinite(min_creatinine), NA, min_creatinine))
-
+  
   bun_creatinine <- bun %>%
     full_join(creatinine, by = c("genc_id" = "genc_id")) %>%
     mutate(
@@ -369,22 +374,22 @@ mlaps <- function(ipadmdad, lab, hours_after_admission = 0, component_wise = FAL
       test_type_mapped_omop = "BUN/Creatinine"
     ) %>%
     select(genc_id, test_type_mapped_omop, score)
-
-
+  
+  
   laps <- bind_rows(
     laps %>% mutate(test_type_mapped_omop = as.character(test_type_mapped_omop)),
     bun_creatinine
   )
-
-
+  
+  
   if (component_wise) {
     return(laps)
   }
-
+  
   res <- laps %>%
     group_by(genc_id) %>%
     summarise(mlaps = sum(score, na.rm = TRUE))
-
+  
   return(res)
 }
 
