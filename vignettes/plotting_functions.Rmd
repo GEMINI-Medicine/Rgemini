@@ -105,7 +105,7 @@ plot_summary(ipadmdad[, .(discharge_disposition, number_of_alc_days)])
 
 Note that in the example above, discharge disposition is treated as a numeric variable, even though it is in fact a categorical variable. Additionally, we might want to adjust the histogram for number of ALC days to only show data points up to 7 days. This can be done by providing the variables to be plotted as a `list`, which allows users to specify additional attributes for each variable, such as its `class`. For numeric/integer variables, users can also control the `binwidth` (or `bins`) and `breaks`, and whether or not to assume that the variable follows a `normal` distribution (in which case the descriptive statistics will show mean [SD] instead of median [Q1, Q3]).
 
-For example, we could specify that discharge disposition should be of class `character`, and that number of ALC days should be shown with `binwidth = 1` with `breaks` from 0-7 days. Additionally, for illustration purposes, let's say we want to get the mean [SD] of ALC days by specifying `normal = TRUE`. Finally, we can also control the titles shown above each figure based on the name of each list item (e.g., "# Days in ALC" instead of "Number of Alc Days"), and we can also remove the stats/bar labels by specifying `show_stats = FALSE`:
+For example, we could specify that discharge disposition should be of class `character`, and that number of ALC days should be shown with `binwidth = 1` with `breaks` from 0-7 days. Additionally, for illustration purposes, let's say we want to get the mean [SD] of ALC days by specifying `normal = TRUE` and we also want to show percentages (instead of counts) on the y-axis by setting `prct` to `TRUE`. Finally, we can also control the titles shown above each figure based on the name of each list item (e.g., "# Days in ALC" instead of "Number of Alc Days"), and we can also remove the stats/bar labels by specifying `show_stats = FALSE`:
 
 ```{r}
 plot_summary(
@@ -114,9 +114,11 @@ plot_summary(
     `Discharge disposition` = list(plot_var = "discharge_disposition", class = "character"),
     `# Days in ALC` = list(plot_var = "number_of_alc_days", binwidth = 1, breaks = seq(0, 7, 1), normal = TRUE)
   ),
-  show_stats = FALSE
+  show_stats = FALSE,
+  prct = TRUE
 )
 ```
+
 
 
 Finally, users can provide additional inputs that are passed to `ggpubr::ggarrange`, allowing finer control over the arrangement of the individual subplots. For example, you can specify the number of rows (`nrow`) and columns (`ncol`) for the subplots. The following will create a separate figures for each individual variable:

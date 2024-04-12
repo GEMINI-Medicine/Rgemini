@@ -20,6 +20,10 @@
 #' @param show_stats (`logical`)\cr
 #' Flag indicating whether to show descriptive stats above each plot.
 #'
+#' @param prct (`logical`)\cr
+#' Flag indicating whether y-axis labels should show percentage (%). If `FALSE`
+#' (default), counts (n) will be shown.
+#'
 #' @param color (`character`)\cr
 #' Plotting color used for "fill". Default is R's built-in `"lightblue"`.
 #'
@@ -30,7 +34,7 @@
 #' @return (`ggplot`)\cr A ggplot figure containing histograms of all variables
 #' specified in `vars`.
 #'
-#' @import ggplot2
+#' @import ggplot2 scales
 #' @importFrom ggpubr ggarrange
 #' @export
 #'
@@ -51,6 +55,7 @@
 plot_summary <- function(data,
                          plot_vars = NULL,
                          show_stats = TRUE,
+                         prct = FALSE,
                          color = "lightblue",
                          ...) {
 
@@ -84,13 +89,15 @@ plot_summary <- function(data,
 
       data[[var$plot_var]] <- as.numeric(data[[var$plot_var]])
 
-      sub_fig <- ggplot(data, aes(x = get(var$plot_var)))  +
-        geom_histogram(color = "grey20", fill = color, binwidth = var$binwidth, bins = var$bins, ...) +
-        labs(title = var$varlabel)
+      sub_fig <- ggplot(data, aes(x = get(var$plot_var),
+                                  y = if (prct == TRUE) (..count..)/sum(..count..) else (..count..))) +
+        geom_histogram(color = "grey20", fill = color, binwidth = var$binwidth, bins = var$bins, ...)
 
       if (!is.null(var$breaks)) {
         sub_fig <- sub_fig +
-          scale_x_continuous(breaks = var$breaks, limits = c(floor(min(var$breaks) - 1), ceiling(max(var$breaks) + 1)))
+          scale_x_continuous(breaks = c(var$breaks, max(var$breaks))) +
+          coord_cartesian(xlim = c(min(var$breaks) - 0.05 * (max(var$breaks)-min(var$breaks)), # specify limits using coord_cartesian to preserve edge data points
+                                   max(var$breaks) + 0.05 * (max(var$breaks)-min(var$breaks)))) # expand doesn't work here...
       }
 
       if (show_stats == TRUE) {
@@ -113,30 +120,33 @@ plot_summary <- function(data,
         }
       }
 
-
       ## for categorical/binary variables
     } else if (any(var$class %in% c("character", "logical"),
                    is.null(var$class) && class(data[[var$plot_var]]) %in% c("character", "logical"))) {
 
       ## create figure
-      sub_fig <- ggplot(data, aes(x = as.factor(data[[var$plot_var]]))) +
-        geom_bar(color = "grey20", fill = color) +
-        labs(title = var$varlabel)
+      sub_fig <- ggplot(data, aes(x = as.factor(data[[var$plot_var]]),
+                                  y = if (prct == TRUE) (..count..)/sum(..count..) else (..count..))) +
+        geom_bar(color = "grey20", fill = color)
+
 
       ## add stats/labels
       if (show_stats == TRUE) {
         sub_fig <- sub_fig +
-          geom_text(stat = "count", aes(label = scales::percent(round(..count.. / sum(..count..), digits = 3))),
-                    vjust = -0.4, size = 8 / n_vars, hjust = 0.5) +
+          geom_text(stat = "count", aes(label = percent(round(..count.. / sum(..count..), digits = 3))),
+                    vjust = -0.4, size = 10 / n_vars, hjust = 0.5) +
           labs(subtitle = paste0("Missing: ", missing, "\n "))
       }
 
     }
 
     sub_fig <- sub_fig +
-      xlab(var$plot_var) +
-      scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
-      gemini_theme(base_size = ceiling(14 / sqrt(n_vars)), aspect_ratio = NULL)
+      xlab(var$plot_var) + labs(title = var$varlabel) +
+      scale_y_continuous(name = if (prct == TRUE) "%" else "count",
+                         labels = if (prct == TRUE) percent else rescale_none,
+                         expand = expansion(mult = c(0, 0.1))) +
+      gemini_theme(base_size = ceiling(16 / sqrt(n_vars)), aspect_ratio = NULL)
+
 
     return(sub_fig)
   }
@@ -720,6 +730,7 @@ gemini_theme <- function(
         legend.text.align = 0,
 
         plot.margin = unit(c(0.05, 0.05, 0.05, 0.05), "npc"),
+        plot.subtitle = element_text(size = rel(0.9)),
 
         ## top strip for facet wrap plots
         strip.background = element_rect(fill = "grey85", colour = NA),
@@ -761,18 +772,6 @@ gemini_colors <- function(palette = "") {
     )
   }
 
-
-  if (palette == "gemqin") {
-    cols <- c(
-      "#042061",
-      "#00b1f3",
-      "#C1B28F",
-      #"#A9A9A9",
-      "#92278F",
-      "#49A7A2"
-      #"#ED037C",
-    )
-  }
 
   return(cols)
 }
