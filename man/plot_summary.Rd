@@ -8,6 +8,7 @@ plot_summary(
   data,
   plot_vars = NULL,
   show_stats = TRUE,
+  prct = FALSE,
   color = "lightblue",
   ...
 )
@@ -21,6 +22,10 @@ Character vector or list of variables to be plotted.}
 
 \item{show_stats}{(\code{logical})\cr
 Flag indicating whether to show descriptive stats above each plot.}
+
+\item{prct}{(\code{logical})\cr
+Flag indicating whether y-axis labels should show percentage (\%). If \code{FALSE}
+(default), counts (n) will be shown.}
 
 \item{color}{(\code{character})\cr
 Plotting color used for "fill". Default is R's built-in \code{"lightblue"}.}
