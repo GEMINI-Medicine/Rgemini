@@ -63,15 +63,16 @@ plot_summary <- function(data,
   if (is.null(plot_vars)) {
     plot_vars <- colnames(data)[
       !grepl("genc_id|patient_id|hospital_id|hospital_num|_date|_time", colnames(data), ignore.case = TRUE)
-      ]
+    ]
   }
 
-  # show warning if trying to plot more than 9 variables
+  # if more than 9 variables, don't plot more than 3 columns/rows per figure,
+  # unless user specified (by default, no more than 9 plots in single figure)
   if (length(plot_vars) > 9) {
-    warning("Plotting histograms for > 9 variables.
-      Please consider selecting a subset of variables to improve plot appearance.", immediate. = TRUE)
+    args <- list(...)
+    nrow <- if (!"nrow" %in% names(args)) 3 else args$nrow
+    ncol <- if (!"ncol" %in% names(args)) 3 else args$ncol
   }
-
 
   ## plotting function
   plot_subplots <- function(var, data, n_vars) {
@@ -89,9 +90,9 @@ plot_summary <- function(data,
 
       data[[var$plot_var]] <- as.numeric(data[[var$plot_var]])
 
-      sub_fig <- ggplot(data, aes(x = get(var$plot_var),
-                                  y = if (prct == TRUE) (..count..)/sum(..count..) else (..count..))) +
-        geom_histogram(color = "grey20", fill = color, binwidth = var$binwidth, bins = var$bins, ...)
+      sub_fig <- suppressWarnings(ggplot(data, aes(x = get(var$plot_var),
+                                                   y = if (prct == TRUE) (..count..)/sum(..count..) else (..count..))) +
+                                    geom_histogram(color = "grey20", fill = color, binwidth = var$binwidth, bins = var$bins, ...))
 
       if (!is.null(var$breaks)) {
         sub_fig <- sub_fig +
@@ -125,9 +126,9 @@ plot_summary <- function(data,
                    is.null(var$class) && class(data[[var$plot_var]]) %in% c("character", "logical"))) {
 
       ## create figure
-      sub_fig <- ggplot(data, aes(x = as.factor(data[[var$plot_var]]),
-                                  y = if (prct == TRUE) (..count..)/sum(..count..) else (..count..))) +
-        geom_bar(color = "grey20", fill = color)
+      sub_fig <- suppressWarnings(ggplot(data, aes(x = as.factor(data[[var$plot_var]]),
+                                                   y = if (prct == TRUE) (..count..)/sum(..count..) else (..count..))) +
+                                    geom_bar(color = "grey20", fill = color))
 
 
       ## add stats/labels
@@ -142,7 +143,7 @@ plot_summary <- function(data,
 
     sub_fig <- sub_fig +
       xlab(var$plot_var) + labs(title = var$varlabel) +
-      scale_y_continuous(name = if (prct == TRUE) "%" else "count",
+      scale_y_continuous(name = if (prct == TRUE) "p" else "count",
                          labels = if (prct == TRUE) percent else rescale_none,
                          expand = expansion(mult = c(0, 0.1))) +
       gemini_theme(base_size = ceiling(16 / sqrt(n_vars)), aspect_ratio = NULL)
