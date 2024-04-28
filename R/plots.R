@@ -24,6 +24,11 @@
 #' Flag indicating whether y-axis labels should show percentage (%). If `FALSE`
 #' (default), counts (n) will be shown.
 #'
+#' @param base_size (`numeric`)\cr
+#' Numeric input to determine the base size (e.g., font size) for each subplot.
+#' By default, the function will automatically determine an appropriate size
+#' depending on the number of subplots (base size = 11 if a single subplot).
+#'
 #' @param color (`character`)\cr
 #' Plotting color used for "fill". Default is R's built-in `"lightblue"`.
 #'
@@ -56,6 +61,7 @@ plot_summary <- function(data,
                          plot_vars = NULL,
                          show_stats = TRUE,
                          prct = FALSE,
+                         base_size = NULL,
                          color = "lightblue",
                          ...) {
 
@@ -66,13 +72,27 @@ plot_summary <- function(data,
     ]
   }
 
+
   # if more than 9 variables, don't plot more than 3 columns/rows per figure,
   # unless user specified (by default, no more than 9 plots in single figure)
+  args <- list(...)
   if (length(plot_vars) > 9) {
-    args <- list(...)
     nrow <- if (!"nrow" %in% names(args)) 3 else args$nrow
     ncol <- if (!"ncol" %in% names(args)) 3 else args$ncol
+    nvars_plot <- nrow * ncol # N subplots per figure (to determine text size)
+  } else {
+    nvars_plot <- if ("nrow" %in% names(args) && "ncol" %in% names(args)) {
+      args$nrow*args$ncol
+    } else {
+      length(plot_vars) # by default, all vars are in single figure
+    }
   }
+
+  # determine font size for subplots (depending on number of variables/figure)
+  if (is.null(base_size)) {
+    base_size <- 13 - ceiling(1.5*sqrt(nvars_plot)) # ceiling(12 / sqrt(nvars_plot))
+  }
+
 
   ## plotting function
   plot_subplots <- function(var, data, n_vars) {
@@ -135,7 +155,7 @@ plot_summary <- function(data,
       if (show_stats == TRUE) {
         sub_fig <- sub_fig +
           geom_text(stat = "count", aes(label = percent(round(..count.. / sum(..count..), digits = 3))),
-                    vjust = -0.4, size = 10 / n_vars, hjust = 0.5) +
+                    vjust = -0.4, size = base_size/5, hjust = 0.5) +
           labs(subtitle = paste0("Missing: ", missing, "\n "))
       }
 
@@ -146,7 +166,7 @@ plot_summary <- function(data,
       scale_y_continuous(name = if (prct == TRUE) "p" else "count",
                          labels = if (prct == TRUE) percent else rescale_none,
                          expand = expansion(mult = c(0, 0.1))) +
-      gemini_theme(base_size = ceiling(16 / sqrt(n_vars)), aspect_ratio = NULL)
+      gemini_theme(base_size = base_size)
 
 
     return(sub_fig)
