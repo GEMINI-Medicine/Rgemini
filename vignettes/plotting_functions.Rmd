@@ -26,8 +26,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   cache = FALSE, 
   tidy = FALSE,
-  fig.height = 4, 
-  fig.width = 6
+  fig.height = 7, 
+  fig.width = 9
   
 )
 
@@ -37,8 +37,12 @@ library(ggpubr)
 library(lemon)
 library(grid)
 library(ggthemes)
+library(ggpubr)
+library(scales)
 
-source("H:/GitHub/Rgemini/R/plots.R") 
+source("H:/GitHub/Rgemini/R/plot_summary.R") 
+source("H:/GitHub/Rgemini/R/plot_over_time.R") 
+source("H:/GitHub/Rgemini/R/plot_theme.R") 
 source("H:/GitHub/Rgemini/R/utils.R") 
 
 options(knitr.kable.NA = '')
@@ -131,60 +135,47 @@ plot_summary(data = ipadmdad, ncol = 1, nrow = 1)
 *  *  *  *
 
 
-# Plot variables by hospital & over time
+# Plot variables over time
 
-Another common way to explore GEMINI data is to plot variables by individual hospitals over time. This can provide important insights into differences across sites and temporal trends. The `plot_hosp_time` function in `Rgemini` provides a simple way of creating different types of plots like that. 
+Another common way to explore GEMINI data is to plot variables over time, which can be done with a single line of code using the `plot_over_time` function in `Rgemini`. By default, the function assumes that you want to aggregate data by a certain time interval (default = `"month"`) and by hospital (plotted as individual lines). This can provide important insights into differences across sites and temporal trends. We recommend generating these plots after cohort creation in order to check for potential data availability/quality issues, outliers, or biases that may have been introduced during cohort inclusion/exclusion steps. 
+
+All examples shown below illustrate cases where variables are plotted by individual hospitals (`line_group = "hospital_num"`) because the function was specifically designed for this purpose. However, users may specify alternative grouping variables (e.g., to plot variables by individual physicians, or by patient groups etc.).
 
 
 ## Default plot
 
-By default, the `plot_hosp_time` function plots the mean of a user-specified `plot_var` (e.g., `age`) by hospital * month. For example:
+By default, the `plot_over_time` function plots the mean of a user-specified `plot_var` (e.g., `age`) by hospital * month. For example:
 
 ```{r}
-plot_hosp_time(
+plot_over_time(
   cohort = ipadmdad,
   plot_var = "age"
 )
 ```
 
-Each line in the plot shown above represents the mean age at an individual hospital, and the thick line represents the mean age across all sites (note: hospitals with more encounters contribute more to this line than hospitals with fewer encounters).
+Each subplot shows the mean age at an individual hospital, and the thick line represents the mean age across all sites (note: hospitals with more encounters contribute more to this line than hospitals with fewer encounters).
 
 There are several ways users can customize this plot by providing additional input arguments, which are explained in detail below. Briefly, users can provide the following input arguments:
 
-- `func`: What function to use to aggregate data (e.g., median instead of mean, percentage for categorical variable, % missing etc.)
-- `time_var`: Date-time variable of interest (default = `discharge_date_time`) 
-- `time_int`: Time interval to aggregate data by (default = `month`, but could be `quarter`, `year`, `fisc_year`, `season`, or a custom time interval)
-- `hosp_var`: Variable specifying hospital identifier (default = `"hospital_num"`)
-- `hosp_group`: Optional hospital-level grouping variable (e.g., `"hospital_type"` or `"affiliation"`)
-- `facet_var`: Optional variable to be used as `facet_wrap` (e.g., `facet_var = "hospital_num"` will plot individual subplots per hospital)
-- `show_overall`: Flag indicating whether or not to plot thick line showing overall value across all sites
-- `min_n`: Minimum number of data points required per hospital * time point combination. Any cells with `n < min_n` will be suppressed
+- `func`: What function to use to aggregate data (default: `"mean"` for continuous variables and `"prct"` for categorical variables), can also plot number of rows (`n`) or percent missing (`na`)
+- `time_var`: Date-time variable of interest (default: `discharge_date_time`) 
+- `time_int`: Time interval to aggregate data by (default: `month`, but could be `quarter`, `year`, `fisc_year`, `season`, or a custom time interval)
+- `line_group`: Grouping variable corresponding to individual lines (default: `"hospital_num"` or `"hospital_id"`)
+- `color_group`: Grouping variable to be used for color coding of lines (e.g., hospital-level grouping by `"hospital_type"` or encounter-level grouping by `"gender"`)
+- `facet_group`: Grouping variable to be used for `facet_wrap` (default: `facet_group = "hospital_num"` to plot individual subplots per hospital)
+- `show_overall`: Flag indicating whether or not to plot thick line showing overall result value across all individual lines (grouped by `color_group` if specified)
+- `min_n`: Minimum number of data points required per cell. Any cells with `n < min_n` will be suppressed and removed from the figure
 - Plotting aesthetics like `line_width`, `ylimits`, and `colors`(see function documentation for more details)
 
 ## `func` 
 
-Instead of plotting the average (`func = "mean"`), users can provide any of the following alternative `func` inputs:
+For continuous variables, users can specify `func = "median"` instead of the default `func = "mean"`. 
 
-- `"median"`
-- `"%"` or `"prct"`/`"perc"` to plot % of encounters in a specified category level. Users can specify `plot_cat` to indicate which category/factor level to plot (by default, the function will sort all unique values and plot the % in the highest category level). Note: For any character/logical/factor variables, the function will automatically infer `func = "%"`. 
-- `"count"` or `"n"` to plot the number of rows/encounters
-
-
-For example, to plot the number of encounters, simply specify `func = "n"` (no `plot_var` input needs to be provided in this case). Note that in this case, the thick "overall" line represents the median of all (individual hospital) lines, rather than the total count of rows across all sites.
-
-```{r}
-plot_hosp_time(
-  cohort = ipadmdad,
-  func = "n"
-)
-```
-
-
-Or to plot the percentage of female encounters:
+For categorical variables, the function plots percentages (`func = "prct"`). Users can additionally provide `plot_cat` to indicate which category/factor level to plot (by default, the function plots the % in the highest category level). For example, to plot the percentage of female encounters:
 
 ```{r}
 
-plot_hosp_time(
+plot_over_time(
   cohort = ipadmdad,
   plot_var = "gender",
   plot_cat = "F"
@@ -195,12 +186,10 @@ plot_hosp_time(
 
 When plotting percentages, any entries that are `NA` are automatically removed from both the numerator and denominator. 
 
-Note that in the example of plotting `gender`, the function automatically infers `func = "%"` because `gender` is of class `character`.
-
-If we wanted to plot `discharge_disposition`, which is of class `integer`, the function would by default plot the `"mean"`. However, in reality, discharge disposition represents a categorical variable, so we could run the following code to plot the percentage of encounters where `discharge_disposition %in% c(7, 72, 73, 74)` (i.e., % of hospitalizations that resulted in in-hospital death).
+If we wanted to plot `discharge_disposition`, which is of class `integer`, the function would by default plot the `"mean"`. However, in reality, discharge disposition represents a categorical variable, so we could either transform `discharge_disposition` into a factor variable before plotting, or alternatively, we could run the following code to plot the percentage of encounters where `discharge_disposition %in% c(7, 72, 73, 74)` (i.e., % of hospitalizations that resulted in in-hospital death).
 
 ```{r}
-plot_hosp_time(
+plot_over_time(
   cohort = ipadmdad,
   plot_var = "discharge_disposition",
   func = "%",
@@ -209,10 +198,22 @@ plot_hosp_time(
 ```
 
 
+We can also simply plot the number of rows per month * hospital by specifying `func = "n"`. This is a great way to check for data availability over time (e.g., for time periods with 0 rows, no data were available). In our data table, the number of rows corresponds to the number of unique encounters, but depending on the table you provide as cohort input, the count of rows might reflect other variables, such as total number of pharmacy orders, lab tests etc.
+
+```{r}
+plot_over_time(
+  cohort = ipadmdad,
+  func = "n"
+)
+```
+Note the when we plot `n`, the thick "overall" line represents the median of all (individual hospital) lines, rather than the total count of rows across all sites.
+
+
+
 Finally, the function can also be used to plot the percentage of missing data by specifying `func = "na"` or `"missing"`, which plots the percentage of all entries that are either `NA`, `""`, or `" "`. Let's plot the % of encounters with missing ALC flag and rename the ylabel to `"% Missing ALC"`:
 
 ```{r}
-plot_hosp_time(
+plot_over_time(
   cohort = ipadmdad,
   plot_var = "alc_service_transfer_flag",
   func = "na"
@@ -227,7 +228,7 @@ plot_hosp_time(
 For example, we could plot the number of encounters that were discharged (default) each fiscal year:
 
 ```{r}
-plot_hosp_time(
+plot_over_time(
   cohort = ipadmdad,
   func = "n",
   #time_var = "discharge_date_time", # default
@@ -238,7 +239,7 @@ plot_hosp_time(
 ... or the number of encounters that were admitted each season:
 
 ```{r}
-plot_hosp_time(
+plot_over_time(
   cohort = ipadmdad,
   func = "n",
   time_var = "admission_date_time",
@@ -250,13 +251,13 @@ plot_hosp_time(
 
 ### Custom `time_int`
 
-Note that users can in principle specify any custom time interval as long as this is provided as a column in the `cohort` input. For example, let's say we want to plot the number of encounters that were *admitted* to hospital each day in April 2020. Users can calculate the admission date prior to running the function and then provide it as the`time_int` input:
+Note that users can in principle specify any custom time interval as long as this is provided as a column in the `cohort` input. For example, let's say we want to plot the number of encounters that were admitted to hospital each day in April 2020. Users can calculate the admission date prior to running the function and then provide it as the`time_int` input:
 
 ```{r}
 library(lubridate)
 ipadmdad[, my_date := as.Date(ymd_hm(admission_date_time))]
 
-plot_hosp_time(
+plot_over_time(
   cohort = ipadmdad[my_date >= "2020-04-01" & my_date <= "2020-04-30", ],
   func = "n",
   time_int = "my_date"
@@ -265,124 +266,113 @@ plot_hosp_time(
 
 
 
-## View individual hospitals
+## Show all hospitals in a single plot
 
-If you want to inspect temporal trends at individual hospitals, there are 2 different approaches:
+The default plots shown above are designed to allow for easy inspection of individual hospitals, by plotting them in separate subplots. However, you may want to show all hospitals in a single plot instead. This can be achieved by setting `facet_group` to `NULL`:
 
-1) You could specify our hospital-level variable `hospital_num` as a `facet_var`, which will create individual subplots for each site. You could choose to plot/hide the overall line (mean age across all sites) by setting `show_overall` to either `TRUE` or `FALSE`:
-
-```{r fig.height = 7, fig.width = 9}
-plot_hosp_time(
+```{r fig.height = 4, fig.width = 6}
+plot_over_time(
   ipadmdad,
   plot_var = "age",
-  facet_var = "hospital_num",
+  facet_group = NULL,
   show_overall = TRUE
 ) 
 ```
 
-2) The second option to highlight individual sites is to specify `hospital_num` as a `hosp_group`, which will add a legend for individual sites while still plotting all hospitals in a single plot: 
+If you still want to be able to distinguish individual hospitals in this plot, you could specify, `color_group = "hospital_num"`, which will add a color legend corresponding to individual sites. This is not a good option if you are plotting a lot of hospitals at the same time, but we could for example plot only a subset of hospitals 1-6: 
 
-```{r}
-plot_hosp_time(
-  ipadmdad,
+```{r fig.height = 4, fig.width = 6}
+plot_over_time(
+  ipadmdad[hospital_num <= 6, ],
   plot_var = "age",
-  hosp_group = "hospital_num"
+  color_group = "hospital_num",
+  facet_group = NULL
 )
 ```
 
 
-## Grouping variables (color)
+## Grouping by color
 
-A more common application for the `hosp_group` is to add an additional layer of hospital-level grouping. For example, you may want to group hospitals into different types, such as academic vs. community hospitals. For illustration purposes, a random `hospital_type` is assigned to our dummy data and we can then add `hospital_type` as a `hosp_group` varible. The thick lines now represent the overall mean age at each hospital type. Note that the data are aggregated across all encounters of each group level (e.g., the cyan line represents the mean age of all encounters at any community site). This means that larger hospitals will contribute more to the average age than smaller hospitals.
+A more common application for the `color_group` is to add an additional layer of grouping (in addition to the individual lines defined by `line_group`). For example, you may want to group hospitals into different types, such as academic vs. community hospitals. For illustration purposes, a random `hospital_type` is assigned to our dummy data and we can then add `hospital_type` as a `color_group` variable. The thick lines now represent the overall mean age at each hospital type. Note that the data are aggregated across all encounters of each group level (e.g., the cyan line represents the mean age of all encounters at any community site). This means that larger hospitals will contribute more to the average age than smaller hospitals.
 
-```{r}
+```{r fig.height = 4, fig.width = 6}
 # assign (random) hospital grouping variable
 ipadmdad[, hospital_type := sample(
   c("Academic", "Community"), prob = c(.4, .6), 1, replace = TRUE
 ), by = hospital_num] 
 
-plot_hosp_time(
+plot_over_time(
   ipadmdad,
   plot_var = "age",
-  hosp_group = "hospital_type"
+  color_group = "hospital_type",
+  facet_group = NULL
 )
 ```
-You could suppress the individual hospital lines in this plot by specifying `hosp_var = NULL`, and you can also change the plot colors as follows:
+You could suppress the individual hospital lines in this plot by specifying `line_group = NULL`, and you can also change the plot colors as follows:
 
-```{r}
-plot_hosp_time(
+```{r fig.height = 4, fig.width = 6}
+plot_over_time(
   ipadmdad,
   plot_var = "age",
-  hosp_var = NULL,
-  hosp_group = "hospital_type",
+  line_group = NULL,
+  color_group = "hospital_type",
+  facet_group = NULL,
   colors = c("#86b9b0", "#c266a7")
 )
 ```
 
-We could also apply `facet_var` here to show the individual hospitals in separate plots, with color coding reflecting the hospital type. For the purpose of this plot, we set `show_overall` to `FALSE` to avoid redundancy of information in each subplot:
-
+We could also apply `facet_group` here to show the individual hospitals in separate plots, with color coding reflecting the hospital type. For illustration purposes, we will also set `show_overall` to `FALSE` in this case:
 
 ```{r fig.height = 7, fig.width = 9}
-plot_hosp_time(
+plot_over_time(
   ipadmdad,
   plot_var = "age",
-  hosp_group = "hospital_type",
-  facet_var = "hospital_num",
+  color_group = "hospital_type",
   show_overall = FALSE
 )
 ```
 
 
-One other alternative to illustrate differences between hospital types is to specify `hospital_type` as a `facet_var`. 
+## Grouping by facet variable
+
+Instead of using color coding to add grouping variables, we can also specify a grouping variable for `facet_wrap`. By default, `facet_group` is set to `"hospital_num"` to facilitate visualization of individual hospitals. However, for the purpose of comparing different hospital types, we could instead specify `facet_group = "hospital_type"` to plot academic vs. community hospitals in separate plots: 
 
 ```{r}
-plot_hosp_time(
+plot_over_time(
   ipadmdad,
   plot_var = "age",
-  facet_var = "hospital_type",
+  facet_group = "hospital_type",
   show_overall = TRUE
 )
 ```
 
+Finally, we could apply both a `color_group` and `facet_group` variable to illustrate interactions. For example, we could plot `age` separately by hospital type and patients' gender. In order to do this, we need to specify "gender" as both a `color_group` **and** `line_group` variable (otherwise, the function assumes that individual lines should correspond to different hospitals).
 
-## Encounter-level grouping variables
+Additoinally, since there are not many encounters with gender = `"O"`, we may want to apply cell suppression to any data points with n < 6 by specifying `min_n = 6`. In our sample data, there is no cell with `gender == "O"` that has at least 6 data points, so results for gender = `"0"` are shown at all here:
 
-Note that the function always assumes that individual plot lines (or subplots) correspond to a **hospital-level** identifier and that `hosp_group` corresponds to a **hospital-level** grouping variable. If you want to apply any additional encounter-level grouping, this should always be specified as a `facet_var` in order to make sure individual lines/color groupings still represent hospital-level variables. 
+```{r}
 
-For example, we could plot `age` separately by `gender` by specifying `gender` as a `facet_var`. Since there are not many encounters with gender = `"O"`, we may want to apply cell suppression to any data points with n < 6 by specifying `min_n = 6`. In our sample data, there is no cell with `gender == "O"` that has at least 6 data points, so no figure for gender = `"0"` is shown at all here:
-
-```{r fig.width = 9}
-plot_hosp_time(
+plot_over_time(
   ipadmdad,
   plot_var = "age",
-  facet_var = "gender",
-  show_overall = TRUE,
+  line_group = "gender", # IMPORTANT: We need to specify "gender" as both a line_group & color_group here
+  color_group = "gender",
+  facet_group = "hospital_type",
+  show_overall = FALSE, 
   min_n = 6
 )
-
-# plot_hosp_time(
-#   ipadmdad,
-#   plot_var = "age",
-#   hosp_var = "gender",
-#   hosp_group = "gender",
-#   time_int = "year",
-#   facet_var = "hospital_num",
-#   show_overall = TRUE,
-#   min_n = 20
-# )
 
 ```
 
 ## Additional inputs for facet plots
 
-If a `facet_var` is provided, users can provide additional input arguments that are passed to `lemon::facet_rep_wrap()` (wrapper for `ggplot2::facet_wrap()`). For example, this allows users to control the number of rows (`nrow`) and columns (`ncol`) in facet plots and whether the scales should be "fixed" (default) or "free". For example, to plot the number of encounters per quarter at each site in a 2 * 6 facet plot where the y-axis can vary across plots:
+If a `facet_group` is provided, users can provide additional input arguments that are passed to `lemon::facet_rep_wrap()` (wrapper for `ggplot2::facet_wrap()`). For example, this allows users to control the number of rows (`nrow`) and columns (`ncol`) in facet plots and whether the scales should be "fixed" (default) or "free". "Free" scales are useful to illustrate within-hospital trends, regardless of between-hospital differences. For example, we may want to visualize the effect of "season" on the encounter numbers (regardless of total number of encounters at each hospital). Here, we plot this in a 2 x 6 facet plot with free y scales:
 
 ```{r fig.width = 15}
-plot_hosp_time(
+plot_over_time(
   ipadmdad,
   func = "n",
-  facet_var = "hospital_num",
-  time_int = "quarter",
+  time_int = "season",
   nrow = 2,
   scales = "free_y"
 ) 
@@ -390,14 +380,13 @@ plot_hosp_time(
 
 Note that if you additionally specify a `ylimits` input, this will overwrite `scales = "free"` as it will fix all y-limits to the specified range: 
 ```{r fig.width = 15}
-plot_hosp_time(
+plot_over_time(
   ipadmdad,
   func = "n",
-  facet_var = "hospital_num",
-  time_int = "quarter",
+  time_int = "season",
   nrow = 2,
   scales = "free_y", # does not work because ylimits are specified
-  ylimits = c(100, 300) # will fix y-limits in all plots to this range
+  ylimits = c(800, 1200) # will fix y-limits in all plots to this range
 )
 ```
 
@@ -407,9 +396,9 @@ plot_hosp_time(
 There might be situations where users want the function to return the aggregated data, instead of plotting the results. This could be useful for debugging purposes, checking for outliers, or to further process the data before plotting the results. This can easily be achieved by specifying `return_data = TRUE`:
 
 ```{r}
-res <- plot_hosp_time(
+res <- plot_over_time(
   ipadmdad,
-  hosp_group = "hospital_type",
+  color_group = "hospital_type",
   func = "median",
   plot_var = "age",
   return_data = TRUE
@@ -423,7 +412,7 @@ knitr::kable(head(res[[1]]))
 ```
 
 
-The 2nd list entry corresponds to the overall results (see thick line in plots above), i.e., data aggregated by time and grouping variable (if any), such as `hospital_type` in this example:
+The 2nd list entry corresponds to the overall results (i.e., thick summary line in plots above), i.e., data aggregated by time and grouping variable (if any), such as `hospital_type` in this example:
 ```{r}
 knitr::kable(head(res[[2]]))
 ```
