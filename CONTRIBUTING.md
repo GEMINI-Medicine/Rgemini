@@ -18,11 +18,14 @@ We welcome contributions to `Rgemini` by all GEMINI team members. To submit a co
 
 8. Note that any new package data should be saved as a `.rda` file in the `data/` directory, and should be documented with `roxygen` in `data.R`.
 
-9. Submit a [pull request](https://help.github.com/articles/using-pull-requests) into the `develop` branch.
+9. Function derived from journal article publications requiring citations upon use (e.g. clinical scores) should include a `references` section in `roxygen`. The citation format is: `1st_author_last_name 1st_author_initial, et al. Journal Abbreviation, Year. https://doi.org/xxxx.`. URLs should be presented as-is without hyperlinking and DOI URLs should be used whenever possible. Note that commonly known online resources (e.g. links CIHI documentations, data dictionary) might not require a `references` section and can be included as hyperlinks in any `roxygen` section.
 
-10. Ask a team member to review the changes (see guidelines for reviewers below) and implement additional changes based on the reviewer's feedback.
+10. Submit a [pull request](https://help.github.com/articles/using-pull-requests) into the `develop` branch.
 
-11. Once the reviewer has approved the pull request, squash all commits and merge the branch into `develop`, close the issue, and delete the branch you developed on.
+11. Ask a team member to review the changes (see guidelines for reviewers below) and implement additional changes based on the reviewer's feedback.
+
+12. Once the reviewer has approved the pull request, squash all commits (confirm the PR # is referenced in the squash commit message) and merge the branch into `develop`, close the issue, and delete the branch you developed on.
+
 
 
 # Reviewing code
@@ -51,21 +54,23 @@ At least one person should review the pull request into `master` and should run 
 
 1. Check whether there are any changes on `master` that are not yet on `develop`. If yes, merge `master` into `develop`. 
 
-2. Make sure all changes on `develop` are summarized in `NEWS.md`. 
+2. Make sure all changes on `develop` are summarized in `NEWS.md`.
 
-3. Decide on a new version number based on the guidelines [here](https://github.com/GEMINI-Medicine/Rgemini#package-versions).
+3. If new functions have been added, make sure they are listed in `_pkgdown.yml`. 
 
-4. Update the version number in the `NEWS.md` and `DESCRIPTION` files.
+4. Decide on a new version number based on the guidelines [here](https://github.com/GEMINI-Medicine/Rgemini#package-versions).
 
-5. Run `devtools::document()` in R to make sure all documentation is up to date.
+5. Update the version number in the `NEWS.md` and `DESCRIPTION` files.
 
-6. Run `rcmdcheck::rcmdcheck()` or `devtools::check()` and make sure no errors or warnings are returned.    
+6. Run `devtools::document()` in R to make sure all documentation is up to date.
 
-7. If everything looks good, approve the pull request and merge `develop` into `master`.
+7. Run `rcmdcheck::rcmdcheck()` or `devtools::check()` and make sure no errors or warnings are returned.    
 
-8. Add a new tag to the repository corresponding to the updated version number. 
+8. If everything looks good, approve the pull request and merge `develop` into `master` (without squashing commits).
 
-9. Notify the team about the updated version. Ideally, all members should immediately update to the newest version of `Rgemini`.
+9. Add a new tag to the repository corresponding to the updated version number. 
 
-10. Update for HPC4Health users: Please submit a request on the [HPC4Health File Transfer Log](https://app.smartsheet.com/sheets/p7P77qF97wcxgr2V4Cr6Vjqw3vjhCpRMQQH3Jwm1).
+10. Notify the team about the updated version. Ideally, all members should immediately update to the newest version of `Rgemini`.
+
+11. Update for HPC4Health users: Please submit a request on the [HPC4Health File Transfer Log](https://app.smartsheet.com/sheets/p7P77qF97wcxgr2V4Cr6Vjqw3vjhCpRMQQH3Jwm1).
 The systems team will then transfer the updated package to Nexus, allowing HPC4Health users to install the newest version of `Rgemini`.

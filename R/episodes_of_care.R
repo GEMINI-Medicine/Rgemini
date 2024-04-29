@@ -72,7 +72,7 @@
 #' @seealso `vignette("epicare_and_readmission", package = "Rgemini")`
 #'
 #' @references
-#' [CIHI guidelines](https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital)
+#' [CIHI readmission guidelines](https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital)
 #'
 #' @importFrom lubridate ymd_hm
 #'

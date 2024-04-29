@@ -48,34 +48,34 @@
 #'
 sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NULL) {
   switch(source,
-         comorbidity = {
-           comorb <- comorbidity::icd10_2011 %>% as.data.table()
-           if (!is.null(pattern)) {
-             comorb <- comorb[grepl(toupper(pattern), Code.clean)]
-           }
-           if (nrow(comorb) > 0) {
-             sample(x = comorb$Code.clean, size = n, replace = TRUE)
-           } else {
-             stop("No matching diagnoses found for the specified pattern")
-           }
-         },
-         icd_lookup = {
-           if (!is.null(dbcon)) {
-             lookup <- RPostgreSQL::dbGetQuery(dbcon, "SELECT diagnosis_code  FROM lookup_icd10_ca_description where type != 'category'") %>% as.data.table()
+    comorbidity = {
+      comorb <- comorbidity::icd10_2011 %>% as.data.table()
+      if (!is.null(pattern)) {
+        comorb <- comorb[grepl(toupper(pattern), Code.clean)]
+      }
+      if (nrow(comorb) > 0) {
+        sample(x = comorb$Code.clean, size = n, replace = TRUE)
+      } else {
+        stop("No matching diagnoses found for the specified pattern")
+      }
+    },
+    icd_lookup = {
+      if (!is.null(dbcon)) {
+        lookup <- RPostgreSQL::dbGetQuery(dbcon, "SELECT diagnosis_code  FROM lookup_icd10_ca_description where type != 'category'") %>% as.data.table()
 
-             if (!is.null(pattern)) {
-               lookup <- lookup[grepl(toupper(pattern), diagnosis_code)]
-             }
+        if (!is.null(pattern)) {
+          lookup <- lookup[grepl(toupper(pattern), diagnosis_code)]
+        }
 
-             if (nrow(lookup) > 0) {
-               sample(x = lookup$diagnosis_code, size = n, replace = TRUE)
-             } else {
-               stop("No matching diagnoses found for the specified pattern")
-             }
-           } else {
-             stop("Invalid input for 'dbcon' argument. Database connection is required for sampling from `lookup_icd10_ca_to_ccsr` table\n")
-           }
-         }
+        if (nrow(lookup) > 0) {
+          sample(x = lookup$diagnosis_code, size = n, replace = TRUE)
+        } else {
+          stop("No matching diagnoses found for the specified pattern")
+        }
+      } else {
+        stop("Invalid input for 'dbcon' argument. Database connection is required for sampling from `lookup_icd10_ca_to_ccsr` table\n")
+      }
+    }
   )
 }
 
@@ -180,8 +180,8 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
     df2 <- data.table(
       genc_id = sample(1:nid, size = (nrow - nid), replace = TRUE),
       diagnosis_type = sample(c("1", "2", "3", "4", "5", "6", "9", "W", "X", "Y"),
-                              size = (nrow - nid), replace = TRUE,
-                              prob = c(0.43, 0.07, 0.40, 0.005, 0.0002, 0.002, 0.07, 0.02, 0.0006, 0.00003)
+        size = (nrow - nid), replace = TRUE,
+        prob = c(0.43, 0.07, 0.40, 0.005, 0.0002, 0.002, 0.07, 0.02, 0.0006, 0.00003)
       )
     )
   }
@@ -248,7 +248,7 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 #' up pseudo-randomly between hospitals to ensure roughly equal sample size at
 #' each hospital.
 #'
-#' @param fisc_years (`numeric`)\cr
+#' @param time_period (`numeric`)\cr
 #' A numeric vector containing the time period, specified as fiscal years
 #' (starting in April each year). For example, `c(2015, 2019)` generates data
 #' from 2015-04-01 to 2020-03-31.
@@ -335,7 +335,7 @@ dummy_ipadmdad <- function(n = 1000,
 
     random_datetime <- format(
       as.POSIXct(runif(length(year), as.POSIXct(start_date), as.POSIXct(end_date)),
-                 origin = "1970-01-01"
+        origin = "1970-01-01"
       ),
       format = "%Y-%m-%d %H:%M"
     )

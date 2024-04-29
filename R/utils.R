@@ -36,95 +36,6 @@ NULL
 }
 
 
-#' @title
-#' Number of missingness
-#'
-#' @description
-#' This function checks number of missingness in a `vector`, or a `data.frame`
-#' or `data table`. It returns the results in exact number (percentage) or
-#' returns the index of missingness
-#'
-#' @param x (`vector` or `data.frame` or `data.table`)
-#' the object to be checked
-#'
-#' @param na_strings (`character`)
-#' a character vector of strings which are to be interpreted as `NA` values.
-#' The default for `n_missing` is "", which will treat empty strings as `NA`.
-#'
-#' @param index (`logical`)
-#' If true the function returns the index of the missing values instead of the
-#' number (percentage). For `vector` input, a logical vector of same length will
-#' be returned. For `data.frame` or `data.table` input, the function returns a
-#' vector with length equal to the number of rows of input table and any
-#' missingness in the row will result in a returned value of `TRUE` for the row.
-#'
-#' @return (`character` or `logical`)
-#' For `vector` input, a `character` vector the same length of `x` where
-#' each value represents whether that particular element is missing.
-#' For `data.frame` or `data.table` input, a `logical` vector of which the
-#' length is the number of rows of input table and each value represents
-#' whether any element of the row is missing.
-#'
-#' @export
-#'
-#' @examples
-#' df <- data.frame(
-#'   x = c(1, 2, NA, 4, 5),
-#'   y = as.POSIXct(c("2023-12-01 15:00", "2021-07-09 19:30", "2020-01-02 09:00",
-#'                    "1998-08-23 15:23", NA)),
-#'   z = c("NA", NA, "a", " ", ""),
-#'   v = as.Date(c("2023-10-23", "2012-06-30", NA, "2023-08-12", "2009-01-01"))
-#' )
-#' n_missing(df)
-#' n_missing(df$z)
-#' n_missing(df, na_strings = c("", "NA", " "))
-#' n_missing(df$z, index = TRUE)
-#' n_missing(df, na_strings = c("", "NA", " "), index = TRUE)
-#'
-n_missing <- function(x, na_strings = c(""), index = FALSE) {
-
-  ##### Define function to identify missingness in vector ######
-  is_missing <- function(x, na_strings) {
-    return(is.na(x) | x %in% na_strings)
-  }
-
-  ## Define function to count missingness in vector ###
-  count_missing <- function(x, na_strings) {
-    len_missing <- sum(is_missing(x, na_strings = na_strings))
-    len_x <- length(x)
-    return(
-      paste0(
-        len_missing,
-        " (",
-        sprintf(paste0("%.", 1, "f"), len_missing / len_x * 100),
-        "%)"
-      )
-    )
-  }
-
-  ## Compute number of missingness or index
-  if (any(class(x) %in% c("data.frame", "data.table"))) {
-    if (index) {
-      return(Reduce(`|`, lapply(x, is_missing, na_strings = na_strings)))
-    } else {
-      return(apply(x, length(dim(x)), count_missing, na_strings = na_strings))
-    }
-  } else {
-    if (index) {
-      return(is_missing(x, na_strings = na_strings))
-    } else {
-      return(count_missing(x, na_strings = na_strings))
-    }
-  }
-
-}
-
-
-#' @rdname n_missing
-#' @export
-#'
-mi2 <- n_missing
-
 
 #' @title
 #' Returns number of unique values
@@ -165,10 +76,7 @@ coerce_to_datatable <- function(data) {
 
   if (!is.data.table(data)) {
     data <- as.data.table(data)
-    warning(var,
-      " was passed as a data.frame and has been coerced to a data.table",
-      immediate. = TRUE
-    )
+    warning(var, " was passed as a data.frame and has been coerced to a data.table.\n", immediate. = TRUE)
   }
   return(data)
 }
@@ -255,7 +163,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
       # for lab & transfusion table table:
       # check for specific table names lab/lab_subset and transfusion/transfusion_subset
       # (otherwise, lab/transfusion_mapping or other tables might be returned)
-      res <- table_names[table_names %in% c(table, paste0(table, "subset"))]
+      res <- table_names[table_names %in% c(table, paste0(table, "_subset"))]
     } else {
       # for all other tables, simply search for names starting with search term
       res <- table_names[grepl(paste0("^", drm_table), table_names)]
@@ -654,10 +562,10 @@ check_input <- function(arginput, argtype,
       # only show first column where incorrect type was found (if any)
       # ignore coltypes without specification ("")
       check_col_type <- function(col, coltype) {
-        if (coltype != "" && !grepl(coltype,
+        if (coltype != "" && !any(grepl(coltype,
           class(as.data.table(arginput)[[col]]),
           ignore.case = TRUE
-        )) {
+        ))) {
           stop(
             paste0(
               "Invalid user input in '", as.character(sys.calls()[[1]])[1],
@@ -697,14 +605,27 @@ check_input <- function(arginput, argtype,
 
 
 #' @title
-#' Fix variable strings
+#' Mapping Message
 #'
 #' @description
-#' Removes any "_" from variable names and applies title case capitalization.
+#' Message to display to inform the user that the function being used relies on
+#' GEMINI SME mapped values.
 #'
-#' @param str (`character`)
-#' Character string to be cleaned up
+#' @param what (`character`)\cr
+#' Which values were mapped.
 #'
-fix_var_str <- function(str) {
-  str <- tools::toTitleCase(gsub("[_.]", " ", str))
+#' @param addtl (`character`)\cr
+#' An additional, specific message to append to the generic message.
+#'
+#' @return
+#' Prints a message to the console.
+#'
+mapping_message <- function(what, addtl = NULL) {
+  msg <- paste(
+    "\n***Note:***\nThe output of this function is based on manual mapping of", what, "by a GEMINI Subject Matter Expert.\n",
+    "Please carefully check mapping coverage for your cohort of interest, or contact the GEMINI team if you require additional support.\n",
+    addtl
+  )
+
+  cat(msg)
 }
