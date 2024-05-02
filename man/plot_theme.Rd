@@ -5,7 +5,7 @@
 \title{GEMINI plot theme}
 \usage{
 plot_theme(
-  base_size = 14,
+  base_size = 12,
   base_family = "",
   show_grid = FALSE,
   aspect_ratio = 1,
@@ -23,22 +23,11 @@ plot_theme(
 Aspect ratio of plot}
 
 \item{...}{\cr
-Additional arguments passed to \code{ggplot2::facet_wrap()} (if a \code{facet_group} is
-specified).}
+Additional arguments passed to \code{theme()}.}
 }
 \value{
 ggplot with specified theme
 }
 \description{
 Common theme that can be applied to any ggplot object
-}
-\references{
-https://emanuelaf.github.io/own-ggplot-theme.html
-https://ggplot2.tidyverse.org/reference/theme.html
-https://rpubs.com/mclaire19/ggplot2-custom-themes
-https://themockup.blog/posts/2020-12-26-creating-and-using-custom-ggplot2-themes/
-https://stackoverflow.com/questions/34522732/changing-fonts-in-ggplot2
-http://www.cookbook-r.com/Graphs/Fonts/
-https://github.com/wch/extrafont
-https://github.com/koundy/ggplot_theme_Publication
 }

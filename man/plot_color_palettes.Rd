@@ -4,12 +4,15 @@
 \alias{plot_color_palettes}
 \title{Plot GEMINI color palettes}
 \usage{
-plot_color_palettes(palettes = NULL)
+plot_color_palettes(plot_palettes = "all")
 }
 \arguments{
-\item{palettes}{(\code{character} or \code{numeric})\cr
+\item{plot_palettes}{(\code{character} or \code{numeric})\cr
 Which palettes to plot. By default, plots all palettes.}
 }
 \description{
 Plots all available GEMINI color palettes.
+}
+\seealso{
+\code{vignette("plotting_functions", package = "Rgemini")}
 }

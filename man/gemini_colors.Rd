@@ -4,12 +4,16 @@
 \alias{gemini_colors}
 \title{GEMINI colors}
 \usage{
-gemini_colors(palette = "rainbow")
+gemini_colors(palette = "GEMINI Rainbow")
 }
 \arguments{
 \item{palette}{(\code{character} or \code{numeric})\cr
-Name or index of color palette. Run \code{plot_color_palettes} to see options.}
+Name or index of color palette. Run \code{plot_color_palettes} to see options. By
+default, the first palette ("GEMINI Rainbow") is returned.}
 }
 \description{
 Defines various color palettes for plotting purposes.
+}
+\seealso{
+\code{vignette("plotting_functions", package = "Rgemini")}
 }

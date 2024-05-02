@@ -18,7 +18,7 @@ plot_over_time(
   line_width = 1,
   ylimits = NULL,
   min_n = 0,
-  colors = gemini_colors(),
+  colors = gemini_colors(1),
   return_data = FALSE,
   ...
 )
