@@ -124,20 +124,20 @@ gemini_colors <- function(palette = "GEMINI Rainbow") {
     ),
     
     "Mellow Medley" = c(
-      "#022061", # GEMINI navy
-      "#86b9b0",
+      "#022061", # GEMINI navy 
+      "#86b9b0", 
       "#c266a7",
       "#6D6D6D" ,
       "#197BBD"
     ),
     
     "Lavender Lagoon" = c( # Rustic Ripple
-      "#18696B",
+      "#28797B",
       "#947EB0", 
-      "#007DC5",
+      "#61A2DA",
       "#DDAE7E",
       "#913136",
-      "#0D1821"
+      "#022061" # GEMINI navy 
     ),
     
     "Bubblegum Burst" = c(
