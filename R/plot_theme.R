@@ -10,26 +10,15 @@
 #' @param aspect_ratio (`numeric`)\cr
 #' Aspect ratio of plot
 #' @param ... \cr
-#' Additional arguments passed to `ggplot2::facet_wrap()` (if a `facet_group` is
-#' specified).
+#' Additional arguments passed to `theme()`.
 #' @import ggplot2
-#' @import grid
 #' @import ggthemes
-#'
-#' @references
-#' https://emanuelaf.github.io/own-ggplot-theme.html
-#' https://ggplot2.tidyverse.org/reference/theme.html
-#' https://rpubs.com/mclaire19/ggplot2-custom-themes
-#' https://themockup.blog/posts/2020-12-26-creating-and-using-custom-ggplot2-themes/
-#' https://stackoverflow.com/questions/34522732/changing-fonts-in-ggplot2
-#' http://www.cookbook-r.com/Graphs/Fonts/
-#' https://github.com/wch/extrafont
-#' https://github.com/koundy/ggplot_theme_Publication
 #'
 #' @return
 #' ggplot with specified theme
 #'
 #' @export
+#' 
 plot_theme <- function(
     base_size = 12,
     base_family = "",
@@ -107,7 +96,9 @@ plot_theme <- function(
 #' Name or index of color palette. Run `plot_color_palettes` to see options. By
 #' default, the first palette ("GEMINI Rainbow") is returned. 
 #'
-#' @import ggplot2 lemon ggpubr
+#' @seealso `vignette("plotting_functions", package = "Rgemini")`
+#' 
+#' @export
 #'
 gemini_colors <- function(palette = "GEMINI Rainbow") {
   
@@ -241,10 +232,12 @@ gemini_colors <- function(palette = "GEMINI Rainbow") {
 #' @param plot_palettes (`character` or `numeric`)\cr
 #' Which palettes to plot. By default, plots all palettes.
 #'
-#' @import ggplot2 ggpubr
+#' @import ggplot2
+#' @importFrom ggpubr ggarrange
+#' @seealso `vignette("plotting_functions", package = "Rgemini")`
 #'
-#'
-# Function to plot multiple color palettes
+#' @export
+#' 
 plot_color_palettes <- function(plot_palettes = "all") {
 
   palettes <- as.list(gemini_colors(plot_palettes))

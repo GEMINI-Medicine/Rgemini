@@ -35,7 +35,6 @@ knitr::opts_chunk$set(
 library(ggplot2)
 library(ggpubr)
 library(lemon)
-library(grid)
 library(ggthemes)
 library(ggpubr)
 library(scales)
