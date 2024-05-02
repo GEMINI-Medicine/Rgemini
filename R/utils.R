@@ -629,3 +629,20 @@ mapping_message <- function(what, addtl = NULL) {
 
   cat(msg)
 }
+
+
+
+#' @title
+#' Fix variable strings
+#'
+#' @description
+#' Removes any "_" from variable names and applies title case capitalization.
+#' This is currently used for axis labels/titles in plotting functions.
+#'
+#' @param str (`character`)
+#' Character string to be cleaned up
+#'
+fix_var_str <- function(str) {
+  str <- tools::toTitleCase(gsub("[_.]", " ", str))
+}
+  
