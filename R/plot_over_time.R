@@ -107,7 +107,7 @@ plot_over_time <- function(
     line_width = 1,
     ylimits = NULL,
     min_n = 0,
-    colors = gemini_colors(),
+    colors = gemini_colors(1),
     return_data = FALSE,
     ...) {
 
@@ -356,8 +356,9 @@ plot_over_time <- function(
         linewidth = line_width,
         alpha = ifelse(show_overall && ((is.null(facet_group) ||
                                            ((!is.null(facet_group) && !is.null(line_group) && (facet_group != line_group)) &&
-                                              (is.null(color_group) ||
-                                                 ((!is.null(color_group) && !is.null(line_group) && (color_group != line_group)))))) && length(unique(res[[line_group]])) > 1), 0.2, 1),
+                                              (is.null(color_group) || ((!is.null(color_group) && !is.null(line_group) && (color_group != line_group)))
+                                            ))) && 
+                                                 length(unique(res[[line_group]])) > 1), 0.2, 1),
         show.legend = (!is.null(color_group) &&
                          (is.null(facet_group) || ((!is.null(facet_group) && color_group != facet_group)) ||
                             ((!is.null(facet_group) && !is.null(line_group) && line_group == facet_group))))
@@ -372,7 +373,7 @@ plot_over_time <- function(
 
     ## Add overall summary lines
     # Note: If only a single site is included, overall line/legend will not be shown
-    if (show_overall == TRUE && (is.null(line_group) || length(unique(res[[line_group]])) > 1)) { #
+    if (show_overall == TRUE && (is.null(line_group) || length(unique(res[[line_group]])) > 1)) { 
       fig <- fig +
         geom_line(data = res_overall,
                   aes(x = get(time_int), y = outcome,

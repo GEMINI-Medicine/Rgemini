@@ -68,7 +68,7 @@ plot_summary <- function(data,
   # by default, plot all variables, except for patient/hospital identifiers or date-times
   if (is.null(plot_vars)) {
     plot_vars <- colnames(data)[
-      !grepl("genc_id|patient_id|hospital_id|hospital_num|_date|_time", colnames(data), ignore.case = TRUE)
+      !grepl("genc_id|patient_id|cpso|hospital_id|hospital_num|_date|_time", colnames(data), ignore.case = TRUE)
     ]
   }
 
@@ -102,8 +102,7 @@ plot_summary <- function(data,
 
     ## always exclude missing values (not included in plot/summary statistics)
     data <- data[!n_missing(data[[var$plot_var]], index = TRUE),]
-
-
+    
     ## for continuous/numeric variables
     if (any(var$class %in% c("numeric", "integer"),
             is.null(var$class) && class(data[[var$plot_var]]) %in% c("numeric", "integer"))) {
@@ -156,18 +155,27 @@ plot_summary <- function(data,
         sub_fig <- sub_fig +
           geom_text(stat = "count", aes(label = percent(round(..count.. / sum(..count..), digits = 3))),
                     vjust = -0.4, size = base_size/5, hjust = 0.5) +
-          labs(subtitle = paste0("Missing: ", missing, "\n "))
+          labs(subtitle = paste0("Missing: ", missing, "\n\n "))
       }
-
+      
     }
 
+    ## Apply labels & theme
     sub_fig <- sub_fig +
       xlab(var$plot_var) + labs(title = var$varlabel) +
       scale_y_continuous(name = if (prct == TRUE) "p" else "count",
                          labels = if (prct == TRUE) percent else rescale_none,
                          expand = expansion(mult = c(0, 0.1))) +
       plot_theme(base_size = base_size)
-
+    
+    
+    ## if more than 10 x-tick labels, add angle for better visibility
+    if (length(ggplot_build(sub_fig)$layout$panel_params[[1]]$x$breaks) > 10) {
+      sub_fig <- sub_fig + 
+        theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
+              #plot.margin = margin(1.5, 1.5, 0, 0, "lines")
+              )
+    }
 
     return(sub_fig)
   }
