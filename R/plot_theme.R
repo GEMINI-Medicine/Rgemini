@@ -31,7 +31,7 @@
 #'
 #' @export
 plot_theme <- function(
-    base_size = 14,
+    base_size = 12,
     base_family = "",
     show_grid = FALSE,
     aspect_ratio = 1,
@@ -104,39 +104,52 @@ plot_theme <- function(
 #' Defines various color palettes for plotting purposes.
 #'
 #' @param palette (`character` or `numeric`)\cr
-#' Name or index of color palette. Run `plot_color_palettes` to see options.
+#' Name or index of color palette. Run `plot_color_palettes` to see options. By
+#' default, the first palette ("GEMINI Rainbow") is returned. 
 #'
 #' @import ggplot2 lemon ggpubr
 #'
-gemini_colors <- function(palette = "rainbow") {
-
-
-  if (palette == "rainbow1") {
-    cols <- c(
+gemini_colors <- function(palette = "GEMINI Rainbow") {
+  
+  palettes <- list(
+    
+    "GEMINI Rainbow" = c(
       "#022061", # GEMINI navy
       "#02B0F1", # GEMINI cyan
       "#4CAF50",
       "#F3A924",
       "#A6361C",
-      "#7B68EE", #"#92278F" "#6252c6" "#7B68EE""
+      "#7B68EE",
       "#9b9b9b"
-    )
-  }
-
-  if (palette == "rainbow2") {
-    cols <- c(
-      "#0F1115",
+    ),
+    
+    "Shadowed Spectrum" = c(
+      "#1A1C20",
       "#5a78a9",
       "#7b9e6e",
       "#BD443B",
       "#EDAE49",
-      "#8E527A"
-    )
-  }
-
-
-  if (palette == "bubblegum") {
-    cols <- c(
+      "#826088" 
+    ),
+    
+    "Mellow Medley" = c(
+      "#022061", # GEMINI navy
+      "#86b9b0",
+      "#c266a7",
+      "#6D6D6D" ,
+      "#197BBD"
+    ),
+    
+    "Lavender Lagoon" = c( # Rustic Ripple
+      "#18696B",
+      "#947EB0", 
+      "#007DC5",
+      "#DDAE7E",
+      "#913136",
+      "#0D1821"
+    ),
+    
+    "Bubblegum Burst" = c(
       "#022061", # GEMINI navy
       "#2f5bb1",
       "#00b1f3", # GEMINI cyan
@@ -146,25 +159,9 @@ gemini_colors <- function(palette = "rainbow") {
       "#92278F",
       "#c29aeb",
       "#f4ccff"
-    )
-  }
+    ),
 
-
-  if (palette == "basic2") {
-    cols <- c(
-      "#022061", # GEMINI navy
-      "#86b9b0",
-      "#c266a7",
-      "#909090",
-      "#0077B6", #"#61A2DA"
-      "#913136", #"#BD443B"
-      "#18696B" #"#49a7a2"
-    )
-  }
-
-
-  if (palette == "shades1") {
-    cols <-  c(
+    "Navy Gradient" = c(
       "#022061", # GEMINI navy
       "#022A6B",
       "#023576",
@@ -180,12 +177,9 @@ gemini_colors <- function(palette = "rainbow") {
       "#029BDC",
       "#02A6E7",
       "#02B0F1" # GEMINI cyan
-    )
-  }
-
-
-  if (palette == "shades2") {
-    cols <-  c(
+    ),
+    
+    "Twilight Gradient" = c(
       "#022061", # GEMINI navy
       "#1B3671",
       "#354D81",
@@ -203,12 +197,37 @@ gemini_colors <- function(palette = "rainbow") {
       "#8B3339",
       "#7D1A20",
       "#6E0007"
-
     )
+    
+  )
+  
+
+  if (any(palette == "all")) { 
+    # return all color palettes 
+    # (should usually only used when exploring all palettes)
+    cols <- palettes
+  } else {
+    # return user-specified palette
+    if (is.numeric(palette)) {
+      if (palette > length(palettes)) {
+        stop(paste0("There are currently only ", length(palettes), " color palettes available.
+                    Please specify a valid input for argument 'palette'."))
+      } else {
+        cols <- palettes[[palette]]
+      }
+    } else if (is.character(palette)) {
+      # search for entries matching provided input name
+      pal_name <- grepl(palette, names(palettes), ignore.case = TRUE)
+      if (sum(pal_name) == 0) {
+        stop(paste("No color palette called '", palette, "' was found.
+                  Please run `plot_color_palettes()` to explore available palettes."))
+      } else {
+        cols <- palettes[[pal_name]]
+      }
+    }
+
   }
-
-
-
+  
   return(cols)
 }
 
@@ -219,36 +238,25 @@ gemini_colors <- function(palette = "rainbow") {
 #' @description
 #' Plots all available GEMINI color palettes.
 #'
-#' @param palettes (`character` or `numeric`)\cr
+#' @param plot_palettes (`character` or `numeric`)\cr
 #' Which palettes to plot. By default, plots all palettes.
 #'
 #' @import ggplot2 ggpubr
 #'
 #'
 # Function to plot multiple color palettes
-plot_color_palettes <- function(palettes = NULL) {
+plot_color_palettes <- function(plot_palettes = "all") {
 
-  if (is.null(palettes)) {
-    palettes <- c("rainbow1",
-                  "rainbow2",
-                  "bubblegum",
-                  "basic2",
-                  "shades1",
-                  "shades2"
-    )
-  }
-
+  palettes <- as.list(gemini_colors(plot_palettes))
+  
   ## plotting function
-  plot_pal <- function(palette) {
-
-    ## generate palette
-    pal <- gemini_colors(palette)
-
+  plot_pal <- function(palette, pal_name) {
+    
     ## plot palette
-    sub_fig <- ggplot(data.frame(x = as.factor(seq(length(pal), 1))), aes(x = 1, y = 1, fill = x)) +
+    sub_fig <- ggplot(data.frame(x = as.factor(seq(length(palette), 1))), aes(x = 1, y = 1, fill = x)) +
       geom_col(position = position_stack(reverse = TRUE), show.legend = FALSE) +
-      scale_fill_manual(values=gemini_colors(palette)) + coord_flip() +
-      ggtitle(paste0("  ", palette)) +
+      scale_fill_manual(values=palette) + coord_flip() +
+      ggtitle(paste0("  ", pal_name)) +
       theme_void() +
       theme(plot.title = element_text(hjust = 0.5),
             plot.margin = margin(l = .2, r = .2, unit = "npc"))
@@ -257,9 +265,9 @@ plot_color_palettes <- function(palettes = NULL) {
     return(sub_fig)
   }
 
-  ## create figure for each variable
-  sub_figs <- lapply(palettes, plot_pal)
-  fig <- suppressWarnings(ggarrange(plotlist = sub_figs, ncol = 1))#, labels = palettes, hjust = -0.5, vjust = 3))
+  ## create subfigure for each palette 
+  sub_figs <- lapply(names(palettes), function(name) plot_pal(palettes[[name]], name))
+  fig <- suppressWarnings(ggarrange(plotlist = sub_figs, ncol = 1))
 
   return(fig)
 
