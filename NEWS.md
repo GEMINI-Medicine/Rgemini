@@ -1,3 +1,7 @@
+# Rgemini `develop`
+
+* Adds plotting functions `plot_summary`, `plot_over_time`, `plot_theme` and `gemini_colors`
+
 # Rgemini 0.4.2
 
 * Small bug fix in `Rgemini:::find_db_tablename`

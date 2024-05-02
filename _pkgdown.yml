@@ -45,6 +45,13 @@ reference:
   - dummy_ipadmdad
   - dummy_lab
   - sample_icd
+- title: Plotting Functions
+  desc: Functions for common plotting needs.
+- contents:
+  - plot_summary
+  - plot_over_time
+  - plot_theme
+  - gemini_colors
 - title: Mapping files
   desc: Files containing variable mappings.
 - contents:
