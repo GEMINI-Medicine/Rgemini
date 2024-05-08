@@ -126,5 +126,5 @@ By default, returns \code{ggplot} figure. If \code{return_data = TRUE}, returns
 Function plotting a variable of interest over time (and by hospital, or other grouping variables).
 }
 \seealso{
-\code{vignette("plotting_functions", package = "Rgemini")}
+\code{vignette("plotting_data_exploration", package = "Rgemini")}
 }

@@ -32,3 +32,6 @@ ggplot with specified theme
 Common plotting theme that can be applied to any ggplot object. The theme is
 based on \code{ggthemes::theme_foundation()}, with some additional features.
 }
+\seealso{
+\code{vignette("plotting_theme", package = "Rgemini")}
+}

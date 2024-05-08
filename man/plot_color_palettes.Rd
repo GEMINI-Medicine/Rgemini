@@ -14,5 +14,5 @@ Which palettes to plot. By default, plots all palettes.}
 Plots all available GEMINI color palettes.
 }
 \seealso{
-\code{vignette("plotting_functions", package = "Rgemini")}
+\code{vignette("plotting_theme", package = "Rgemini")}
 }

@@ -72,5 +72,5 @@ plot_summary(
 )
 }
 \seealso{
-\code{vignette("plotting_functions", package = "Rgemini")}
+\code{vignette("plotting_data_exploration", package = "Rgemini")}
 }
