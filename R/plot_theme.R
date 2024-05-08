@@ -1,27 +1,34 @@
 #' @title
-#' GEMINI plot theme
+#' Plot theme for ggplots
 #'
 #' @description
-#' Common theme that can be applied to any ggplot object
+#' Common plotting theme that can be applied to any ggplot object. The theme is
+#' based on `ggthemes::theme_foundation()`, with some additional features.
 #'
 #' @param base_size (`numeric`)\cr
-#' @param base_family (`numeric`)\cr
+#' Numeric input specifying the base font size, which will be passed to
+#' `ggthemes::theme_foundation()`.
+#' @param base_family (`character`)\cr
+#' Base font family (e.g., "sans", "mono", "serif"). Run `windowsFonts()` to
+#' check for available options. Input will be passed to
+#' `ggthemes::theme_foundation()`.
 #' @param show_grid (`logical`)\cr
+#' Flag indicating whether to show (major) gridlines.
 #' @param aspect_ratio (`numeric`)\cr
-#' Aspect ratio of plot
+#' Aspect ratio of plot.
 #' @param ... \cr
-#' Additional arguments passed to `theme()`.
+#' Additional arguments passed to `ggplot2::theme()`.
 #' @import ggplot2
-#' @import ggthemes
+#' @importFrom ggthemes theme_foundation
 #'
 #' @return
 #' ggplot with specified theme
 #'
 #' @export
-#' 
+#'
 plot_theme <- function(
     base_size = 12,
-    base_family = "",
+    base_family = "sans",
     show_grid = FALSE,
     aspect_ratio = 1,
     ...
@@ -54,12 +61,8 @@ plot_theme <- function(
         panel.grid.major = if (show_grid) element_line(color = "grey85", linetype = 2) else element_blank(),
         panel.grid.minor = element_blank(),
 
-
         legend.position = "right",
         legend.justification = "center",
-
-        #legend.direction = "horizontal",
-        #legend.box = "vertical",
 
         legend.key = element_rect(colour = NA),
         legend.key.size = unit(.05, "npc"),  # length of legend entry line
@@ -192,7 +195,7 @@ gemini_colors <- function(palette = "GEMINI Rainbow") {
     
   )
   
-
+  
   if (any(palette == "all")) { 
     # return all color palettes 
     # (should usually only used when exploring all palettes)
@@ -208,12 +211,12 @@ gemini_colors <- function(palette = "GEMINI Rainbow") {
       }
     } else if (is.character(palette)) {
       # search for entries matching provided input name
-      pal_name <- grepl(palette, names(palettes), ignore.case = TRUE)
+      pal_name <- grepl(paste0("^", palette), names(palettes), ignore.case = TRUE)
       if (sum(pal_name) == 0) {
         stop(paste("No color palette called '", palette, "' was found.
                   Please run `plot_color_palettes()` to explore available palettes."))
       } else {
-        cols <- palettes[[pal_name]]
+        cols <- palettes[pal_name][[1]]
       }
     }
 
@@ -243,13 +246,13 @@ plot_color_palettes <- function(plot_palettes = "all") {
   palettes <- as.list(gemini_colors(plot_palettes))
   
   ## plotting function
-  plot_pal <- function(palette, pal_name) {
+  plot_pal <- function(palette, pal_name, idx) {
     
     ## plot palette
     sub_fig <- ggplot(data.frame(x = as.factor(seq(length(palette), 1))), aes(x = 1, y = 1, fill = x)) +
       geom_col(position = position_stack(reverse = TRUE), show.legend = FALSE) +
       scale_fill_manual(values=palette) + coord_flip() +
-      ggtitle(paste0("  ", pal_name)) +
+      ggtitle(paste0("  ", idx, ") ", pal_name)) +
       theme_void() +
       theme(plot.title = element_text(hjust = 0.5),
             plot.margin = margin(l = .2, r = .2, unit = "npc"))
@@ -259,7 +262,7 @@ plot_color_palettes <- function(plot_palettes = "all") {
   }
 
   ## create subfigure for each palette 
-  sub_figs <- lapply(names(palettes), function(name) plot_pal(palettes[[name]], name))
+  sub_figs <- lapply(seq_along(palettes), function(idx, name = names(palettes)) plot_pal(palettes[[idx]], name[idx], idx))
   fig <- suppressWarnings(ggarrange(plotlist = sub_figs, ncol = 1))
 
   return(fig)

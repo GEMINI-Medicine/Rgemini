@@ -26,7 +26,7 @@
 #' (default), counts (n) will be shown.
 #'
 #' @param base_size (`numeric`)\cr
-#' Numeric input to determine the base font size for each subplot.
+#' Numeric input defining the base font size (in pts) for each subplot.
 #' By default, the function will automatically determine an appropriate size
 #' depending on the number of subplots (`base_size = 11` if a single subplot).
 #'
