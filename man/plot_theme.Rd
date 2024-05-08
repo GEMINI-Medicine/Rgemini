@@ -2,32 +2,39 @@
 % Please edit documentation in R/plot_theme.R
 \name{plot_theme}
 \alias{plot_theme}
-\title{GEMINI plot theme}
+\title{Plot theme for ggplots}
 \usage{
 plot_theme(
   base_size = 12,
-  base_family = "",
+  base_family = "sans",
   show_grid = FALSE,
   aspect_ratio = 1,
   ...
 )
 }
 \arguments{
-\item{base_size}{(\code{numeric})\cr}
+\item{base_size}{(\code{numeric})\cr
+Numeric input specifying the base font size, which will be passed to
+\code{ggthemes::theme_foundation()}.}
 
-\item{base_family}{(\code{numeric})\cr}
+\item{base_family}{(\code{character})\cr
+Base font family (e.g., "sans", "mono", "serif"). Run \code{windowsFonts()} to
+check for available options. Input will be passed to
+\code{ggthemes::theme_foundation()}.}
 
-\item{show_grid}{(\code{logical})\cr}
+\item{show_grid}{(\code{logical})\cr
+Flag indicating whether to show (major) gridlines.}
 
 \item{aspect_ratio}{(\code{numeric})\cr
-Aspect ratio of plot}
+Aspect ratio of plot.}
 
 \item{...}{\cr
-Additional arguments passed to \code{theme()}.}
+Additional arguments passed to \code{ggplot2::theme()}.}
 }
 \value{
 ggplot with specified theme
 }
 \description{
-Common theme that can be applied to any ggplot object
+Common plotting theme that can be applied to any ggplot object. The theme is
+based on \code{ggthemes::theme_foundation()}, with some additional features.
 }

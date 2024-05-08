@@ -2,10 +2,10 @@
 % Please edit documentation in R/plot_over_time.R
 \name{plot_over_time}
 \alias{plot_over_time}
-\title{Plot results over time}
+\title{Plot variable over time}
 \usage{
 plot_over_time(
-  cohort,
+  data,
   plot_var = NULL,
   time_var = "discharge_date_time",
   line_group = "hospital_num",
@@ -15,28 +15,29 @@ plot_over_time(
   func = "mean",
   plot_cat = NULL,
   show_overall = TRUE,
+  smooth_method = NULL,
   line_width = 1,
   ylimits = NULL,
   min_n = 0,
   colors = gemini_colors(1),
+  base_size = 12,
   return_data = FALSE,
   ...
 )
 }
 \arguments{
-\item{cohort}{(\code{data.frame | data.table})\cr
-A table containing the relevant cohort data to be plotted.}
+\item{data}{(\code{data.frame | data.table})\cr
+A table containing the relevant data to be plotted.}
 
 \item{plot_var}{(\code{character})\cr
-The name of the variable we wish to plot}
+The name of the outcome variable to plot.}
 
 \item{time_var}{(\code{character})\cr
-The name of the variable specifying time. Typically "discharge_date_time".}
+The name of the variable specifying time. By default: \code{"discharge_date_time"}.}
 
 \item{line_group}{(\code{character})\cr
-Grouping variable representing individual lines By default:
-\code{"hospital_num"} (unless \code{"hospital_num"} does not exist, in which case the
-function will check for existence of \code{"hospital_id"} instead).}
+Grouping variable representing individual lines. By default: \code{"hospital_num"} (unless
+\code{"hospital_num"} does not exist, in which case the function will check for \code{"hospital_id"} instead).}
 
 \item{color_group}{(\code{character})\cr
 Grouping variable used for color coding.}
@@ -45,9 +46,8 @@ Grouping variable used for color coding.}
 Grouping variable specifying facet plots.}
 
 \item{time_int}{(\code{character})\cr
-Time interval to plot by (x-axis intervals). Currently, the function can
-automatically calculate any of the following time intervals for any date-time
-variables:
+Time interval used for plotting (i.e., x-axis intervals). Currently, the function can automatically
+calculate any of the following time intervals for any date-time variables:
 \itemize{
 \item "month" (default)
 \item "quarter"
@@ -56,75 +56,74 @@ variables:
 \item "season"
 }
 
-For any other custom time intervals (e.g., weeks), users can calculate the
-desired time interval prior to running this function. As long as this custom
-time variable exists in the \code{cohort} input, users can then specify this
-variable as the \code{time_int} input. For example, users could derive a weekly
-time variable called \code{"week"} in their \code{cohort} table, and
-then specify \code{time_int = "week"}.
-If \code{time_var} is equal to any of \code{c("month", "quarter", "year", "fisc_year")}
-and there is a user-provided variable of that same name in the \code{cohort}
-input, the function will default to the variable that exists in the user-
-provided input.}
+For any other custom time intervals (e.g., weeks), users can calculate the desired time interval prior
+to running this function. As long as this custom time variable exists in the \code{data} input, users can
+then specify this variable as the \code{time_int} input. For example, users could derive a weekly time
+variable called \code{"week"} in their \code{data} table, and then specify \code{time_int = "week"}.
+If \code{time_var} is equal to any of \code{c("month", "quarter", "year", "fisc_year")} and there is a user-
+provided variable of that same name in the \code{data} input, the function will default to the variable
+that exists in the user-provided input.}
 
 \item{func}{(\code{character})\cr
-The summary function used to aggregate data by time & hospital. Has to be one
-of the following:
+The summary function used to aggregate data by time & hospital. Has to be one of the following:
 \itemize{
 \item "mean" (default)
 \item "median"
-\item "\%" or "prct"/"perc" (for categorical variables), users also need to specify
-\code{plot_cat} to specify which category to plot the percentage of (see below)
+\item "\%" or "prct"/"perc" (for categorical variables), users also need to specify \code{plot_cat} to
+specify which category to plot the percentage of (see below)
 \item "n" or "count" to plot the count of rows per hospital/time period
 \item "missing" or "na"
 }}
 
-\item{plot_cat}{Required when \code{func = "\%"} and/or when plotting categorical/factor variables.
-Users need to specify the level of any categorical variables to be plotted.
-For example, to plot the percentage of female encounters, \code{plot_cat = "F"}.
-Multiple categories can be provided as a vector, e.g., to plot all non-male
-encounters: \code{plot_cat = c("F", "O")}. If no \code{plot_cat} is specified, the
-function will sort the unique entries of the specified \code{plot_var} and plot
-the percentage of rows matching the highest value (e.g., for logical
+\item{plot_cat}{Required when \code{func = "\%"} and/or when plotting categorical/factor variables. Users need to specify the
+level of any categorical variables to be plotted. For example, to plot the percentage of female
+encounters, \code{plot_cat = "F"}.
+Multiple categories can be provided as a vector, e.g., to plot all non-male encounters:
+\code{plot_cat = c("F", "O")}. If no \code{plot_cat} is specified, the function will sort the unique entries of
+the specified \code{plot_var} and plot the percentage of rows matching the highest value (e.g., for logical
 variables, \verb{\% TRUE} will be plotted by default).
-\code{plot_cat} can also be used for numeric variables, e.g., \code{plot_cat = 0} to
-plot encounters with Charlson Comorbidity Index = 0.}
+\code{plot_cat} can also be used for numeric variables, e.g., \code{plot_cat = 0} to plot encounters with Charlson
+Comorbidity Index = 0.}
 
 \item{show_overall}{(\code{logical})\cr
-Flag indicating whether to plot thick line representing overall value across
-hospitals.}
+Flag indicating whether to plot thick line representing overall value across hospitals.}
+
+\item{smooth_method}{(\code{character})\cr
+Character specifying which smoothing method to apply (if any). By default, this is set to \code{NULL} (i.e.,
+no smoothing applied). If users specify a method (e.g., \code{smooth_method = "glm"}), individual data
+points will be shown as dots and the smoothed time trend will be shown as a line.}
 
 \item{line_width}{(\code{numeric})\cr
 Width of individual lines. Summary line will be 2 * line_width.}
 
 \item{ylimits}{(\code{numeric})\cr
-Numeric vector specifying limits for y-axis e.g. \code{c(0, 100)}. To specify only
-the lower/upper limit, use \code{NA} (e.g., \code{c(NA, 100)} to fix upper limit only).}
+Numeric vector specifying limits for y-axis e.g. \code{c(0, 100)}. To specify only the lower/upper limit, use
+\code{NA} (e.g., \code{c(NA, 100)} to fix upper limit only).}
 
 \item{min_n}{(\code{numeric})\cr
-Minimum number of data points required for each hospital * time point
-combination. Data points with cell count < \code{min_n} will be suppressed.}
+Minimum number of data points required for each hospital * time point combination. Data points with cell
+count < \code{min_n} will be suppressed.}
 
 \item{colors}{(\code{character})\cr
 Character vector specifying line color(s).}
 
+\item{base_size}{(\code{numeric})\cr
+Numeric input to determine the base font size for each subplot in pts (default = 12)}
+
 \item{return_data}{(\code{logical})\cr
-Flag indicating whether to return a list of 2 data.tables with aggregated
-data (\link{1} by hospital and \link{2} overall). If \code{FALSE} (default), will return plot.}
+Flag indicating whether to return a list of 2 data.tables with aggregated data (\link{1} by hospital and
+\link{2} overall). If \code{FALSE} (default), will return plot.}
 
 \item{...}{\cr
-If a \code{facet_group} is specified: Additional arguments passed to
-\code{lemon::facet_rep_wrap()} (wrapper for \code{ggplot2::facet_wrap}), e.g.,
-\code{scales = "fixed"} (default) vs. \code{scales = "free"}, \code{nrow}/\code{ncol} etc.}
+If a \code{facet_group} is specified: Additional arguments passed to \code{lemon::facet_rep_wrap()} (wrapper for
+\code{ggplot2::facet_wrap}), e.g., \code{scales = "fixed"} (default) vs. \code{scales = "free"}, \code{nrow}/\code{ncol} etc.}
 }
 \value{
 By default, returns \code{ggplot} figure. If \code{return_data = TRUE}, returns
 \code{data.tables} containing aggregated data.
 }
 \description{
-Function plotting a variable of interest by hospital and over time.
-
-Creates a ggplot of the cohort data across time for a hospital
+Function plotting a variable of interest over time (and by hospital, or other grouping variables).
 }
 \seealso{
 \code{vignette("plotting_functions", package = "Rgemini")}

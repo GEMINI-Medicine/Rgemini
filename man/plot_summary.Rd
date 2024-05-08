@@ -29,7 +29,7 @@ Flag indicating whether y-axis labels should show percentage (\%). If \code{FALS
 (default), counts (n) will be shown.}
 
 \item{base_size}{(\code{numeric})\cr
-Numeric input to determine the base size (e.g., font size) for each subplot.
+Numeric input defining the base font size (in pts) for each subplot.
 By default, the function will automatically determine an appropriate size
 depending on the number of subplots (\code{base_size = 11} if a single subplot).}
 
@@ -38,15 +38,17 @@ Plotting color used for "fill". Default is R's built-in \code{"lightblue"}.}
 
 \item{...}{\cr
 Additional arguments passed to \code{ggpubr::ggarrange()} that allow for finer
-control of subplot arrangement (e.g., \code{ncol}, \code{nrow}, \code{widths}, \code{heights}).}
+control of subplot arrangement (e.g., \code{ncol}, \code{nrow}, \code{widths}, \code{heights},
+\code{align} etc.; see \code{? ggarrange} for more details).}
 }
 \value{
 (\code{ggplot})\cr A ggplot figure with subplots showing histograms/
-barplots for all variables specified in \code{vars}.
+barplots for all variables specified in \code{plot_vars}.
 }
 \description{
-This function plots distributions (histograms/barplots) and basic summary
-statistics (e.g., median \link{Q1, Q3}, \% missing etc.) for multiple variables.
+This function plots distributions (histograms/barplots) and shows basic
+summary statistics (e.g., median \link{Q1, Q3}, \% missing etc.) for multiple
+variables.
 }
 \section{Note}{
 
@@ -59,14 +61,14 @@ of variables, requiring just a single line of code.
 \examples{
 # simulate GEMINI data table
 admdad <- dummy_ipadmdad(
-    n = 10000,
-    n_hospitals = 20,
-    time_period = c(2015, 2022)
+  n = 10000,
+  n_hospitals = 20,
+  time_period = c(2015, 2022)
 )
 
 plot_summary(
-    data = admdad,
-    plot_vars = c("age", "gender", "discharge_disposition")
+  data = admdad,
+  plot_vars = c("age", "gender", "discharge_disposition")
 )
 }
 \seealso{
