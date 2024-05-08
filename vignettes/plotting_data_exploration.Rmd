@@ -438,7 +438,7 @@ plot_over_time(
 
 
 
-### Returning aggregated data {#return_data}
+### `return_data` {#return_data}
 
 There might be situations where users want the function to return the aggregated data, instead of plotting the results. This could be useful for debugging purposes, checking for outliers, or to further process the data before plotting the results (e.g., additional exclusions etc.). It also allows users to plot the aggregated data with other plotting packages/apply further customization to the plots. To retrieve the aggregated data, simply specify `return_data = TRUE`:
 

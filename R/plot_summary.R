@@ -57,7 +57,7 @@
 #'   data = admdad,
 #'   plot_vars = c("age", "gender", "discharge_disposition")
 #' )
-#' @seealso `vignette("plotting_functions", package = "Rgemini")`
+#' @seealso `vignette("plotting_data_exploration", package = "Rgemini")`
 #'
 plot_summary <- function(data,
                          plot_vars = NULL,

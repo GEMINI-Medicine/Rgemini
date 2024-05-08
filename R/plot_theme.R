@@ -23,8 +23,10 @@
 #' @importFrom ggthemes theme_foundation
 #'
 #' @return
+#' 
 #' ggplot with specified theme
-#'
+#' @seealso `vignette("plotting_theme", package = "Rgemini")`
+#' 
 #' @export
 #'
 plot_theme <- function(
@@ -285,7 +287,7 @@ gemini_colors <- function(palette = "GEMINI Rainbow") {
 #'
 #' @import ggplot2
 #' @importFrom ggpubr ggarrange
-#' @seealso `vignette("plotting_functions", package = "Rgemini")`
+#' @seealso `vignette("plotting_theme", package = "Rgemini")`
 #'
 #' @export
 #' 

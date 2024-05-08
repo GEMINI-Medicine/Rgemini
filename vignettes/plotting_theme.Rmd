@@ -8,7 +8,7 @@ output:
     dfprint: kable
 
 vignette: >
-  %\VignetteIndexEntry{Plotting functions}
+  %\VignetteIndexEntry{Plotting theme and colors}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 

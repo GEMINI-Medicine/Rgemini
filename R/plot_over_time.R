@@ -85,7 +85,7 @@
 #' By default, returns `ggplot` figure. If `return_data = TRUE`, returns
 #' `data.tables` containing aggregated data.
 #'
-#' @seealso `vignette("plotting_functions", package = "Rgemini")`
+#' @seealso `vignette("plotting_data_exploration", package = "Rgemini")`
 #'
 #' @export
 #'
