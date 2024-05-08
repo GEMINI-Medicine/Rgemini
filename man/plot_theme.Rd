@@ -4,13 +4,7 @@
 \alias{plot_theme}
 \title{Plot theme for ggplots}
 \usage{
-plot_theme(
-  base_size = 12,
-  base_family = "sans",
-  show_grid = FALSE,
-  aspect_ratio = 1,
-  ...
-)
+plot_theme(base_size = 12, base_family = "sans", show_grid = NULL, ...)
 }
 \arguments{
 \item{base_size}{(\code{numeric})\cr
@@ -22,11 +16,11 @@ Base font family (e.g., "sans", "mono", "serif"). Run \code{windowsFonts()} to
 check for available options. Input will be passed to
 \code{ggthemes::theme_foundation()}.}
 
-\item{show_grid}{(\code{logical})\cr
-Flag indicating whether to show (major) gridlines.}
-
-\item{aspect_ratio}{(\code{numeric})\cr
-Aspect ratio of plot.}
+\item{show_grid}{(\code{character})\cr
+Character inputs specifying whether to show "major" or "minor" grid lines.
+Default is \code{NULL} to not show any grid lines. Both "major" and "minor" grid
+lines can be plotted by providing a character vector, i.e.,
+\code{show_grid = c("major", "minor")}.}
 
 \item{...}{\cr
 Additional arguments passed to \code{ggplot2::theme()}.}

@@ -12,7 +12,7 @@ Name or index of color palette. Run \code{plot_color_palettes} to see options. B
 default, the first palette ("GEMINI Rainbow") is returned.}
 }
 \description{
-Defines various color palettes for plotting purposes.
+Compilation of commonly used color palettes for plotting purposes.
 }
 \seealso{
 \code{vignette("plotting_functions", package = "Rgemini")}
