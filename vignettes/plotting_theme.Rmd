@@ -1,0 +1,175 @@
+---
+title: "Plotting Functions - Themes & Colors"
+output:
+  html_vignette:
+    number_sections: true
+    toc: true
+    toc_depth: 3
+    dfprint: kable
+
+vignette: >
+  %\VignetteIndexEntry{Plotting functions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  include = TRUE, 
+  eval = TRUE, 
+  echo = TRUE, 
+  warning = FALSE, 
+  message = FALSE, 
+  collapse = TRUE,
+  cache = FALSE, 
+  tidy = FALSE,
+  fig.height = 3.5, 
+  fig.width = 3.5,
+  fig.align = "left"
+  
+)
+
+# remove all of these later...
+library(ggplot2)
+library(ggpubr)
+library(ggthemes)
+library(ggpubr)
+library(scales)
+
+source("H:/GitHub/Rgemini/R/plot_theme.R") 
+
+options(knitr.kable.NA = '')
+
+```
+
+
+*  *  *  *
+
+# Introduction
+
+This vignette introduces a standardized plotting theme ([*plot_theme()*](#plot_theme)) and color palettes ([*gemini_colors()*](#gemini_colors)) that users can apply to any ggplot figures they create in their analyses. The goal of these functions is to simplify the process of creating figures with a clean and consistent look. To create publication-ready figures, we recommend that users apply additional customization based on their needs (see section [Other Resources](#resources)]. 
+
+
+*  *  *  *
+
+
+# Plot Theme {#plot_theme}
+
+`Rgemini::plot_theme()` adds a simple theme to any `ggplot2` figures. The theme is based on `ggthemes::theme_foundation()`, with some additional tweaks, and users can easily adjust the theme as needed. By default, `Rgemini::plot_theme()` is applied to all other plotting functions in `Rgemini` (e.g., `plot_summary()` and `plot_over_time()`). 
+
+The following example illustrates the theme applied to a basic barplot. We also use a color palette from `gemini_colors()` here for illustration purposes (see section [Color Palettes](#gemini_colors) for more details):
+
+```{r}
+my_plot <- ggplot(data = data.frame(group = c("A", "B", "C"), mean = c(5, 7, 4)), aes(x = group, y = mean, fill = group)) +
+  geom_bar(stat = "summary", fill = gemini_colors(2)[1:3]) +
+  scale_y_continuous(name = "Mean", expand = c(0, 0)) 
+
+my_plot + ggtitle("Original plot")
+
+my_plot + 
+  plot_theme() + # adds Rgemini::plot_theme
+  ggtitle("Plot with default GEMINI theme")
+```
+
+
+## Additional inputs for `plot_theme`
+
+`plot_theme()` accepts inputs specifying the font size/type (which are passed to `ggthemes::theme_foundation()`). Users can also specify whether to show major/minor grid lines. For example:
+
+```{r}
+my_plot + 
+  plot_theme(base_size = 16, base_family = "mono", show_grid = c("major","minor")) +
+  ggtitle("Mono plot with grid lines")
+```
+
+
+Additionally, `plot_theme()` accepts inputs that can be passed to `ggplot2::theme()`, which allows for further customization (see [here](https://ggplot2.tidyverse.org/reference/theme.html)). For example, to change the angle of the x-tick labels:
+ 
+```{r}
+my_plot + 
+  plot_theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) 
+```
+
+## Overwriting `plot_theme`
+
+If you are specifying inputs for settings that are already defined by `plot_theme()`, you will see an error message saying that the argument was matched by multiple inputs. For example, `plot_theme()` already specifies default characteristics for `plot.title` (`face = "bold"`). Thus, if you try to run the following code to italicize the title, you will see an error message saying:
+
+```{r eval = F}
+my_plot + 
+  plot_theme(plot.title = element_text(face = "italic")) +
+  ggtitle("Plot with additional theme")
+```
+
+`r sprintf(paste0("<span style='color: #c5070c; font-family: Lucida Console'>Error in theme(plot.title = element_text(face = 'bold', size = rel(1),  : formal argument 'plot.title' matched by multiple actual arguments</span>"))`
+
+
+
+To avoid this error, you need to add a separate `ggplot2::theme`, which will overwrite the default characteristics specified by `plot_theme()`:
+
+```{r}
+my_plot + 
+  plot_theme() +
+  theme(plot.title = element_text(face = "italic"), aspect.ratio = 0.75) +
+  ggtitle("Wide plot with itlicized title")
+```
+
+
+ 
+*  *  *  *
+
+# Color Palettes {#gemini_colors}
+
+`Rgemini` includes a few color palettes with some simple options to pick basic colors. To view all color palettes currently included in `Rgemini`, you can run:
+
+```{r fig.width = 8, fig.height = 7}
+plot_color_palettes()
+```
+
+
+Hex values for an individual palette can be obtained by running `gemini_colors()` with a numeric input (e.g., `gemini_colors(4)` for "Lavender Lagoon") or character input that matches the starting character(s) of a given palette (e.g., `gemini_colors("lav")` for "Lavender Lagoon").
+
+For example, to create scatter plot with "Lavender Lagoon" (color palette 4) colors:
+
+```{r}
+data <- data.frame(x = rnorm(50), 
+                   y = rnorm(50), 
+                   group = sample(c("A", "B", "C", "D", "E"), 50, replace = TRUE))
+
+ggplot(data, aes(x = x, y = y, color = group)) +
+  geom_point() +
+  plot_theme() +
+  scale_color_manual(values = gemini_colors(4)) # equivalent to gemini_colors("l")
+
+```
+
+If you only need a small subset of colors, we recommend using a subset of colors from a given palette that's most easily distinguishable. For example, to pick 3 equidistant colors from the "Viridis" palette (generated with `viridis`):
+
+```{r}
+ggplot(data[data$group %in% c("A", "B", "C"), ], aes(x = x, y = y, color = group)) +
+  geom_point() +
+  plot_theme() +
+  scale_color_manual(values = gemini_colors(8)[seq(1, 9, by = 4)])
+```
+
+
+*  *  *  *
+
+
+# Other Resources {#resources}
+
+- ggplot2 vignette for theme specifications: https://ggplot2.tidyverse.org/reference/theme.html
+- a comprehensive guide on ggplot2 & color palettes: https://www.cedricscherer.com/2019/08/05/a-ggplot2-tutorial-for-beautiful-plotting-in-r/
+- ggsci color palettes for scientific journals: https://cran.r-project.org/web/packages/ggsci/vignettes/ggsci.html and https://nanx.me/ggsci/articles/ggsci.html
+- viridis color maps: https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html
+- color brewer: https://r-graph-gallery.com/38-rcolorbrewers-palettes.html
+
+
+<!-- remove border around images -->
+<style>
+img {
+border: 0;
+}
+</style>

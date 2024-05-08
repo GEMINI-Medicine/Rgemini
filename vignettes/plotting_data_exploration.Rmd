@@ -1,5 +1,5 @@
 ---
-title: "Plotting functions"
+title: "Plotting Functions - Easy Plots for Data Exploration"
 output:
   html_vignette:
     number_sections: true
@@ -8,7 +8,7 @@ output:
     dfprint: kable
 
 vignette: >
-  %\VignetteIndexEntry{Plotting functions}
+  %\VignetteIndexEntry{Plotting functions for data exploration}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 
@@ -54,7 +54,7 @@ options(knitr.kable.NA = '')
 
 # Introduction
 
-`Rgemini` contains several functions that facilitate common plotting needs and allow users to create customized figures with just a few lines of code. This vignette focuses on two basic functions for data exploration & descriptive analyses ([*plot_summary()*](#plot_summary) and [*plot_over_time()*](#plot_over_time)). Additionally, this vignette introduces a standardized plotting theme ([*plot_theme()*](#plot_theme)) and color palettes ([*gemini_colors()*](#gemini_colors)) that users can apply to any other ggplot figures they create in their analyses.
+`Rgemini` contains several functions that facilitate common plotting needs and allow users to create customized figures with just a few lines of code. This vignette focuses on two basic functions for data exploration & descriptive analyses: [*plot_summary()*](#plot_summary) and [*plot_over_time()*](#plot_over_time)). These functions are not meant to produce publication-ready figures, but rather, they provide a quick and easy way of facilitating early stages of analyses, such as: Checking variable distributions & missingness, inspecting time trends, and visualizing differences between hospitals (or other grouping variables).
 
 
 *  *  *  *
@@ -440,7 +440,7 @@ plot_over_time(
 
 ### Returning aggregated data {#return_data}
 
-There might be situations where users want the function to return the aggregated data, instead of plotting the results. This could be useful for debugging purposes, checking for outliers, or to further process the data before plotting the results. This can easily be achieved by specifying `return_data = TRUE`:
+There might be situations where users want the function to return the aggregated data, instead of plotting the results. This could be useful for debugging purposes, checking for outliers, or to further process the data before plotting the results (e.g., additional exclusions etc.). It also allows users to plot the aggregated data with other plotting packages/apply further customization to the plots. To retrieve the aggregated data, simply specify `return_data = TRUE`:
 
 ```{r}
 res <- plot_over_time(
@@ -465,49 +465,6 @@ knitr::kable(head(res[[2]]))
 ```
 
 In both tables, `n` corresponds to the number of data points in each cell.
-
-
-*  *  *  *
-
-
-# Plotting theme & colors {#plot_theme}
-
-## Plot theme {#plot_theme}
-
-All plots shown above apply a common theme specified in the function `Rgemini::plot_theme()`. If you like the appearance of the plots shown above, you can apply this theme to any other `ggplots` you create. `Rgemini` also contains a few color palettes you can add with `gemini_colors()` (see [below](#gemini_colors)). For example:
-
-```{r fig.width = 3.5, fig.height = 3.5}
-my_plot <- ggplot(data = data.frame(group = c("A", "B", "C"), mean = c(5, 7, 4)), aes(x = group, y = mean)) +
-  geom_bar(stat = "summary", fill = gemini_colors(2)[1:3]) +
-  scale_y_continuous(name = "Mean", expand = c(0, 0))
-
-my_plot + ggtitle("Original plot")
-
-my_plot + 
-  plot_theme() + 
-  ggtitle("Plot with default GEMINI theme")
-```
-
-
-`plot_theme()` accepts inputs specifying the font size/type or aspect ratio. Any additional changes can be made with `ggplot2::theme()`, for example:
-
-```{r fig.width = 3.5, fig.height = 3.5}
-my_plot + 
-  plot_theme(base_size = 16, base_family = "mono", show_grid = TRUE, aspect_ratio = 0.75) +
-  theme(plot.title = element_text(face = "italic")) + # additional components not controlled by plot_theme inputs
-  ggtitle("Plot with GEMINI theme 2")
-```
-
-## Color palettes {#gemini_colors}
-
-To view all color palettes currently included in `Rgemini`, you can run:
-
-```{r}
-plot_color_palettes()
-```
-
-
-Hex values for an individual palette can be obtained by running `gemini_colors()` with a numeric input (e.g., `gemini_colors(5)` for "Bubblegum Burst") or character input that matches the starting character(s) of a given palette (e.g., `gemini_colors("b")` for "Bubblegum Burst").
 
 
 <!-- remove border around images -->

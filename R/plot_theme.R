@@ -12,10 +12,11 @@
 #' Base font family (e.g., "sans", "mono", "serif"). Run `windowsFonts()` to
 #' check for available options. Input will be passed to
 #' `ggthemes::theme_foundation()`.
-#' @param show_grid (`logical`)\cr
-#' Flag indicating whether to show (major) gridlines.
-#' @param aspect_ratio (`numeric`)\cr
-#' Aspect ratio of plot.
+#' @param show_grid (`character`)\cr
+#' Character inputs specifying whether to show "major" or "minor" grid lines.
+#' Default is `NULL` to not show any grid lines. Both "major" and "minor" grid
+#' lines can be plotted by providing a character vector, i.e.,
+#' `show_grid = c("major", "minor")`.
 #' @param ... \cr
 #' Additional arguments passed to `ggplot2::theme()`.
 #' @import ggplot2
@@ -29,8 +30,7 @@
 plot_theme <- function(
     base_size = 12,
     base_family = "sans",
-    show_grid = FALSE,
-    aspect_ratio = 1,
+    show_grid = NULL,
     ...
 ) {
 
@@ -58,8 +58,8 @@ plot_theme <- function(
         axis.line.x = element_line(colour = "black"),
         axis.line.y = element_line(colour = "black"),
         axis.ticks = element_line(),
-        panel.grid.major = if (show_grid) element_line(color = "grey85", linetype = 2) else element_blank(),
-        panel.grid.minor = element_blank(),
+        panel.grid.major = if (any(grepl("maj", show_grid, ignore.case = TRUE))) element_line(color = "grey85", linetype = 2) else element_blank(),
+        panel.grid.minor = if (any(grepl("min", show_grid, ignore.case = TRUE))) element_line(color = "grey85", linetype = 2) else element_blank(),
 
         legend.position = "right",
         legend.justification = "center",
@@ -78,9 +78,9 @@ plot_theme <- function(
         ## top strip for facet wrap plots
         strip.background = element_rect(fill = "grey85", colour = NA),
         strip.text = element_text(face = "bold", size = rel(0.75)),
-
-        aspect.ratio = aspect_ratio,
-
+        
+        aspect.ratio = 1,
+        
         ...
       ))
 
@@ -93,7 +93,7 @@ plot_theme <- function(
 #' GEMINI colors
 #'
 #' @description
-#' Defines various color palettes for plotting purposes.
+#' Compilation of commonly used color palettes for plotting purposes.
 #'
 #' @param palette (`character` or `numeric`)\cr
 #' Name or index of color palette. Run `plot_color_palettes` to see options. By
@@ -154,7 +154,55 @@ gemini_colors <- function(palette = "GEMINI Rainbow") {
       "#c29aeb",
       "#f4ccff"
     ),
+    
+    "JAMA (from ggsci)" = c(
+      "#374E55FF",
+      "#DF8F44FF",
+      "#00A1D5FF",
+      "#B24745FF",
+      "#79AF97FF",
+      "#6A6599FF",
+      "#80796BFF"
+    ),
+    
+    "Lancet (from ggsci)" = c(
+      "#00468BFF",
+      "#ED0000FF",
+      "#42B540FF",
+      "#0099B4FF",
+      "#925E9FFF",
+      "#FDAF91FF",
+      "#AD002AFF",
+      "#ADB6B6FF",
+      "#1B1919FF"
+    ),
 
+    "Viridis (from viridis)" = c(
+      "#fde725",
+      "#b5de2b",
+      "#6ece58",
+      "#35b779",
+      "#1f9e89",
+      "#26828e",
+      "#31688e",
+      "#3e4989",
+      "#482878",
+      "#440154"
+    ),
+    
+    "Magma (from viridis)" = c(
+      "#fcfdbf",
+      "#feca8d",
+      "#fd9668",
+      "#f1605d",
+      "#cd4071",
+      "#9e2f7f",
+      "#721f81",
+      "#440f76",
+      "#180f3d",
+      "#000004"
+    ),
+    
     "Navy Gradient" = c(
       "#022061", # GEMINI navy
       "#022A6B",
@@ -263,7 +311,7 @@ plot_color_palettes <- function(plot_palettes = "all") {
 
   ## create subfigure for each palette 
   sub_figs <- lapply(seq_along(palettes), function(idx, name = names(palettes)) plot_pal(palettes[[idx]], name[idx], idx))
-  fig <- suppressWarnings(ggarrange(plotlist = sub_figs, ncol = 1))
+  fig <- suppressWarnings(ggarrange(plotlist = sub_figs, nrow = ceiling(length(palettes)), ncol = 2))
 
   return(fig)
 

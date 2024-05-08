@@ -1,6 +1,7 @@
 # Rgemini `develop`
 
-* Adds plotting functions `plot_summary`, `plot_over_time`, `plot_theme` and `gemini_colors`
+* Adds plotting functions for data exploration: `plot_summary()` and `plot_over_time()`
+* Adds functions for plotting theme & colors: `plot_theme()` and `gemini_colors()`
 
 # Rgemini 0.4.2
 
