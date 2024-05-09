@@ -282,7 +282,7 @@ gemini_colors <- function(palette = "GEMINI Rainbow") {
 #' Which palettes to plot. By default, plots all palettes.
 #'
 #' @import ggplot2
-#' @importFrom ggpubr ggarrange
+#' @import ggpubr
 #' @seealso `vignette("plotting_theme", package = "Rgemini")`
 #'
 #' @export
