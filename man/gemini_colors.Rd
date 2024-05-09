@@ -14,6 +14,14 @@ default, the first palette ("GEMINI Rainbow") is returned.}
 \description{
 Compilation of commonly used color palettes for plotting purposes.
 }
+\section{Note}{
+
+Vignettes that are colorblind accessible are marked with *. For palettes
+without *, colorblind friendly combinations can be picked according to the
+number of colors that are needed (e.g., if users only need 2-3 colors,
+they should pick the ones that are most easily distinguishable).
+}
+
 \seealso{
 \code{vignette("plotting_functions", package = "Rgemini")}
 }
