@@ -119,6 +119,15 @@ gemini_colors <- function(palette = "GEMINI Rainbow") {
       "#9b9b9b"
     ),
     
+    # "GeMQIN" = c(
+    #   "#00b2e3", # blue_mountain
+    #   "#c1b28f", # wasaga_beach
+    #   "#49a7a2", # blue_coast
+    #   "#92278f", # prince_edward_fields
+    #   "#e2e3e4", # grey
+    #   "#808080" # gray
+    # ),
+    
     "Shadowed Spectrum" = c(
       "#1A1C20",
       "#5a78a9",
@@ -305,7 +314,7 @@ plot_color_palettes <- function(plot_palettes = "all") {
       ggtitle(paste0("  ", idx, ") ", pal_name)) +
       theme_void() +
       theme(plot.title = element_text(hjust = 0.5),
-            plot.margin = margin(l = .2, r = .2, unit = "npc"))
+            plot.margin = margin(l = .05, r = .05, t = .1, b = .1, unit = "npc"))
 
 
     return(sub_fig)

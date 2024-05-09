@@ -32,18 +32,17 @@ knitr::opts_chunk$set(
   
 )
 
-# remove all of these later...
-library(ggplot2)
-library(ggpubr)
-library(lemon)
-library(ggthemes)
-library(ggpubr)
-library(scales)
-
-source("H:/GitHub/Rgemini/R/plot_summary.R") 
-source("H:/GitHub/Rgemini/R/plot_over_time.R") 
-source("H:/GitHub/Rgemini/R/plot_theme.R") 
-source("H:/GitHub/Rgemini/R/utils.R") 
+## remove all of these later...
+#library(ggplot2)
+#library(ggpubr)
+#library(lemon)
+#library(ggthemes)
+#library(ggpubr)
+#library(scales)
+#source("H:/GitHub/Rgemini/R/plot_summary.R") 
+#source("H:/GitHub/Rgemini/R/plot_over_time.R") 
+#source("H:/GitHub/Rgemini/R/plot_theme.R") 
+#source("H:/GitHub/Rgemini/R/utils.R") 
 
 options(knitr.kable.NA = '')
 

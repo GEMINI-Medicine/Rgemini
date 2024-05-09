@@ -32,14 +32,12 @@ knitr::opts_chunk$set(
   
 )
 
-# remove all of these later...
-library(ggplot2)
-library(ggpubr)
-library(ggthemes)
-library(ggpubr)
-library(scales)
-
-source("H:/GitHub/Rgemini/R/plot_theme.R") 
+## remove all of these later...
+#library(ggpubr)
+#library(ggthemes)
+#library(ggpubr)
+#library(scales)
+#source("H:/GitHub/Rgemini/R/plot_theme.R") 
 
 options(knitr.kable.NA = '')
 
@@ -63,6 +61,8 @@ This vignette introduces a standardized plotting theme ([*plot_theme()*](#plot_t
 The following example illustrates the theme applied to a basic barplot. We also use a color palette from `gemini_colors()` here for illustration purposes (see section [Color Palettes](#gemini_colors) for more details):
 
 ```{r}
+library(ggplot2)
+
 my_plot <- ggplot(data = data.frame(group = c("A", "B", "C"), mean = c(5, 7, 4)), aes(x = group, y = mean, fill = group)) +
   geom_bar(stat = "summary", fill = gemini_colors(2)[1:3]) +
   scale_y_continuous(name = "Mean", expand = c(0, 0)) 
@@ -124,7 +124,7 @@ my_plot +
 
 `Rgemini` includes a few color palettes with some simple options to pick basic colors. To view all color palettes currently included in `Rgemini`, you can run:
 
-```{r fig.width = 8, fig.height = 7}
+```{r fig.width = 5, fig.height = 8}
 plot_color_palettes()
 ```
 
