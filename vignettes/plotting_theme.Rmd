@@ -32,12 +32,12 @@ knitr::opts_chunk$set(
   
 )
 
-## remove all of these later...
-#library(ggpubr)
-#library(ggthemes)
-#library(ggpubr)
-#library(scales)
-#source("H:/GitHub/Rgemini/R/plot_theme.R") 
+## uncomment this when trying to knit vignette locally
+# library(ggpubr)
+# library(ggthemes)
+# library(ggpubr)
+# library(scales)
+# source("H:/GitHub/Rgemini/R/plot_theme.R")
 
 options(knitr.kable.NA = '')
 
@@ -124,12 +124,14 @@ my_plot +
 
 `Rgemini` includes a few color palettes with some simple options to pick basic colors. To view all color palettes currently included in `Rgemini`, you can run:
 
-```{r fig.width = 5, fig.height = 8}
+```{r fig.width = 7, fig.height = 4}
 plot_color_palettes()
 ```
 
 
-Hex values for an individual palette can be obtained by running `gemini_colors()` with a numeric input (e.g., `gemini_colors(4)` for "Lavender Lagoon") or character input that matches the starting character(s) of a given palette (e.g., `gemini_colors("lav")` for "Lavender Lagoon").
+## Selecting palettes/individual colors
+
+All hex values for an individual palette can be obtained by running `gemini_colors()` with a numeric input (e.g., `gemini_colors(4)` for "Lavender Lagoon") or character input that matches the starting character(s) of a given palette (e.g., `gemini_colors("lav")` for "Lavender Lagoon").
 
 For example, to create scatter plot with "Lavender Lagoon" (color palette 4) colors:
 
@@ -141,11 +143,11 @@ data <- data.frame(x = rnorm(50),
 ggplot(data, aes(x = x, y = y, color = group)) +
   geom_point() +
   plot_theme() +
-  scale_color_manual(values = gemini_colors(4)) # equivalent to gemini_colors("l")
+  scale_color_manual(values = gemini_colors(4)) # equivalent to gemini_colors("lav")
 
 ```
 
-If you only need a small subset of colors, we recommend using a subset of colors from a given palette that's most easily distinguishable. For example, to pick 3 equidistant colors from the "Viridis" palette (generated with `viridis`):
+If you only need a small number of colors, we recommend using a subset of colors from a given palette that's most easily distinguishable. For example, to pick 3 equidistant colors from the "Viridis" palette (generated with `viridis`):
 
 ```{r}
 ggplot(data[data$group %in% c("A", "B", "C"), ], aes(x = x, y = y, color = group)) +

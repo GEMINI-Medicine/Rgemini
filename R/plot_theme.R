@@ -100,6 +100,12 @@ plot_theme <- function(
 #' @param palette (`character` or `numeric`)\cr
 #' Name or index of color palette. Run `plot_color_palettes` to see options. By
 #' default, the first palette ("GEMINI Rainbow") is returned. 
+#' 
+#' @section Note:
+#' Vignettes that are colorblind accessible are marked with *. For palettes
+#' without *, colorblind friendly combinations can be picked according to the
+#' number of colors that are needed (e.g., if users only need 2-3 colors,
+#' they should pick the ones that are most easily distinguishable). 
 #'
 #' @seealso `vignette("plotting_functions", package = "Rgemini")`
 #' 
@@ -188,7 +194,7 @@ gemini_colors <- function(palette = "GEMINI Rainbow") {
       "#1B1919FF"
     ),
 
-    "Viridis (from viridis)" = c(
+    "Viridis (from viridis)*" = c(
       "#fde725",
       "#b5de2b",
       "#6ece58",
@@ -201,7 +207,7 @@ gemini_colors <- function(palette = "GEMINI Rainbow") {
       "#440154"
     ),
     
-    "Magma (from viridis)" = c(
+    "Magma (from viridis)*" = c(
       "#fcfdbf",
       "#feca8d",
       "#fd9668",
@@ -214,23 +220,6 @@ gemini_colors <- function(palette = "GEMINI Rainbow") {
       "#000004"
     ),
     
-    "Navy Gradient" = c(
-      "#022061", # GEMINI navy
-      "#022A6B",
-      "#023576",
-      "#023F80",
-      "#02498A",
-      "#025394",
-      "#025E9F",
-      "#0268A9",
-      "#0272B3",
-      "#027DBE",
-      "#0287C8",
-      "#0291D2",
-      "#029BDC",
-      "#02A6E7",
-      "#02B0F1" # GEMINI cyan
-    ),
     
     "Twilight Gradient" = c(
       "#022061", # GEMINI navy
@@ -312,17 +301,21 @@ plot_color_palettes <- function(plot_palettes = "all") {
       geom_col(position = position_stack(reverse = TRUE), show.legend = FALSE) +
       scale_fill_manual(values=palette) + coord_flip() +
       ggtitle(paste0("  ", idx, ") ", pal_name)) +
-      theme_void() +
-      theme(plot.title = element_text(hjust = 0.5),
-            plot.margin = margin(l = .05, r = .05, t = .1, b = .1, unit = "npc"))
-
+      theme_void(base_size = 10) +
+      theme(plot.margin = margin(l = .05, r = .05, t = .00, b = .1, unit = "npc"))
 
     return(sub_fig)
   }
-
+  
   ## create subfigure for each palette 
   sub_figs <- lapply(seq_along(palettes), function(idx, name = names(palettes)) plot_pal(palettes[[idx]], name[idx], idx))
-  fig <- suppressWarnings(ggarrange(plotlist = sub_figs, nrow = ceiling(length(palettes)), ncol = 2))
+  fig <- suppressWarnings(ggarrange(plotlist = sub_figs, nrow = ceiling(length(palettes)/2), ncol = 2))
+
+  ## add annotation for colorblind friendly palettes
+  fig <- annotate_figure(
+    fig,
+    bottom = text_grob("*Colorblind accessible", hjust = 0, x = 0.05, face = "italic", size = 12)
+  )
 
   return(fig)
 
