@@ -8,7 +8,7 @@ output:
     dfprint: kable
 
 vignette: >
-  %\VignetteIndexEntry{Plotting functions for data exploration}
+  %\VignetteIndexEntry{Plotting Functions - Easy Plots for Data Exploration}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 
@@ -417,7 +417,7 @@ To facilitate visualization of time trends, users can specify a smoothing method
 plot_over_time(
   ipadmdad,
   plot_var = "age",
-  smooth = "auto"
+  smooth_method = "auto"
 )
 ```
 
@@ -432,7 +432,7 @@ plot_over_time(
   plot_var = "age",
   facet_group = NULL,
   line_group = NULL,
-  smooth = "lm"
+  smooth_method = "lm"
 )
 ```
 

@@ -457,7 +457,8 @@ plot_over_time <- function(
     # or max value of prct/missing outcome = 100, in which case scale is not expanded)
     # calculating this manually here so expansion can be capped
     # Note: For facet plots with free y-scales, 15% expansion is applied without any caps
-    if ((is.null(ylimits) || sum(is.na(ylimits)) > 0) && (!is.null(facet_group) && !fig$facet$params$free$y)) {
+    if ((is.null(ylimits) || sum(is.na(ylimits)) > 0) &&
+        (is.null(facet_group) || (!is.null(facet_group) && !fig$facet$params$free$y))) {
       range <- max(res$outcome, na.rm = TRUE) - min(res$outcome, na.rm = TRUE)
 
       if (is.null(ylimits) || is.na(ylimits[1])) {
