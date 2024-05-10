@@ -1,6 +1,7 @@
 # Rgemini `develop`
 
-* Updated unit tests & small bug fix in `daily_census` 
+* Updated unit tests & small bug fix in `daily_census`
+* Updated type in `Rgemini::mlaps.Rd`
 
 # Rgemini 0.4.2
 
