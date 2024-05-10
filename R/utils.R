@@ -73,7 +73,7 @@ lunique <- function(x) {
 #'
 coerce_to_datatable <- function(data) {
   var <- deparse(substitute(data))
-
+  data <- copy(data) # take copy to avoid changing original table
   if (!is.data.table(data)) {
     data <- as.data.table(data)
     warning(var, " was passed as a data.frame and has been coerced to a data.table.\n", immediate. = TRUE)
