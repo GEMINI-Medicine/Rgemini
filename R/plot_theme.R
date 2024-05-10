@@ -58,16 +58,18 @@ plot_theme <- function(
         axis.line.x = element_line(colour = "black"),
         axis.line.y = element_line(colour = "black"),
         axis.ticks = element_line(),
-        panel.grid.major = if (any(grepl("maj", show_grid, ignore.case = TRUE))) {
-          element_line(color = "grey85", linetype = 2)
-        } else {
-          element_blank()
-        },
-        panel.grid.minor = if (any(grepl("min", show_grid, ignore.case = TRUE))) {
-          element_line(color = "grey85", linetype = 2)
-        } else {
-          element_blank()
-        },
+        panel.grid.major =
+          if (any(grepl("maj", show_grid, ignore.case = TRUE))) {
+            element_line(color = "grey85", linetype = 2)
+          } else {
+            element_blank()
+          },
+        panel.grid.minor =
+          if (any(grepl("min", show_grid, ignore.case = TRUE))) {
+            element_line(color = "grey85", linetype = 2)
+          } else {
+            element_blank()
+          },
         legend.position = "right",
         legend.justification = "center",
         legend.key = element_rect(colour = NA),
@@ -123,7 +125,6 @@ gemini_colors <- function(palette = "GEMINI Rainbow") {
       "#7B68EE",
       "#9b9b9b"
     ),
-
     # "GeMQIN" = c(
     #   "#00b2e3", # blue_mountain
     #   "#c1b28f", # wasaga_beach
@@ -132,7 +133,6 @@ gemini_colors <- function(palette = "GEMINI Rainbow") {
     #   "#e2e3e4", # grey
     #   "#808080" # gray
     # ),
-
     "Shadowed Spectrum" = c(
       "#1A1C20",
       "#5a78a9",

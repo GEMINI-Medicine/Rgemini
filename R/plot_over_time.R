@@ -354,32 +354,37 @@ plot_over_time <- function(
 
     ## Add individual hospital lines
     if (!is.null(line_group)) {
-      
+
       ## If applying smooth trend line, show individual data points as dots
       if (!is.null(smooth_method)) {
-        
-        fig <- fig + geom_point(size = line_width,
-                                alpha = 0.2,
-                                show.legend = (!is.null(color_group) &&
-                                                 (is.null(facet_group) || ((!is.null(facet_group) && color_group != facet_group)) ||
-                                                    ((!is.null(facet_group) && !is.null(line_group) && line_group == facet_group))))) 
-      } 
-      
+
+        fig <- fig +
+          geom_point(
+            size = line_width, alpha = 0.2,
+            show.legend = (!is.null(color_group) &&
+                             (is.null(facet_group) || ((!is.null(facet_group) && color_group != facet_group)) ||
+                                ((!is.null(facet_group) && !is.null(line_group) && line_group == facet_group))))
+          )
+      }
+
       fig <- fig + geom_line(
-          linewidth = line_width,
-          alpha = ifelse(show_overall && ((is.null(facet_group) ||
-                                             ((!is.null(facet_group) && !is.null(line_group) && (facet_group != line_group)) &&
-                                                (is.null(color_group) || ((!is.null(color_group) && !is.null(line_group) && (color_group != line_group)))
-                                                ))) &&
-                                            length(unique(res[[line_group]])) > 1), 0.2, 1),
-          show.legend = (!is.null(color_group) &&
-                           (is.null(facet_group) || ((!is.null(facet_group) && color_group != facet_group)) ||
+        linewidth = line_width,
+        alpha = ifelse(
+          show_overall && ((is.null(facet_group) ||
+                              ((!is.null(facet_group) && !is.null(line_group) && (facet_group != line_group)) &&
+                                 (is.null(color_group) || (
+                                   (!is.null(color_group) && !is.null(line_group) && (color_group != line_group))
+                                 )))) &&
+                             length(unique(res[[line_group]])) > 1), 0.2, 1
+        ),
+        show.legend = (!is.null(color_group) &&
+                         (is.null(facet_group) || ((!is.null(facet_group) && color_group != facet_group)) ||
                               ((!is.null(facet_group) && !is.null(line_group) && line_group == facet_group)))),
-          stat = if (!is.null(smooth_method)) "smooth" else "identity", 
+          stat = if (!is.null(smooth_method)) "smooth" else "identity",
           method = smooth_method # if smooth method is specified, fit trend line according to specified method
         )
-        
-      
+
+
       if (!is.null(facet_group)) {
         fig <- fig +
           facet_rep_wrap(~ get(facet_group), ...) +
@@ -387,15 +392,15 @@ plot_over_time <- function(
       }
     }
 
-    
+
     ## Add overall summary lines
     # Note: If only a single site is included, overall line/legend will not be shown
     if (show_overall == TRUE && (is.null(line_group) || length(unique(res[[line_group]])) > 1)) {
-      
-      # if smooth trend line is shown, but individual lines are suppressed, 
+
+      # if smooth trend line is shown, but individual lines are suppressed,
       # let's also show scatter plot for overall curve
       if (!is.null(smooth_method) && is.null(line_group)) {
-        fig <- fig + 
+        fig <- fig +
           geom_point(data = res_overall,
                      aes(
                        x = get(time_int), y = outcome,
@@ -405,8 +410,8 @@ plot_over_time <- function(
                      size = 2 * line_width,
                      alpha = 0.2)
       }
-      
-      
+
+
       fig <- fig +
         geom_line(
           data = res_overall,
@@ -426,13 +431,13 @@ plot_over_time <- function(
             (!is.null(facet_group) && !is.null(line_group) && facet_group != line_group) &&
               (is.null(color_group) || (!is.null(line_group) && !is.null(color_group) && line_group != color_group))
           ), 1, 0.2),
-          stat = if (!is.null(smooth_method)) "smooth" else "identity", 
-          method = smooth_method # if smooth method is specified, overall line will correspond to smooth line fitted to res_overall
+          stat = if (!is.null(smooth_method)) "smooth" else "identity",
+          method = smooth_method # if smoothing, overall line will correspond to smooth line fitted to res_overall
         )
-      
+
       fig <- fig + labs(color = NULL)
     }
-    
+
 
     ######### Plot Appearance #########
     ## Adjust labels & theme
