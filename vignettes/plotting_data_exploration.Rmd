@@ -64,6 +64,7 @@ The plotting examples shown below are based on variables from the "ipadmdad" tab
 
 ```{r}
 library(Rgemini)
+library(ggplot2)
 library(dplyr)
 library(data.table)
 
