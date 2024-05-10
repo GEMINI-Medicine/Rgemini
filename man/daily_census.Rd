@@ -114,6 +114,8 @@ By default (\code{include_zero = TRUE}), the function will return days where no 
 This is the desired behavior in cases where counts of 0 patients are conceptually meaningful. For example, when users
 want to analyze how many patients with a rare condition are in hospital on a typical day, days where \code{census = 0}
 represent true counts of 0 patients (assuming the cohort provides sufficient coverage of all hospitalized patients).
+Note: If data availability periods differ between hospitals, \code{census} counts will only be set to 0 for dates
+that fall within the min-max date range for that particular site.
 
 In other scenarios, users may want to disregard days where \code{census = 0} by specifying \code{include_zero = FALSE}.
 For example, when looking at daily census counts per physician, days where \code{census = 0} likely reflect days
