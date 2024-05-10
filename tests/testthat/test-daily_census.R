@@ -1,34 +1,33 @@
-test_that("default census counts are returned correclty (include_zero = TRUE)", {
+## create dummy data for unit tests
+ipadmdad <- data.table(
+  hospital_num = c(1, 1, 1, 1, 1, 2, 2, 3, 3, 3),
+  genc_id = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+  admission_date_time = c("2020-01-01 08:00", "2020-01-01 11:00", "2020-01-01 15:00", "2020-01-02 15:00", "2020-01-01 11:00", 
+                          "2020-01-01 07:00", "2020-01-01 03:00", "2020-01-01 07:00", "2020-01-04 07:00", "2020-01-04 06:00"),
+  discharge_date_time = c("2020-01-02 11:00", "2020-01-03 07:00", "2020-01-04 08:00", "2020-01-04 08:00", "2020-01-02 19:00", 
+                          "2020-01-03 07:00", "2020-01-01 07:00", "2020-01-01 19:00", "2020-01-04 20:00", "2020-01-04 12:00"))
 
-  # create dummy data for testing
-  set.seed(2)
-  ipadmdad <- dummy_ipadmdad(n = 1000, n_hospitals = 5, time_period = c(2020, 2021)) %>%
-    data.table()
+test_that("default census counts are returned correctly (include_zero = TRUE)", {
 
   # calculate census
-  census <- daily_census(ipadmdad)
+  census <- daily_census(ipadmdad, buffer = 0)
 
   # check output
-  expect_equal(round(mean(census$census, na.rm = TRUE), digits = 2), 2.47)
-  expect_equal(round(mean(census$capacity_ratio, na.rm = TRUE), digits = 2), 1.03)
-  expect_true(sum(census$census == 0, na.rm = TRUE) > 0) # should include 0s
+  expect_equal(round(mean(census$census, na.rm = TRUE), digits = 2), 1.30)
+  expect_equal(round(mean(census$capacity_ratio, na.rm = TRUE), digits = 2), 1.20)
+  expect_true(sum(census$census == 0, na.rm = TRUE) == 3) # should include 0s
 
 })
 
 
-test_that("census counts are returned correclty when include_zero = FALSE", {
-
-  # create dummy data for testing
-  set.seed(2)
-  ipadmdad <- dummy_ipadmdad(n = 1000, n_hospitals = 5, time_period = c(2020, 2021)) %>%
-    data.table()
+test_that("census counts are returned correctly when include_zero = FALSE", {
 
   # calculate census
-  census <- daily_census(ipadmdad, include_zero = FALSE)
+  census <- daily_census(ipadmdad, include_zero = FALSE, buffer = 0)
 
   # check output (counts should now be higher overall due to exclusion of 0s)
-  expect_equal(round(mean(census$census, na.rm = TRUE), digits = 2), 2.71)
-  expect_equal(round(mean(census$capacity_ratio, na.rm = TRUE), digits = 2), 1.13)
+  expect_equal(round(mean(census$census, na.rm = TRUE), digits = 2), 1.86)
+  expect_equal(round(mean(census$capacity_ratio, na.rm = TRUE), digits = 2), 1.14)
   expect_equal(sum(census$census == 0, na.rm = TRUE), 0) # should not contain 0s
 
 })
@@ -36,15 +35,9 @@ test_that("census counts are returned correclty when include_zero = FALSE", {
 
 test_that("buffer period correctly excludes days from census counts", {
 
-  # create dummy data for testing
-  set.seed(2)
-  ipadmdad <- dummy_ipadmdad(n = 1000, n_hospitals = 5, time_period = c(2019, 2019)) %>%
-    data.table()
-
   # calculate census
-  census <- daily_census(ipadmdad, buffer = 90)
-
-  expect_equal(sum(is.na(census$census)), 90*5) #90-day buffer period for each of 5 hospitals
-  expect_equal(sum(is.na(census$capacity_ratio)), 90*5)
+  census <- daily_census(ipadmdad, buffer = 1)
+  expect_equal(sum(is.na(census$census)), 3) # 1-day buffer period for each of 3 hospitals = 3
 
 })
+

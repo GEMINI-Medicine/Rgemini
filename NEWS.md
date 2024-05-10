@@ -1,3 +1,7 @@
+# Rgemini `develop`
+
+* Updated unit tests & small bug fix in `daily_census` 
+
 # Rgemini 0.4.2
 
 * Small bug fix in `Rgemini:::find_db_tablename`
