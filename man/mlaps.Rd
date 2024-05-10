@@ -40,7 +40,7 @@ If \code{componentwise == FALSE}:
 mLAPS
 }
 \details{
-Modified Laboratory based Acute Physiology Score (mLAPS) uses 14 lab test values.
+Modified Laboratory based Acute Physiology Score (mLAPS) uses 13 lab test values.
 In this modified version, High senstive Troponin tests are ignored and treated as normal.
 }
 \note{
