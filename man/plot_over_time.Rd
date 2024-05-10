@@ -111,8 +111,8 @@ Character vector specifying line color(s).}
 Numeric input to determine the base font size for each subplot in pts (default = 12)}
 
 \item{return_data}{(\code{logical})\cr
-Flag indicating whether to return a list of 2 data.tables with aggregated data (\link{1} by hospital and
-\link{2} overall). If \code{FALSE} (default), will return plot.}
+Flag indicating whether to return a list of 2 data.tables with aggregated data ([1] by hospital and
+[2] overall). If \code{FALSE} (default), will return plot.}
 
 \item{...}{\cr
 If a \code{facet_group} is specified: Additional arguments passed to \code{lemon::facet_rep_wrap()} (wrapper for

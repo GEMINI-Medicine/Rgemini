@@ -47,7 +47,7 @@ barplots for all variables specified in \code{plot_vars}.
 }
 \description{
 This function plots distributions (histograms/barplots) and shows basic
-summary statistics (e.g., median \link{Q1, Q3}, \% missing etc.) for multiple
+summary statistics (e.g., median [Q1, Q3], \% missing etc.) for multiple
 variables.
 }
 \section{Note}{

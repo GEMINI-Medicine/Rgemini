@@ -71,8 +71,8 @@
 #' @param base_size (`numeric`)\cr
 #' Numeric input to determine the base font size for each subplot in pts (default = 12)
 #' @param return_data (`logical`)\cr
-#' Flag indicating whether to return a list of 2 data.tables with aggregated data ([1] by hospital and
-#' [2] overall). If `FALSE` (default), will return plot.
+#' Flag indicating whether to return a list of 2 data.tables with aggregated data (\[1\] by hospital and
+#' \[2\] overall). If `FALSE` (default), will return plot.
 #'
 #' @param ... \cr
 #' If a `facet_group` is specified: Additional arguments passed to `lemon::facet_rep_wrap()` (wrapper for
