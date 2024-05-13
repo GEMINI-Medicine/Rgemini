@@ -33,11 +33,11 @@ knitr::opts_chunk$set(
 )
 
 ## uncomment this when trying to knit vignette locally
-library(ggpubr)
-library(ggthemes)
-library(ggpubr)
-library(scales)
-source("H:/GitHub/Rgemini/R/plot_theme.R")
+# library(ggpubr)
+# library(ggthemes)
+# library(ggpubr)
+# library(scales)
+# source("H:/GitHub/Rgemini/R/plot_theme.R")
 
 options(knitr.kable.NA = '')
 
