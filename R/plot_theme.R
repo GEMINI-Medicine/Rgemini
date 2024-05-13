@@ -44,8 +44,7 @@ plot_theme <- function(
           face = "bold",
           size = rel(1),
           hjust = 0.5,
-          vjust = rel(5),
-          margin = margin(0, 0, 0, 0),
+          vjust = rel(5)
         ),
 
         plot.margin = unit(c(0.05, 0.05, 0.05, 0.05), "npc"),
@@ -87,7 +86,6 @@ plot_theme <- function(
         strip.background = element_rect(fill = "grey85", colour = NA),
         strip.text = element_text(face = "bold", size = rel(0.75)),
 
-        aspect.ratio = 1,
         ...
       ))
   
@@ -121,13 +119,13 @@ gemini_colors <- function(palette = 1) {
   ## NOTE for developers:
   # When adding new colors, please check for colorblind accessibility using this
   # website: https://www.color-blindness.com/coblis-color-blindness-simulator/
-  # and/or running `colorBlindness::cvdPlot(plot_color_palettes())`
+  # and/or by running `colorBlindness::cvdPlot(plot_color_palettes())`
   
   palettes <- list(
-    "GEMINI Rainbow" = c(
+    "GEMINI Glow" = c(
       "#022061", # GEMINI navy
-      "#02B0F1", # GEMINI cyan
-      "#398A3F",
+      "#02AFF0", # GEMINI cyan
+      "#398A3F", 
       "#EDAE49",
       "#A6361C",
       "#7B68EE",
@@ -157,7 +155,18 @@ gemini_colors <- function(palette = 1) {
       "#8f3f43",
       "#022061" # GEMINI navy
     ),
-    "Twilight Gradient" = c(
+    "Ocean Oasis" = c(
+      "#022061", # GEMINI navy
+      "#4477d1",
+      "#9ac4ff", 
+      "#A5694F",
+      "#D49A6A",
+      "#F7D683",
+      "#00695E",
+      "#3bbeaa",
+      "#9CD6C9"
+    ),
+    "Twilight Transition" = c(
       "#022061", # GEMINI navy
       "#1B3671",
       "#354D81",

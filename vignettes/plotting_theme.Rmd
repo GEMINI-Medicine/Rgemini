@@ -54,9 +54,9 @@ This vignette introduces a standardized plotting theme ([*plot_theme()*](#plot_t
 *  *  *  *
 
 
-# Plot Theme {#plot_theme}
+# Theme for `ggplots` {#plot_theme}
 
-`Rgemini::plot_theme()` adds a simple theme to any `ggplot2` figures. The theme is based on `ggthemes::theme_foundation()`, with some additional tweaks, and users can easily adjust the theme as needed. By default, `plot_theme()` is applied to all other plotting functions in `Rgemini` (e.g., `plot_summary()` and `plot_over_time()`). 
+`Rgemini::plot_theme()` adds a simple theme to any `ggplot` figures. The theme is based on `ggthemes::theme_foundation()`, with some additional tweaks, and users can easily adjust the theme as needed. By default, `plot_theme()` is applied to all other plotting functions in `Rgemini` (e.g., `plot_summary()` and `plot_over_time()`). 
 
 The following example illustrates the theme applied to a basic barplot. We also use a color palette from `gemini_colors()` here for illustration purposes (see section [Color Palettes](#gemini_colors) for more details):
 
@@ -75,25 +75,27 @@ my_plot +
 ```
 
 
-## Additional inputs for `plot_theme`
+## Additional inputs for `plot_theme()`
 
 `plot_theme()` accepts inputs specifying the font size/type (which are passed to `ggthemes::theme_foundation()`). Users can also specify whether to show major/minor grid lines. For example:
 
 ```{r}
 my_plot + 
-  plot_theme(base_size = 16, base_family = "mono", show_grid = c("major","minor")) +
+  plot_theme(base_size = 16, base_family = "mono", show_grid = c("major", "minor")) +
   ggtitle("Mono plot with grid lines")
 ```
 
 
-Additionally, `plot_theme()` accepts inputs that can be passed to `ggplot2::theme()`, which allows for further customization (see [here](https://ggplot2.tidyverse.org/reference/theme.html)). For example, to change the angle of the x-tick labels:
+Additionally, `plot_theme()` accepts inputs that can be passed to `ggplot2::theme()`, which allows for further customization (see [here](https://ggplot2.tidyverse.org/reference/theme.html)). For example, to change the aspect ratio of the plot and angle of the x-tick labels:
  
 ```{r}
 my_plot + 
-  plot_theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+  plot_theme(aspect.ratio = 0.75,
+             axis.text.x = element_text(angle = 45, hjust = 1)) +
+  ggtitle("Wide plot with tilted x-tick labels")
 ```
 
-## Overwriting `plot_theme`
+## Overwriting `plot_theme()` settings
 
 If you are specifying inputs for settings that are already defined by `plot_theme()`, you will see an error message saying that the argument was matched by multiple inputs. For example, `plot_theme()` already specifies default characteristics for `plot.title` (`face = "bold"`). Thus, if you try to run the following code to italicize the title, you will see an error message saying:
 
@@ -106,14 +108,13 @@ my_plot +
 `r sprintf(paste0("<span style='color: #c5070c; font-family: Lucida Console'>Error in theme(plot.title = element_text(face = 'bold', size = rel(1),  : formal argument 'plot.title' matched by multiple actual arguments</span>"))`
 
 
-
 To avoid this error, you need to add a separate `ggplot2::theme`, which will overwrite the default characteristics specified by `plot_theme()`:
 
 ```{r}
 my_plot + 
   plot_theme() +
-  theme(plot.title = element_text(face = "italic"), aspect.ratio = 0.75) +
-  ggtitle("Wide plot with itlicized title")
+  theme(plot.title = element_text(face = "italic")) +
+  ggtitle("Plot with italicized title")
 ```
 
 
@@ -131,7 +132,6 @@ plot_color_palettes()
 ## Colorblind Accessibility
 
 All GEMINI color palettes are designed to be colorblind accessible. However, within each color palette, certain combinations of colors may be easier to distinguish than others. If you only need a small subset of colors, we recommend choosing the ones that are most easily distinguishable. You can check how colorblind friendly the chosen color combinations are using the `colorBlindness` R library or this website: https://www.color-blindness.com/coblis-color-blindness-simulator/
-
 
 
 ## Selecting GEMINI palettes/individual colors
