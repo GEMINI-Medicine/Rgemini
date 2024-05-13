@@ -63,7 +63,6 @@ options(knitr.kable.NA = '')
 The plotting examples shown below are based on variables from the "ipadmdad" table. Typically, you would query this table from the GEMINI database, but for the purpose of this vignette, we'll create some dummy data using `Rgemini::dummy_ipadmdad()`. Here, we are simulating a subset of "ipadmdad" variables for 50,000 encounters from 12 different hospitals and with discharge dates ranging from fiscal years 2018 to 2022:
 
 ```{r}
-library(Rgemini)
 library(ggplot2)
 library(dplyr)
 library(data.table)

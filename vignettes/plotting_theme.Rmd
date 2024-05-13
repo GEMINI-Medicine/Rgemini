@@ -33,11 +33,11 @@ knitr::opts_chunk$set(
 )
 
 ## uncomment this when trying to knit vignette locally
-# library(ggpubr)
-# library(ggthemes)
-# library(ggpubr)
-# library(scales)
-# source("H:/GitHub/Rgemini/R/plot_theme.R")
+library(ggpubr)
+library(ggthemes)
+library(ggpubr)
+library(scales)
+source("H:/GitHub/Rgemini/R/plot_theme.R")
 
 options(knitr.kable.NA = '')
 
@@ -48,7 +48,7 @@ options(knitr.kable.NA = '')
 
 # Introduction
 
-This vignette introduces a standardized plotting theme ([*plot_theme()*](#plot_theme)) and color palettes ([*gemini_colors()*](#gemini_colors)) that users can apply to any ggplot figures they create in their analyses. The goal of these functions is to simplify the process of creating figures with a clean and consistent look. To create publication-ready figures, we recommend that users apply additional customization based on their needs (see section [Other Resources](#resources)]. 
+This vignette introduces a standardized plotting theme ([*plot_theme()*](#plot_theme)) and color palettes ([*gemini_colors()*](#gemini_colors)) that users can apply to any ggplot figures they create in their analyses. The goal of these functions is to simplify the process of creating figures with a clean and consistent look. To create publication-ready figures, we recommend that users apply additional customization based on their needs (see section [Resources](#resources)]. 
 
 
 *  *  *  *
@@ -56,17 +56,16 @@ This vignette introduces a standardized plotting theme ([*plot_theme()*](#plot_t
 
 # Plot Theme {#plot_theme}
 
-`Rgemini::plot_theme()` adds a simple theme to any `ggplot2` figures. The theme is based on `ggthemes::theme_foundation()`, with some additional tweaks, and users can easily adjust the theme as needed. By default, `Rgemini::plot_theme()` is applied to all other plotting functions in `Rgemini` (e.g., `plot_summary()` and `plot_over_time()`). 
+`Rgemini::plot_theme()` adds a simple theme to any `ggplot2` figures. The theme is based on `ggthemes::theme_foundation()`, with some additional tweaks, and users can easily adjust the theme as needed. By default, `plot_theme()` is applied to all other plotting functions in `Rgemini` (e.g., `plot_summary()` and `plot_over_time()`). 
 
 The following example illustrates the theme applied to a basic barplot. We also use a color palette from `gemini_colors()` here for illustration purposes (see section [Color Palettes](#gemini_colors) for more details):
 
 ```{r}
-library(Rgemini)
 library(ggplot2)
 
 my_plot <- ggplot(data = data.frame(group = c("A", "B", "C"), mean = c(5, 7, 4)), aes(x = group, y = mean, fill = group)) +
   geom_bar(stat = "summary", fill = gemini_colors(2)[1:3]) +
-  scale_y_continuous(name = "Mean", expand = c(0, 0)) 
+  scale_y_continuous(name = "Mean", expand = c(0, 0))
 
 my_plot + ggtitle("Original plot")
 
@@ -91,7 +90,7 @@ Additionally, `plot_theme()` accepts inputs that can be passed to `ggplot2::them
  
 ```{r}
 my_plot + 
-  plot_theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) 
+  plot_theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
 ```
 
 ## Overwriting `plot_theme`
@@ -121,22 +120,28 @@ my_plot +
  
 *  *  *  *
 
-# Color Palettes {#gemini_colors}
+# GEMINI Color Palettes {#gemini_colors}
 
-`Rgemini` includes a few color palettes with some simple options to pick basic colors. To view all color palettes currently included in `Rgemini`, you can run:
+`Rgemini` includes a few custom color palettes that can be applied to any figures. To view all color palettes currently included in `Rgemini`, you can run:
 
-```{r fig.width = 7, fig.height = 4}
+```{r fig.width = 7, fig.height = 3}
 plot_color_palettes()
 ```
 
+## Colorblind Accessibility
 
-## Selecting palettes/individual colors
+All GEMINI color palettes are designed to be colorblind accessible. However, within each color palette, certain combinations of colors may be easier to distinguish than others. If you only need a small subset of colors, we recommend choosing the ones that are most easily distinguishable. You can check how colorblind friendly the chosen color combinations are using the `colorBlindness` R library or this website: https://www.color-blindness.com/coblis-color-blindness-simulator/
+
+
+
+## Selecting GEMINI palettes/individual colors
 
 All hex values for an individual palette can be obtained by running `gemini_colors()` with a numeric input (e.g., `gemini_colors(4)` for "Lavender Lagoon") or character input that matches the starting character(s) of a given palette (e.g., `gemini_colors("lav")` for "Lavender Lagoon").
 
-For example, to create scatter plot with "Lavender Lagoon" (color palette 4) colors:
+For example, to create scatter plot with the colors from "Lavender Lagoon" (color palette 4):
 
 ```{r}
+set.seed(2)
 data <- data.frame(x = rnorm(50), 
                    y = rnorm(50), 
                    group = sample(c("A", "B", "C", "D", "E"), 50, replace = TRUE))
@@ -148,26 +153,106 @@ ggplot(data, aes(x = x, y = y, color = group)) +
 
 ```
 
-If you only need a small number of colors, we recommend using a subset of colors from a given palette that's most easily distinguishable. For example, to pick 3 equidistant colors from the "Viridis" palette (generated with `viridis`):
+This approach works for figures generated with any R package.
+
+## Applying GEMINI colors to `ggplots`
+
+For figures created with `ggplot2`, you can also use `scale_fill_gemini()` or `scale_color_gemini()` to apply the color palettes. For example:
 
 ```{r}
-ggplot(data[data$group %in% c("A", "B", "C"), ], aes(x = x, y = y, color = group)) +
+ggplot(data, aes(x = x, y = y, color = group)) +
   geom_point() +
   plot_theme() +
-  scale_color_manual(values = gemini_colors(8)[seq(1, 9, by = 4)])
+  scale_color_gemini("lav")
 ```
 
+
+## Color palettes from other packages
+
+In addition to the GEMINI color palettes, there are several other packages that create beautiful color palettes for publication-ready figures. Below is a short intro on some of the colorblind friendly options we recommend using. These palettes allow for additional flexibility and customization that is currently not supported by the GEMINI color palettes.
+
+### `viridis`
+
+The viridis color palettes are a set of perceptually uniform color maps designed for scientific visualization. They were developed to address limitations of traditional color maps, which often suffer from uneven brightness or discontinuities in hue.
+
+For more details, see [here](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html)
+
+For example, this is a selection of 7 colors from the "viridis" palette:  
+
+```{r fig.height = 0.5}
+library(viridis)
+
+fig <- ggplot(data.frame(x = as.factor(seq(7, 1))), aes(x = 1, y = 1, fill = x)) +
+  geom_col(position = position_stack(reverse = TRUE), show.legend = FALSE) +
+  coord_flip() +
+  theme_void()
+
+fig + scale_fill_viridis(discrete = TRUE, option = "viridis")
+```
+
+... or viridis' "magma" palette:  
+
+```{r fig.height = 0.5}
+fig + scale_fill_viridis(discrete = TRUE, option = "magma")
+```
+
+### `ggsci`
+
+The `ggsci` package provides a collection of color palettes specifically designed for scientific journals. These color palettes are designed to enhance the visual appeal and interpretability of ggplot2 graphics. 
+
+For more details, see [here](https://cran.r-project.org/web/packages/ggsci/vignettes/ggsci.html and https://nanx.me/ggsci/articles/ggsci.html).
+
+Some examples of commonly used palettes include:
+
++ JAMA palette:
+
+```{r fig.height = 0.5}
+library(ggsci)
+
+fig + scale_fill_jama()
+```
+
++ Lancet palette:
+
+```{r fig.height = 0.5}
+fig + scale_fill_lancet() 
+```
+
++ JCO palette:
+
+```{r fig.height = 0.5}
+fig + scale_fill_jco()
+```
+
+
+### `RColorBrewer`
+
+ColorBrewer is a flexible tool for selecting color schemes. ColorBrewer includes color schemes that are colorblind safe, print friendly, and perceptually uniform. It offers a wide range of color palettes optimized for different types of data and visualization purposes.
+
+For more details, see [here](https://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3)
+
+
+```{r fig.height = 0.5}
+library(RColorBrewer)
+fig + scale_fill_brewer(palette = "PRGn")
+```
+
+You can explore all colorblind friendly ColorBrewer palettes by running: 
+
+```{r fig.height = 7}
+display.brewer.all(colorblindFriendly = TRUE) 
+```
 
 *  *  *  *
 
 
-# Other Resources {#resources}
+# Resources {#resources}
 
 - ggplot2 vignette for theme specifications: https://ggplot2.tidyverse.org/reference/theme.html
 - a comprehensive guide on ggplot2 & color palettes: https://www.cedricscherer.com/2019/08/05/a-ggplot2-tutorial-for-beautiful-plotting-in-r/
 - ggsci color palettes for scientific journals: https://cran.r-project.org/web/packages/ggsci/vignettes/ggsci.html and https://nanx.me/ggsci/articles/ggsci.html
 - viridis color maps: https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html
-- color brewer: https://r-graph-gallery.com/38-rcolorbrewers-palettes.html
+- color brewer: https://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3
 
 
 <!-- remove border around images -->
