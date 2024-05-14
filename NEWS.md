@@ -2,6 +2,8 @@
 
 * Updated unit tests & small bug fix in `daily_census` 
 * Enable `prettyNum` formatting in table 1 render functions
+* Updated unit tests & small bug fix in `daily_census`
+* Ordered package names in pkgdown reference file
 
 # Rgemini 0.4.2
 
