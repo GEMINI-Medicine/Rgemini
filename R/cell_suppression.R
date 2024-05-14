@@ -597,8 +597,8 @@ render_cell_suppression.discrete <- function(x) {
 #' A variable with missing values to summarize.
 #' 
 #' @param ... \cr
-#' Further arguments, passed to `prettyNum()` for additional formatting (e.g.,
-#' `big.mark = ","`).
+#' Further arguments, passed to `table1:::stats.apply.rounding()` and
+#' `prettyNum()` for additional formatting (e.g., `big.mark = ","`).
 #' 
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
@@ -615,9 +615,14 @@ render_cell_suppression.discrete <- function(x) {
 #' render_cell_suppression.missing(x)
 #'
 render_cell_suppression.missing <- function(x, ...) {
+  args <- list(...)
   if (sum(is.na(x)) < 6) {
     c("", Missing = "&lt; 6 obs. (suppressed)")
   } else {
-    prettyNum(render.missing.default(x), ...)
+    if (!is.null(args$digits)) {
+      prettyNum(render.missing.default(x, digits.pct = args$digits), ...)
+    } else {
+      prettyNum(render.missing.default(x), ...)
+    }
   }
 }
