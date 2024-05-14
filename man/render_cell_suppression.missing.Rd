@@ -11,8 +11,8 @@ render_cell_suppression.missing(x, ...)
 A variable with missing values to summarize.}
 
 \item{...}{\cr
-Further arguments, passed to \code{prettyNum()} for additional formatting (e.g.,
-\code{big.mark = ","}).}
+Further arguments, passed to \code{table1:::stats.apply.rounding()} and
+\code{prettyNum()} for additional formatting (e.g., \code{big.mark = ","}).}
 }
 \value{
 named (\code{character})\cr
