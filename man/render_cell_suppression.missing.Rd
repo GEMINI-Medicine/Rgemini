@@ -4,11 +4,15 @@
 \alias{render_cell_suppression.missing}
 \title{Render Cell Suppression (Missing)}
 \usage{
-render_cell_suppression.missing(x)
+render_cell_suppression.missing(x, ...)
 }
 \arguments{
 \item{x}{(\code{character} or \code{factor})\cr
 A variable with missing values to summarize.}
+
+\item{...}{\cr
+Further arguments, passed to \code{prettyNum()} for additional formatting (e.g.,
+\code{big.mark = ","}).}
 }
 \value{
 named (\code{character})\cr
