@@ -1,6 +1,7 @@
 # Rgemini `develop`
 
 * Updated unit tests & small bug fix in `daily_census` 
+* Enable `prettyNum` formatting in table 1 render functions
 
 # Rgemini 0.4.2
 

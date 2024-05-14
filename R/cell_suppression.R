@@ -107,7 +107,8 @@ max_pairwise_smd <- function(x, name, round_to = 3, ...) {
 #' in which case it is passed to `table1:::parse.abbrev.render.code()`. Set to `NULL` to ignore missing values.
 #'
 #' @param ... \cr
-#' Further arguments, passed to `table1:::stats.apply.rounding()`.
+#' Further arguments, passed to `table1:::stats.apply.rounding()` or
+#' `prettyNum()` for additional formatting (e.g., `big.mark = ","`).
 #'
 #' @return (`character`)\cr
 #' Summary of variable as a character vector with cell suppression applied.
@@ -134,7 +135,7 @@ render_cell_suppression.default <- function(
   if (is.logical(x)) x <- factor(x, levels = c(T, F), labels = c("Yes", "No"))
 
   if (is.factor(x) || is.character(x)) {
-    r <- do.call(render.categorical, list(x = x))
+    r <- do.call(render.categorical, c(list(x = x), list(...)))
 
   } else if (is.numeric(x)) {
 
@@ -152,9 +153,9 @@ render_cell_suppression.default <- function(
   }
 
   if (missing && !is.null(render.missing)) {
-    r <- c(r, do.call(render.missing, list(x = x)))
+    r <- c(r, do.call(render.missing, c(list(x = x), list(...))))
   }
-
+  
   if (transpose) {
     if (!is.null(names(r))) {
       r <- paste0(sprintf("%s: %s", names(r), r), collapse = "<br/>")
@@ -183,7 +184,9 @@ render_cell_suppression.default <- function(
 #'
 #' @param ... \cr
 #' Optionally accept a named `digits` (`integer`) or `single_level_binary` (`logical`) argument
-#' which specifiesthe number of digits to round percentages to.
+#' which specifies the number of digits to round percentages to.
+#' Also accepts additional inputs that are passed to `prettyNum()` to apply
+#' additional formatting to shown results (e.g., `big.mark = ","`).
 #'
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
@@ -261,7 +264,7 @@ render_cell_suppression.categorical <- function(x, ...) {
       transmute(summary = sprintf(output_format, frequency, pct))
   }
 
-  res <- t(contents) %>% as.character()
+  res <- prettyNum(t(contents), ...) %>% as.character()
   names(res) <- colnames(t(contents))
 
   if (
@@ -288,7 +291,9 @@ render_cell_suppression.categorical <- function(x, ...) {
 #'
 #' @param ... \cr
 #' Optionally accept a named `digits` (`integer`) or `single_level_binary` (`logical`) argument
-#' which specifiesthe number of digits to round percentages to.
+#' which specifies the number of digits to round percentages to.
+#' Also accepts additional inputs that are passed to `prettyNum()` to apply
+#' additional formatting to shown results (e.g., `big.mark = ","`).
 #'
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
@@ -345,7 +350,7 @@ render_strict_cell_suppression.categorical <- function(x, ...) {
       )
     )
 
-  res <- t(contents) %>% as.character()
+  res <- prettyNum(t(contents), ...) %>% as.character()
   names(res) <- colnames(t(contents))
 
   if (
@@ -495,12 +500,13 @@ render_cell_suppression.continuous <- function(x, ...) {
 #' @export
 #'
 render_cell_suppression.strat <- function(label, n, transpose = FALSE) {
+  
   sprintf(
     ifelse(
       is.na(n),
       "<span class='stratlabel'>%s</span>",
       ifelse(
-        as.numeric(n) < 6,
+        as.numeric(gsub("[^0-9.-]", "", n)) < 6, # need to remove any optional formatting here to check numeric value
         "<span class='stratlabel'>%s<br><span class='stratn'>(N&lt; 6 obs. (suppressed))</span></span>",
         "<span class='stratlabel'>%s<br><span class='stratn'>(N=%s)</span></span>"
       )
@@ -519,6 +525,10 @@ render_cell_suppression.strat <- function(label, n, transpose = FALSE) {
 #' @param x (`character` or `factor`)\cr
 #' A discrete variable to summarize.
 #'
+#' @param ... \cr
+#' Further arguments, passed to `prettyNum()` for additional formatting (e.g.,
+#' `big.mark = ","`).
+#'
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
 #'
@@ -528,10 +538,10 @@ render_cell_suppression.strat <- function(label, n, transpose = FALSE) {
 #' @examples
 #' render_default.discrete(mtcars$vs)
 #'
-render_default.discrete <- function(x) {
+render_default.discrete <- function(x, ...) {
   with(
     stats.default(x),
-    c("", Sum = sprintf("%s", SUM))
+    c("", Sum = prettyNum(sprintf("%s", SUM), ...))
   )
 }
 
@@ -585,7 +595,11 @@ render_cell_suppression.discrete <- function(x) {
 #'
 #' @param x (`character` or `factor`)\cr
 #' A variable with missing values to summarize.
-#'
+#' 
+#' @param ... \cr
+#' Further arguments, passed to `prettyNum()` for additional formatting (e.g.,
+#' `big.mark = ","`).
+#' 
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
 #'
@@ -600,10 +614,10 @@ render_cell_suppression.discrete <- function(x) {
 #' x[5:10] <- NA
 #' render_cell_suppression.missing(x)
 #'
-render_cell_suppression.missing <- function(x) {
+render_cell_suppression.missing <- function(x, ...) {
   if (sum(is.na(x)) < 6) {
     c("", Missing = "&lt; 6 obs. (suppressed)")
   } else {
-    render.missing.default(x)
+    prettyNum(render.missing.default(x), ...)
   }
 }
