@@ -33,6 +33,7 @@ knitr::opts_chunk$set(
 )
 
 ## uncomment this when trying to knit vignette locally
+# library(Rgemini)
 # library(ggplot2)
 # library(ggpubr)
 # library(lemon)

@@ -40,15 +40,22 @@ plot_theme <- function(
       base_family = base_family
     ) +
       theme(
+        plot.margin = unit(c(2, 0.05, 0.05, 0.05), "lines"),
+        
         plot.title = element_text(
           face = "bold",
           size = rel(1),
           hjust = 0.5,
-          vjust = rel(5)
+          vjust = rel(10),
+          margin = unit(c(0, 0, 0, 0), "lines")
         ),
-
-        plot.margin = unit(c(0.05, 0.05, 0.05, 0.05), "npc"),
-        plot.subtitle = element_text(size = rel(0.9)),
+        
+        plot.subtitle = element_text(
+          size = rel(0.9),
+          hjust = 0.5,
+          vjust = rel(8),
+          margin = unit(c(0, 0, 0, 0), "lines")
+        ),
 
         panel.background = element_rect(colour = NA),
         plot.background = element_rect(colour = NA),
@@ -85,7 +92,7 @@ plot_theme <- function(
         ## top strip for facet wrap plots
         strip.background = element_rect(fill = "grey85", colour = NA),
         strip.text = element_text(face = "bold", size = rel(0.75)),
-
+        
         ...
       ))
   
@@ -132,7 +139,7 @@ gemini_colors <- function(palette = 1) {
       "#9b9b9b"
     ),
     "Shadowed Spectrum" = c(
-      "#1A1C20", 
+      "#3B393D", 
       "#5a78a9",
       "#7b9e6e",
       "#BD443B",
@@ -260,7 +267,7 @@ plot_color_palettes <- function(plot_palettes = "all") {
       theme(plot.margin = margin(l = .05, r = .05, b = .1, unit = "npc"))
     
     if (!is.null(idx)) {
-      sub_fig <- sub_fig + ggtitle(paste0("  ", idx, ") ", pal_name))
+      sub_fig <- sub_fig + ggtitle(paste0("     ", idx, ") ", pal_name))
     }
     
     return(sub_fig)
@@ -277,9 +284,7 @@ plot_color_palettes <- function(plot_palettes = "all") {
     )
     
     fig <- suppressWarnings(
-      ggarrange(
-        plotlist = sub_figs, nrow = ceiling(length(palettes) / 2), ncol = 2
-      )
+      ggarrange(plotlist = sub_figs, ncol = 1)
     )
   } else {
     # for a single palette

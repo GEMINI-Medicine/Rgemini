@@ -260,7 +260,8 @@ plot_summary <- function(data,
         labels = if (prct == TRUE) percent else rescale_none,
         expand = expansion(mult = c(0, 0.1))
       ) +
-      plot_theme(base_size = base_size)
+      plot_theme(base_size = base_size, aspect.ratio = 1) + 
+      theme(plot.subtitle = element_text(hjust = 0))
 
 
     ## if more than 10 x-tick labels, add angle for better visibility
