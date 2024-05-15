@@ -76,7 +76,7 @@ plot_summary <- function(data,
              cpso|physician|adm_code_raw|dis_code_raw|mrp_code_raw",
         colnames(data),
         ignore.case = TRUE
-      ) & colnales(data) != "mrp"
+      ) & colnames(data) != "mrp"
     ]
   }
 
