@@ -72,10 +72,11 @@ plot_summary <- function(data,
   ## by default, plot all variables, except ID or date-time variables
   if (is.null(plot_vars)) {
     plot_vars <- colnames(data)[
-      !grepl("genc_id|patient_id|cpso|hospital_id|hospital_num|_date|_time",
+      !grepl("genc_id|patient_id|hospital_id|hospital_num|_date|_time|
+             cpso|physician|adm_code_raw|dis_code_raw|mrp_code_raw",
         colnames(data),
         ignore.case = TRUE
-      )
+      ) & colnales(data) != "mrp"
     ]
   }
 
