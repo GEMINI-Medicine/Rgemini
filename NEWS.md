@@ -3,6 +3,8 @@
 * Adds plotting functions for data exploration: `plot_summary()` and `plot_over_time()`
 * Adds functions for plotting theme & colors: `plot_theme()` and `gemini_colors()`
 * Updated unit tests & small bug fix in `daily_census` 
+* Updated unit tests & small bug fix in `daily_census`
+* Ordered package names in pkgdown reference file
 
 # Rgemini 0.4.2
 
