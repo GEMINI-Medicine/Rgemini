@@ -87,11 +87,11 @@ plot_summary <- function(data,
     ## add plot_var as list item
     plot_vars <- Map(c, plot_vars, plot_var = names(plot_vars))
 
-    ## add varlabel as list item
+    ## add variable label as list item
     # same as plot_vars names if provided as character vector
     plot_vars <- Map(c, plot_vars, varlabel = fix_var_str(names(plot_vars)))
   } else {
-    ## add varlabel as list item
+    ## add variable label as list item
     plot_vars <- Map(c, plot_vars, varlabel = names(plot_vars))
   }
 
