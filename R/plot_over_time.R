@@ -306,18 +306,18 @@ plot_over_time <- function(
     # or line_group & color_group are different
     if ((!is.null(line_group) && !is.null(facet_group) && line_group != facet_group) &&
       (is.null(color_group) || (!is.null(line_group) && !is.null(color_group) && line_group != color_group))) {
-      grouping <- unique(c(time_int, color_group, facet_group))
+      grouping_overall <- unique(c(time_int, color_group, facet_group))
     } else {
-      grouping <- unique(c(time_int, color_group))
+      grouping_overall <- unique(c(time_int, color_group))
     }
 
     if (func == "count") {
       # for count variables, "overall" line represents median of all other lines
-      res_overall <- res[, .(outcome = median(outcome, na.rm = TRUE)), by = grouping]
+      res_overall <- res[, .(outcome = median(outcome, na.rm = TRUE)), by = grouping_overall]
     } else {
       # for all other functions, "overall" line represents mean/median etc.
       # across all data points (per grouping var)
-      res_overall <- aggregate_data(data, func, grouping)
+      res_overall <- aggregate_data(data, func, grouping_overall)
     }
   }
 
@@ -327,14 +327,13 @@ plot_over_time <- function(
     col_name <- ifelse(func == "count", "n", paste(func, paste0(c(plot_var, plot_cat), collapse = "_"), sep = "_"))
     setnames(res, "outcome", col_name, skip_absent = TRUE)
     setnames(res_overall, "outcome", col_name, skip_absent = TRUE)
-    
     ## Prepare output
     output <- list()
     if (nrow(res) > 0) {
-      output$data_aggr <- res
+      output$data_aggr <- setorderv(res, grouping)
     }
     if (nrow(res_overall) > 0) {
-      output$data_aggr_overall <- res_overall
+      output$data_aggr_overall <- setorderv(res_overall, grouping_overall)
     }
     return(output)
   } else {
@@ -367,7 +366,8 @@ plot_over_time <- function(
           )
       }
 
-      fig <- fig + geom_line(
+      fig <- fig +
+        geom_line(
         linewidth = line_width,
         alpha = ifelse(
           show_overall && ((is.null(facet_group) ||
@@ -381,8 +381,9 @@ plot_over_time <- function(
                          (is.null(facet_group) || ((!is.null(facet_group) && color_group != facet_group)) ||
                               ((!is.null(facet_group) && !is.null(line_group) && line_group == facet_group)))),
           stat = if (!is.null(smooth_method)) "smooth" else "identity",
-          method = smooth_method # if smooth method is specified, fit trend line according to specified method
+          method = if (!is.null(smooth_method)) smooth_method else ... # if smooth method is specified, fit trend line according to specified method
         )
+    
 
 
       if (!is.null(facet_group)) {
