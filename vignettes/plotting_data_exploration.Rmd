@@ -355,8 +355,6 @@ plot_over_time(
 ) + 
   annotate("text", x = as.Date("2020-03-01"), y = 80, label = "1st COVID wave", color = "#022061") + 
   annotate("segment", x = as.Date("2020-03-01"), xend = as.Date("2020-03-01"), y = 63, yend = 79, color = "#022061", linetype = 2)
-
-
 ```
 
 
