@@ -71,15 +71,6 @@ plot_summary <- function(data,
   data <- as.data.table(data)
   ## by default, plot all variables, except ID or date-time variables
   if (is.null(plot_vars)) {
-    warning(
-      paste(
-        "No `plot_vars` input provided.",
-        "`plot_summary()` will plot all variables (except ID/date-time variables) in `data` input.\n", 
-        "This approach is not recommended for large tables with many columns.\n",
-        "Instead, we recommend explicitly specifying a subset of variables you",
-        "want to plot to avoid memory issues/cluttered outputs."
-      ), immediate. = TRUE
-    )
     plot_vars <- colnames(data)[
       !grepl("genc_id|patient_id|hospital_id|hospital_num|_date|_time|cpso|physician|adm_code_raw|dis_code_raw|mrp_code_raw",
              colnames(data),
@@ -92,6 +83,21 @@ plot_summary <- function(data,
       stop(
         paste("No relevant plotting variables found.\n",
               "Please inspect your `data` input and specify the variables you would like to plot.")
+      )
+    }
+    
+    ## show warning for large tables
+    # if no `plot_vars` input provided and table has >= 10 relevant columns
+    if (length(plot_vars) >= 10) {
+      warning(
+        paste(
+          "No `plot_vars` input provided for large table.",
+          "`plot_summary()` will plot all variables (except ID/date-time variables)",
+          "in `data` input (=", length(plot_vars), "variables).\n", 
+          "This approach is not recommended for large tables with many columns.",
+          "Instead, we recommend explicitly specifying a subset of variables you",
+          "want to plot to avoid memory issues/cluttered outputs."
+        ), immediate. = TRUE
       )
     }
   }
@@ -257,7 +263,7 @@ plot_summary <- function(data,
       ) +
         geom_bar(color = "grey20", fill = color) + 
         scale_x_discrete( # limit x-tick labels to 10 characters
-          labels = function(x) str_wrap(x, width = 10, simplify = TRUE)
+          label = function(x) stringr::str_trunc(x, 15)
         ) 
       
       ## add stats/labels
