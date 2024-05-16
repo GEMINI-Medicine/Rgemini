@@ -254,6 +254,19 @@ plot_summary <- function(data,
       is.null(var$class) && class(data[[var$plot_var]]) %in%
       c("character", "logical")
     )) {
+      
+      # show warning about large number of categories
+      if (length(unique(as.factor(data[[var$plot_var]]))) > 50) {
+        warning(
+          paste0(
+            "Plotting > 50 categories on x-axis for variable '", var$plot_var, "'.\n",
+            "This might take a while and can result in poor readability of the x-tick labels. ",
+            "We recommend applying additional grouping before running this function ", 
+            "or plotting this variable in a separate figure."
+          ), immediate. = TRUE
+        )
+      }
+      
       ## create barplot
       sub_fig <- ggplot(
         data, aes(
@@ -291,8 +304,10 @@ plot_summary <- function(data,
       theme(plot.subtitle = element_text(hjust = 0))
 
 
-    ## if more than 10 x-tick labels, add angle for better visibility
-    if (length(ggplot_build(sub_fig)$layout$panel_params[[1]]$x$breaks) > 10) {
+    ## if more than 10 x-tick labels (or tick labels with > 5 characters),
+    # add angle for better visibility
+    if (length(ggplot_build(sub_fig)$layout$panel_params[[1]]$x$breaks) > 10 ||
+        any(nchar(unique(as.character(data[[var$plot_var]])))) > 5) {
       sub_fig <- sub_fig +
         theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
     }
