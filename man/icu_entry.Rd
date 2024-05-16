@@ -9,7 +9,7 @@ icu_entry(
   ipscu,
   as_outcome = FALSE,
   exclude_xhr_post_ipadmit = 0,
-  window = c(24, 48, 72)
+  entry_window = c(24, 48, 72)
 )
 }
 \arguments{
@@ -29,12 +29,22 @@ GEMINI Encounter ID (\code{genc_id}), SCU admission time (\code{scu_admit_date_t
 
 \item{as_outcome}{(\code{logical})\cr
 Whether ICU admission is as a clinical outcome or not. Default to FALSE.
-When set to TRUE, records with direct ICU admission before admitted to inpatient care
-(i.e. \verb{scu_admit_date_time`` <= }admission_date_time``) are excluded.}
+When set to TRUE, records with direct ICU admission before admitted to inpatient care (IP admission)
+(i.e. \code{scu_admit_date_time} <= \code{admission_date_time}) are excluded.}
 
-\item{window}{(\code{integer}, \code{vector})\cr
-Time window of ICU entry since hospital admission, in hours.
-By default, \code{window = c(24, 48, 72)} to calculate ICU entry within 24, 48 or 72 hours since hospital admission.}
+\item{exclude_xhr_post_ipadmit}{(\code{integer})\cr
+This parameter allows users to specify a time cutoff (x hours post IP amdmission) to exclude records from being identified as ICU admissions.
+This parameter is only relevant when \code{as_outcome=TRUE}.
+For example, when \code{exclude_xhr_post_ipadmit = 12}, records with ICU entry time \code{scu_admit_date_time} <= \verb{admission_date_time + 12 hours}
+are excluded from being identified as ICU admissions.
+Default is exclude_xhr_post_ipadmit = 0, where any ICU entries before IP admission are excluded.}
+
+\item{entry_window}{(\code{integer}, \code{vector})\cr
+Time window of ICU entry since IP admission (or since x hours post IP admission when user specifies \code{exclude_xhr_post_ipadmit}), in hours.
+By default, \code{entry_window = c(24, 48, 72)} to calculate ICU entry within 24, 48 and 72 hours since IP admission.
+This paramete, together with \code{exclude_xhr_post_ipadmit} specifies the time interval during which ICU admissions are identified.
+For example, when \code{exclude_xhr_post_ipadmit = 10} and \code{entry_window = 48}, function determines whether a patient
+was admitted to ICU between 10 and 48 hours post IP admission (i.e. time interval (10, 48] hours)).}
 }
 \value{
 (\code{data.table})\cr
@@ -73,14 +83,20 @@ When one tries to left-join the output of this function to another table,
 make sure the list of encounters aligns in both tables
 }
 \examples{
-# Default time window 24, 48, 72 hours:
+ICU admission within the first 24 hours since IP admission (i.e. you are interested in knowing \% of encounters admitted to ICU):
 \dontrun{
-icu_entry (cohort, ipscu)
+icu_entry (cohort, ipscu, as_outcome=FALSE, entry_window=24)
 }
 
-# User specified time window:
+ICU admission within the first 24 hours since IP admission, as a clinical outcome excluding records with ICU entries prior to IP admission:
 \dontrun{
-icu_entry (cohort, ipscu, window=12)
+icu_entry (cohort, ipscu, as_outcome=TRUE, entry_window=24)
+}
+
+ICU admission within the first 24 hours since IP admission, as a clinical outcome excluding records with ICU entries prior to 12 hours post IP admission 
+(i.e. you are interested in knowing patients who were admitted to ICU between the interval of (12, 24] hours since IP admission):
+\dontrun{
+icu_entry (cohort, ipscu, as_outcome=TRUE, exclude_xhr_post_ipadmit=12, entry_window=24)
 }
 
 }
