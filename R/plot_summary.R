@@ -91,9 +91,9 @@ plot_summary <- function(data,
     if (length(plot_vars) >= 10) {
       warning(
         paste(
-          "No `plot_vars` input provided for large table.",
+          "No `plot_vars` input provided for large table.\n",
           "`plot_summary()` will plot all variables (except ID/date-time variables)",
-          "in `data` input (=", length(plot_vars), "variables).\n", 
+          "in `data` input (=", length(plot_vars), "variables).", 
           "This approach is not recommended for large tables with many columns.",
           "Instead, we recommend explicitly specifying a subset of variables you",
           "want to plot to avoid memory issues/cluttered outputs."
@@ -263,7 +263,7 @@ plot_summary <- function(data,
       ) +
         geom_bar(color = "grey20", fill = color) + 
         scale_x_discrete( # limit x-tick labels to 10 characters
-          label = function(x) stringr::str_trunc(x, 15)
+          label = function(x) stringr::str_trunc(x, 10)
         ) 
       
       ## add stats/labels
