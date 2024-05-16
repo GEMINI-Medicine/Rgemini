@@ -107,11 +107,14 @@
 #' This is the desired behavior in cases where counts of 0 patients are conceptually meaningful. For example, when users
 #' want to analyze how many patients with a rare condition are in hospital on a typical day, days where `census = 0`
 #' represent true counts of 0 patients (assuming the cohort provides sufficient coverage of all hospitalized patients).
-#'
+#' Note: If data availability periods differ between hospitals, `census` counts will only be set to 0 for dates
+#' that fall within the min-max date range for that particular site.
+#' 
 #' In other scenarios, users may want to disregard days where `census = 0` by specifying `include_zero = FALSE`.
 #' For example, when looking at daily census counts per physician, days where `census = 0` likely reflect days
 #' where a given physician was not on service. Therefore, those days should not be included in the estimate of
 #' physicians' typical patient volume.
+#' 
 #'
 #' @return (`data.table`)\cr
 #' data.table with the daily counts of hospitalized patients (`census`) at each hospital. Additionally, the
@@ -271,7 +274,7 @@ daily_census <- function(cohort,
 
   ## Filter cohort by relevant time period
   cohort <- cohort[discharge_date_time >= time_period_start &
-    discharge_date_time <= time_period_end + hms(time_of_day), ]
+    admission_date_time <= time_period_end + hms(time_of_day), ]
 
   ## make these key variables to be used as 'interval' in foverlaps function below
   setkey(cohort, "admission_date_time", "discharge_date_time")
@@ -476,7 +479,6 @@ daily_census <- function(cohort,
       return(census)
     }
   }
-
 
 
   #####  calculate census separately for each hospital  #####
