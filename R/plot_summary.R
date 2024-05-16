@@ -83,7 +83,7 @@ plot_summary <- function(data,
         paste(
           "Ignoring any encounter-, patient-, physician-, and hospital-id variables.\n",
           "If you would like to plot them, please explicitly specify those variables using `plot_vars = c(...)`\n"
-        ), immediate. = TRUE
+        ), immediate. = TRUE)
     }
     
     ## return error if no relevant (non-ID/-date-time) variables found
