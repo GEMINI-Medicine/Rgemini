@@ -78,11 +78,19 @@ plot_summary <- function(data,
       ) & colnames(data) != "mrp"
     ]
     
+    if (length(plot_vars) < ncol(data)) {
+      warning(
+        paste(
+          "Ignoring any encounter-, patient-, physician-, and hospital-id variables.\n",
+          "If you would like to plot them, please explicitly specify those variables using `plot_vars = c(...)`\n"
+        ), immediate. = TRUE
+    }
+    
     ## return error if no relevant (non-ID/-date-time) variables found
     if (length(plot_vars) == 0) {
       stop(
         paste("No relevant plotting variables found.\n",
-              "Please inspect your `data` input and specify the variables you would like to plot.")
+              "Please inspect your `data` input and specify the variables you would like to plot.\n")
       )
     }
     
@@ -96,7 +104,7 @@ plot_summary <- function(data,
           "in `data` input (=", length(plot_vars), "variables).", 
           "This approach is not recommended for large tables with many columns.",
           "Instead, we recommend explicitly specifying a subset of variables you",
-          "want to plot to avoid memory issues/cluttered outputs."
+          "want to plot to avoid memory issues/cluttered outputs.\n"
         ), immediate. = TRUE
       )
     }
@@ -262,7 +270,7 @@ plot_summary <- function(data,
             "Plotting > 50 categories on x-axis for variable '", var$plot_var, "'.\n",
             "This might take a while and can result in poor readability of the x-tick labels. ",
             "We recommend applying additional grouping before running this function ", 
-            "or plotting this variable in a separate figure."
+            "or plotting this variable in a separate figure.\n"
           ), immediate. = TRUE
         )
       }
