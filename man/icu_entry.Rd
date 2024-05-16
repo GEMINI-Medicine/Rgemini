@@ -8,8 +8,8 @@ icu_entry(
   cohort,
   ipscu,
   as_outcome = FALSE,
-  exclude_xhr_post_ipadmit = 0,
-  entry_window = c(24, 48, 72)
+  exclude_cutoff = 0,
+  entry_since_cutoff = c(24, 48, 72)
 )
 }
 \arguments{
@@ -32,19 +32,19 @@ Whether ICU admission is as a clinical outcome or not. Default to FALSE.
 When set to TRUE, records with direct ICU admission before admitted to inpatient care (IP admission)
 (i.e. \code{scu_admit_date_time} <= \code{admission_date_time}) are excluded.}
 
-\item{exclude_xhr_post_ipadmit}{(\code{integer})\cr
-This parameter allows users to specify a time cutoff (x hours post IP amdmission) to exclude records from being identified as ICU admissions.
+\item{exclude_cutoff}{(\code{integer})\cr
+The number of hours to add to the IP admission time to establish a cutoff time for excluding records from being identified as ICU admissions.
 This parameter is only relevant when \code{as_outcome=TRUE}.
-For example, when \code{exclude_xhr_post_ipadmit = 12}, records with ICU entry time \code{scu_admit_date_time} <= \verb{admission_date_time + 12 hours}
+For example, when \code{exclude_cutoff = 12}, records with ICU entry time \code{scu_admit_date_time} <= \verb{admission_date_time + 12 hours}
 are excluded from being identified as ICU admissions.
-Default is exclude_xhr_post_ipadmit = 0, where any ICU entries before IP admission are excluded.}
+Default is exclude_cutoff = 0, where any ICU entries before IP admission time are excluded.}
 
-\item{entry_window}{(\code{integer}, \code{vector})\cr
-Time window of ICU entry since IP admission (or since x hours post IP admission when user specifies \code{exclude_xhr_post_ipadmit}), in hours.
-By default, \code{entry_window = c(24, 48, 72)} to calculate ICU entry within 24, 48 and 72 hours since IP admission.
-This paramete, together with \code{exclude_xhr_post_ipadmit} specifies the time interval during which ICU admissions are identified.
-For example, when \code{exclude_xhr_post_ipadmit = 10} and \code{entry_window = 48}, function determines whether a patient
-was admitted to ICU between 10 and 48 hours post IP admission (i.e. time interval (10, 48] hours)).}
+\item{entry_since_cutoff}{(\code{integer}, \code{vector})\cr
+Time window of ICU entry since IP admission (or since x hours post IP admission when user specifies \code{exclude_cutoff}), in hours.
+By default, \code{entry_since_cutoff = c(24, 48, 72)} to calculate ICU entry within 24, 48 and 72 hours since IP admission.
+This parameter, together with \code{exclude_cutoff} specifies the time interval during which ICU admissions are identified.
+For example, when \code{exclude_cutoff = 10} and \code{entry_since_cutoff = 48}, function determines whether a patient
+was admitted to ICU between 10 and 58 (10+48) hours post IP admission (i.e. time interval (10, 58] hours)).}
 }
 \value{
 (\code{data.table})\cr
@@ -80,23 +80,27 @@ Please refer to the CIHI DAD abstracting manual for more details.
 :
 By design, function will not return any NA values.
 When one tries to left-join the output of this function to another table,
-make sure the list of encounters aligns in both tables
+make sure the list of encounters aligns in both tables.
+As there are 2 dependent parameters (exclude_cutoff, entry_since_cutoff)
+determining the time intervals in which ICU admissions will be identified,
+please read function documentation carefully when specifying a non-default value to these parameters
+to ensure the identification time interval is as intented. See examples below for common use cases.
 }
 \examples{
 ICU admission within the first 24 hours since IP admission (i.e. you are interested in knowing \% of encounters admitted to ICU):
 \dontrun{
-icu_entry (cohort, ipscu, as_outcome=FALSE, entry_window=24)
+icu_entry (cohort, ipscu, as_outcome=FALSE, entry_since_cutoff=24)
 }
 
 ICU admission within the first 24 hours since IP admission, as a clinical outcome excluding records with ICU entries prior to IP admission:
 \dontrun{
-icu_entry (cohort, ipscu, as_outcome=TRUE, entry_window=24)
+icu_entry (cohort, ipscu, as_outcome=TRUE, entry_since_cutoff=24)
 }
 
-ICU admission within the first 24 hours since IP admission, as a clinical outcome excluding records with ICU entries prior to 12 hours post IP admission 
-(i.e. you are interested in knowing patients who were admitted to ICU between the interval of (12, 24] hours since IP admission):
+ICU admission within the first 72 hours since IP admission, as a clinical outcome excluding records with ICU entries prior to the first 24 hours of IP admission 
+(i.e. you are interested in knowing patients who were admitted to ICU between the interval of (24, 72] hours since IP admission):
 \dontrun{
-icu_entry (cohort, ipscu, as_outcome=TRUE, exclude_xhr_post_ipadmit=12, entry_window=24)
+icu_entry (cohort, ipscu, as_outcome=TRUE, exclude_cutoff=24, entry_since_cutoff=48) # Note: entry_since_cutoff=48 (instead of 72) because 24+48=72
 }
 
 }
