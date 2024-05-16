@@ -4,7 +4,13 @@
 \alias{icu_entry}
 \title{Compute entry to Intensive Care Unit}
 \usage{
-icu_entry(cohort, ipscu, as_outcome = FALSE, window = c(24, 48, 72))
+icu_entry(
+  cohort,
+  ipscu,
+  as_outcome = FALSE,
+  exclude_xhr_post_ipadmit = 0,
+  window = c(24, 48, 72)
+)
 }
 \arguments{
 \item{cohort}{(\code{data.table}, \code{data.frame})\cr
