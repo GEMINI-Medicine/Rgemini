@@ -2,7 +2,7 @@
 
 * Updated unit tests & small bug fix in `daily_census`
 * Ordered package names in pkgdown reference file
-* Small bug fix in `Rgemini:::disability`
+* Small bug fix in `disability()`
 
 # Rgemini 0.4.2
 
