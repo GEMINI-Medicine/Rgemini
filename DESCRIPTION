@@ -33,14 +33,14 @@ Imports:
     MCMCpack,
     sn
 Suggests: 
-	colorBlindness,
-	ggsci,
+    colorBlindness,
+    ggsci,
     kableExtra,
     knitr,
-	RColorBrewer,
+    RColorBrewer,
     rmarkdown,
     testthat (>= 3.0.0),
-	viridis
+    viridis
 Config/testthat/edition: 3
 RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE)

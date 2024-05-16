@@ -61,6 +61,7 @@ This vignette introduces a standardized plotting theme ([*plot_theme()*](#plot_t
 The following example illustrates the theme applied to a basic barplot. We also use the default color palette from `gemini_colors()` here for illustration purposes (see section [Color Palettes](#gemini_colors) for more details):
 
 ```{r}
+library(Rgemini)
 library(ggplot2)
 
 # create example data

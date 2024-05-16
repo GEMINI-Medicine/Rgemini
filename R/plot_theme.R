@@ -41,7 +41,7 @@ plot_theme <- function(
     ) +
       theme(
         plot.margin = unit(c(2, 0.05, 0.05, 0.05), "lines"),
-        
+
         plot.title = element_text(
           face = "bold",
           size = rel(1),
@@ -49,7 +49,7 @@ plot_theme <- function(
           vjust = rel(10),
           margin = unit(c(0, 0, 0, 0), "lines")
         ),
-        
+
         plot.subtitle = element_text(
           size = rel(0.9),
           hjust = 0.5,
@@ -86,16 +86,15 @@ plot_theme <- function(
 
         legend.spacing = unit(0.05, "npc"),
         legend.title = element_text(face = "bold", hjust = 0, size = rel(1)),
-        legend.text = element_text(size = rel(0.95)),
-        legend.text.align = 0,
+        legend.text = element_text(size = rel(0.95), hjust = 0),
 
         ## top strip for facet wrap plots
         strip.background = element_rect(fill = "grey85", colour = NA),
         strip.text = element_text(face = "bold", size = rel(0.75)),
-        
+
         ...
       ))
-  
+
   return(res)
 }
 
@@ -122,24 +121,24 @@ plot_theme <- function(
 #' @export
 #'
 gemini_colors <- function(palette = 1) {
-  
+
   ## NOTE for developers:
   # When adding new colors, please check for colorblind accessibility using this
   # website: https://www.color-blindness.com/coblis-color-blindness-simulator/
   # and/or by running `colorBlindness::cvdPlot(plot_color_palettes())`
-  
+
   palettes <- list(
     "GEMINI Glow" = c(
       "#022061", # GEMINI navy
       "#02AFF0", # GEMINI cyan
-      "#398A3F", 
+      "#398A3F",
       "#EDAE49",
       "#A6361C",
       "#7B68EE",
       "#9b9b9b"
     ),
     "Shadowed Spectrum" = c(
-      "#3B393D", 
+      "#3B393D",
       "#5a78a9",
       "#7b9e6e",
       "#BD443B",
@@ -148,15 +147,15 @@ gemini_colors <- function(palette = 1) {
     ),
     "Mellow Medley" = c(
       "#022061", # GEMINI navy
-      "#86b9b0", 
+      "#86b9b0",
       "#c266a7",
-      "#6D6D6D", 
+      "#6D6D6D",
       "#4db5ff",
       "#DC965A"
     ),
-    "Lavender Lagoon" = c( 
+    "Lavender Lagoon" = c(
       "#28797B",
-      "#8c79a6", 
+      "#8c79a6",
       "#75a4de",
       "#DDAE7E",
       "#8f3f43",
@@ -165,7 +164,7 @@ gemini_colors <- function(palette = 1) {
     "Ocean Oasis" = c(
       "#022061", # GEMINI navy
       "#4477d1",
-      "#9ac4ff", 
+      "#9ac4ff",
       "#A5694F",
       "#D49A6A",
       "#F7D683",
@@ -193,7 +192,7 @@ gemini_colors <- function(palette = 1) {
       "#6E0007"
     )
   )
-  
+
   if (any(palette == "all")) {
     # return all color palettes
     # (should usually only be used when exploring all palettes)
@@ -217,7 +216,7 @@ gemini_colors <- function(palette = 1) {
         paste0("^", palette), names(palettes),
         ignore.case = TRUE
       )
-      
+
       if (sum(pal_name) == 0) {
         # warning if invalid name was provided
         stop(paste(
@@ -229,7 +228,7 @@ gemini_colors <- function(palette = 1) {
       }
     }
   }
-  
+
   return(cols)
 }
 
@@ -250,9 +249,9 @@ gemini_colors <- function(palette = 1) {
 #' @export
 #'
 plot_color_palettes <- function(plot_palettes = "all") {
-  
+
   palettes <- gemini_colors(plot_palettes)
-  
+
   ## plotting function
   plot_pal <- function(palette, pal_name, idx) {
     ## plot palette
@@ -265,14 +264,14 @@ plot_color_palettes <- function(plot_palettes = "all") {
       coord_flip() +
       theme_void(base_size = 10) +
       theme(plot.margin = margin(l = .05, r = .05, b = .1, unit = "npc"))
-    
+
     if (!is.null(idx)) {
       sub_fig <- sub_fig + ggtitle(paste0("     ", idx, ") ", pal_name))
     }
-    
+
     return(sub_fig)
   }
-  
+
   ## create subfigure for each palette
   # if plotting multiple palettes
   if (is.list(palettes)) {
@@ -282,17 +281,17 @@ plot_color_palettes <- function(plot_palettes = "all") {
         plot_pal(palettes[[idx]], name[idx], idx)
       }
     )
-    
+
     fig <- suppressWarnings(
       ggarrange(plotlist = sub_figs, ncol = 1)
     )
   } else {
     # for a single palette
     fig <- plot_pal(palettes, plot_palettes, NULL)
-    
+
   }
-  
-  
+
+
   return(fig)
 }
 
@@ -302,7 +301,7 @@ plot_color_palettes <- function(plot_palettes = "all") {
 #' @import ggplot2
 #' @inheritParams gemini_colors
 #' @export
-#' 
+#'
 scale_fill_gemini <- function(palette = 1) {
   scale_fill_manual(values = gemini_colors(palette))
 }

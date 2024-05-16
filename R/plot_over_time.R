@@ -108,10 +108,10 @@ plot_over_time <- function(
     base_size = 12,
     return_data = FALSE,
     ...) {
-  
+
   ##### Check inputs #####
   if (missing(plot_var) && !grepl("^n|count", func, ignore.case = TRUE)) stop("Missing the plot variable selection")
-  
+
   # by default, use hospital_num as hospital identifier, unless it doesn't exist
   # in data input (in that case, check if hospital_id exists and use that)
   if (line_group == "hospital_num" && !"hospital_num" %in% colnames(data) && "hospital_id" %in% colnames(data)) {
@@ -120,32 +120,32 @@ plot_over_time <- function(
   if (facet_group == "hospital_num" && !"hospital_num" %in% colnames(data) && "hospital_id" %in% colnames(data)) {
     facet_group <- "hospital_id"
   }
-  
+
   if (is.null(line_group) && !is.null(facet_group)) {
     line_group <- facet_group
   }
-  
+
   Rgemini:::check_input(
     data,
     c("data.table", "data.frame"),
     colnames = c(plot_var, time_var, line_group, color_group, facet_group)
   )
-  
+
   ##### Prepare data #####
   data <- data %>% as.data.table()
-  
+
   ## Get time_int
   # if user did not provide custom time_int variable in data
   # derive time_int (by default "month")
   if (!time_int %in% colnames(data)) {
     time_label <- fix_var_str(paste(strsplit(time_var, "[_]")[[1]][1], time_int))
-    
+
     # if user already provided date-time variable in POSIX/POSIXct format, keep
     # as is, otherwise, transform into appropriate format
     if (!any(grepl("POSIX", class(data[[time_var]])))) {
       data[, paste(time_var) := lubridate::parse_date_time(get(time_var), orders = c("ymd HM", "ymd HMS", "ymd"))]
     }
-    
+
     if (grepl("month", time_int, ignore.case = TRUE)) {
       data[, month := lubridate::ym(format(as.Date(get(time_var), format = "%Y-%m-%d"), "%Y-%m"))]
     } else if (grepl("quarter", time_int, ignore.case = TRUE)) {
@@ -163,7 +163,7 @@ plot_over_time <- function(
     data[, time_int := data[[time_int]]]
     time_label <- fix_var_str(time_int)
   }
-  
+
   ## pre-process func input into standardized version
   if (grepl("^n$|count", func, ignore.case = TRUE)) {
     func <- "count"
@@ -177,7 +177,7 @@ plot_over_time <- function(
   } else if (grepl("missing|^na", func, ignore.case = TRUE)) {
     func <- "missing"
   }
-  
+
   ##### Plot colors #####
   ## If single color is specified, will be used across all group levels
   if (length(colors) == 1 && length(unique(data[[color_group]])) > 1) {
@@ -187,27 +187,27 @@ plot_over_time <- function(
   if (!is.null(color_group) && length(unique(data[[color_group]])) > length(colors)) {
     colors <- rep_len(colors, length(unique(data[[color_group]])))
   }
-  
+
   if (!is.null(color_group)) {
     data[[color_group]] <- as.factor(data[[color_group]])
   }
   if (!is.null(facet_group)) {
     data[[facet_group]] <- as.factor(data[[facet_group]])
   }
-  
+
   ## check if plot_var is character/factor/logical -> plot % by default
   func <- ifelse(
     !func %in% c("count", "missing") &&
       (any(class(data[[plot_var]]) %in% c("character", "factor", "logical"))),
     "prct", func
   )
-  
-  
+
+
   ## if no plot_cat level specified, sort unique values and plot highest one
   if (func == "prct" && is.null(plot_cat)) {
     plot_cat <- dplyr::last(sort(unique(data[[plot_var]])))
   }
-  
+
   ## Function aggregating data by specified grouping variables
   aggregate_data <- function(data, func, grouping) {
     # aggregate for each individual hospital & by hospital_type
@@ -225,7 +225,7 @@ plot_over_time <- function(
       ), by = grouping]
     } else if (func == "prct") {
       data <- data[!is.na(get(plot_var)), ] # remove NA from denominator
-      
+
       res <- data[, .(
         outcome = 100 * sum(get(plot_var) %in% plot_cat) / sum(.N),
         n = .N
@@ -236,7 +236,7 @@ plot_over_time <- function(
         n = .N
       ), by = grouping]
     }
-    
+
     ## exclude observations with low cell count if min_n specified (will show up as gap on plot)
     # Note: If this means a whole combination of variables are excluded (e.g., all hospital*time combos for
     # gender = "0"), those will not be filled in again below; this is the desired behavior so fully empty
@@ -244,7 +244,7 @@ plot_over_time <- function(
     if (min_n > 0 && func != "count") {
       res <- res[n >= min_n, ]
     }
-    
+
     ## For any date*hosp combos that don't exist, merge and fill with NA so they correctly show up as empty on graph
     # Note: Does not include combos that don't exist at all (e.g., due to cell suppression)
     res <- droplevels(res) # drop levels that don't exist anymore at all
@@ -252,24 +252,24 @@ plot_over_time <- function(
       setDT(tidyr::crossing(unique(res[, ..time_int]), distinct(res[, -c(..time_int, "outcome", "n")])))
     )
     append <- anti_join(append, res, by = grouping)
-    
+
     ## append missing dates
     res <- rbind(res, append, fill = TRUE)
-    
+
     ## for count, impute empty time points with 0, i.e., treat missing time points as true zeros
     # (for all other funcs, missing time periods are shown as gap in timeline)
     if (func %in% c("count")) {
       res[is.na(outcome), outcome := 0]
       res[outcome < min_n, outcome := NA] # cell-suppression for counts (also applied to 0s!)
     }
-    
+
     return(res)
   }
-  
+
   ## Aggregate data by all relevant variables
   grouping <- unique(c(time_int, line_group, color_group, facet_group))
   res <- aggregate_data(data, func, grouping)
-  
+
   ## show warning if any groupings completely removed (due to cell suppression)
   check_excl <- function(var) {
     if (!is.null(var)) {
@@ -287,7 +287,7 @@ plot_over_time <- function(
     }
   }
   lapply(grouping, check_excl)
-  
+
   ## show warning if specific combos have missing/cell-suppressed data
   # Note: This includes entries that were removed due to cell-suppression (i.e., low counts)
   # if func = "count", empty cells are set to 0, those are not included here (are treated as "true" zeros)
@@ -297,8 +297,8 @@ plot_over_time <- function(
       Missing data found for the following combinations: ", immediate. = TRUE)
     print(res[is.na(outcome), -c("outcome", "n")])
   }
-  
-  
+
+
   ## Get Overall: Aggregate data by time * group (if any, otherwise, will just aggregate across all observations)
   res_overall <- data.table()
   if (show_overall == TRUE) {
@@ -310,7 +310,7 @@ plot_over_time <- function(
     } else {
       grouping_overall <- unique(c(time_int, color_group))
     }
-    
+
     if (func == "count") {
       # for count variables, "overall" line represents median of all other lines
       res_overall <- res[, .(outcome = median(outcome, na.rm = TRUE)), by = grouping_overall]
@@ -320,8 +320,8 @@ plot_over_time <- function(
       res_overall <- aggregate_data(data, func, grouping_overall)
     }
   }
-  
-  
+
+
   if (return_data) {
     ## change column names for outcome variable for clarity
     col_name <- ifelse(func == "count", "n", paste(func, paste0(c(plot_var, plot_cat), collapse = "_"), sep = "_"))
@@ -346,17 +346,16 @@ plot_over_time <- function(
         color = if (is.null(color_group)) overall_label else get(color_group)
       )
     )
-    
+
     # Label for overall summary line
     overall_label <- ifelse(func == "count", "Median", "Overall")
-    
-    
+
     ## Add individual hospital lines
     if (!is.null(line_group)) {
-      
+
       ## If applying smooth trend line, show individual data points as dots
       if (!is.null(smooth_method)) {
-        
+
         fig <- fig +
           geom_point(
             size = line_width, alpha = 0.2,
@@ -365,7 +364,7 @@ plot_over_time <- function(
                                 ((!is.null(facet_group) && !is.null(line_group) && line_group == facet_group))))
           )
       }
-      
+
       fig <- fig + suppressWarnings( # suppress warnings to ignore `method` when no smoothing is applied
         geom_line(
           linewidth = line_width,
@@ -384,20 +383,19 @@ plot_over_time <- function(
           method = smooth_method # if smooth method is specified, fit trend line according to specified method
         )
       )
-      
-      
+
       if (!is.null(facet_group)) {
         fig <- fig +
           facet_rep_wrap(~ get(facet_group), ...) +
           theme(panel.spacing.y = unit(0, "lines"))
       }
     }
-    
-    
+
+
     ## Add overall summary lines
     # Note: If only a single site is included, overall line/legend will not be shown
     if (show_overall == TRUE && (is.null(line_group) || length(unique(res[[line_group]])) > 1)) {
-      
+
       # if smooth trend line is shown, but individual lines are suppressed,
       # let's also show scatter plot for overall curve
       if (!is.null(smooth_method) && is.null(line_group)) {
@@ -411,8 +409,8 @@ plot_over_time <- function(
                      size = 2 * line_width,
                      alpha = 0.2)
       }
-      
-      
+
+
       fig <- fig + suppressWarnings( # suppress warnings to ignore `method` when no smoothing is applied
         geom_line(
           data = res_overall,
@@ -436,11 +434,11 @@ plot_over_time <- function(
           method = smooth_method # if smoothing, overall line will correspond to smooth line fitted to res_overall
         )
       )
-      
+
       fig <- fig + labs(color = NULL)
     }
-    
-    
+
+
     ######### Plot Appearance #########
     ## Adjust labels & theme
     fig <- fig +
@@ -456,8 +454,8 @@ plot_over_time <- function(
       ) +
       plot_theme(base_size = base_size) +
       theme(axis.text.x = element_text(angle = 60, hjust = 1))
-    
-    
+
+
     ## Adjust y-axis
     # If ylimits is specified, axis range will be fixed to that
     # otherwise, range will be expanded by 5% (unless min value for count/prct/missing outcomes is 0,
@@ -467,14 +465,14 @@ plot_over_time <- function(
     if ((is.null(ylimits) || sum(is.na(ylimits)) > 0) &&
         (is.null(facet_group) || (!is.null(facet_group) && !fig$facet$params$free$y))) {
       range <- max(res$outcome, na.rm = TRUE) - min(res$outcome, na.rm = TRUE)
-      
+
       if (is.null(ylimits) || is.na(ylimits[1])) {
         ylimits[1] <- min(res$outcome, na.rm = TRUE) - range * 0.05
         if (func %in% c("count", "prct", "missing")) {
           ylimits[1] <- max(ylimits[1], 0) # make sure lower limit doesn't go below 0
         }
       }
-      
+
       if (is.null(ylimits) || is.na(ylimits[2])) {
         ylimits[2] <- max(res$outcome, na.rm = TRUE) + range * 0.05
         if (func %in% c("prct", "missing")) {
@@ -482,13 +480,13 @@ plot_over_time <- function(
         }
       }
     }
-    
+
     fig <- fig +
       scale_y_continuous(
         limits = ylimits,
         expand = if (!is.null(facet_group) && fig$facet$params$free$y) c(.15, .15) else c(0, 0)
       )
-    
+
     ## Adjust x-axis
     if (grepl("quarter", time_int, ignore.case = TRUE)) {
       fig <- fig +
@@ -525,13 +523,13 @@ plot_over_time <- function(
         date_labels = ifelse(is.null(facet_group), "%b-%Y", "%m/%y")
       )
     }
-    
+
     ## Apply colors
     if (!is.null(colors)) {
       fig <- fig + scale_color_manual(values = colors)
     }
-    
-    
+
+
     ## Legend title
     if (!is.null(color_group) &&
         (is.null(facet_group) || (!is.null(facet_group) && color_group != facet_group) ||
@@ -539,7 +537,7 @@ plot_over_time <- function(
       fig <- fig +
         labs(colour = fix_var_str(color_group))
     }
-    
+
     return(fig)
   }
 }
