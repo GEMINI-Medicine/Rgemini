@@ -70,7 +70,7 @@
 #' }
 #'
 
-icu_entry <- function(cohort, ipscu, as_outcome=FALSE, window = c(24, 48, 72)) {
+icu_entry <- function(cohort, ipscu, as_outcome=FALSE, exclude_xhr_post_ipadmit=0, window = c(24, 48, 72)) {
   ###### Check user inputs ######
 
   ## table provided as data.frame/data.table
@@ -111,36 +111,38 @@ icu_entry <- function(cohort, ipscu, as_outcome=FALSE, window = c(24, 48, 72)) {
     .[, .(genc_id, scu_admit_date_time)] %>%
     dplyr::left_join(res, by = "genc_id")
 
-  ###### id and filter out those with invalid entry time  ######
-  ipscu_invalid_time <- ipscu[is.na(scu_admit_date_time), genc_id]%>%unique()
+  ###### filter out those with invalid entry time  ######
   ipscu<-ipscu[!is.na(scu_admit_date_time),]
-  message(paste(length(ipscu_invalid_time),
-                "records do not have valid scu_admit_date_time. Their icu entry return as NAs if this is the only record associated with the genc_id.\n"))
+  warning(paste(length(ipscu_invalid_time),
+                "records have invalid scu_admit_date_time. They are removed from deriving ICU entry\n"))
+
+  ##### Define cutoff time (i.e time point since which icu entry will be considered. Records prior to this cutoff are removed). 
+  ipscu[, exclude_time_cutoff :=  admission_date_time + lubridate::hours(exclude_xhr_post_ipadmit)] #Default to admission_date_time (ipatient admission time).
 
   ###### icu as an outcome or not ######
   if(as_outcome==T){
-    message(paste(
-      "Calculating icu-entry as a clinical outcome.",
-      nrow(ipscu[scu_admit_date_time <= admission_date_time, ]),
-      "encounters had icu-entry time before or same as ip-entry time and thus won't be considered as having ICU admission as an outcome.\n"
+
+    cutoff_msg<-ifelse(exclude_xhr_post_ipadmit==0, "inpatient admission time", paste(exclude_xhr_post_ipadmit, "hours post-ipadmission"))
+    message(paste0(
+      "Based on user input, deriving ICU entry as a clinical outcome. \n",
+      nrow(ipscu[scu_admit_date_time <= exclude_time_cutoff, ]),
+      " records have icu-entry time before or equal to ", cutoff_msg, ". They are removed from the deriving ICU entry as an outcome.\n"
     ))
     
-    ipscu <- ipscu %>%  dplyr::filter(scu_admit_date_time > admission_date_time)
+    ipscu <- ipscu %>%  dplyr::filter(scu_admit_date_time > exclude_time_cutoff)
   }
 
   ###### Derive ICU entry fields ######
 
-  ## derive ICU entry at each time point
-  res[, icu_entry_derived := ifelse(genc_id %in% ipscu$genc_id, TRUE,
-                                    ifelse(genc_id %in% ipscu_invalid_time, NA,
-                                    FALSE))]
+  ## derive ICU entry at any time point
+  res[, icu_entry_derived := ifelse(genc_id %in% ipscu$genc_id, TRUE, FALSE)]
   
-  ## derive ICU entry within a specified time window
+  ## derive ICU entry within a specified time window since the cutoff time.
   lapply(window, function(x) {
     res[, paste0("icu_entry_in_", x, "hr_derived") :=
-          ifelse(genc_id %in% ipscu[scu_admit_date_time <= (admission_date_time + lubridate::hours(x)), genc_id], TRUE,
-                 ifelse(genc_id %in% ipscu_invalid_time, NA,
-                 FALSE))]
+          ifelse(genc_id %in% ipscu[scu_admit_date_time <= (exclude_time_cutoff + lubridate::hours(x)), genc_id], 
+          TRUE,
+          FALSE)]
   })
 
   ###### Clean up output ######
