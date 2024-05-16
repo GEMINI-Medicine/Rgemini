@@ -66,20 +66,36 @@ plot_summary <- function(data,
                          base_size = NULL,
                          color = "lightblue",
                          ...) {
-
+  
   ########## PREPARE INPUT FOR plot_subplots() below ########
   data <- as.data.table(data)
   ## by default, plot all variables, except ID or date-time variables
   if (is.null(plot_vars)) {
+    warning(
+      paste(
+        "No `plot_vars` input provided.",
+        "`plot_summary()` will plot all variables (except ID/date-time variables) in `data` input.\n", 
+        "This approach is not recommended for large tables with many columns.\n",
+        "Instead, we recommend explicitly specifying a subset of variables you",
+        "want to plot to avoid memory issues/cluttered outputs."
+      ), immediate. = TRUE
+    )
     plot_vars <- colnames(data)[
-      !grepl("genc_id|patient_id|hospital_id|hospital_num|_date|_time|
-             cpso|physician|adm_code_raw|dis_code_raw|mrp_code_raw",
-        colnames(data),
-        ignore.case = TRUE
+      !grepl("genc_id|patient_id|hospital_id|hospital_num|_date|_time|cpso|physician|adm_code_raw|dis_code_raw|mrp_code_raw",
+             colnames(data),
+             ignore.case = TRUE
       ) & colnames(data) != "mrp"
     ]
+    
+    ## return error if no relevant (non-ID/-date-time) variables found
+    if (length(plot_vars) == 0) {
+      stop(
+        paste("No relevant plotting variables found.\n",
+              "Please inspect your `data` input and specify the variables you would like to plot.")
+      )
+    }
   }
-
+  
   ## if variables are provided as character vector, turn into list
   if (class(plot_vars) == "character") {
     plot_vars <- setNames(lapply(plot_vars, function(x) list()), plot_vars)
@@ -110,7 +126,7 @@ plot_summary <- function(data,
       length(plot_vars) # by default, all vars are in single figure (if < 9)
     }
   }
-
+  
   ## determine font size for subplots (depending on number of variables/figure)
   if (is.null(base_size)) {
     base_size <- 13 - ceiling(1.5 * sqrt(nvars_plot))
@@ -167,27 +183,29 @@ plot_summary <- function(data,
         )
       )
     }
-
-
+    
+    
     ######## CREATE PLOTS ########
     ## for numeric variables
     if (any(
       var$class %in% c("numeric", "integer"),
       is.null(var$class) &&
-        class(data[[var$plot_var]]) %in% c("numeric", "integer")
+      class(data[[var$plot_var]]) %in% c("numeric", "integer")
     )) {
       ## plot histogram
       sub_fig <- ggplot(
         data, aes(
           x = get(var$plot_var),
-          y = if (prct == TRUE) (..count..) / sum(..count..) else (..count..)
+          y = if (prct == TRUE) (after_stat(count)) / sum(after_stat(count)) else (after_stat(count))
         )
       ) +
-        geom_histogram(
-          color = "grey20", fill = color,
-          binwidth = var$binwidth, bins = var$bins, ...
+        suppressWarnings( # in case of additional arguments that can't be passed to geom_histogram
+          geom_histogram(
+            color = "grey20", fill = color,
+            binwidth = var$binwidth, bins = var$bins, ...
+          )
         )
-
+      
       ## add breaks
       if (!is.null(var$breaks)) {
         sub_fig <- sub_fig +
@@ -201,7 +219,7 @@ plot_summary <- function(data,
             )
           )
       }
-
+      
       ## add summary stats
       if (show_stats == TRUE) {
         if (!is.null(var$normal) && var$normal == TRUE) {
@@ -223,29 +241,31 @@ plot_summary <- function(data,
             ))
         }
       }
-
+      
       ## for categorical/binary variables
     } else if (any(
       var$class %in% c("character", "logical"),
       is.null(var$class) && class(data[[var$plot_var]]) %in%
-        c("character", "logical")
+      c("character", "logical")
     )) {
       ## create barplot
       sub_fig <- ggplot(
         data, aes(
           x = as.factor(data[[var$plot_var]]),
-          y = if (prct == TRUE) (..count..) / sum(..count..) else (..count..)
+          y = if (prct == TRUE) (after_stat(count)) / sum(after_stat(count)) else (after_stat(count))
         )
       ) +
-        geom_bar(color = "grey20", fill = color)
-
-
+        geom_bar(color = "grey20", fill = color) + 
+        scale_x_discrete( # limit x-tick labels to 10 characters
+          labels = function(x) str_wrap(x, width = 10, simplify = TRUE)
+        ) 
+      
       ## add stats/labels
       if (show_stats == TRUE) {
         sub_fig <- sub_fig +
           geom_text(
             stat = "count", aes(
-              label = percent(round(..count.. / sum(..count..), 3))
+              label = percent(round(after_stat(count) / sum(after_stat(count)), 3))
             ),
             vjust = -0.4, size = base_size / 5, hjust = 0.5
           ) +
@@ -280,7 +300,11 @@ plot_summary <- function(data,
   sub_figs <- lapply(plot_vars, plot_subplots, data = data)
 
   ## Combine subplots into final figure(s)
-  fig <- suppressWarnings(ggarrange(plotlist = sub_figs, ...))
-
+  if (exists("nrow", inherits = FALSE)) { # if nrow/ncol were determined within function 
+    fig <- suppressWarnings(ggarrange(plotlist = sub_figs, nrow = nrow, ncol = ncol))
+  } else {
+    fig <- suppressWarnings(ggarrange(plotlist = sub_figs, ...))
+  }
+  
   return(fig)
 }

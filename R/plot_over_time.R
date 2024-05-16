@@ -108,7 +108,7 @@ plot_over_time <- function(
     base_size = 12,
     return_data = FALSE,
     ...) {
-
+  
   ##### Check inputs #####
   if (missing(plot_var) && !grepl("^n|count", func, ignore.case = TRUE)) stop("Missing the plot variable selection")
 
@@ -269,7 +269,7 @@ plot_over_time <- function(
   ## Aggregate data by all relevant variables
   grouping <- unique(c(time_int, line_group, color_group, facet_group))
   res <- aggregate_data(data, func, grouping)
-
+  
   ## show warning if any groupings completely removed (due to cell suppression)
   check_excl <- function(var) {
     if (!is.null(var)) {
@@ -295,7 +295,7 @@ plot_over_time <- function(
     warning("Some time points do not have any data or have been removed due to cell suppression.
       This might introduce a bias in the plotted time trends. Please carefully inspect data availability & coverage.
       Missing data found for the following combinations: ", immediate. = TRUE)
-    print(res[is.na(outcome), -c("outcome", "n")]) # %>% select(line_group, time_int) %>% arrange(get(line_group)))
+    print(res[is.na(outcome), -c("outcome", "n")])
   }
 
 
@@ -327,7 +327,7 @@ plot_over_time <- function(
     col_name <- ifelse(func == "count", "n", paste(func, paste0(c(plot_var, plot_cat), collapse = "_"), sep = "_"))
     setnames(res, "outcome", col_name, skip_absent = TRUE)
     setnames(res_overall, "outcome", col_name, skip_absent = TRUE)
-
+    
     ## Prepare output
     output <- list()
     if (nrow(res) > 0) {
