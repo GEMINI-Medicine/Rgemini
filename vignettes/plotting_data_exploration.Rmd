@@ -94,11 +94,16 @@ If your `data` input contains a large number of variables, we recommend explicit
 plot_summary(ipadmdad, plot_vars = c("discharge_disposition", "number_of_alc_days"))
 ```
 
-... or by simply selecting the subset of relevant columns like this: 
+... or you could select the variables implicitly by specifying the subset of relevant columns like this*:
 
 ```{r, fig.height = 4, fig.width = 7.5}
 plot_summary(ipadmdad[, .(discharge_disposition, number_of_alc_days)])
 ```
+
+&nbsp;
+
+**\*Note:** If you don't explicitly provide a `plot_vars` input, all encounter/patient/physician/hospital IDs and date-time variables will always be removed automatically. However, if you would like to plot those variables (e.g., to check the number of encounters per hospital), you can explicitly provide them using `plot_vars = "hospital_num"` to avoid those variables from being ignored.
+
 
 ## Providing `plot_vars` as a list
 
@@ -262,6 +267,9 @@ plot_over_time(
   time_int = "season"
 )
 ```
+
+&nbsp;
+
 \***Note:** If you are plotting by admission date-time, you might be underestimating encounters at the end of the data availability timeline (because patients only appear in GEMINI data once they have been discharged). Therefore, plotting by admission date should only be done with caution and might require a buffer period that excludes data points at the end of the data availability period.
 
 
