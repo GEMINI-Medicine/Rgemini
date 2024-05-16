@@ -39,12 +39,22 @@
 #'
 #' @param as_outcome (`logical`)\cr
 #' Whether ICU admission is as a clinical outcome or not. Default to FALSE.
-#' When set to TRUE, records with direct ICU admission before admitted to inpatient care 
-#' (i.e. `scu_admit_date_time`` <= `admission_date_time``) are excluded.
+#' When set to TRUE, records with direct ICU admission before admitted to inpatient care (IP admission)
+#' (i.e. `scu_admit_date_time` <= `admission_date_time`) are excluded.
 #'
-#' @param window (`integer`, `vector`)\cr
-#' Time window of ICU entry since hospital admission, in hours.
-#' By default, `window = c(24, 48, 72)` to calculate ICU entry within 24, 48 or 72 hours since hospital admission.
+#' @param exclude_xhr_post_ipadmit (`integer`)\cr
+#' This parameter allows users to specify a time cutoff (x hours post IP amdmission) to exclude records from being identified as ICU admissions.
+#' This parameter is only relevant when `as_outcome=TRUE`.
+#' For example, when `exclude_xhr_post_ipadmit = 12`, records with ICU entry time `scu_admit_date_time` <= `admission_date_time + 12 hours` 
+#' are excluded from being identified as ICU admissions. 
+#' Default is exclude_xhr_post_ipadmit = 0, where any ICU entries before IP admission are excluded. 
+#'
+#' @param entry_window (`integer`, `vector`)\cr
+#' Time window of ICU entry since IP admission (or since x hours post IP admission when user specifies `exclude_xhr_post_ipadmit`), in hours.
+#' By default, `entry_window = c(24, 48, 72)` to calculate ICU entry within 24, 48 and 72 hours since IP admission.
+#' This paramete, together with `exclude_xhr_post_ipadmit` specifies the time interval during which ICU admissions are identified.
+#' For example, when `exclude_xhr_post_ipadmit = 10` and `entry_window = 48`, function determines whether a patient 
+#' was admitted to ICU between 10 and 48 hours post IP admission (i.e. time interval (10, 48] hours)).
 #'
 #' @return (`data.table`)\cr
 #' By default, for each encounter in input "cohort" returns the corresponding derived boolean (TRUE/FALSE) fields
@@ -59,18 +69,24 @@
 #' @export
 #'
 #' @examples
-#' # Default time window 24, 48, 72 hours:
+#' ICU admission within the first 24 hours since IP admission (i.e. you are interested in knowing % of encounters admitted to ICU):
 #' \dontrun{
-#' icu_entry (cohort, ipscu)
+#' icu_entry (cohort, ipscu, as_outcome=FALSE, entry_window=24)
 #' }
 #'
-#' # User specified time window:
+#' ICU admission within the first 24 hours since IP admission, as a clinical outcome excluding records with ICU entries prior to IP admission:
 #' \dontrun{
-#' icu_entry (cohort, ipscu, window=12)
+#' icu_entry (cohort, ipscu, as_outcome=TRUE, entry_window=24)
+#' }
+#'
+#' ICU admission within the first 24 hours since IP admission, as a clinical outcome excluding records with ICU entries prior to 12 hours post IP admission 
+#' (i.e. you are interested in knowing patients who were admitted to ICU between the interval of (12, 24] hours since IP admission):
+#' \dontrun{
+#' icu_entry (cohort, ipscu, as_outcome=TRUE, exclude_xhr_post_ipadmit=12, entry_window=24)
 #' }
 #'
 
-icu_entry <- function(cohort, ipscu, as_outcome=FALSE, exclude_xhr_post_ipadmit=0, window = c(24, 48, 72)) {
+icu_entry <- function(cohort, ipscu, as_outcome=FALSE, exclude_xhr_post_ipadmit=0, entry_window = c(24, 48, 72)) {
   ###### Check user inputs ######
 
   ## table provided as data.frame/data.table
@@ -138,7 +154,7 @@ icu_entry <- function(cohort, ipscu, as_outcome=FALSE, exclude_xhr_post_ipadmit=
   res[, icu_entry_derived := ifelse(genc_id %in% ipscu$genc_id, TRUE, FALSE)]
   
   ## derive ICU entry within a specified time window since the cutoff time.
-  lapply(window, function(x) {
+  lapply(entry_window, function(x) {
     res[, paste0("icu_entry_in_", x, "hr_derived") :=
           ifelse(genc_id %in% ipscu[scu_admit_date_time <= (exclude_time_cutoff + lubridate::hours(x)), genc_id], 
           TRUE,
