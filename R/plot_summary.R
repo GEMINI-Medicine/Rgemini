@@ -72,17 +72,17 @@ plot_summary <- function(data,
   ## by default, plot all variables, except ID or date-time variables
   if (is.null(plot_vars)) {
     plot_vars <- colnames(data)[
-      !grepl("genc_id|patient_id|epicare|hospital_id|hospital_num|_date|_time|cpso|physician|adm_code_raw|dis_code_raw|mrp_code_raw",
+      !grepl("genc_id|patient_id|epicare|hospital_id|hospital_num|_date|date_|_time|time_|cpso",
              colnames(data),
              ignore.case = TRUE
-      ) & colnames(data) != "mrp"
+      ) & !colnames(data) %in% c("admitting_physician", "mrp", "discharging_physician", "adm_code_raw", "dis_code_raw", "mrp_code_raw")
     ]
     
     if (length(plot_vars) < ncol(data)) {
       warning(
         paste(
-          "Ignoring any encounter-, patient-, physician-, and hospital-id variables.\n",
-          "If you would like to plot them, please explicitly specify those variables using `plot_vars = c(...)`\n"
+          "Plotting all variables, except encounter/patient/physician/hospital IDs and date-time variables.\n",
+          'If you would like to plot them, please explicitly specify those variables using `plot_vars = c("variable_name")`\n'
         ), immediate. = TRUE
       )
     }
