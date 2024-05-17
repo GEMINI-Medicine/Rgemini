@@ -45,16 +45,16 @@
 #' @param exclude_cutoff (`integer`)\cr
 #' The number of hours to add to the IP admission time to establish a cutoff time for excluding records from being identified as ICU admissions.
 #' This parameter is only relevant when `as_outcome=TRUE`.
-#' For example, when `exclude_cutoff = 12`, records with ICU entry time `scu_admit_date_time` <= `admission_date_time + 12 hours` 
-#' are excluded from being identified as ICU admissions. 
-#' Default is exclude_cutoff = 0, where any ICU entries before IP admission time are excluded. 
+#' For example, when `exclude_cutoff = 12`, records with ICU entry time `scu_admit_date_time` <= `admission_date_time + 12 hours`
+#' are excluded from being identified as ICU admissions.
+#' Default is exclude_cutoff = 0, where any ICU entries before IP admission time are excluded.
 #'
 #' @param entry_since_cutoff (`integer`, `vector`)\cr
 #' Time window of ICU entry since IP admission (or since x hours post IP admission when user specifies `exclude_cutoff`), in hours.
 #' This parameter, together with `exclude_cutoff` specifies the time interval during which ICU admissions are identified.
 #' By default, `exclude_cutoff = 0` and ` `entry_since_cutoff = c(24, 48, 72)`, function calculates ICU entry within 24, 48 and 72 hours since IP admission.
 #' Users can specify different values for the two parameters to customize the time interval of interest.
-#' For example, when `exclude_cutoff = 24` and `entry_since_cutoff = 48`, function determines whether a patient 
+#' For example, when `exclude_cutoff = 24` and `entry_since_cutoff = 48`, function determines whether a patient
 #' was admitted to ICU between 24 to 72 (24+48) hours post IP admission (i.e. time interval (24, 72] hours)).
 #'
 #' @return (`data.table`)\cr
@@ -74,24 +74,26 @@
 #' @export
 #'
 #' @examples
+#' 
+#' \dontrun{
+#' 
 #' ICU admission within the first 24 hours since IP admission (i.e. you are interested in knowing % of encounters admitted to ICU):
-#' \dontrun{
-#' icu_entry (cohort, ipscu, as_outcome=FALSE, entry_since_cutoff=24)
+#'  icu_entry (cohort, ipscu, as_outcome=FALSE, entry_since_cutoff=24)
+#'   
+#' ICU admission within the first 24 hours since IP admission, as a clinical outcome 
+#' excluding records with ICU entries prior to IP admission:
+#'  icu_entry (cohort, ipscu, as_outcome=TRUE, entry_since_cutoff=24)
+#'  
+#' ICU admission within the first 72 hours since IP admission, as a clinical outcome
+#' excluding records with ICU entries prior to the first 24 hours of IP admission (i.e. you are interested in knowing 
+#' patients who were admitted to ICU between the interval of (24, 72] hours since IP admission):
+#'  icu_entry (cohort, ipscu, as_outcome=TRUE, exclude_cutoff=24, entry_since_cutoff=48) # Note: entry_since_cutoff=48 (instead of 72) because 24+48=72
+#'  
 #' }
 #'
-#' ICU admission within the first 24 hours since IP admission, as a clinical outcome excluding records with ICU entries prior to IP admission:
-#' \dontrun{
-#' icu_entry (cohort, ipscu, as_outcome=TRUE, entry_since_cutoff=24)
-#' }
-#'
-#' ICU admission within the first 72 hours since IP admission, as a clinical outcome excluding records with ICU entries prior to the first 24 hours of IP admission 
-#' (i.e. you are interested in knowing patients who were admitted to ICU between the interval of (24, 72] hours since IP admission):
-#' \dontrun{
-#' icu_entry (cohort, ipscu, as_outcome=TRUE, exclude_cutoff=24, entry_since_cutoff=48) # Note: entry_since_cutoff=48 (instead of 72) because 24+48=72
-#' }
 #'
 
-icu_entry <- function(cohort, ipscu, as_outcome=FALSE, exclude_cutoff=0, entry_since_cutoff = c(24, 48, 72)) {
+icu_entry <- function(cohort, ipscu, as_outcome = FALSE, exclude_cutoff = 0, entry_since_cutoff = c(24, 48, 72)) {
   ###### Check user inputs ######
 
   ## table provided as data.frame/data.table
@@ -133,25 +135,27 @@ icu_entry <- function(cohort, ipscu, as_outcome=FALSE, exclude_cutoff=0, entry_s
     dplyr::left_join(res, by = "genc_id")
 
   ###### filter out those with invalid entry time  ######
-  ipscu_invalid_time <- nrow(ipscu[is.na(scu_admit_date_time),])
-  if (ipscu_invalid_time>0) {warning(paste(length(ipscu_invalid_time),
-                              "records have invalid scu_admit_date_time. They are removed from deriving ICU entry\n"))}
-  
-  ipscu<-ipscu[!is.na(scu_admit_date_time),]
+  ipscu_invalid_time <- nrow(ipscu[is.na(scu_admit_date_time), ])
+  if (ipscu_invalid_time > 0) {
+    warning(paste(length(ipscu_invalid_time),
+                  "records have invalid scu_admit_date_time. They are removed from deriving ICU entry\n"))
+    }
 
-  ##### Define cutoff time (i.e time point since which icu entry will be considered. Records prior to this cutoff are removed). 
+  ipscu <- ipscu[!is.na(scu_admit_date_time), ]
+
+  ##### Define cutoff time (i.e time point since which icu entry will be considered. Records prior to this cutoff are removed).
   ipscu[, exclude_time_cutoff :=  admission_date_time + lubridate::hours(exclude_cutoff)] #Default to admission_date_time (ipatient admission time).
 
   ###### icu as an outcome or not ######
-  if(as_outcome==T){
+  if (as_outcome == TRUE) {
 
-    cutoff_msg<-ifelse(exclude_cutoff==0, "inpatient admission time", paste(exclude_cutoff, "hours post-ipadmission"))
+    cutoff_msg <- ifelse(exclude_cutoff == 0, "inpatient admission time", paste(exclude_cutoff, "hours post-ipadmission"))
     message(paste0(
       "Based on user input, deriving ICU entry as a clinical outcome. \n",
       nrow(ipscu[scu_admit_date_time <= exclude_time_cutoff, ]),
       " records have icu-entry time before or equal to ", cutoff_msg, ". They are removed from deriving ICU entry as an outcome.\n"
     ))
-    
+
     ipscu <- ipscu %>%  dplyr::filter(scu_admit_date_time > exclude_time_cutoff)
   }
 
@@ -159,11 +163,11 @@ icu_entry <- function(cohort, ipscu, as_outcome=FALSE, exclude_cutoff=0, entry_s
 
   ## derive ICU entry at any time point
   res[, icu_entry_derived := ifelse(genc_id %in% ipscu$genc_id, TRUE, FALSE)]
-  
+
   ## derive ICU entry within a specified time window since the cutoff time.
   lapply(entry_since_cutoff, function(x) {
     res[, paste0("icu_entry_in_", x, "hr_derived") :=
-          ifelse(genc_id %in% ipscu[scu_admit_date_time <= (exclude_time_cutoff + lubridate::hours(x)), genc_id], 
+          ifelse(genc_id %in% ipscu[scu_admit_date_time <= (exclude_time_cutoff + lubridate::hours(x)), genc_id],
           TRUE,
           FALSE)]
   })
