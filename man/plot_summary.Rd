@@ -19,7 +19,9 @@ plot_summary(
 Table containing data to be plotted.}
 
 \item{plot_vars}{(\code{character} | \code{list})\cr
-Character vector or list of variables to be plotted.}
+Character vector or list of variables to be plotted. If no \code{plot_vars} input
+is provided, the function will automatically plot all variables, ignoring any
+encounter/patient/physician IDs and date-time variables.}
 
 \item{show_stats}{(\code{logical})\cr
 Flag indicating whether to show descriptive stats above each plot.}
