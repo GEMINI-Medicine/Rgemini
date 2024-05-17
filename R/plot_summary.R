@@ -16,7 +16,9 @@
 #' Table containing data to be plotted.
 #'
 #' @param plot_vars (`character` | `list`)\cr
-#' Character vector or list of variables to be plotted.
+#' Character vector or list of variables to be plotted. If no `plot_vars` input
+#' is provided, the function will automatically plot all variables, ignoring any
+#' encounter/patient/physician IDs and date-time variables.
 #'
 #' @param show_stats (`logical`)\cr
 #' Flag indicating whether to show descriptive stats above each plot.
@@ -72,23 +74,31 @@ plot_summary <- function(data,
   ## by default, plot all variables, except ID or date-time variables
   if (is.null(plot_vars)) {
     plot_vars <- colnames(data)[
-      !grepl("genc_id|patient_id|epicare|hospital_id|hospital_num|_date|date_|_time|time_|cpso",
+      !grepl("genc_id|patient_id|epicare|_date|date_|_time|time_|cpso",
              colnames(data),
              ignore.case = TRUE
-      ) & !colnames(data) %in% c("admitting_physician", "mrp", "discharging_physician", "adm_code_raw", "dis_code_raw", "mrp_code_raw")
+      ) & 
+        !colnames(data) %in% c("admitting_physician", "mrp",
+                               "discharging_physician", "adm_code_raw",
+                               "dis_code_raw", "mrp_code_raw")
     ]
-    
+
+    ## if data contains both hospital_id & hospital_num, plot hospital_id by default
+    if ("hospital_num" %in% colnames(data) && "hospital_id" %in% colnames(data)) {
+      plot_vars <- plot_vars[plot_vars != "hospital_num"]
+    }
+
     if (length(plot_vars) < ncol(data)) {
       warning(
         paste(
           "No `plot_vars` input provided.\n",
-          "Plotting all variables, except encounter/patient/physician/hospital IDs and date-time variables.\n",
+          "Plotting all variables in `data` input, except encounter/patient/physician IDs and date-time variables.\n",
           'If you would like to plot them, please explicitly specify those variables using `plot_vars = c("variable_name")`.\n'
         ), immediate. = TRUE
       )
     }
     
-    ## return error if no relevant (non-ID/-date-time) variables found
+    ## return error if no relevant (non-ID/date-time) variables found
     if (length(plot_vars) == 0) {
       stop(
         paste("No relevant plotting variables found.\n",
@@ -108,6 +118,12 @@ plot_summary <- function(data,
       )
     }
   }
+  
+  ## Always interpret hospital_num as a factor
+  if ("hospital_num" %in% plot_vars && "hospital_num" %in% colnames(data)) {
+    data[, hospital_num := factor(hospital_num, levels = sort(unique(as.numeric(hospital_num))))]
+  }
+  
   
   ## if variables are provided as character vector, turn into list
   if (class(plot_vars) == "character") {
@@ -158,14 +174,16 @@ plot_summary <- function(data,
         )
       )
     }
-
+    
     ## if user specified numeric/integer, make sure variable can be transformed
     ## to numeric (count any entries that can't be transformed as NA)
     if (any(var$class %in% c("numeric", "integer"))) {
       ## check if all (non-NA) entries can be transformed to numeric
       n_invalid <- suppressWarnings(
         sum(is.na(as.numeric(
-          data[!n_missing(data[[var$plot_var]], index = TRUE), ][[var$plot_var]]
+          data[!n_missing(
+            data[[var$plot_var]], na_strings = c("", " "), index = TRUE
+          ), ][[var$plot_var]]
         )))
       )
       if (n_invalid > 0) {
@@ -175,18 +193,20 @@ plot_summary <- function(data,
         Please carefully check your 'data' input and variable types.\n"
         ))
       }
-
+      
       ## transform entries
       data[[var$plot_var]] <- suppressWarnings(as.numeric(data[[var$plot_var]]))
     }
-
+    
     ## get % missing (count any NA/""/" ")
     # also includes values that couldn't be transformed to numeric above
-    missing <- n_missing(data[[var$plot_var]])
-
+    missing <- n_missing(data[[var$plot_var]], na_strings = c("", " "))
+    
     ## always exclude missing values from all plots/summary statistics
-    data <- data[!n_missing(data[[var$plot_var]], index = TRUE), ]
-
+    data <- data[
+      !n_missing(data[[var$plot_var]], na_strings = c("", " "), index = TRUE), 
+    ]
+    
     ## check whether any non-NA values remain
     if (!length(data[[var$plot_var]]) > 0) {
       stop(
@@ -255,11 +275,10 @@ plot_summary <- function(data,
         }
       }
       
-      ## for categorical/binary variables
-    } else if (any(
-      var$class %in% c("character", "logical"),
-      is.null(var$class) && class(data[[var$plot_var]]) %in%
-      c("character", "logical")
+      ## for non-numeric variables
+    } else if (any( # if variable is not numeric/user didn't specify numeric
+      !var$class %in% c("integer", "numeric"), 
+      is.null(var$class) && !class(data[[var$plot_var]]) %in% c("integer", "numeric")
     )) {
       
       # show warning about large number of categories
