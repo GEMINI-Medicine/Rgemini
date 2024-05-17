@@ -2,6 +2,7 @@
 
 * Updated unit tests & small bug fix in `daily_census`
 * Ordered package names in pkgdown reference file
+* Update mlaps hospital query
 
 # Rgemini 0.4.2
 
