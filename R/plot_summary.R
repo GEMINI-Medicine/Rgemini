@@ -81,8 +81,9 @@ plot_summary <- function(data,
     if (length(plot_vars) < ncol(data)) {
       warning(
         paste(
+          "No `plot_vars` input provided.\n",
           "Plotting all variables, except encounter/patient/physician/hospital IDs and date-time variables.\n",
-          'If you would like to plot them, please explicitly specify those variables using `plot_vars = c("variable_name")`\n'
+          'If you would like to plot them, please explicitly specify those variables using `plot_vars = c("variable_name")`.\n'
         ), immediate. = TRUE
       )
     }
@@ -100,12 +101,9 @@ plot_summary <- function(data,
     if (length(plot_vars) >= 10) {
       warning(
         paste(
-          "No `plot_vars` input provided for large table.\n",
-          "`plot_summary()` will plot all variables (except ID/date-time variables)",
-          "in `data` input (=", length(plot_vars), "variables).", 
-          "This approach is not recommended for large tables with many columns.",
-          "Instead, we recommend explicitly specifying a subset of variables you",
-          "want to plot to avoid memory issues/cluttered outputs.\n"
+          "Plotting", length(plot_vars), "variables.",
+          "This might cause memory issues and cluttered outputs.\n",
+          "Please consider providing a `plot_vars` input specifying a subset of variables instead.\n"
         ), immediate. = TRUE
       )
     }
