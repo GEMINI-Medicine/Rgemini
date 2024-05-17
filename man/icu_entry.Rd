@@ -41,10 +41,9 @@ Default is exclude_cutoff = 0, where any ICU entries before IP admission time ar
 
 \item{entry_since_cutoff}{(\code{integer}, \code{vector})\cr
 Time window of ICU entry since IP admission (or since x hours post IP admission when user specifies \code{exclude_cutoff}), in hours.
-By default, \code{entry_since_cutoff = c(24, 48, 72)} to calculate ICU entry within 24, 48 and 72 hours since IP admission.
 This parameter, together with \code{exclude_cutoff} specifies the time interval during which ICU admissions are identified.
-For example, when \code{exclude_cutoff = 10} and \code{entry_since_cutoff = 48}, function determines whether a patient
-was admitted to ICU between 10 and 58 (10+48) hours post IP admission (i.e. time interval (10, 58] hours)).}
+By default, \code{exclude_cutoff = 0} and \verb{ }entry_since_cutoff = c(24, 48, 72)\verb{, function calculates ICU entry within 24, 48 and 72 hours since IP admission. Users can specify different values for the two parameters to customize the time interval of interest. For example, when }exclude_cutoff = 24\code{and}entry_since_cutoff = 48`, function determines whether a patient
+was admitted to ICU between 24 to 72 (24+48) hours post IP admission (i.e. time interval (24, 72] hours)).}
 }
 \value{
 (\code{data.table})\cr
@@ -82,7 +81,7 @@ By design, function will not return any NA values.
 When one tries to left-join the output of this function to another table,
 make sure the list of encounters aligns in both tables.
 As there are 2 dependent parameters (exclude_cutoff, entry_since_cutoff)
-determining the time intervals in which ICU admissions will be identified,
+determining the time interval during which ICU admissions will be identified,
 please read function documentation carefully when specifying a non-default value to these parameters
 to ensure the identification time interval is as intented. See examples below for common use cases.
 }
