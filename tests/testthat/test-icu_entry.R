@@ -48,3 +48,4 @@ testthat::test_that("When both exclude_xhr_post_ipadmit and entry_window are cus
   testthat::expect_equal(res$icu_entry_derived , c(FALSE, TRUE))
   testthat::expect_equal(res$icu_entry_in_3hr_derived, c(FALSE, FALSE))
 })
+
