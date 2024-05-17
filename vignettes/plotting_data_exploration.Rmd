@@ -53,7 +53,9 @@ options(knitr.kable.NA = '')
 
 # Introduction
 
-`Rgemini` contains several functions that facilitate common plotting needs and allow users to create customized figures with just a few lines of code. This vignette focuses on two basic functions for data exploration & descriptive analyses: [*plot_summary()*](#plot_summary) and [*plot_over_time()*](#plot_over_time)). These functions are not meant to produce publication-ready figures, but rather, they provide a quick and easy way of facilitating early stages of analyses, such as: Checking variable distributions & missingness, inspecting time trends, and visualizing differences between hospitals (or other grouping variables).
+`Rgemini` contains several functions that facilitate common plotting needs and allow users to create customized figures with just a few lines of code. This vignette focuses on two basic functions for data exploration & descriptive analyses: [*plot_summary()*](#plot_summary) and [*plot_over_time()*](#plot_over_time)). These functions are not meant to produce publication-ready figures, but rather, they provide a quick and easy way of facilitating early stages of analyses, such as: Checking variable distributions & missingness, inspecting time trends, and visualizing differences between hospitals (or other grouping variables). 
+
+The functions introduced here can be used to complement other (base R) functions that allow for quick data inspection like `summary()`, `xtabs()`, `str()` or `head()`.
 
 
 *  *  *  *
@@ -82,11 +84,13 @@ First, let's use the `plot_summary()` function to explore the dataset and gain a
 
 ## Default plot
 
-By default, `plot_summary()` creates histograms/barplots for all relevant variables in the `data` input (ignoring any encounter-/patient-/hospital-ID variables and date-time variables). It will also show some basic descriptive stats, such as % missing (`NA`/`""`/`" "`), as well as median [Q1, Q3] for continuous variables and % for categorical/character variables. Missing values are excluded from all plots and summary statistics.
+By default, `plot_summary()` creates histograms/barplots for all relevant variables in the `data` input (ignoring any encounter/patient/physician IDs and date-time variables). It will also show some basic descriptive stats, such as % missing (`NA`/`""`/`" "`), as well as median [Q1, Q3] for continuous variables and % for categorical/character variables. Missing values are excluded from all plots and summary statistics.
 
 ```{r, fig.height = 7, fig.width = 7.5}
 plot_summary(data = ipadmdad)
 ```
+
+&nbsp;
 
 If your `data` input contains a large number of variables, we recommend explicitly specifying which variables you want to include in the summary plot by providing `plot_vars` as a character vector input:
 
@@ -94,7 +98,7 @@ If your `data` input contains a large number of variables, we recommend explicit
 plot_summary(ipadmdad, plot_vars = c("discharge_disposition", "number_of_alc_days"))
 ```
 
-... or you could select the variables implicitly by specifying the subset of relevant columns like this*:
+... or you could select the variables implicitly by specifying the subset of relevant columns like this:<strong style="color:red;">*</strong>
 
 ```{r, fig.height = 4, fig.width = 7.5}
 plot_summary(ipadmdad[, .(discharge_disposition, number_of_alc_days)])
@@ -102,7 +106,10 @@ plot_summary(ipadmdad[, .(discharge_disposition, number_of_alc_days)])
 
 &nbsp;
 
-**\*Note:** If you don't explicitly provide a `plot_vars` input, all encounter/patient/physician/hospital IDs and date-time variables will always be removed automatically. However, if you would like to plot those variables (e.g., to check the number of encounters per hospital), you can explicitly provide them using `plot_vars = "hospital_num"` to avoid those variables from being ignored.
+<strong style="color:red;">*</strong>
+**Note:** If you select variables implicitly, any encounter/patient/physician IDs and date-time variables will still be removed automatically by the function. If you would like to plot any IDs/date-times, you can achieve this by explicitly specifying a `plot_vars` input, e.g., `plot_vars = "mrp_cpso_mapped"` to check the number of encounters per most responsible physician (MRP). 
+
+In general, date-time variables should be avoided in `plot_summary()` unless they have been preprocessed to reduce the number of categories (e.g., grouped into months/years). To plot time trends, please use the [*plot_over_time()*](#plot_over_time) function instead.
 
 
 ## Providing `plot_vars` as a list
@@ -151,6 +158,11 @@ plot_summary(
 ```
 
 To create a separate figure for each variable, you can specify `ncol = 1` and `nrow = 1`.
+
+
+## Note on cell suppression
+
+The current version of `plot_summary()` is only meant to be used for data exploration by the analyst. These plots should generally **not** be exported/shared with external collaborators. If you do plan to share any plots created with `plot_summary()`, please make sure the plots comply with GEMINI's cell suppression rules to protect patient privacy. Specifically, any categories with n < 6 should be removed from the plots and histogram bins should be sufficiently large to ensure n >= 6 in each bin. 
 
 
 *  *  *  *
