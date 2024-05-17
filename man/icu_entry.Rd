@@ -86,21 +86,22 @@ please read function documentation carefully when specifying a non-default value
 to ensure the identification time interval is as intented. See examples below for common use cases.
 }
 \examples{
-
+## ICU admission within the first 24 hours since IP admission (i.e. you are interested in knowing \% of encounters admitted to ICU):
 \dontrun{
-
-ICU admission within the first 24 hours since IP admission (i.e. you are interested in knowing \% of encounters admitted to ICU):
  icu_entry (cohort, ipscu, as_outcome=FALSE, entry_since_cutoff=24)
-  
-ICU admission within the first 24 hours since IP admission, as a clinical outcome 
-excluding records with ICU entries prior to IP admission:
+}
+
+## ICU admission within the first 24 hours since IP admission, as a clinical outcome 
+## excluding records with ICU entries prior to IP admission:
+\dontrun{
  icu_entry (cohort, ipscu, as_outcome=TRUE, entry_since_cutoff=24)
- 
-ICU admission within the first 72 hours since IP admission, as a clinical outcome
-excluding records with ICU entries prior to the first 24 hours of IP admission (i.e. you are interested in knowing 
-patients who were admitted to ICU between the interval of (24, 72] hours since IP admission):
+} 
+
+## ICU admission within the first 72 hours since IP admission, as a clinical outcome
+## excluding records with ICU entries prior to the first 24 hours of IP admission (i.e. you are interested in knowing 
+## patients who were admitted to ICU between the interval of (24, 72] hours since IP admission):
+\dontrun{
  icu_entry (cohort, ipscu, as_outcome=TRUE, exclude_cutoff=24, entry_since_cutoff=48) # Note: entry_since_cutoff=48 (instead of 72) because 24+48=72
- 
 }
 
 
