@@ -170,8 +170,10 @@ disability <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
 
     ## Return component-wise output with disability categories (sort by genc_id)
     res_component <- res_component[order(genc_id, diagnosis_code)]
+    res_component <- res_component[genc_id %in% cohort$genc_id, ]
     return(res_component)
 
   }
 
 }
+
