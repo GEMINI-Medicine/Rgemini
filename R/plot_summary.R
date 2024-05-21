@@ -39,6 +39,18 @@
 #' Additional arguments passed to `ggpubr::ggarrange()` that allow for finer
 #' control of subplot arrangement (e.g., `ncol`, `nrow`, `widths`, `heights`,
 #' `align` etc.; see `? ggarrange` for more details).
+#' 
+#' @section Additional inputs when providing `plot_vars` as a list
+#' When `plot_vars` are provided as a list, users can specify additional
+#' characteristics for each individual variable, such as:
+#' - `class` (`character`): variable type, e.g., `"numeric"`, `"character"`,
+#' `"logical"` etc. 
+#' - `sort` (`character`): for categorical variables, whether to sort bars in
+#' ascending (`"^a"`) or descending (starting with `"^d"`) frequency
+#' - `binwidth`/`bins`/`breaks`: for numeric/integer variables, specifying the
+#' histogram bins
+#' - `normal`: for numeric/integer variables, whether to assume normal
+#' distribution (will show mean [\SD]\ if `show_stats = TRUE`)
 #'
 #' @return (`ggplot`)\cr A ggplot figure with subplots showing histograms/
 #' barplots for all variables specified in `plot_vars`.
@@ -55,10 +67,30 @@
 #'   time_period = c(2015, 2022)
 #' )
 #'
+#' ## Providing plot_vars as a character vector
 #' plot_summary(
 #'   data = admdad,
 #'   plot_vars = c("age", "gender", "discharge_disposition")
 #' )
+#' 
+#' ## Providing plot_vars as a list input
+#' plot_summary(
+#'   ipadmdad,
+#'   plot_vars = list(
+#'     `Discharge disposition` = list(
+#'         plot_var = "discharge_disposition",
+#'         class = "character", 
+#'         sort = "desc"
+#'     ),
+#'     `# Days in ALC` = list(
+#'         plot_var = "number_of_alc_days",
+#'         binwidth = 1,
+#'         breaks = seq(0, 7, 1)
+#'     )
+#'   )
+#' )
+#' 
+#' 
 #' @seealso `vignette("plotting_data_exploration", package = "Rgemini")`
 #'
 plot_summary <- function(data,
@@ -299,19 +331,28 @@ plot_summary <- function(data,
           immediate. = TRUE
         )
       }
-
+      
+      ## get counts for (optional) sorting
+      data[, freq := .N, by = data[[var$plot_var]]]
+      
       ## create barplot
       sub_fig <- ggplot(
         data, aes(
-          x = as.factor(data[[var$plot_var]]),
-          y = if (prct == TRUE) (after_stat(count)) / sum(after_stat(count)) else (after_stat(count))
+          x = if (!is.null(var$sort) && grepl("^a", var$sort, ignore.case = TRUE)) {
+            reorder(as.factor(data[[var$plot_var]]), freq) # sort ascending
+          } else if (!is.null(var$sort) && grepl("^d", var$sort, ignore.case = TRUE)) {
+            reorder(as.factor(data[[var$plot_var]]), -freq) # sort descending
+          } else {
+            as.factor(data[[var$plot_var]]) # no sorting
+          },
+          y = after_stat(count)
         )
       ) +
         geom_bar(color = "grey20", fill = color) +
         scale_x_discrete( # limit x-tick labels to 10 characters
           label = function(x) stringr::str_trunc(x, 10)
         )
-
+      
       ## add stats/labels
       if (show_stats == TRUE) {
         sub_fig <- sub_fig +

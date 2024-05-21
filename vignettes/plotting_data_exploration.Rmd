@@ -33,16 +33,16 @@ knitr::opts_chunk$set(
 )
 
 ## uncomment this when trying to knit vignette locally
-# library(ggplot2)
-# library(ggpubr)
-# library(lemon)
-# library(ggthemes)
-# library(ggpubr)
-# library(scales)
-# source("H:/GitHub/Rgemini/R/plot_summary.R")
-# source("H:/GitHub/Rgemini/R/plot_over_time.R")
-# source("H:/GitHub/Rgemini/R/plot_theme.R")
-# source("H:/GitHub/Rgemini/R/utils.R")
+library(ggplot2)
+library(ggpubr)
+library(lemon)
+library(ggthemes)
+library(ggpubr)
+library(scales)
+source("H:/GitHub/Rgemini/R/plot_summary.R")
+source("H:/GitHub/Rgemini/R/plot_over_time.R")
+source("H:/GitHub/Rgemini/R/plot_theme.R")
+source("H:/GitHub/Rgemini/R/utils.R")
 
 options(knitr.kable.NA = '')
 
@@ -117,8 +117,9 @@ In general, date-time variables should be avoided in `plot_summary()` unless the
 The default plots provide a quick and easy way of exploring the data, but you may want to have finer control over the characteristics of each subplot. This can be achieved by providing the variables to be plotted as a `list` to specify additional attributes, such as:
 
 - **Variable class:** For example, discharge disposition is of type `numeric` in "ipadmdad". However, in reality, discharge disposition is a categorical variable so users can specify `class = "character"` to create a more appropriate plot.
+- **Sorting by frequency (*for categorical variables*):** Categories can be sorted according to the frequency of each category level. In the example below, we sort discharge disposition by descending frequency.
 - **Histogram bins & breaks (*for continuous variables*):** For example, we may want to plot ALC days with `binwidth = 1` and only show data points up to 7 days by specifying `breaks = seq(0, 7, 1)`.
-- **Normal vs. non-normal variables (*for continuous variables*):** By default, `plot_summary` will show medians [Q1, Q3] for continuous variables. For normally distributed variables, users can specify `normal = TRUE` to obtain means [SD] instead.
+- **Normal distribution (*for continuous variables*):** By default, `plot_summary` will show medians [Q1, Q3] for continuous variables. For normally distributed variables, users can specify `normal = TRUE` to obtain means [SD] instead.
 - **Subplot titles:** Users can change the subplot titles by providing the desired title as the name for each list item (e.g., "# Days in ALC" instead of "Number of Alc Days")
 
 
@@ -126,7 +127,7 @@ The default plots provide a quick and easy way of exploring the data, but you ma
 plot_summary(
   ipadmdad,
   plot_vars = list(
-    `Discharge disposition` = list(plot_var = "discharge_disposition", class = "character"),
+    `Discharge disposition` = list(plot_var = "discharge_disposition", class = "character", sort = "desc"),
     `# Days in ALC` = list(plot_var = "number_of_alc_days", binwidth = 1, breaks = seq(0, 7, 1))
   )
 )
