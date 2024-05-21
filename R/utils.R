@@ -629,3 +629,138 @@ mapping_message <- function(what, addtl = NULL) {
 
   cat(msg)
 }
+
+
+
+#' @title
+#' Convert date-time variables into POSIXct/POSIXt format.
+#'
+#' @description
+#' This function converts date-time variables into a user-specified format.
+#' `convert_date_time` is called by other `Rgemini` functions to make sure that
+#' any date-time inputs are in the expected format (typically `"ymd HM"`). It
+#' can also be used independently of other `Rgemini` functions to clean up
+#' date-times for analyses.
+#' The function additionally returns warning messages about missing/invalid
+#' date-time entries that can be useful for debugging.
+#'
+#' @param dt_var \cr
+#' A vector containing the date-time values to be converted to the specified
+#' format. The vector can be of any class (e.g., "character" or "POSIXct"). If
+#' users have already pre-processed date-time variables into the expected
+#' format (e.g., using `lubridate::ymd_hm()`) prior to running the function,
+#' the function will simply return the original `dt_var`.
+#'
+#' @param format (`character`)\cr
+#' Format to be used to parse `dt_var`, such as `"ymd HM"` (default),
+#' `"ymd HMS"`, `"ymd"` etc. Will be passed to `lubridate::parse_date_time()`.
+#'
+#' Multiple acceptable formats can be specified by providing a character vector,
+#' e.g. `format = c("ymd HM", "ymd HMS", "ymd")`.
+#'
+#' For more details, see `orders` input argument in
+#' \link[lubridate]{parse_date_time}.
+#'
+#' @param addtl_missing (`character`)\cr
+#' Additional message to be added to warning about missing entries (if any).
+#'
+#' @param addtl_invalid (`character`)\cr
+#' Additional message to be added to warning about invalid entries (if any),
+#' i.e., non-missing entries that could not be parsed into specified format.
+#' For example, `"2020-01-01"` is invalid if `format = "ymd HM"`.
+#'
+#' @param addtl_missing_ts (`character`)\cr
+#' If required `format` contains timestamp (e.g., `"ymd HM"` or `"ymd HMS"`):
+#' Additional message to be added to warning about entries with missing
+#' timestamp (i.e., date-only entries).
+#'
+#' @return (`POSIXct` | `POSIXt`)\cr
+#' Returns converted `dt_var` parsed according to specified date-time `format`.
+#'
+#' Will also return the following warning messages (if applicable):
+#' 1) Number (%) of entries in `dt_var` that are missing (NA, "", " ")
+#' 2) Number (%) of entries in `dt_var` that could not be parsed into specified
+#' format
+#' 3) For formats containing timestamps: Number (%) of entries in `dt_var` that
+#' only contain date information
+#'
+#' Any missing/invalid entries will be returned as `NA`.
+#'
+#' @import lubridate
+#'
+#' @export
+#'
+#' @examples
+#' my_date_time <- c("2020-01-01 12:00", "2021-03-06 09:25")
+#' convert_datetime(my_date_time, format = "ymd HM")
+convert_datetime <- function(dt_var,
+                             format = "ymd HM",
+                             addtl_missing = "",
+                             addtl_invalid = "",
+                             addtl_missing_ts = "") {
+  ## Check 1: Missing entries (NA, "", " ")
+  n_missing_dt <- sum(n_missing(dt_var, na_strings = c("", " "), index = TRUE))
+  if (n_missing_dt > 0) {
+    warning(
+      paste0(
+        n_missing(dt_var, na_strings = c("", " ")), " entries in variable '",
+        deparse(substitute(dt_var)), "' are missing (NA, \"\", or \" \").\n",
+        addtl_missing
+      ),
+      immediate. = TRUE, call. = FALSE
+    )
+  }
+  
+  ## convert to correct format
+  if (!any(grepl("POSIX", class(dt_var)))) {
+    # suppress generic warning from parse_date_time here and show more
+    # informative warning below instead
+    dt_var_res <- suppressWarnings(
+      lubridate::parse_date_time(dt_var, orders = format)
+    )
+    
+    ## Check 2: Entries that can't be parsed according to specified format
+    n_invalid_dt <- sum(is.na(dt_var_res)) - n_missing_dt
+    if (n_invalid_dt > 0) {
+      warning(
+        paste0(
+          n_invalid_dt, " (", round(100 * n_invalid_dt / length(dt_var), 1), "%)",
+          " of all non-missing entries in variable '", deparse(substitute(dt_var)),
+          "' could not be parsed with date-time format(s): '", paste(format, collapse = "', '"),
+          "'. These entries are returned as NA.\n",
+          "Please carefully inspect the provided date-time variable, and if necessary, perform additional preprocessing.\n",
+          addtl_invalid
+        ),
+        immediate. = TRUE, call. = FALSE
+      )
+    }
+    
+    ## Check 3: For formats with timestamp (e.g., "ymd HM", "ymd HMS" etc.),
+    # check how many only contain date: e.g., "2020-01-01" only contains date
+    if (all(grepl("hm", format, ignore.case = TRUE))) {
+      ts_regex <- "([0-1][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?"
+      n_date_only <- sum(!grepl(ts_regex, as.character(dt_var))) - n_missing_dt
+      if (n_date_only > 0) {
+        warning(
+          paste0(
+            n_date_only, " (", round(100 * n_date_only / length(dt_var), 1), "%)",
+            " of all non-missing entries in variable '", deparse(substitute(dt_var)),
+            "' could not be parsed due to missing timestamps and will be returned as NA.\n",
+            "Please carefully consider how to deal with entries that only contain date information ",
+            "(e.g., impute missing timestamps, only consider dates for all entries etc.).\n",
+            addtl_missing_ts
+          ),
+          immediate. = TRUE, call. = FALSE
+        )
+      }
+    }
+    
+    # return converted date-time variable
+    return(dt_var_res)
+    
+  } else {
+    # if date-time variable was already pre-processed into POSIXct/POSIXt by
+    # user, return variable as is
+    return(dt_var)
+  }
+}
