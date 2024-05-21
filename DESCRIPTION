@@ -37,6 +37,7 @@ Suggests:
     ggsci,
     kableExtra,
     knitr,
+    plotly,
     RColorBrewer,
     rmarkdown,
     testthat (>= 3.0.0),

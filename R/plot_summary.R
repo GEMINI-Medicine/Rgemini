@@ -68,19 +68,20 @@ plot_summary <- function(data,
                          base_size = NULL,
                          color = "lightblue",
                          ...) {
-  
   ########## PREPARE INPUT FOR plot_subplots() below ########
   data <- as.data.table(data)
   ## by default, plot all variables, except ID or date-time variables
   if (is.null(plot_vars)) {
     plot_vars <- colnames(data)[
       !grepl("genc_id|patient_id|epicare|_date|date_|_time|time_|cpso",
-             colnames(data),
-             ignore.case = TRUE
-      ) & 
-        !colnames(data) %in% c("admitting_physician", "mrp",
-                               "discharging_physician", "adm_code_raw",
-                               "dis_code_raw", "mrp_code_raw")
+        colnames(data),
+        ignore.case = TRUE
+      ) &
+        !colnames(data) %in% c(
+          "admitting_physician", "mrp",
+          "discharging_physician", "adm_code_raw",
+          "dis_code_raw", "mrp_code_raw"
+        )
     ]
 
     ## if data contains both hospital_id & hospital_num, plot hospital_id by default
@@ -94,18 +95,21 @@ plot_summary <- function(data,
           "No `plot_vars` input provided.\n",
           "Plotting all variables in `data` input, except encounter/patient/physician IDs and date-time variables.\n",
           'If you would like to plot them, please explicitly specify those variables using `plot_vars = c("variable_name")`.\n'
-        ), immediate. = TRUE
+        ),
+        immediate. = TRUE
       )
     }
-    
+
     ## return error if no relevant (non-ID/date-time) variables found
     if (length(plot_vars) == 0) {
       stop(
-        paste("No relevant plotting variables found.\n",
-              "Please inspect your `data` input and specify the variables you would like to plot.\n")
+        paste(
+          "No relevant plotting variables found.\n",
+          "Please inspect your `data` input and specify the variables you would like to plot.\n"
+        )
       )
     }
-    
+
     ## show warning for large tables
     # if no `plot_vars` input provided and table has >= 10 relevant columns
     if (length(plot_vars) >= 10) {
@@ -114,17 +118,18 @@ plot_summary <- function(data,
           "Plotting", length(plot_vars), "variables.",
           "This might cause memory issues and cluttered outputs.\n",
           "Please consider providing a `plot_vars` input specifying a subset of variables instead.\n"
-        ), immediate. = TRUE
+        ),
+        immediate. = TRUE
       )
     }
   }
-  
+
   ## Always interpret hospital_num as a factor
   if ("hospital_num" %in% plot_vars && "hospital_num" %in% colnames(data)) {
     data[, hospital_num := factor(hospital_num, levels = sort(unique(as.numeric(hospital_num))))]
   }
-  
-  
+
+
   ## if variables are provided as character vector, turn into list
   if (class(plot_vars) == "character") {
     plot_vars <- setNames(lapply(plot_vars, function(x) list()), plot_vars)
@@ -155,7 +160,7 @@ plot_summary <- function(data,
       length(plot_vars) # by default, all vars are in single figure (if < 9)
     }
   }
-  
+
   ## determine font size for subplots (depending on number of variables/figure)
   if (is.null(base_size)) {
     base_size <- 13 - ceiling(1.5 * sqrt(nvars_plot))
@@ -174,7 +179,7 @@ plot_summary <- function(data,
         )
       )
     }
-    
+
     ## if user specified numeric/integer, make sure variable can be transformed
     ## to numeric (count any entries that can't be transformed as NA)
     if (any(var$class %in% c("numeric", "integer"))) {
@@ -182,7 +187,8 @@ plot_summary <- function(data,
       n_invalid <- suppressWarnings(
         sum(is.na(as.numeric(
           data[!n_missing(
-            data[[var$plot_var]], na_strings = c("", " "), index = TRUE
+            data[[var$plot_var]],
+            na_strings = c("", " "), index = TRUE
           ), ][[var$plot_var]]
         )))
       )
@@ -193,20 +199,20 @@ plot_summary <- function(data,
         Please carefully check your 'data' input and variable types.\n"
         ))
       }
-      
+
       ## transform entries
       data[[var$plot_var]] <- suppressWarnings(as.numeric(data[[var$plot_var]]))
     }
-    
+
     ## get % missing (count any NA/""/" ")
     # also includes values that couldn't be transformed to numeric above
     missing <- n_missing(data[[var$plot_var]], na_strings = c("", " "))
-    
+
     ## always exclude missing values from all plots/summary statistics
     data <- data[
-      !n_missing(data[[var$plot_var]], na_strings = c("", " "), index = TRUE), 
+      !n_missing(data[[var$plot_var]], na_strings = c("", " "), index = TRUE),
     ]
-    
+
     ## check whether any non-NA values remain
     if (!length(data[[var$plot_var]]) > 0) {
       stop(
@@ -216,14 +222,14 @@ plot_summary <- function(data,
         )
       )
     }
-    
-    
+
+
     ######## CREATE PLOTS ########
     ## for numeric variables
     if (any(
       var$class %in% c("numeric", "integer"),
       is.null(var$class) &&
-      class(data[[var$plot_var]]) %in% c("numeric", "integer")
+        class(data[[var$plot_var]]) %in% c("numeric", "integer")
     )) {
       ## plot histogram
       sub_fig <- ggplot(
@@ -238,7 +244,7 @@ plot_summary <- function(data,
             binwidth = var$binwidth, bins = var$bins, ...
           )
         )
-      
+
       ## add breaks
       if (!is.null(var$breaks)) {
         sub_fig <- sub_fig +
@@ -252,7 +258,7 @@ plot_summary <- function(data,
             )
           )
       }
-      
+
       ## add summary stats
       if (show_stats == TRUE) {
         if (!is.null(var$normal) && var$normal == TRUE) {
@@ -274,25 +280,26 @@ plot_summary <- function(data,
             ))
         }
       }
-      
+
       ## for non-numeric variables
     } else if (any( # if variable is not numeric/user didn't specify numeric
-      !var$class %in% c("integer", "numeric"), 
+      !var$class %in% c("integer", "numeric"),
       is.null(var$class) && !class(data[[var$plot_var]]) %in% c("integer", "numeric")
     )) {
-      
       # show warning about large number of categories
-      if (length(unique(as.factor(data[[var$plot_var]]))) > 50) {
+      if (length(unique(as.factor(data[[var$plot_var]]))) > 20) {
         warning(
           paste0(
-            "Plotting > 50 categories on x-axis for variable '", var$plot_var, "'.\n",
+            "Plotting > 20 categories on x-axis for variable '", var$plot_var, "'.\n",
             "This might take a while and can result in poor readability of the x-tick labels. ",
-            "We recommend applying additional grouping before running this function ", 
+            ifelse(show_stats == TRUE, paste0("% labels for ", var$plot_var, " have been removed.\n"), "\n"),
+            "We recommend applying additional grouping before running this function ",
             "or plotting this variable in a separate figure.\n"
-          ), immediate. = TRUE
+          ),
+          immediate. = TRUE
         )
       }
-      
+
       ## create barplot
       sub_fig <- ggplot(
         data, aes(
@@ -300,19 +307,22 @@ plot_summary <- function(data,
           y = if (prct == TRUE) (after_stat(count)) / sum(after_stat(count)) else (after_stat(count))
         )
       ) +
-        geom_bar(color = "grey20", fill = color) + 
+        geom_bar(color = "grey20", fill = color) +
         scale_x_discrete( # limit x-tick labels to 10 characters
           label = function(x) stringr::str_trunc(x, 10)
-        ) 
-      
+        )
+
       ## add stats/labels
       if (show_stats == TRUE) {
         sub_fig <- sub_fig +
           geom_text(
             stat = "count", aes(
-              label = percent(round(after_stat(count) / sum(after_stat(count)), 3))
+              label = if (length(unique(data[[var$plot_var]])) <= 20) paste0(round(100 * after_stat(count) / sum(after_stat(count)), 1), "%") else ""
             ),
-            vjust = -0.4, size = base_size / 5, hjust = 0.5
+            size = base_size / 5,
+            vjust = -0.5,
+            hjust = 0.5,
+            angle = 0
           ) +
           labs(subtitle = paste0("Missing: ", missing, "\n\n "))
       }
@@ -324,16 +334,16 @@ plot_summary <- function(data,
       scale_y_continuous(
         name = if (prct == TRUE) "p" else "count",
         labels = if (prct == TRUE) percent else rescale_none,
-        expand = expansion(mult = c(0, 0.1))
+        expand = expansion(mult = c(0, 0.15))
       ) +
-      plot_theme(base_size = base_size, aspect.ratio = 1) + 
+      plot_theme(base_size = base_size, aspect.ratio = 1) +
       theme(plot.subtitle = element_text(hjust = 0))
 
 
     ## if more than 10 x-tick labels (or tick labels with > 5 characters),
     # add angle for better visibility
     if (length(ggplot_build(sub_fig)$layout$panel_params[[1]]$x$breaks) > 10 ||
-        any(nchar(unique(as.character(data[[var$plot_var]])))) > 5) {
+      any(nchar(unique(as.character(data[[var$plot_var]])))) > 5) {
       sub_fig <- sub_fig +
         theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
     }
@@ -347,11 +357,11 @@ plot_summary <- function(data,
   sub_figs <- lapply(plot_vars, plot_subplots, data = data)
 
   ## Combine subplots into final figure(s)
-  if (exists("nrow", inherits = FALSE)) { # if nrow/ncol were determined within function 
+  if (exists("nrow", inherits = FALSE)) { # if nrow/ncol were determined within function
     fig <- suppressWarnings(ggarrange(plotlist = sub_figs, nrow = nrow, ncol = ncol))
   } else {
     fig <- suppressWarnings(ggarrange(plotlist = sub_figs, ...))
   }
-  
+
   return(fig)
 }

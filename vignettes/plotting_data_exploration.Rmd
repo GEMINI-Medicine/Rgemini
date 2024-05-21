@@ -170,7 +170,7 @@ The current version of `plot_summary()` is only meant to be used for data explor
 
 # Plot variables over time {#plot_over_time}
 
-Another common way to explore GEMINI data is to plot variables over time, which can be done with a single line of code using the `plot_over_time()` function in `Rgemini`. By default, the function assumes that users want to aggregate data by a certain time interval (default = `"month"`) and by hospital (plotted as individual subplots). This can provide important insights into differences across sites and temporal trends. We recommend generating these plots after cohort creation in order to check for potential data availability/quality issues, outliers, or biases that may have been introduced during cohort inclusion/exclusion steps. 
+Another common way to explore GEMINI data is to plot variables over time, which can be done with a single line of code using the `plot_over_time()` function in `Rgemini`. By default, the function assumes that users want to aggregate data by a certain time interval (default = `"month"`) and by hospital (plotted as individual subplots). This can provide important insights into differences across sites and temporal trends. We recommend generating these plots after cohort creation to check for potential data availability/quality issues, outliers, or biases that may have been introduced during cohort generation. 
 
 
 ## Default plot
@@ -219,7 +219,7 @@ plot_over_time(
 )
 ```
 
-When plotting percentages, any entries that are `NA` are automatically removed from both the numerator and denominator. 
+When plotting percentages, any entries that are `NA`/`""` are automatically removed from both the numerator and denominator. 
 
 If we wanted to plot `discharge_disposition`, which is of class `integer`, the function would by default plot the `"mean"`. However, in reality, discharge disposition represents a categorical variable, so we could either transform `discharge_disposition` into a factor variable before plotting, or alternatively, we could run the following code to plot the percentage of encounters where `discharge_disposition %in% c(7, 72, 73, 74)` (i.e., % of hospitalizations that resulted in in-hospital death):
 
@@ -402,7 +402,7 @@ plot_over_time(
   time_int = "season",
   nrow = 2,
   scales = "free_y"
-) 
+)
 ```
 
 
@@ -484,6 +484,31 @@ knitr::kable(head(res[[2]]))
 
 In both tables, `n` corresponds to the number of data points in each cell.
 
+
+
+## Notes on using `plotly`
+
+It can be useful to apply `plotly::ggplotly()` to create interactive plots that can further facilitate data exploration. However, please note that `ggplotly` can mess with certain plot aesthetics. For example, if we apply `ggplotly` to the default `plot_over_time`, the axis labels now overlap with the x-tick marks and the legend position has been moved to the top right:
+
+```{r}
+library(plotly)
+ggplotly(plot_over_time(data = ipadmdad, plot_var = "age"))
+```
+
+
+You can apply any necessary adjustments to the returned ggplot and/or run `plotly::layout()` to achieve the desired aesthetics. For example, to move the "Discharge Month" label and change the legend position:
+
+```{r}
+# create plot
+my_plot <- plot_over_time(data = ipadmdad, plot_var = "age")
+
+# adjust space for x-axis title
+my_plot <- my_plot + labs(x = "\nDischarge Month") 
+
+# apply additional formatting using layout()
+ggplotly(my_plot) %>%  
+  layout(legend = list(x = 1, y = 0.5)) # change legend position
+```
 
 <!-- remove border around images -->
 <style>

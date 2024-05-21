@@ -291,7 +291,6 @@ plot_color_palettes <- function(plot_palettes = "all") {
 
   }
 
-
   return(fig)
 }
 

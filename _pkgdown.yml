@@ -54,10 +54,13 @@ reference:
 - title: Plotting Functions
   desc: Functions for common plotting needs.
 - contents:
-  - plot_summary
-  - plot_over_time
-  - plot_theme
   - gemini_colors
+  - plot_color_palettes
+  - plot_over_time
+  - plot_summary
+  - plot_theme
+  - scale_color_gemini
+  - scale_fill_gemini
 - title: Mapping files
   desc: Files containing variable mappings.
 - contents:
