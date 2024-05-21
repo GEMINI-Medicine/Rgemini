@@ -33,16 +33,16 @@ knitr::opts_chunk$set(
 )
 
 ## uncomment this when trying to knit vignette locally
-library(ggplot2)
-library(ggpubr)
-library(lemon)
-library(ggthemes)
-library(ggpubr)
-library(scales)
-source("H:/GitHub/Rgemini/R/plot_summary.R")
-source("H:/GitHub/Rgemini/R/plot_over_time.R")
-source("H:/GitHub/Rgemini/R/plot_theme.R")
-source("H:/GitHub/Rgemini/R/utils.R")
+# library(ggplot2)
+# library(ggpubr)
+# library(lemon)
+# library(ggthemes)
+# library(ggpubr)
+# library(scales)
+# source("H:/GitHub/Rgemini/R/plot_summary.R")
+# source("H:/GitHub/Rgemini/R/plot_over_time.R")
+# source("H:/GitHub/Rgemini/R/plot_theme.R")
+# source("H:/GitHub/Rgemini/R/utils.R")
 
 options(knitr.kable.NA = '')
 
