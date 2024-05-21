@@ -68,10 +68,30 @@ admdad <- dummy_ipadmdad(
   time_period = c(2015, 2022)
 )
 
+## Providing plot_vars as a character vector
 plot_summary(
   data = admdad,
   plot_vars = c("age", "gender", "discharge_disposition")
 )
+
+## Providing plot_vars as a list input
+plot_summary(
+  ipadmdad,
+  plot_vars = list(
+    `Discharge disposition` = list(
+        plot_var = "discharge_disposition",
+        class = "character", 
+        sort = "desc"
+    ),
+    `# Days in ALC` = list(
+        plot_var = "number_of_alc_days",
+        binwidth = 1,
+        breaks = seq(0, 7, 1)
+    )
+  )
+)
+
+
 }
 \seealso{
 \code{vignette("plotting_data_exploration", package = "Rgemini")}
