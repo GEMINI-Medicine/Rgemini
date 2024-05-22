@@ -41,23 +41,28 @@
 #' variables corresponding to date-time of the performed imaging test and
 #' mapped imaging modality, respectively. This is to avoid hardcoding variable
 #' names within the function in case field labels differ between databases.
-
+#'
+#' @param dbcon (`DBIConnection`)\cr
+#' A database connection to any GEMINI database. `DBI` connection is recommended
+#' as `odbc` connection may cause connection issues in certain environment.
+#'
 #' @param cohort (`data.frame` or `data.table`)
 #' Cohort table with all relevant encounters of interest, where each row
 #' corresponds to a single encounter. Must contain GEMINI Encounter ID
 #' (`genc_id`).
-#' @param imaging (`data.table` or `data.frame`)\cr
-#' Table equivalent to DRM table "radiology" as defined in the
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
-#' Table must contain three fields: `genc_id`, imaging performed date-time (see
-#' `dtvar`, in "yyyy-mm-dd hh:mm" format), and a field that standardizes the
-#' imaging test type (see `mapvar`).
-#' @param dtvar (`character`)
-#' Name of the column in `imaging` table containing date-time of performed
-#' imaging test (usually `"performed_date_time"`).
-#' @param mapvar (`character`)
-#' Name of the column in `imaging` table containing the imaging test type
-#' (usually `"modality_mapped"`).
+#'
+#' @param exclude_ed (`logical`)
+#' Whether to exclude tests in emergency department. When set to `TRUE`, only
+#' tests being performed in in0patient settings are counted. When set to `FALSE`,
+#' tests in ED and in-patient will be counted. To distinguish tests in ED and
+#' in-patient settings, following
+#' the methodology implemented in
+#' [My Practice Report](https://www.hqontario.ca/Portals/0/documents/qi/practice-reports/general-medicine-sample-report.html#imaging-qi),
+#' `ordered_date_time` is compared against `admission_date_time` to identify
+#' imaging tests in ED. When `ordered_date_time` is not available,
+#' `performed_date_time` is used instead. If both `ordered_date_time` and
+#' `performed_date_time` are not available, the test will not be counted in the
+#'  output.
 #'
 #' @return
 #' data.table with the same number of rows as input "cohort", with additional
@@ -65,25 +70,64 @@
 #' "n_img_mri_derived",  "n_img_us_derived", "n_img_other_derived",
 #' "n_img_int_derived" and "n_img_ct_mri_us_derived".
 #'
+#' @note
+#' Currently, the function does not take data availability into account. For
+#' patients without imaging tests, the function will return 0 in result columns.
+#' User should check radiology data availability and decide whether the imputed
+#' `0`s are appropriate or not.
+#'
 #' @export
-n_imaging <- function(cohort,
-                      imaging,
-                      dtvar = "performed_date_time",
-                      mapvar = "modality_mapped") {
-
+n_imaging <- function(dbcon,
+                      cohort,
+                      exclude_ed = FALSE) {
 
   mapping_message("imaging modalities")
 
-  ## remap variable names in case field names change in the database
+  ## warning to remind user of availability check
+  cat(
+    "\n***Note:***
+    This function does not check radiology data availability for the input cohort,
+    and returns 0 when test is not found in rad table. These 0s may not be
+    appropriate especially for patients where radiology data is not available.
+    User should check the coverage of radiology table and modify the
+    result if necessary.\n")
+
+  ## check input type and column name
+  ## dbcon input check is currently exc
+  check_input(cohort, argtype = c("data.table", "data.frame"), colnames =  c("genc_id"))
+  check_input(exclude_ed, arginput = "logical")
   cohort <- coerce_to_datatable(cohort)
-  imaging <- coerce_to_datatable(imaging)
 
-  res <- cohort[, .(genc_id)]
+  ## identify tables in db, currently the function does not work on radiology so
+  ## it is hard coded as "radiology" in query
+  admdad_table <- find_db_tablename(dbcon, "admdad", verbose = FALSE)
 
-  imaging <- imaging[, .(genc_id,
-    dtvar = get(dtvar),
-    mapvar = get(mapvar)
-  )]
+  ## query db to pull imaging data
+  imaging <- dbGetQuery(
+    dbcon,
+    paste0(
+      ifelse(exclude_ed == TRUE,
+            # filter by admission date time and exclude tests before admission
+            paste0("with temp as (
+              select r.*,a.admission_date_time,
+              case when r.ordered_date_time is null or r.ordered_date_time = '' or
+              r.ordered_date_time = ' ' then r.performed_date_time >= a.admission_date_time
+              else r.ordered_date_time >= a.admission_date_time end as case_result
+              from radiology r
+              left join ", admdad_table, " a on r.genc_id = a.genc_id
+            ) select *
+            from temp
+            where case_result = 'true' and genc_id IN ("),
+
+            # not filter by admission date time
+            paste0("select * from radiology r
+            where genc_id IN (")
+      ),
+      # IN method is used instead of temp table method to pull based on genc_id list,
+      # to ensure function works in HPC environment
+      paste(cohort$genc_id, collapse = ", "), ")"
+    )
+    ) %>% as.data.table()
 
   ## compute imaging number
   output_vars_names <- c(
@@ -105,11 +149,12 @@ n_imaging <- function(cohort,
     "interventional"
   )
 
+  # compute number of tests and format variable names
   imaging <-
     imaging %>%
-    dplyr::mutate(across(where(is.character), ~ na_if(.x, ""))) %>% # catch cases where "" is present in the dataset
-    .[, mapvar := ifelse(tolower(mapvar) %in% c("x-ray", "xray"), "xray", mapvar)] %>% # fix x-ray name
-    dcast(., genc_id ~ mapvar, length, fill = 0) %>%
+    dplyr::mutate(across(modality_mapped, ~ na_if(.x, ""))) %>% # catch cases where "" is present in the dataset
+    mutate(modality_mapped = ifelse(tolower(modality_mapped) %in% c("x-ray", "xray"), "xray", modality_mapped)) %>% # fix x-ray name
+    dcast(., genc_id ~ modality_mapped, length, fill = 0) %>%
     janitor::clean_names() %>% # spread
     setnames(old = mapped_values, new = output_vars_names[1:6], skip_absent = TRUE) %>%
     .[, n_img_ct_mri_us_derived := rowSums(.SD),
@@ -117,9 +162,9 @@ n_imaging <- function(cohort,
     ] %>%
     dplyr::select(any_of(c("genc_id", output_vars_names)))
 
-  ## merge with provided admission list
+  ## merge with provided cohort
   res <-
-    merge(res, imaging, by = "genc_id", all.x = TRUE) %>%
+    merge(cohort[, .(genc_id)], imaging, by = "genc_id", all.x = TRUE) %>%
     dplyr::mutate_all(~ coalesce(., 0))
 
   return(res)
