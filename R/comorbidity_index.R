@@ -280,13 +280,14 @@ charlson_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_
 
   return(res)
 }
-
+10.1097/MLR.0b013e31819432e5
 
 #' @title
 #' Compute Elixhauser comorbidity score
 #'
 #' @description
-#' Based on the methodology from [Elixhauser A et al. 1998](https://pubmed.ncbi.nlm.nih.gov/19433995/)
+#' Based on the methodology from [Elixhauser A et al. 1998](https://pubmed.ncbi.nlm.nih.gov/19433995/),
+#' [Quan H et al. 2005](https://www.jstor.org/stable/3768193/), and [van Walraven C et al. 2009](https://doi.org/10.1097/MLR.0b013e31819432e5/)
 #' using ICD-10 codes as the mapping algorithm,
 #' implemented in the R [comorbidity](https://ellessenne.github.io/comorbidity/index.html) package
 #' by [Gasparini, 2018](https://doi.org/10.21105/joss.00648).
@@ -302,8 +303,11 @@ charlson_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_
 #'
 #' @references
 #' \itemize{
-#'  \item{Elixhauser A, et al. Med Care, 1998. https://doi.org/10.1097/MLR.0b013e31819432e5}
+#'  \item{Elixhauser A, et al. Med Care, 1998. https://pubmed.ncbi.nlm.nih.gov/19433995/}
+#'  \item{Quen H, et al. Med Care, 2005. https://www.jstor.org/stable/3768193/}
+#'  \item{Van Walraven C, et al. Med Care, 2009. https://doi.org/10.1097/MLR.0b013e31819432e5/}
 #'  \item{Gasparini A. JOSS, 2018. https://doi.org/10.21105/joss.00648}
+#'
 #' }
 #'
 elixhauser_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_comorbidities = FALSE) {
