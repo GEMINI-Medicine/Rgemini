@@ -130,12 +130,16 @@ plot_over_time <- function(
   if (is.null(line_group) && !is.null(facet_group)) {
     line_group <- facet_group
   }
-
+  
   Rgemini:::check_input(
     data,
     c("data.table", "data.frame"),
     colnames = c(plot_var, time_var, line_group, color_group, facet_group)
   )
+  
+  if (nrow(data) == 0) {
+    stop(paste0("User input `", deparse(substitute(data)), "` has 0 rows. Please carefully check your input table."))
+  }
 
   ## show warning if plot_var is the same as any of the grouping variables
   if (!is.null(plot_var) && plot_var %in% c(time_var, line_group, color_group, facet_group)) {
@@ -143,6 +147,20 @@ plot_over_time <- function(
                    "Please check your inputs and specify a plot_var that is different from the variables used for grouping."))
   }
   
+  ## When specifying a color_group, any line_group variable generally needs to be nested within color_group
+  #  (e.g., hospital_num is nested within hospital_type), otherwise, color-coding doesn't make sense
+  if (!is.null(line_group) && !is.null(color_group)) {
+    # check for 1:1 nesting within color group
+    nesting <- ipadmdad[, .(count = uniqueN(get(color_group))), by = get(line_group)]
+    if (any(nesting$count > 1)) {
+      warning(paste0(
+        "line_group variable `", line_group, 
+        "` is not fully nested within color_group `", color_group, "`.\n",
+        "Note that color grouping cannot be applied within lines, but only across lines.\n", 
+        "Please ensure that you specified the correct grouping variables.\n")
+      )
+    }
+  }
   
   ##### Prepare data #####
   data <- copy(data) %>% as.data.table()
@@ -340,13 +358,22 @@ plot_over_time <- function(
     col_name <- ifelse(func == "count", "n", paste(func, paste0(c(plot_var, plot_cat), collapse = "_"), sep = "_"))
     setnames(res, "outcome", col_name, skip_absent = TRUE)
     setnames(res_overall, "outcome", col_name, skip_absent = TRUE)
+
     ## Prepare output
     output <- list()
     if (nrow(res) > 0) {
       output$data_aggr <- setorderv(res, grouping)
+      # Include both time_var and time_int label in date column for clarity
+      colnames(output$data_aggr)[colnames(output$data_aggr) == time_int] <- paste0(
+        strsplit(time_var, "[_]")[[1]][1], "_", time_int
+      )
     }
     if (nrow(res_overall) > 0) {
       output$data_aggr_overall <- setorderv(res_overall, grouping_overall)
+      # Include both time_var and time_int label in date column for clarity
+      colnames(output$data_aggr_overall)[colnames(output$data_aggr_overall) == time_int] <- paste0(
+        strsplit(time_var, "[_]")[[1]][1], "_", time_int
+      )
     }
     return(output)
   } else {
@@ -389,11 +416,43 @@ plot_over_time <- function(
               (is.null(color_group) || (!is.null(line_group) && !is.null(color_group) && line_group != color_group))
           ), 1, 0.2),
           stat = if (!is.null(smooth_method)) "smooth" else "identity",
-          method = smooth_method # if smoothing, overall line will correspond to smooth line fitted to res_overall
+          method = smooth_method, # if smoothing, overall line will correspond to smooth line fitted to res_overall
+          na.rm = TRUE
         )
       )
 
       fig <- fig + labs(color = NULL)
+      
+      
+      ## overall line is only shown for neighbouring/connected data points that
+      # are not interrupted by NA, otherwise, geom_line can't connect the points
+      # e.g., single time point or points surrounded by NA are removed by geom_line
+      # -> Identify isolated points (i.e., points surrounded by NA) and plot them
+      # with geom_point() instead
+      isolated_points <- res %>% 
+        group_by(across(all_of(grouping_overall[grouping_overall != time_int]))) %>%
+        arrange(get(time_int)) %>% 
+        mutate(isolated = ifelse(
+          (is.na(lag(outcome)) & is.na(lead(outcome))) |  # points surrounded by NA
+            (row_number() == 1 & is.na(lead(outcome))) |  # 1st point and next = NA
+            (row_number() == n() & is.na(lag(outcome))),  # last point and previous = NA
+          TRUE,
+          FALSE
+        )) %>%
+        ungroup() %>%
+        filter(is.na(outcome) == FALSE & isolated == TRUE)
+      
+      ## add isolated points with geom_point
+      fig <- fig + geom_point(
+        data = isolated_points, 
+        size = line_width, 
+        alpha = ifelse(is.null(facet_group) || (
+          (!is.null(facet_group) && !is.null(line_group) && facet_group != line_group) &&
+            (is.null(color_group) || (!is.null(line_group) && !is.null(color_group) && line_group != color_group))
+        ), 1, 0.2),
+        show.legend = FALSE
+      )
+      
 
       # if smooth trend line is shown, but individual lines are suppressed,
       # let's also show scatter plot for overall curve
@@ -410,7 +469,7 @@ plot_over_time <- function(
             alpha = 0.2,
             show.legend = FALSE
           )
-      }
+      } 
     }
 
 
@@ -425,6 +484,49 @@ plot_over_time <- function(
               (is.null(facet_group) || ((!is.null(facet_group) && color_group != facet_group)) ||
                 ((!is.null(facet_group) && !is.null(line_group) && line_group == facet_group))))
           )
+      } else {
+        
+        ## when no smoothing is applied, individual line will be shown, however,
+        # only for uninterrupted time periods that can be connected with geom_line
+        # e.g., single time point or points surrounded by NA are removed by geom_line
+        # -> Identify isolated points (i.e., points surrounded by NA) and plot them
+        # with geom_point() instead
+        isolated_points <- res %>% 
+          group_by(across(all_of(grouping[grouping != time_int]))) %>%
+          arrange(get(time_int)) %>% 
+          mutate(isolated = ifelse(
+            (is.na(lag(outcome)) & is.na(lead(outcome))) |  # points surrounded by NA
+              (row_number() == 1 & is.na(lead(outcome))) |  # 1st point and next = NA
+              (row_number() == n() & is.na(lag(outcome))),  # last point and previous = NA
+            TRUE,
+            FALSE
+          )) %>%
+          ungroup() %>%
+          filter(is.na(outcome) == FALSE & isolated == TRUE)
+        
+        ## show warning
+        if (nrow(isolated_points) > 0) {
+          warning(paste("Due to gaps in the data timeline for certain groups,",
+                        "there are some data points that can't be connected via geom_line().",
+                        "These data points have been plotted with geom_point() instead.",
+                        "Please consider removing categories with interrupted data availability."))
+          
+        }
+        
+        ## add isolated points with geom_point
+        fig <- fig + geom_point(
+          data = isolated_points, 
+          size = line_width, 
+          alpha = ifelse(
+            show_overall && ((is.null(facet_group) ||
+                                ((!is.null(facet_group) && !is.null(line_group) && (facet_group != line_group)) &&
+                                   (is.null(color_group) || (
+                                     (!is.null(color_group) && !is.null(line_group) && (color_group != line_group))
+                                   )))) &&
+                               length(unique(res[[line_group]])) > 1), 0.2, 1
+          ),
+          show.legend = FALSE)
+
       }
 
       fig <- fig + suppressWarnings( # suppress warnings to ignore `method` when no smoothing is applied
@@ -442,9 +544,12 @@ plot_over_time <- function(
             (is.null(facet_group) || ((!is.null(facet_group) && color_group != facet_group)) ||
               ((!is.null(facet_group) && !is.null(line_group) && line_group == facet_group)))),
           stat = if (!is.null(smooth_method)) "smooth" else "identity",
-          method = smooth_method # if smooth method is specified, fit trend line according to specified method
+          method = smooth_method, # if smooth method is specified, fit trend line according to specified method
+          na.rm = TRUE
         )
-      )
+      ) 
+      
+      
 
       if (!is.null(facet_group)) {
         ## show warning for facet variables with > 50 levels
