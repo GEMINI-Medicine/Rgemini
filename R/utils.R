@@ -150,15 +150,15 @@ coerce_to_datatable <- function(data) {
 find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
   ## Check if table input is supported
   check_input(drm_table, "character",
-    categories = c(
-      "admdad", "ipdiagnosis", "ipintervention", "ipcmg",
-      "lab", "transfusion"
-    )
+              categories = c(
+                "admdad", "ipdiagnosis", "ipintervention", "ipcmg",
+                "lab", "transfusion"
+              )
   )
-
+  
   ## Define search criteria for different tables
   search_fn <- function(table_names, table = drm_table) {
-
+    
     if (drm_table %in% c("lab", "transfusion", "admdad")) {
       # for lab & transfusion table table:
       # check for specific table names lab/lab_subset and transfusion/transfusion_subset
@@ -168,15 +168,15 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
       # for all other tables, simply search for names starting with search term
       res <- table_names[grepl(paste0("^", drm_table), table_names)]
     }
-
+    
     return(res)
   }
-
-
+  
+  
   ## Find all table names and run search as defined above
   tables <- dbListTables(dbcon)
   table_name <- search_fn(tables)
-
+  
   ## If none found, might be due to DB versions with foreign data wrappers
   #  In that case try this:
   if (length(table_name) == 0) {
@@ -187,14 +187,14 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
     )$table_name
     table_name <- search_fn(tables)
   }
-
+  
   ## Get unique value (some DBs have duplicate table names)
   table_name <- unique(table_name)
-
+  
   ## Check returned value
   # get DB name
   db_name <- dbGetQuery(dbcon, "SELECT current_database()")$current_database
-
+  
   # error if no table found
   if (length(table_name) == 0) {
     stop(paste0(
@@ -203,7 +203,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
       Please make sure your database contains the relevant table."
     ))
   }
-
+  
   # error if more than 1 table found
   if (length(table_name) > 1) {
     stop(paste0(
@@ -213,7 +213,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
       Please ensure that the searched table name results in a unique match."
     ))
   }
-
+  
   ## show identified table
   if (verbose) {
     cat(paste0(
@@ -222,7 +222,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
       drm_table, "': '", table_name, "'\n "
     ))
   }
-
+  
   return(table_name)
 }
 
@@ -241,16 +241,16 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 #' `hospital_id` or `hospital_num`, with preference given to `hospital_id` if it exists.
 #'
 return_hospital_field <- function(db) {
-
+  
   admdad <- find_db_tablename(db, "admdad", verbose = FALSE)
   fields <- dbGetQuery(db, paste0("SELECT column_name FROM information_schema.columns WHERE table_name = '", admdad,"';"))$column_name
-
+  
   if ("hospital_id" %in% fields) {
     return("hospital_id")
-
+    
   } else if ("hospital_num" %in% fields) {
     return("hospital_num")
-
+    
   } else {
     error("A field corresponding to the hospital was not found.")
   }
@@ -401,8 +401,8 @@ check_input <- function(arginput, argtype,
                         colnames = NULL, # for data.table/.frame inputs only
                         coltypes = NULL, #          "-"
                         unique = FALSE) { #          "-"
-
-
+  
+  
   ## Get argument names and restructure input
   if (any(class(arginput) == "list")) {
     # Note: Users can provide multiple arginputs to be checked by combining them
@@ -422,12 +422,12 @@ check_input <- function(arginput, argtype,
   } else {
     # get name of argument
     argnames <- deparse(substitute(arginput))
-
+    
     # turn arginput into list (for Map function below to work)
     arginput <- list(arginput = arginput)
   }
-
-
+  
+  
   ## Define new function to check for integers
   #  Note: base R's `is.integer` does not return TRUE if type == numeric
   #  Note 2: For coltypes check below, this function is not used
@@ -440,16 +440,16 @@ check_input <- function(arginput, argtype,
       return(FALSE)
     }
   }
-
-
+  
+  
   ## Function defining all input checks
   run_checks <- function(arginput, argname) {
-
+    
     ###### CHECK 1 (for all input types): Check if type is correct
     ## For DB connections
     if (any(grepl("dbi|con|posgre|sql", argtype, ignore.case = TRUE))) {
       if (!RPostgreSQL::isPostgresqlIdCurrent(arginput) &&
-        !grepl("PostgreSQL", class(arginput)[1])) {
+          !grepl("PostgreSQL", class(arginput)[1])) {
         stop(
           paste0(
             "Invalid user input in '",
@@ -465,25 +465,25 @@ check_input <- function(arginput, argtype,
           call. = FALSE
         )
       }
-
+      
       ## For all other inputs
     } else if ((any(argtype == "integer") && !all(is_integer(arginput))) ||
-      (!any(argtype == "integer") && !any(class(arginput) %in% argtype) &&
-        (!(any(argtype == "numeric") && all(is_integer(arginput)))))) { # in case argtype is "numeric" and provided input is "integer", don't show error
+               (!any(argtype == "integer") && !any(class(arginput) %in% argtype) &&
+                (!(any(argtype == "numeric") && all(is_integer(arginput)))))) { # in case argtype is "numeric" and provided input is "integer", don't show error
       stop(
         paste0(
           "Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
           argname, "' needs to be of type '", paste(argtype,
-            collapse = "' or '"
+                                                    collapse = "' or '"
           ), "'.",
           "\nPlease refer to the function documentation for more details."
         ),
         call. = FALSE
       )
     }
-
-
-
+    
+    
+    
     ###### CHECK 2: Check if length of input argument is as expected [optional]
     if (!is.null(length)) {
       if (length(arginput) != length) {
@@ -497,8 +497,8 @@ check_input <- function(arginput, argtype,
         )
       }
     }
-
-
+    
+    
     ###### CHECK 3 (for character inputs):
     ###### Check if option is one of acceptable alternatives [optional]
     if (any(argtype == "character") && !is.null(categories)) {
@@ -516,8 +516,8 @@ check_input <- function(arginput, argtype,
         )
       }
     }
-
-
+    
+    
     ###### CHECK 4 (for numeric/integer inputs):
     ###### Check if number is within acceptable interval [optional]
     if (any(argtype %in% c("numeric", "integer")) && !is.null(interval)) {
@@ -533,14 +533,14 @@ check_input <- function(arginput, argtype,
         )
       }
     }
-
-
+    
+    
     ###### CHECK 5 (for data.table/data.frame inputs):
     ###### Check if relevant columns exist [optional]
     if (any(argtype %in% c("data.frame", "data.table")) && !is.null(colnames)) {
       # get missing columns
       missing_cols <- setdiff(colnames, colnames(arginput))
-
+      
       if (length(missing_cols) > 0) {
         stop(
           paste0(
@@ -553,8 +553,8 @@ check_input <- function(arginput, argtype,
         )
       }
     }
-
-
+    
+    
     ###### CHECK 6 (for data.table/data.frame inputs):
     ###### Check if required columns are of correct type [optional]
     if (any(argtype %in% c("data.frame", "data.table")) && !is.null(coltypes)) {
@@ -563,8 +563,8 @@ check_input <- function(arginput, argtype,
       # ignore coltypes without specification ("")
       check_col_type <- function(col, coltype) {
         if (coltype != "" && !any(grepl(coltype,
-          class(as.data.table(arginput)[[col]]),
-          ignore.case = TRUE
+                                        class(as.data.table(arginput)[[col]]),
+                                        ignore.case = TRUE
         ))) {
           stop(
             paste0(
@@ -579,8 +579,8 @@ check_input <- function(arginput, argtype,
       }
       mapply(check_col_type, colnames, coltypes)
     }
-
-
+    
+    
     ###### CHECK 7 (for data.table/data.frame inputs):
     ###### Check if all rows are distinct [optional]
     if (any(argtype %in% c("data.frame", "data.table")) && unique == TRUE) {
@@ -597,8 +597,8 @@ check_input <- function(arginput, argtype,
       }
     }
   }
-
-
+  
+  
   ### Run checks on all input arguments (if multiple)
   check_all <- Map(run_checks, arginput, argnames)
 }
@@ -626,7 +626,7 @@ mapping_message <- function(what, addtl = NULL) {
     "Please carefully check mapping coverage for your cohort of interest, or contact the GEMINI team if you require additional support.\n",
     addtl
   )
-
+  
   cat(msg)
 }
 
@@ -637,7 +637,7 @@ mapping_message <- function(what, addtl = NULL) {
 #'
 #' @description
 #' This function converts date-time variables into a user-specified format.
-#' `convert_date_time` is called by other `Rgemini` functions to make sure that
+#' `convert_datetime` is called by other `Rgemini` functions to make sure that
 #' any date-time inputs are in the expected format (typically `"ymd HM"`). It
 #' can also be used independently of other `Rgemini` functions to clean up
 #' date-times for analyses.
@@ -660,19 +660,19 @@ mapping_message <- function(what, addtl = NULL) {
 #'
 #' For more details, see `orders` input argument in
 #' \link[lubridate]{parse_date_time}.
-#'
-#' @param addtl_missing (`character`)\cr
-#' Additional message to be added to warning about missing entries (if any).
-#'
-#' @param addtl_invalid (`character`)\cr
-#' Additional message to be added to warning about invalid entries (if any),
-#' i.e., non-missing entries that could not be parsed into specified format.
-#' For example, `"2020-01-01"` is invalid if `format = "ymd HM"`.
-#'
-#' @param addtl_missing_ts (`character`)\cr
-#' If required `format` contains timestamp (e.g., `"ymd HM"` or `"ymd HMS"`):
-#' Additional message to be added to warning about entries with missing
-#' timestamp (i.e., date-only entries).
+#' 
+#' @param check_ts_zero (`logical`)\cr
+#' Whether to check for timestamps "00:00", which may represent missing times
+#' for some variables. This is only relevant if `dtvar` is expected to have time
+#' information, e.g., `format = c("ymd HM", "ymd HMS")`.
+#' 
+#' @param addtl_msg (`character`)\cr
+#' Additional warning message to be shown if any missing/invalid date-time
+#' entries were found. If `addtl_msg = NULL`, the following message will be
+#' shown by default: 
+#' "Please carefully consider how to deal with missing/invalid date-time entries
+#' and perform any additional pre-processing prior to running the function 
+#' [\function_name\] (e.g., impute missing dates/timestamps etc.)."
 #'
 #' @return (`POSIXct` | `POSIXt`)\cr
 #' Returns converted `dt_var` parsed according to specified date-time `format`.
@@ -684,7 +684,8 @@ mapping_message <- function(what, addtl = NULL) {
 #' 3) For formats containing timestamps: Number (%) of entries in `dt_var` that
 #' only contain date information
 #'
-#' Any missing/invalid entries will be returned as `NA`.
+#' Any missing/invalid date-time entries will be returned as `NA` by this
+#' function.
 #'
 #' @import lubridate
 #'
@@ -695,17 +696,19 @@ mapping_message <- function(what, addtl = NULL) {
 #' convert_datetime(my_date_time, format = "ymd HM")
 convert_datetime <- function(dt_var,
                              format = "ymd HM",
-                             addtl_missing = "",
-                             addtl_invalid = "",
-                             addtl_missing_ts = "") {
+                             check_ts_zero = FALSE,
+                             addtl_msg = NULL) {
+  
+  ## initialize all counts of missing/invalid entries
+  n_missing_dt <- n_invalid_dt <- n_date_only <- n_zeros <- 0
+  
   ## Check 1: Missing entries (NA, "", " ")
   n_missing_dt <- sum(n_missing(dt_var, na_strings = c("", " "), index = TRUE))
   if (n_missing_dt > 0) {
     warning(
       paste0(
-        n_missing(dt_var, na_strings = c("", " ")), " entries in variable '",
-        deparse(substitute(dt_var)), "' are missing (NA, \"\", or \" \").\n",
-        addtl_missing
+        n_missing(dt_var, na_strings = c("", " ")), " entries in variable `",
+        deparse(substitute(dt_var)), "` are missing (NA, \"\", or \" \")."
       ),
       immediate. = TRUE, call. = FALSE
     )
@@ -725,42 +728,79 @@ convert_datetime <- function(dt_var,
       warning(
         paste0(
           n_invalid_dt, " (", round(100 * n_invalid_dt / length(dt_var), 1), "%)",
-          " of all non-missing entries in variable '", deparse(substitute(dt_var)),
-          "' could not be parsed with date-time format(s): '", paste(format, collapse = "', '"),
-          "'. These entries are returned as NA.\n",
-          "Please carefully inspect the provided date-time variable, and if necessary, perform additional preprocessing.\n",
-          addtl_invalid
+          " of all non-missing entries in variable `", deparse(substitute(dt_var)),
+          "` could not be parsed with date-time format(s): \"", 
+          paste(format, collapse = "\", \""), "\"."
         ),
         immediate. = TRUE, call. = FALSE
       )
     }
     
-    ## Check 3: For formats with timestamp (e.g., "ymd HM", "ymd HMS" etc.),
-    # check how many only contain date: e.g., "2020-01-01" only contains date
+    ## Check 3: Check if timestamp exists
+    #  Will only be checked if expected format contains time ("HM"/"HMS" etc.)
+    #  Date-only inputs like "2020-01-01" would fail check
     if (all(grepl("hm", format, ignore.case = TRUE))) {
+      # if user provided non-POSIXct input, check characters for timestamp info
       ts_regex <- "([0-1][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?"
       n_date_only <- sum(!grepl(ts_regex, as.character(dt_var))) - n_missing_dt
       if (n_date_only > 0) {
         warning(
           paste0(
             n_date_only, " (", round(100 * n_date_only / length(dt_var), 1), "%)",
-            " of all non-missing entries in variable '", deparse(substitute(dt_var)),
-            "' could not be parsed due to missing timestamps and will be returned as NA.\n",
-            "Please carefully consider how to deal with entries that only contain date information ",
-            "(e.g., impute missing timestamps, only consider dates for all entries etc.).\n",
-            addtl_missing_ts
+            " of all non-missing entries in variable `", deparse(substitute(dt_var)),
+            "` could not be parsed due to missing timestamps."
           ),
           immediate. = TRUE, call. = FALSE
         )
       }
     }
     
-    # return converted date-time variable
-    return(dt_var_res)
-    
   } else {
     # if date-time variable was already pre-processed into POSIXct/POSIXt by
     # user, return variable as is
-    return(dt_var)
+    dt_var_res <- dt_var
   }
+  
+  ## Check 4 (optional): Check how many have timestamp 00:00 
+  #  Will only be checked if expected format contains time ("HM"/"HMS" etc.)
+  #  Any entries with "00:00"/"00:00:00" after date component will fail
+  if (all(grepl("hm", format, ignore.case = TRUE))) {
+    if (check_ts_zero == TRUE) {
+      n_zeros <- sum(
+        grepl(" 00:00", as.character(dt_var)) | nchar(as.character(dt_var)) < 12
+      ) - n_missing_dt
+      if (n_zeros > 0) {
+        warning(
+          paste0(
+            n_zeros, " (", round(100 * n_zeros / length(dt_var), 1), "%)",
+            " of all non-missing entries in variable `",
+            deparse(substitute(dt_var)), "` have timestamp \"00:00/00:00:00\". ",
+            "Please consider if these entries may represent missing timestamps."
+          ),
+          immediate. = TRUE, call. = FALSE
+        )
+      }
+    }
+  }
+  
+  # show general warning about missing/invalid date-times
+  # (can be customized by providing `addtl_msg`)
+  if (any(c(n_missing_dt, n_invalid_dt, n_date_only, n_zeros) > 0)) {
+    if (is.null(addtl_msg)) {
+      cat("\n")
+      warning(
+        ifelse(is.null(addtl_msg), paste0("\n",
+          "Please carefully consider how to deal with missing/invalid date-time",
+          " entries and perform any additional pre-processing prior to running",
+          " the function `", as.character(sys.calls()[[1]])[1],
+          "` (e.g., impute missing dates/timestamps etc.).\n"
+        ),
+        addtl_msg
+        ), immediate. = TRUE, call. = FALSE
+      )
+    }
+  }
+  
+  return(dt_var_res)
+  
 }
