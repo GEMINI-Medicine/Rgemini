@@ -2,6 +2,7 @@
 
 * Updated unit tests & small bug fix in `daily_census`
 * Ordered package names in pkgdown reference file
+* `n_imaging`, `n_routine_bloodwork` and `n_rbc_transfusion` refactored and updated to be able to exclude clinical records in ED.
 
 # Rgemini 0.4.2
 
