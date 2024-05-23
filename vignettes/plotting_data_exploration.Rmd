@@ -209,7 +209,7 @@ There are several ways users can customize the default plot by providing additio
 
 For continuous variables, users can specify `func = "median"` instead of the default `func = "mean"`. 
 
-For categorical variables, the function plots percentages (`func = "prct"`). Users can additionally provide `plot_cat` to indicate which category/factor level to plot (by default, the function plots the % in the highest category level). For example, to plot the percentage of female encounters:
+For categorical variables, the function plots percentages (`func = "prct"`). Users can additionally provide `plot_cat` to indicate which category/factor level to plot (by default, the function plots the % in the last category level, e.g., `TRUE` for logical variables). For example, to plot the percentage of female encounters:
 
 ```{r}
 plot_over_time(
@@ -244,7 +244,7 @@ plot_over_time(
 Note the when we plot `n`, the thick "overall" line represents the median of all (individual hospital) lines, rather than the total count of rows across all sites.
 
 
-Finally, `plot_over_time()` can also be used to plot the percentage of missing data by specifying `func = "na"` or `"missing"`, which plots the percentage of all entries that are either `NA`, `""`, or `" "`. Let's plot the % of encounters with missing ALC flag and rename the ylabel to `"% Missing ALC"`:
+Finally, `plot_over_time()` can also be used to plot the percentage of missing data by specifying `func = "na"` or `"missing"`, which plots the percentage of all entries that are either `NA`, `""`, or `" "`. Let's plot the % of encounters with missing ALC flag and rename the y-axis title to `"% Missing ALC"`:
 
 ```{r}
 plot_over_time(
@@ -362,7 +362,7 @@ plot_over_time(
 ```
 
 
-If this plot is too busy and you simply want to illustrate the aggregated results by hospital type, you could suppress the individual hospital lines by specifying `line_group = NULL`. You can also provide any custom colors and specify `ylimits`. Additionally, let's add some annotations highlighting the onset of the first COVID-19 wave in March 2020:
+If this plot is too busy and you simply want to illustrate the aggregated results by hospital type, you could suppress the individual hospital lines by specifying `line_group = NULL`. You can also provide any custom `colors` and specify `ylimits`. Additionally, let's add some annotations highlighting the onset of the first COVID-19 wave in March 2020:
 
 ```{r fig.height = 4, fig.width = 6}
 plot_over_time(
@@ -394,7 +394,12 @@ plot_over_time(
 
 ***Additional inputs for facet plots***
 
-Users can provide additional input arguments that are passed to `lemon::facet_rep_wrap()` (wrapper for `ggplot2::facet_wrap()`). For example, this allows users to control the number of rows (`nrow`) and columns (`ncol`) in facet plots and whether the scales should be "fixed" (default) or "free". "Free" scales are useful to illustrate within-hospital trends, regardless of between-hospital differences. For example, we may want to visualize the effect of "season" on the encounter numbers (regardless of total number of encounters at each hospital). Here, we plot this in a 2 x 6 facet plot with free y scales:
+Users can provide additional input arguments that are passed to `lemon::facet_rep_wrap()` (wrapper for `ggplot2::facet_wrap()`), such as:
+
++ `nrow` and `ncol` to control the number of rows and columns  
++ `scales` specifying if the x-/y-axis limits should be `"fixed"` (default) or `"free"` across subplots. 
+
+"Free" scales are useful to illustrate within-hospital trends, regardless of between-hospital differences. For example, we may want to visualize the effect of "season" on the encounter numbers (regardless of total number of encounters at each hospital). Here, we plot this in a 2 x 6 facet plot with free y scales:
 
 ```{r fig.width = 9, fig.height = 4}
 plot_over_time(
@@ -459,7 +464,9 @@ plot_over_time(
 
 ### `return_data` {#return_data}
 
-There might be situations where users want the function to return the aggregated data, instead of plotting the results. This could be useful for debugging purposes, checking for outliers, or to further process the data before plotting the results (e.g., additional exclusions etc.). It also allows users to plot the aggregated data with other plotting packages/apply further customization to the plots. To retrieve the aggregated data, simply specify `return_data = TRUE`:
+There might be situations where users want the function to return the aggregated data, instead of plotting the results. This could be useful for debugging purposes, checking for outliers, or to further process the data before plotting the results (e.g., additional exclusions etc.). It also allows users to plot the aggregated data with other plotting packages/apply further customization to the plots. 
+
+To retrieve the aggregated data, simply specify `return_data = TRUE`:
 
 ```{r}
 res <- plot_over_time(
@@ -471,14 +478,14 @@ res <- plot_over_time(
 )
 ```
 
-This will return a list of 2 `data.table` objects, where the 1st entry corresponds to the results aggregated by time interval and all grouping variables (e.g., `hospital_num` * `month` by default):
+This will return a list of 2 `data.table` objects, where the 1st entry corresponds to the results aggregated by time interval (default = `"month"`) and **all** grouping variables (`line_group`, `color_group`, and `facet_group` - if any). For example, here we grouped by `line_group = "hospital_num"` (default) and `color_group = "hospital_type"` so the output will look like this:
 
 ```{r}
 knitr::kable(head(res[[1]]))
 ```
 
 
-The 2nd list entry corresponds to the overall results (i.e., thick summary line in plots above), i.e., data aggregated by time and `color_group` variable (if any), such as `hospital_type` in this example:
+The 2nd list entry corresponds to the higher-level grouping into the "overall" results (i.e., thick summary line in the plots above), which only groups by time interval and `color_group` (if any), such as `hospital_type` in our example:
 ```{r}
 knitr::kable(head(res[[2]]))
 ```
