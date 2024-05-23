@@ -175,4 +175,3 @@ n_rbc_transfusions <-function(dbcon,
   return(res)
 
 }
-

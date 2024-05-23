@@ -134,6 +134,3 @@ n_routine_bloodwork <- function(dbcon,
 
   return(res)
 }
-
-
-n_bld <- n_routine_bloodwork(cleandb, cohort, T)

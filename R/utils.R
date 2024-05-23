@@ -659,6 +659,3 @@ availability_message <- function(what, addtl = NULL) {
   cat(msg)
 }
 
-mapping_message("radiology")
-availability_message("radiology")
-
