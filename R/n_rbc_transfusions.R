@@ -28,6 +28,15 @@
 #' corresponds to a single encounter. Must contain the following columns:
 #' - `genc_id` (`integer`): GEMINI encounter ID
 #' - `hospital_num` (`integer`): Hospital number
+#' @param exclude_ed (`logical`)
+#' Whether to exclude tests in emergency department. When set to `TRUE`, only
+#' tests being performed in inpatient settings are counted. When set to `FALSE`,
+#' tests in both ED and in-patient settings will be counted. To distinguish
+#' tests in ED and in-patient settings, following
+#' the methodology implemented in
+#' [My Practice Report](https://www.hqontario.ca/Portals/0/documents/qi/practice-reports/general-medicine-sample-report.html#imaging-qi),
+#' `collection_date_time` is compared against `admission_date_time` to identify
+#' imaging tests in ED.
 #'
 #' @return (`data.table`)\cr
 #' Table with three columns: `genc_id`, `n_app_rbc_transfusion_derived` (number
@@ -46,7 +55,8 @@
 #'
 
 n_rbc_transfusions <-function(dbcon,
-                            cohort) {
+                              cohort,
+                              exclude_ed = FALSE) {
 
 
   mapping_message("RBC transfusions")
@@ -81,12 +91,12 @@ n_rbc_transfusions <-function(dbcon,
     dbcon ,
     paste0(
       "drop table if exists lab_bb;
-    create temp table lab_bb as
-    select genc_id,
-    result_value,
-    collection_date_time
-    from ", lab_table, " l
-    where l.test_type_mapped_omop = '3000963' and
+      create temp table lab_bb as
+      select genc_id,
+      result_value,
+      collection_date_time
+      from ", lab_table, " l
+      where l.test_type_mapped_omop = '3000963' and
       genc_id in (",
       paste(temp_d_glist, collapse = ","),
       ")")

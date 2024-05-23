@@ -40,11 +40,22 @@
 #' 3000963 - Hemoglobin (Mass/volume) in Blood
 #'
 #' @param dbcon (`DBIConnection`)\cr
-#' A database connection to any GEMINI database.
+#' A database connection to any GEMINI database. `DBI` connection is recommended
+#' as `odbc` connection may cause connection issues in certain environment.
+#'
 #' @param cohort (`data.frame` or `data.table`)
 #' Cohort table with all relevant encounters of interest, where each row
 #' corresponds to a single encounter. Must contain GEMINI Encounter ID
 #' (`genc_id`).
+#'
+#' @param exclude_ed (`logical`)
+#' Whether to exclude tests in emergency department. When set to `TRUE`, only
+#' tests performed in inpatient settings are counted, and tests performed in ED
+#' are excluded. When set to `FALSE`, tests in both ED and in-patient settings
+#' will be counted.
+#' Tests in ED are defined as `collection_date_time` earlier
+#' than `admission_date_time`. Tests with missing `collection_date_time` will be
+#' excluded when `exclude_ed` is set to `TRUE`.
 #'
 #' @import RPostgreSQL
 #' @return
@@ -55,58 +66,70 @@
 #'
 
 n_routine_bloodwork <- function(dbcon,
-                                cohort) {
-  cohort <- coerce_to_datatable(cohort)
-
+                                cohort,
+                                exclude_ed = FALSE) {
+  # mapping warning
   mapping_message("Sodium and Hemoglobin tests")
+  # warning to remind user of availability check
+  cat(
+    "\n***Note:***
+    This function does not check radiology data availability for the input cohort,
+    and returns 0 when test is not found in rad table. These 0s may not be
+    appropriate especially for patients where radiology data is not available.
+    User should check the coverage of radiology table and modify the
+    result if necessary.\n")
 
   cat("\nThis function may take a few minutes to run...\n\n")
 
-  startwith.any <- function(x, prefix) {
-    mat <- matrix(0, nrow = length(x), ncol = length(prefix))
-    for (i in 1:length(prefix)) {
-      mat[, i] <- startsWith(x, prefix[i])
-    }
-    return(as.vector(apply(mat, MARGIN = 1, FUN = sum)) > 0)
-  }
 
-
-  temp_d_glist <- cohort$genc_id
-
-  ### query lab table:
-  DBI::dbSendQuery(dbcon, "Drop table if exists temp_data;")
-  DBI::dbWriteTable(dbcon, c("pg_temp", "temp_data"),
-    cohort[, .(genc_id)],
-    row.names = FALSE,
-    overwrite = TRUE
-  )
+  # check input type and column name
+  check_input(cohort, argtype = c("data.table", "data.frame"), colnames =  c("genc_id"))
+  check_input(exclude_ed, argtype = "logical")
+  cohort <- coerce_to_datatable(cohort)
 
   # find table name for lab table
   lab_table <- find_db_tablename(dbcon, "lab", verbose = FALSE)
 
-  lab <- DBI::dbGetQuery(
-    conn = dbcon,
+  # load lab from db
+  lab <- dbGetQuery(
+    dbcon,
     paste0(
-      "select genc_id, result_value, test_type_mapped_omop from ",
-      lab_table,
-      " where test_type_mapped_omop in ('3019550', '3000963')
-      and genc_id in (select genc_id from temp_data);"
+      ifelse(
+        exclude_ed == TRUE,
+        # filter by admission date time and exclude tests before admission
+        paste0(
+          "select l.genc_id, l.collection_date_time, l.result_value,
+           l.test_type_mapped_omop, a.admission_date_time
+           from ", lab_table, " l
+           left join admdad a
+           on l.genc_id = a.genc_id
+           where l.test_type_mapped_omop in ('3000963','3019550') and
+           l.collection_date_time >= a.admission_date_time and a.genc_id in ("
+        ),
+        # no filter on collection date time
+        paste0(
+          "select genc_id, collection_date_time, result_value, test_type_mapped_omop
+           from ", lab_table,
+           " where test_type_mapped_omop in ('3019550', '3000963') and genc_id in ("
+        )
+      ),
+      # IN method is used instead of temp table method to pull based on genc_id list,
+      # to ensure function works in HPC environment
+      paste(cohort$genc_id, collapse = ", "), ")"
     )
-  ) %>%
-    as.data.table()
+  ) %>% as.data.table
 
-
+  # only count tests with a valid result_value (numeric or starting with "<", ">")
   lab <-
     lab[, result_value := .(trimws(result_value))] %>%
-    .[!is.na(as.numeric(result_value)) | startwith.any(result_value, c("<", ">"))] %>%
+    .[!is.na(as.numeric(result_value)) | grepl("^([<>])", result_value)] %>%
     .[, .(n_routine_bloodwork_derived = .N), .(genc_id)]
 
-  ## merge with provided admission list
+  # merge with provided admission list
   res <-
     merge(cohort[, .(genc_id)],
       lab,
-      by.x = "genc_id",
-      by.y = "genc_id",
+      by = "genc_id",
       all.x = TRUE
     ) %>%
     dplyr::mutate_at(
@@ -116,3 +139,6 @@ n_routine_bloodwork <- function(dbcon,
 
   return(res)
 }
+
+
+n_routine_bloodwork(cleandb, cohort, F)

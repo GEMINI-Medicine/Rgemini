@@ -53,9 +53,9 @@
 #'
 #' @param exclude_ed (`logical`)
 #' Whether to exclude tests in emergency department. When set to `TRUE`, only
-#' tests being performed in in0patient settings are counted. When set to `FALSE`,
-#' tests in ED and in-patient will be counted. To distinguish tests in ED and
-#' in-patient settings, following
+#' tests being performed in inpatient settings are counted. When set to `FALSE`,
+#' tests in both ED and in-patient settings will be counted. To distinguish
+#' tests in ED and in-patient settings, following
 #' the methodology implemented in
 #' [My Practice Report](https://www.hqontario.ca/Portals/0/documents/qi/practice-reports/general-medicine-sample-report.html#imaging-qi),
 #' `ordered_date_time` is compared against `admission_date_time` to identify
@@ -83,7 +83,7 @@ n_imaging <- function(dbcon,
 
   mapping_message("imaging modalities")
 
-  ## warning to remind user of availability check
+  # warning to remind user of availability check
   cat(
     "\n***Note:***
     This function does not check radiology data availability for the input cohort,
@@ -92,17 +92,16 @@ n_imaging <- function(dbcon,
     User should check the coverage of radiology table and modify the
     result if necessary.\n")
 
-  ## check input type and column name
-  ## dbcon input check is currently exc
+  # check input type and column name
   check_input(cohort, argtype = c("data.table", "data.frame"), colnames =  c("genc_id"))
   check_input(exclude_ed, arginput = "logical")
   cohort <- coerce_to_datatable(cohort)
 
-  ## identify tables in db, currently the function does not work on radiology so
-  ## it is hard coded as "radiology" in query
+  # identify tables in db, currently the function does not work on radiology so
+  # it is hard coded as "radiology" in query
   admdad_table <- find_db_tablename(dbcon, "admdad", verbose = FALSE)
 
-  ## query db to pull imaging data
+  # query db to pull imaging data
   imaging <- dbGetQuery(
     dbcon,
     paste0(
@@ -129,7 +128,7 @@ n_imaging <- function(dbcon,
     )
     ) %>% as.data.table()
 
-  ## compute imaging number
+  # compute imaging number
   output_vars_names <- c(
     "n_img_xray_derived",
     "n_img_ct_derived",
@@ -162,7 +161,7 @@ n_imaging <- function(dbcon,
     ] %>%
     dplyr::select(any_of(c("genc_id", output_vars_names)))
 
-  ## merge with provided cohort
+  # merge with input cohort
   res <-
     merge(cohort[, .(genc_id)], imaging, by = "genc_id", all.x = TRUE) %>%
     dplyr::mutate_all(~ coalesce(., 0))
