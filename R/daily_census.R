@@ -18,8 +18,8 @@
 #' Must contain the following columns:
 #' - `genc_id` (`integer`): GEMINI encounter ID
 #' - `hospital_num` or `hospital_id` (`integer` or `character`): Hospital ID
-#' - `admission_date_time` (`character`): Date-time of admission in YYYY-MM-DD HH:MM format
-#' - `discharge_date_time` (`character`): Date-time of discharge in YYYY-MM-DD HH:MM format
+#' - `admission_date_time` (`character` | `POSIXct POSIXt`): Date-time of admission in YYYY-MM-DD HH:MM format
+#' - `discharge_date_time` (`character` | `POSIXct POSIXt`): Date-time of discharge in YYYY-MM-DD HH:MM format
 #'
 #' If a `group_var` is specified (see below), this should be included in the `cohort` table as well.
 #'
@@ -47,8 +47,8 @@
 #'
 #' The `scu_exclude` input table needs to contain the following columns:
 #' - `genc_id` (`integer`): GEMINI encounter ID
-#' - `scu_admit_date_time` (`character`): Date-time of SCU admission in YYYY-MM-DD HH:MM format
-#' - `scu_discharge_date_time` (`character`): Date-time SCU of discharge in YYYY-MM-DD HH:MM format
+#' - `scu_admit_date_time` (`character` | `POSIXct POSIXt`): Date-time of SCU admission in YYYY-MM-DD HH:MM format
+#' - `scu_discharge_date_time` (`character` | `POSIXct POSIXt`): Date-time SCU of discharge in YYYY-MM-DD HH:MM format
 #'
 #' For all entries in the `scu_exclude` table that have a valid `scu_admit_date_time` and
 #' `scu_discharge_date_time`, the encounter will not be counted towards the census during any time periods where
@@ -126,7 +126,7 @@
 #'
 #' @importFrom tidyr crossing
 #' @importFrom dplyr anti_join
-#' @importFrom lubridate parse_date_time ymd_hm hms
+#' @importFrom lubridate parse_date_time hms
 #'
 #' @export
 #'
@@ -188,7 +188,6 @@ daily_census <- function(cohort,
   ## check cohort input
   check_input(cohort, c("data.table", "data.frame"),
     colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
-    coltypes = c("", "", "character", "character"),
     unique = TRUE
   ) # make sure there are no duplicate entries in input table
 
@@ -269,8 +268,8 @@ daily_census <- function(cohort,
   cohort[, hospital_num := as.factor(hospital_num)]
 
   ## make sure dates are in correct format
-  cohort[, admission_date_time := ymd_hm(admission_date_time)]
-  cohort[, discharge_date_time := ymd_hm(discharge_date_time)]
+  cohort[, admission_date_time := convert_datetime(admission_date_time)]
+  cohort[, discharge_date_time := convert_datetime(discharge_date_time)]
 
   ## Filter cohort by relevant time period
   cohort <- cohort[discharge_date_time >= time_period_start &
@@ -312,8 +311,8 @@ daily_census <- function(cohort,
 
     ## make sure dates are in correct format
     # date formats that are missing HM information cannot be removed from census -> are set to NA
-    scu_exclude[, scu_admit_date_time := ymd_hm(scu_admit_date_time, quiet = TRUE)]
-    scu_exclude[, scu_discharge_date_time := ymd_hm(scu_discharge_date_time, quiet = TRUE)]
+    scu_exclude[, scu_admit_date_time := convert_datetime(scu_admit_date_time, addtl_msg = "")]
+    scu_exclude[, scu_discharge_date_time := convert_datetime(scu_discharge_date_time, addtl_msg = "")]
 
     ## check for missing/invalid SCU times
     check_scu <- scu_exclude[is.na(scu_admit_date_time) | is.na(scu_discharge_date_time) |
@@ -322,11 +321,14 @@ daily_census <- function(cohort,
       warning(
         paste0("Identified "), nrow(check_scu),
         " rows with invalid or missing SCU admission or discharge date-time in `scu_exclude`.
-        These SCU entries cannot be excluded from the census calculation, and therefore, the corresponding
+        Invalid values might be due to unexpected date-time formats (e.g., missing timestamps) or can be due
+        to `scu_admit_date_time` > `scu_discharge_date_time`.
+        These entries cannot be excluded from the census calculation, and therefore, the corresponding
         `genc_ids` will be counted towards the census during each day of their hospitalization, potentially
         resulting in an overestimate of the daily census.
-        Please check whether missingness of SCU discharge/admission date-time systematically
-        varies by hospital/grouping variable, and consider whether this might bias your results.\n",
+        Please consider pre-processing/imputing invalid date-times.
+        For example, for entries with missing timestamp in `scu_discharge_date_time`, you may want to impute timestamps
+        with 09:00 (or a value > `time_of_day`, i.e., assume genc_id was still in ICU at time census is calculated).",
         immediate. = TRUE
       )
     }

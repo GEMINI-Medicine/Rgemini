@@ -26,19 +26,18 @@
 #' @param ipadmdad (`data.table` or `data.frame`)\cr
 #' Table with all relevant encounters of interest from DRM table "ipadmdad" (see
 #' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
-#' Must contain two fields: `genc_id` and a date-time variable (typically `admission_date_time`).
-#' Date-time variable must be in "yyyy-mm-dd hh:mm" format.
+#' Must contain two fields: `genc_id` and a date-time variable (typically
+#' `admission_date_time` in "yyyy-mm-dd hh:mm" format).
 #'
 #' @param dtvar (`character`)\cr
-#' Character string defining the date-time variable of interest (e.g., "admission_date_time").
+#' Character string defining the date-time variable of interest
+#' (e.g., "admission_date_time").
 #'
 #' @return
 #' data.table with the same number of rows as input "ipadmdad", with additional
 #' derived character fields labelled as "day_of_admission_derived" and
 #' "time_of_admission_derived". Possible values of these fields are "weekend" or
 #' "weekday" for the former, "daytime" or "nighttime" for the latter.
-#'
-#' @importFrom stringr str_sub
 #'
 #' @export
 day_time_of_admission <- function(ipadmdad,
@@ -47,19 +46,20 @@ day_time_of_admission <- function(ipadmdad,
   ## coerce data frame to data table if necessary
   ipadmdad <- coerce_to_datatable(ipadmdad)
 
-  res <- ipadmdad[, .(genc_id,
-    dtvar = get(dtvar)
-  )]
+  ## select relevant variables
+  res <- ipadmdad[, .(genc_id, dtvar = get(dtvar))]
+  
+  ## make sure dtvar is in appropriate format (needs to have timestamp)
+  res[, dtvar := convert_datetime(dtvar, format = c("ymd HM", "ymd HMS"))]
 
   ## daytime = 08:00 to 16:59
   ## nighttime = 17:00 to 07:59
   res[, ":="(day_of_admission_derived =
-    ifelse(lubridate::wday(str_sub(dtvar, 1, 10),label = TRUE) %in% c("Sun", "Sat"),
+    ifelse(lubridate::wday(dtvar,label = TRUE) %in% c("Sun", "Sat"),
       "weekend", "weekday"
     ),
   time_of_admission_derived =
-    ifelse(as.numeric(str_sub(dtvar, 12, 13)) >= 8 &
-      as.numeric(str_sub(dtvar, 12, 13)) < 17,
+    ifelse(lubridate::hour(dtvar) >= 8 & lubridate::hour(dtvar) < 17,
     "daytime", "nighttime"
     ),
   dtvar = NULL)][]
