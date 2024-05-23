@@ -135,7 +135,7 @@ render_cell_suppression.default <- function(
   if (is.logical(x)) x <- factor(x, levels = c(T, F), labels = c("Yes", "No"))
 
   if (is.factor(x) || is.character(x)) {
-    r <- do.call(render.categorical, c(list(x = x), list(...)))
+    r <- do.call(render.categorical, list(x = x, ...))
 
   } else if (is.numeric(x)) {
 
@@ -145,7 +145,7 @@ render_cell_suppression.default <- function(
       render.continuous <- render_mean.continuous
     }
 
-    r <- do.call(render.continuous, c(list(x = x), list(...)))
+    r <- do.call(render.continuous, list(x = x, ...))
 
   } else {
 
@@ -153,7 +153,7 @@ render_cell_suppression.default <- function(
   }
 
   if (missing && !is.null(render.missing)) {
-    r <- c(r, do.call(render.missing, c(list(x = x), list(...))))
+    r <- c(r, do.call(render.missing, list(x = x, ...)))
   }
   
   if (transpose) {
