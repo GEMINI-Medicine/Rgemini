@@ -1,5 +1,7 @@
 # Rgemini `develop`
 
+* Updated unit tests & small bug fix in `daily_census` 
+* Enable `prettyNum` formatting in table 1 render functions
 * Updated unit tests & small bug fix in `daily_census`
 * Ordered package names in pkgdown reference file
 * New option to derive ICU entries as a clinical outcome with customizable time windows in `icu_entry()`
