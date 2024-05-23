@@ -37,12 +37,12 @@ It uses NACRS fields Triage Date and Time (Data Element Number 24/25) and
 Date and Time Patient Left Emergency Department (Data Element Number 116/117).
 }
 \note{
-By design, function will not return any \code{NA} values.
 Encounter IDs in the \code{cohort} table that are not present in the \code{er} table
-are assumed to have no ER visit.
-Encounter IDs in the \code{er} table but with either missing \code{triage_date_time} or
-\code{left_er_date_time} will be excluded from the calculation.
-For these encounters, a value of 0 will be assigned to the derived fields.
+are assumed to have no ER visit and are returned with \code{er_los = 0}. Please
+check if any of these entries might be due to data availability issues and
+consider removing them from your analyses.
+Encounter IDs in the \code{er} table that have missing/invalid \code{triage_date_time}
+or \code{left_er_date_time} will be returned with \code{er_los = NA}.
 }
 \examples{
 # Compute ER LoS for all encounters in ipadmdad;

@@ -7,9 +7,8 @@
 convert_datetime(
   dt_var,
   format = "ymd HM",
-  addtl_missing = "",
-  addtl_invalid = "",
-  addtl_missing_ts = ""
+  check_ts_zero = FALSE,
+  addtl_msg = NULL
 )
 }
 \arguments{
@@ -30,18 +29,20 @@ e.g. \code{format = c("ymd HM", "ymd HMS", "ymd")}.
 For more details, see \code{orders} input argument in
 \link[lubridate]{parse_date_time}.}
 
-\item{addtl_missing}{(\code{character})\cr
-Additional message to be added to warning about missing entries (if any).}
+\item{check_ts_zero}{(\code{logical})\cr
+Whether to check for timestamps "00:00", which may represent missing times
+for some variables. This is only relevant if \code{dtvar} is expected to have time
+information, e.g., \code{format = c("ymd HM", "ymd HMS")}.}
 
-\item{addtl_invalid}{(\code{character})\cr
-Additional message to be added to warning about invalid entries (if any),
-i.e., non-missing entries that could not be parsed into specified format.
-For example, \code{"2020-01-01"} is invalid if \code{format = "ymd HM"}.}
+\item{addtl_msg}{(\code{character})\cr
+Additional warning message to be shown if any missing/invalid date-time
+entries were found. If \code{addtl_msg = NULL}, the following message will be
+shown by default:
+"Please carefully consider how to deal with missing/invalid date-time entries
+and perform any additional pre-processing prior to running the function
+[\function_name] (e.g., impute missing dates/timestamps etc.)."
 
-\item{addtl_missing_ts}{(\code{character})\cr
-If required \code{format} contains timestamp (e.g., \code{"ymd HM"} or \code{"ymd HMS"}):
-Additional message to be added to warning about entries with missing
-timestamp (i.e., date-only entries).}
+[\function_name]: R:\%5C\%5Cfunction_name\%5C}
 }
 \value{
 (\code{POSIXct} | \code{POSIXt})\cr
@@ -56,11 +57,12 @@ format
 only contain date information
 }
 
-Any missing/invalid entries will be returned as \code{NA}.
+Any missing/invalid date-time entries will be returned as \code{NA} by this
+function.
 }
 \description{
 This function converts date-time variables into a user-specified format.
-\code{convert_date_time} is called by other \code{Rgemini} functions to make sure that
+\code{convert_datetime} is called by other \code{Rgemini} functions to make sure that
 any date-time inputs are in the expected format (typically \code{"ymd HM"}). It
 can also be used independently of other \code{Rgemini} functions to clean up
 date-times for analyses.
