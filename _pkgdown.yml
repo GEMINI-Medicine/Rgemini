@@ -17,6 +17,7 @@ reference:
   - er_los
   - frailty_score
   - hospital_fiscal_year
+  - hospitalizations_last_n_days
   - icu_entry
   - icu_los
   - in_hospital_mortality

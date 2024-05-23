@@ -3,6 +3,7 @@
 * Updated unit tests & small bug fix in `daily_census`
 * Ordered package names in pkgdown reference file
 * Small bug fix in `disability()`
+* Adds `hospitalizations_last_n_days()` to calculate the number of previous hospitalizations in a given window.
 
 # Rgemini 0.4.2
 
