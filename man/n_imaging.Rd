@@ -4,33 +4,30 @@
 \alias{n_imaging}
 \title{Compute the number of radiology tests per encounter}
 \usage{
-n_imaging(
-  cohort,
-  imaging,
-  dtvar = "performed_date_time",
-  mapvar = "modality_mapped"
-)
+n_imaging(dbcon, cohort, exclude_ed = FALSE)
 }
 \arguments{
+\item{dbcon}{(\code{DBIConnection})\cr
+A database connection to any GEMINI database. \code{DBI} connection is recommended
+as \code{odbc} connection may cause connection issues in certain environment.}
+
 \item{cohort}{(\code{data.frame} or \code{data.table})
 Cohort table with all relevant encounters of interest, where each row
 corresponds to a single encounter. Must contain GEMINI Encounter ID
 (\code{genc_id}).}
 
-\item{imaging}{(\code{data.table} or \code{data.frame})\cr
-Table equivalent to DRM table "radiology" as defined in the
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
-Table must contain three fields: \code{genc_id}, imaging performed date-time (see
-\code{dtvar}, in "yyyy-mm-dd hh:mm" format), and a field that standardizes the
-imaging test type (see \code{mapvar}).}
-
-\item{dtvar}{(\code{character})
-Name of the column in \code{imaging} table containing date-time of performed
-imaging test (usually \code{"performed_date_time"}).}
-
-\item{mapvar}{(\code{character})
-Name of the column in \code{imaging} table containing the imaging test type
-(usually \code{"modality_mapped"}).}
+\item{exclude_ed}{(\code{logical})
+Whether to exclude tests in emergency department. When set to \code{TRUE}, only
+tests being performed in inpatient settings are counted. When set to \code{FALSE},
+tests in both ED and in-patient settings will be counted. To distinguish
+tests in ED and in-patient settings, following
+the methodology implemented in
+\href{https://www.hqontario.ca/Portals/0/documents/qi/practice-reports/general-medicine-sample-report.html#imaging-qi}{My Practice Report},
+\code{ordered_date_time} is compared against \code{admission_date_time} to identify
+imaging tests in ED. When \code{ordered_date_time} is not available,
+\code{performed_date_time} is used instead. If both \code{ordered_date_time} and
+\code{performed_date_time} are not available, the test will not be counted in the
+output.}
 }
 \value{
 data.table with the same number of rows as input "cohort", with additional
@@ -42,9 +39,9 @@ derived numeric fields labelled as "n_img_xray_derived",  "n_img_ct_derived",
 \code{n_imaging} returns the number of radiology tests for hospital admission.
 }
 \details{
-This function takes a list of admissions and DRM table equivalent of imaging
-table to generate numeric fields counting the number of different radiology
-tests for each admission.
+This function takes a list of admissions and a GEMINI databse connection to
+generate numeric fields counting the number of different radiology tests for
+each admission.
 
 Imaging table in the database should include field that classifies each test
 into below 7 categories.
@@ -64,8 +61,12 @@ imaging table (performed by GEMINI team). Currently, the number of advanced
 radiology tests is one of the performance metrics in MyPracticeReport. CT,
 MRI and Ultrasound are considered advance imaging tests, which can be
 retrieved by the derived variable (\code{n_img_ct_mri_us_derived}).
-
-Any tests being performed in both ED and in-patient settings will be counted.
+}
+\note{
+Currently, the function does not take data availability into account. For
+patients without imaging tests, the function will return 0 in result columns.
+User should check radiology data availability and decide whether the imputed
+\code{0}s are appropriate or not.
 }
 \section{Warning}{
 

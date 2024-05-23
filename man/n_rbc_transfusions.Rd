@@ -4,11 +4,12 @@
 \alias{n_rbc_transfusions}
 \title{Count the number Red Blood Cell (RBC) Transfusions per encounter}
 \usage{
-n_rbc_transfusions(dbcon, cohort)
+n_rbc_transfusions(dbcon, cohort, exclude_ed = FALSE)
 }
 \arguments{
 \item{dbcon}{(\code{DBIConnection})\cr
-A database connection to any GEMINI database.}
+A database connection to any GEMINI database. \code{DBI} connection is recommended
+as \code{odbc} connection may cause connection issues in certain environment.}
 
 \item{cohort}{(\code{data.frame} or \code{data.table})
 Cohort table with all relevant encounters of interest where each row
@@ -17,6 +18,14 @@ corresponds to a single encounter. Must contain the following columns:
 \item \code{genc_id} (\code{integer}): GEMINI encounter ID
 \item \code{hospital_num} (\code{integer}): Hospital number
 }}
+
+\item{exclude_ed}{(\code{logical})
+Whether to exclude transfusions in emergency department. When set to \code{TRUE}, only
+transfusions performed in-inpatient settings are counted. When set to \code{FALSE},
+transfusions in both ED and in-patient settings will be counted.
+Transfusions in ED are defined as \code{issue_date_time} earlier
+than \code{admission_date_time}. Transfusions with missing \code{issue_date_time} will be
+excluded when \code{exclude_ed} is set to \code{TRUE}.}
 }
 \value{
 (\code{data.table})\cr
