@@ -1,11 +1,11 @@
 test_that(
   "date-times provided as character input are parsed correctly with format = 'ymd HM' (default)", {
     
-    date_time <- c("2020-01-01 12:00", "2020-01-01 00:00", "2020-01-01 12:00:00",
-                   "2020-01-01 00:00:00", "2021-02-05", NA, "", " ")
+    date_time <- c("2020-01-01 12:00", "2020-01-01 00:00",
+                   "2020-01-01 12:10:00", "2021-02-05", NA, "", " ")
     
     # this should return warnings due to missing/invalid entries
-    # warnings: 3 missing, 1 invalid, 1 invalid due to date-only
+    # warnings: 3 missing, 2 invalid, 1 invalid due to date-only
     expect_warning(convert_datetime(date_time))
     
     # run it without warnings and then check outputs below
@@ -13,7 +13,7 @@ test_that(
   
     expect_equal(class(res), c("POSIXct", "POSIXt"))
     expect_equal(res, as.POSIXct(c("2020-01-01 12:00:00", "2020-01-01 00:00:00",
-                                   NA, NA, NA, NA, NA, NA), tz = "UTC"))
+                                   NA, NA, NA, NA, NA), tz = "UTC"))
 
   }
 )
@@ -74,5 +74,24 @@ test_that(
     # should result in warning when expecting timestamp information
     expect_warning(convert_datetime(date_time, format = "ymd HM"))
 
+  }
+)
+
+
+test_that(
+  "warnings for 00:00 timestampts are returned correctly", {
+    
+    date_time <- c("2020-01-01 00:00")
+    expect_warning(convert_datetime(date_time, format = c("ymd HM", "ymd HMS"), check_ts_zero = TRUE))
+    
+    date_time <- c("2020-01-01 00:00:00")
+    expect_warning(convert_datetime(date_time, format = c("ymd HM", "ymd HMS"), check_ts_zero = TRUE))
+ 
+    date_time <- ymd_hm(c("2020-01-01 00:00"))
+    expect_warning(convert_datetime(date_time, format = c("ymd HM", "ymd HMS"), check_ts_zero = TRUE))   
+    
+    date_time <- ymd_hms(c("2020-01-01 00:00:00"))
+    expect_warning(convert_datetime(date_time, format = c("ymd HM", "ymd HMS"), check_ts_zero = TRUE))   
+    
   }
 )
