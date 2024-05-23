@@ -242,7 +242,8 @@ comorbidity_index <- function(ipdiag, erdiag, map, weights, at_admission = TRUE,
 #' Compute Charlson comorbidity index (CCI) score
 #'
 #' @description
-#' Based on the methodology from [Quan et al. 2011](https://pubmed.ncbi.nlm.nih.gov/21330339/)
+#' Based on the methodology from [Charlson et al. 1988](https://doi.org/10.1016/0021-9681(87)90171-8),
+#' [Quan H et al. 2005](https://www.jstor.org/stable/3768193), and [Quan et al. 2011](https://doi.org/10.1093/aje/kwq433)
 #' using ICD-10 codes as the mapping algorithm,
 #' implemented in the R [comorbidity](https://ellessenne.github.io/comorbidity/index.html) package
 #' by [Gasparini, 2018](https://doi.org/10.21105/joss.00648).
@@ -258,6 +259,8 @@ comorbidity_index <- function(ipdiag, erdiag, map, weights, at_admission = TRUE,
 #'
 #' @references
 #' \itemize{
+#'  \item{Charlson M, et al. Journal of Chronic Diseases, 1988. https://doi.org/10.1016/0021-9681(87)90171-8}
+#'  \item{Quen H, et al. Med Care, 2005. https://www.jstor.org/stable/3768193}
 #'  \item{Quan H, et al. Am J Epidemiol, 2011. https://doi.org/10.1093/aje/kwq433}
 #'  \item{Gasparini A. JOSS, 2018. https://doi.org/10.21105/joss.00648}
 #' }
@@ -280,14 +283,14 @@ charlson_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_
 
   return(res)
 }
-10.1097/MLR.0b013e31819432e5
+
 
 #' @title
 #' Compute Elixhauser comorbidity score
 #'
 #' @description
-#' Based on the methodology from [Elixhauser A et al. 1998](https://pubmed.ncbi.nlm.nih.gov/19433995/),
-#' [Quan H et al. 2005](https://www.jstor.org/stable/3768193/), and [van Walraven C et al. 2009](https://doi.org/10.1097/MLR.0b013e31819432e5/)
+#' Based on the methodology from [Elixhauser A et al. 1998](https://www.jstor.org/stable/3766985),
+#' [Quan H et al. 2005](https://www.jstor.org/stable/3768193), and [van Walraven C et al. 2009](https://doi.org/10.1097/MLR.0b013e31819432e5)
 #' using ICD-10 codes as the mapping algorithm,
 #' implemented in the R [comorbidity](https://ellessenne.github.io/comorbidity/index.html) package
 #' by [Gasparini, 2018](https://doi.org/10.21105/joss.00648).
@@ -303,9 +306,9 @@ charlson_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_
 #'
 #' @references
 #' \itemize{
-#'  \item{Elixhauser A, et al. Med Care, 1998. https://pubmed.ncbi.nlm.nih.gov/19433995/}
-#'  \item{Quen H, et al. Med Care, 2005. https://www.jstor.org/stable/3768193/}
-#'  \item{Van Walraven C, et al. Med Care, 2009. https://doi.org/10.1097/MLR.0b013e31819432e5/}
+#'  \item{Elixhauser A, et al. Med Care, 1998. https://www.jstor.org/stable/3766985}
+#'  \item{Quen H, et al. Med Care, 2005. https://www.jstor.org/stable/3768193}
+#'  \item{Van Walraven C, et al. Med Care, 2009. https://doi.org/10.1097/MLR.0b013e31819432e5}
 #'  \item{Gasparini A. JOSS, 2018. https://doi.org/10.21105/joss.00648}
 #'
 #' }
