@@ -17,17 +17,14 @@ corresponds to a single encounter. Must contain GEMINI Encounter ID
 (\code{genc_id}).}
 
 \item{exclude_ed}{(\code{logical})
-Whether to exclude tests in emergency department. When set to \code{TRUE}, only
-tests being performed in inpatient settings are counted. When set to \code{FALSE},
-tests in both ED and in-patient settings will be counted. To distinguish
-tests in ED and in-patient settings, following
-the methodology implemented in
-\href{https://www.hqontario.ca/Portals/0/documents/qi/practice-reports/general-medicine-sample-report.html#imaging-qi}{My Practice Report},
-\code{ordered_date_time} is compared against \code{admission_date_time} to identify
-imaging tests in ED. When \code{ordered_date_time} is not available,
-\code{performed_date_time} is used instead. If both \code{ordered_date_time} and
-\code{performed_date_time} are not available, the test will not be counted in the
-output.}
+Whether to exclude tests in emergency department. When set to \code{TRUE}, tests performed
+in ED (testing time before admission time) will not be counted. When set to \code{FALSE},
+tests will not be filtered by time and all tests in radiology table will be counted.
+Please be aware that this may include tests before triage time, tests after discharge
+time, and tests without testing time.
+
+Tests in ED are defined as \code{ordered_date_time} earlier than \code{admission_date_time}.
+When \code{ordered_date_time} is not available, \code{performed_date_time} is used instead.}
 }
 \value{
 data.table with the same number of rows as input "cohort", with additional

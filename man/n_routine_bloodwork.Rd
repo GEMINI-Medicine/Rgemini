@@ -17,10 +17,12 @@ corresponds to a single encounter. Must contain GEMINI Encounter ID
 (\code{genc_id}).}
 
 \item{exclude_ed}{(\code{logical})
-Whether to exclude tests in emergency department. When set to \code{TRUE}, only
-tests performed in inpatient settings are counted, and tests performed in ED
-are excluded. When set to \code{FALSE}, tests in both ED and in-patient settings
-will be counted.
+Whether to exclude tests in emergency department. When set to \code{TRUE}, tests
+performed in ED settings (testing time befoore admission time) will not be
+counted. When set to \code{FALSE}, tests will not be filtered by time and all tests
+in lab table will be counted. Please be aware that this may include tests before
+triage time, tests after discharge time, and tests without testing time.
+
 Tests in ED are defined as \code{collection_date_time} earlier
 than \code{admission_date_time}. Tests with missing \code{collection_date_time} will be
 excluded when \code{exclude_ed} is set to \code{TRUE}.}

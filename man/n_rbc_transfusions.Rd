@@ -20,9 +20,13 @@ corresponds to a single encounter. Must contain the following columns:
 }}
 
 \item{exclude_ed}{(\code{logical})
-Whether to exclude transfusions in emergency department. When set to \code{TRUE}, only
-transfusions performed in-inpatient settings are counted. When set to \code{FALSE},
-transfusions in both ED and in-patient settings will be counted.
+Whether to exclude transfusions in emergency department. When set to \code{TRUE},
+transfusions performed in ED (before admission time) will not be counted.
+When set to \code{FALSE}, transfusions will not be filtered by time and all RBC
+transfusions in \code{transfusion} table will be counted. Please be aware that this
+may include transfusions before triage time, transfusions after discharge time,
+and transfusions without issuing time.
+
 Transfusions in ED are defined as \code{issue_date_time} earlier
 than \code{admission_date_time}. Transfusions with missing \code{issue_date_time} will be
 excluded when \code{exclude_ed} is set to \code{TRUE}.}
