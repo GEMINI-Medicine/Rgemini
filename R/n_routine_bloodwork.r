@@ -71,13 +71,7 @@ n_routine_bloodwork <- function(dbcon,
   # mapping warning
   mapping_message("Sodium and Hemoglobin tests")
   # warning to remind user of availability check
-  cat(
-    "\n***Note:***
-    This function does not check radiology data availability for the input cohort,
-    and returns 0 when test is not found in rad table. These 0s may not be
-    appropriate especially for patients where radiology data is not available.
-    User should check the coverage of radiology table and modify the
-    result if necessary.\n")
+  availability_message("lab")
 
   cat("\nThis function may take a few minutes to run...\n\n")
 
@@ -141,4 +135,3 @@ n_routine_bloodwork <- function(dbcon,
 }
 
 
-n_routine_bloodwork(cleandb, cohort, F)

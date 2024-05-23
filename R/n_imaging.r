@@ -80,17 +80,9 @@
 n_imaging <- function(dbcon,
                       cohort,
                       exclude_ed = FALSE) {
-
+  # warning messages
   mapping_message("imaging modalities")
-
-  # warning to remind user of availability check
-  cat(
-    "\n***Note:***
-    This function does not check radiology data availability for the input cohort,
-    and returns 0 when test is not found in rad table. These 0s may not be
-    appropriate especially for patients where radiology data is not available.
-    User should check the coverage of radiology table and modify the
-    result if necessary.\n")
+  availability_message("radiology")
 
   # check input type and column name
   check_input(cohort, argtype = c("data.table", "data.frame"), colnames =  c("genc_id"))

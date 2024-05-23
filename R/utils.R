@@ -448,7 +448,7 @@ check_input <- function(arginput, argtype,
     ###### CHECK 1 (for all input types): Check if type is correct
     ## For DB connections
     if (any(grepl("dbi|con|posgre|sql", argtype, ignore.case = TRUE))) {
-      if (!RPostgreSQL::isPostgresqlIdCurrent(arginput) &&
+      if (#!RPostgreSQL::isPostgresqlIdCurrent(arginput) &&
         !grepl("PostgreSQL", class(arginput)[1])) {
         stop(
           paste0(
@@ -621,11 +621,44 @@ check_input <- function(arginput, argtype,
 #' Prints a message to the console.
 #'
 mapping_message <- function(what, addtl = NULL) {
-  msg <- paste(
-    "\n***Note:***\nThe output of this function is based on manual mapping of", what, "by a GEMINI Subject Matter Expert.\n",
+  msg <- paste0(
+    "\n***Note:***\nThe output of this function is based on manual mapping of ", what, " by a GEMINI Subject Matter Expert.\n",
     "Please carefully check mapping coverage for your cohort of interest, or contact the GEMINI team if you require additional support.\n",
     addtl
   )
 
   cat(msg)
 }
+
+#' @title
+#' Availability Message
+#'
+#' @description
+#' Message to display to inform the user that the function being used does not
+#' check clinical data availability.
+#'
+#' @param what (`character`)\cr
+#' Which clinical table is used.
+#'
+#' @param addtl (`character`)\cr
+#' An additional, specific message to append to the generic message.
+#'
+#' @return
+#' Prints a message to the console.
+#'
+availability_message <- function(what, addtl = NULL) {
+  msg <- paste0(
+    "\n***Note:***\nThis function does not check ", what,
+    " data availability for the input cohort. It returns 0 for test of interest if no record is \nfound in ",
+    what, " table. The result 0s may not be appropriate for patients whose ",
+    what, " data is not available. \nPlease carefully check ", what,
+    " data availability for your cohort, or contact the GEMINI team if you require additional support.\n",
+    addtl
+  )
+
+  cat(msg)
+}
+
+mapping_message("radiology")
+availability_message("radiology")
+
