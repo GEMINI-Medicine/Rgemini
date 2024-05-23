@@ -49,10 +49,12 @@
 #' (`genc_id`).
 #'
 #' @param exclude_ed (`logical`)
-#' Whether to exclude tests in emergency department. When set to `TRUE`, only
-#' tests performed in inpatient settings are counted, and tests performed in ED
-#' are excluded. When set to `FALSE`, tests in both ED and in-patient settings
-#' will be counted.
+#' Whether to exclude tests in emergency department. When set to `TRUE`, tests
+#' performed in ED settings (testing time befoore admission time) will not be
+#' counted. When set to `FALSE`, tests will not be filtered by time and all tests
+#' in lab table will be counted. Please be aware that this may include tests before
+#' triage time, tests after discharge time, and tests without testing time.
+#'
 #' Tests in ED are defined as `collection_date_time` earlier
 #' than `admission_date_time`. Tests with missing `collection_date_time` will be
 #' excluded when `exclude_ed` is set to `TRUE`.

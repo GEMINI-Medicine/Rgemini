@@ -31,9 +31,13 @@
 #' - `hospital_num` (`integer`): Hospital number
 #'
 #' @param exclude_ed (`logical`)
-#' Whether to exclude transfusions in emergency department. When set to `TRUE`, only
-#' transfusions performed in-inpatient settings are counted. When set to `FALSE`,
-#' transfusions in both ED and in-patient settings will be counted.
+#' Whether to exclude transfusions in emergency department. When set to `TRUE`,
+#' transfusions performed in ED (before admission time) will not be counted.
+#' When set to `FALSE`, transfusions will not be filtered by time and all RBC
+#' transfusions in `transfusion` table will be counted. Please be aware that this
+#' may include transfusions before triage time, transfusions after discharge time,
+#' and transfusions without issuing time.
+#'
 #' Transfusions in ED are defined as `issue_date_time` earlier
 #' than `admission_date_time`. Transfusions with missing `issue_date_time` will be
 #' excluded when `exclude_ed` is set to `TRUE`.

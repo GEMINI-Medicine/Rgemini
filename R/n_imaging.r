@@ -50,17 +50,14 @@
 #' (`genc_id`).
 #'
 #' @param exclude_ed (`logical`)
-#' Whether to exclude tests in emergency department. When set to `TRUE`, only
-#' tests being performed in inpatient settings are counted. When set to `FALSE`,
-#' tests in both ED and in-patient settings will be counted. To distinguish
-#' tests in ED and in-patient settings, following
-#' the methodology implemented in
-#' [My Practice Report](https://www.hqontario.ca/Portals/0/documents/qi/practice-reports/general-medicine-sample-report.html#imaging-qi),
-#' `ordered_date_time` is compared against `admission_date_time` to identify
-#' imaging tests in ED. When `ordered_date_time` is not available,
-#' `performed_date_time` is used instead. If both `ordered_date_time` and
-#' `performed_date_time` are not available, the test will not be counted in the
-#'  output.
+#' Whether to exclude tests in emergency department. When set to `TRUE`, tests performed
+#' in ED (testing time before admission time) will not be counted. When set to `FALSE`,
+#' tests will not be filtered by time and all tests in radiology table will be counted.
+#' Please be aware that this may include tests before triage time, tests after discharge
+#' time, and tests without testing time.
+#'
+#' Tests in ED are defined as `ordered_date_time` earlier than `admission_date_time`.
+#' When `ordered_date_time` is not available, `performed_date_time` is used instead.
 #'
 #' @return
 #' data.table with the same number of rows as input "cohort", with additional
