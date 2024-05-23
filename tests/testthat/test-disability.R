@@ -5,7 +5,7 @@ test_that("global and component-wise outputs align", {
   set.seed(1)
   ipdiagnosis <- dummy_diag(nid = 100, nrow = 400)
   erdiagnosis <- dummy_diag(nid = 80, nrow = 200, ipdiagnosis = FALSE)
-  cohort <- data.table(genc_id = c(unique(ipdiagnosis$genc_id), 888, 999)) # add some genc_ids with no diagnosis entries
+  cohort <- data.table(genc_id = c(unique(ipdiagnosis$genc_id)[1:(length(unique(ipdiagnosis$genc_id))-1)], 888, 999)) # add some genc_ids with no diagnosis entries, remove one genc_id to test component_wise = TRUE bug
 
   check1_no_cat <- disability(cohort, ipdiag = ipdiagnosis, erdiag = erdiagnosis, component_wise = FALSE)
   check1_cat <- disability(cohort, ipdiag = ipdiagnosis, erdiag = erdiagnosis, component_wise = TRUE)
@@ -16,7 +16,10 @@ test_that("global and component-wise outputs align", {
   ## All genc_ids where global disability flag = TRUE should exist in component-wise output (and v.v.)
   expect_true(all(check1_no_cat[disability == TRUE]$genc_id %in% check1_cat$genc_id == TRUE))
   expect_true(all(check1_cat$genc_id %in% check1_no_cat[disability == TRUE]$genc_id == TRUE))
-
+  
+  ## Only genc_id within cohort should be returned when component_wise = TRUE
+  expect_true(all(check1_cat$genc_id %in% cohort$genc_id))
+  
   ## If no entry in diagnosis table, disability should be NA in global disability output
   expect_equal(unique(check1_no_cat[genc_id == 888 | genc_id == 999, disability]), NA)
 

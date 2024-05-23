@@ -42,6 +42,7 @@ max_pairwise_smd <- function(x, name, round_to = 3, ...) {
   pairs <- unique(x$L1) %>% combn(2, simplify = FALSE)
 
   vartype <- class(x$value)
+  vartype <- vartype[!vartype=="labelled"]
 
   fn <- if ((vartype == "numeric") || is.integer(x$value)) {
     stddiff.numeric
@@ -56,8 +57,8 @@ max_pairwise_smd <- function(x, name, round_to = 3, ...) {
   for (pair in pairs) {
 
     current_smd <- max(
-      fn(x %>% dplyr::filter(L1 %in% pair) %>% droplevels(), # drop factor levels, otherwise singularity may arise for group(s) containing an empty level 
-         2, 1) %>% .[[1, "stddiff"]] # alternate reference group through every group 
+      fn(x %>% dplyr::filter(L1 %in% pair) %>% droplevels(), # drop factor levels, otherwise singularity may arise for group(s) containing an empty level
+         2, 1) %>% .[[1, "stddiff"]] # alternate reference group through every group
     )
 
     if (is.na(current_smd)) {
