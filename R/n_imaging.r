@@ -5,9 +5,9 @@
 #' `n_imaging` returns the number of radiology tests for hospital admission.
 #'
 #' @details
-#' This function takes a list of admissions and DRM table equivalent of imaging
-#' table to generate numeric fields counting the number of different radiology
-#' tests for each admission.
+#' This function takes a list of admissions and a GEMINI databse connection to
+#' generate numeric fields counting the number of different radiology tests for
+#' each admission.
 #'
 #' Imaging table in the database should include field that classifies each test
 #' into below 7 categories.
@@ -27,8 +27,6 @@
 #' radiology tests is one of the performance metrics in MyPracticeReport. CT,
 #' MRI and Ultrasound are considered advance imaging tests, which can be
 #' retrieved by the derived variable (`n_img_ct_mri_us_derived`).
-#'
-#' Any tests being performed in both ED and in-patient settings will be counted.
 #'
 #' @section Warning:
 #' Function returns data.table with id field and several numeric fields. By

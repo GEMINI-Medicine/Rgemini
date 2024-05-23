@@ -7,10 +7,8 @@
 #' are defined by OMOP codes. Sodium is the code 3019550. Hemoglobin is 3000963.
 #'
 #' @details
-#' This function takes a list of admissions and DRM table equivalent of lab
-#' table (see
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5))
-#' to generate numeric fields counting the number of Sodium and Hemoglobin tests
+#' This function takes a list of admissions and an GEMINI databse connection to
+#' generate numeric fields counting the number of Sodium and Hemoglobin tests
 #' for each admission.
 #'
 #' Lab table in the database should include field that classifies each test into
@@ -30,9 +28,11 @@
 #' indicating the number of bloodwork tests per encounter. By design,
 #' function will not return any NA values. If a `genc_id` does not have any
 #' entries in the "lab" table, the admission gets assigned 0 number of tests.
+#' User should check lab data availability and decide whether the imputed `0`s are
+#' appropriate or not.
 #' When one tries to left-join the output of this function with another table
 #' (another list of admissions in the left), make sure list of admissions (or
-#' patient) aligns in both tables
+#' patient) aligns in both tables.
 #'
 #' This function requires mappings by a Subject Matter Expert to ensure that all
 #' tests are mapped to
@@ -58,6 +58,7 @@
 #' excluded when `exclude_ed` is set to `TRUE`.
 #'
 #' @import RPostgreSQL
+#'
 #' @return
 #' data.table object with the same number of rows as input "cohort", with
 #' additional derived numeric field labelled as "n_routine_bloodwork_derived"
@@ -135,3 +136,4 @@ n_routine_bloodwork <- function(dbcon,
 }
 
 
+n_bld <- n_routine_bloodwork(cleandb, cohort, T)

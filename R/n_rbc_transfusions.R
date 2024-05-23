@@ -21,7 +21,8 @@
 #' occurring in approximately 2% of blood transfusions in GEMINI data.
 #'
 #' @param dbcon (`DBIConnection`)\cr
-#' A database connection to any GEMINI database.
+#' A database connection to any GEMINI database. `DBI` connection is recommended
+#' as `odbc` connection may cause connection issues in certain environment.
 #'
 #' @param cohort (`data.frame` or `data.table`)
 #' Cohort table with all relevant encounters of interest where each row
@@ -30,14 +31,12 @@
 #' - `hospital_num` (`integer`): Hospital number
 #'
 #' @param exclude_ed (`logical`)
-#' Whether to exclude tests in emergency department. When set to `TRUE`, only
-#' tests being performed in inpatient settings are counted. When set to `FALSE`,
-#' tests in both ED and in-patient settings will be counted. To distinguish
-#' tests in ED and in-patient settings, following
-#' the methodology implemented in
-#' [My Practice Report](https://www.hqontario.ca/Portals/0/documents/qi/practice-reports/general-medicine-sample-report.html#imaging-qi),
-#' `issue_date_time` is compared against `admission_date_time` to identify
-#' imaging tests in ED.
+#' Whether to exclude transfusions in emergency department. When set to `TRUE`, only
+#' transfusions performed in-inpatient settings are counted. When set to `FALSE`,
+#' transfusions in both ED and in-patient settings will be counted.
+#' Transfusions in ED are defined as `issue_date_time` earlier
+#' than `admission_date_time`. Transfusions with missing `issue_date_time` will be
+#' excluded when `exclude_ed` is set to `TRUE`.
 #'
 #' @return (`data.table`)\cr
 #' Table with three columns: `genc_id`, `n_app_rbc_transfusion_derived` (number
@@ -176,3 +175,4 @@ n_rbc_transfusions <-function(dbcon,
   return(res)
 
 }
+
