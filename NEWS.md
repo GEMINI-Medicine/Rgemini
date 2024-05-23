@@ -3,6 +3,9 @@
 * Updated unit tests & small bug fix in `daily_census`
 * Ordered package names in pkgdown reference file
 * `n_imaging`, `n_routine_bloodwork` and `n_rbc_transfusion` refactored and updated to be able to exclude clinical records in ED.
+* New option to derive ICU entries as a clinical outcome with customizable time windows in `icu_entry()`
+* Small bug fix in `disability()`
+
 
 # Rgemini 0.4.2
 
