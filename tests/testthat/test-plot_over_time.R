@@ -47,7 +47,7 @@ test_that("percentage (func = `prct`) of variable is returned as expected", {
   # % for categorical variables
   res <- suppressWarnings(plot_over_time(data = test_data, plot_var = "gender", return_data = TRUE, time_int = "season"))
   expect_equal(round(res$data_aggr_overall$prct_gender_O, 1), c(0.0,  0.0,  0.0, 14.3))
-  expect_equal(as.character(unique(res$data_aggr$season)), c("Spring", "Summer", "Fall", "Winter"))
+  expect_equal(as.character(unique(res$data_aggr$discharge_season)), c("Spring", "Summer", "Fall", "Winter"))
   
   
   # % for numeric variables (% age <= 60)
