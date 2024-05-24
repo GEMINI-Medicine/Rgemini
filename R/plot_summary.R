@@ -46,7 +46,7 @@
 #' control of subplot arrangement (e.g., `ncol`, `nrow`, `widths`, `heights`,
 #' `align` etc.; see `? ggarrange` for more details).
 #' 
-#' @section Additional inputs when providing `plot_vars` as a list
+#' @section Additional inputs when providing `plot_vars` as a list:
 #' When `plot_vars` are provided as a list, users can specify additional
 #' characteristics for each individual variable, such as:
 #' - `class` (`character`): variable type, e.g., `"numeric"`, `"character"`,
@@ -82,7 +82,7 @@
 #' 
 #' ## Providing plot_vars as a list input
 #' plot_summary(
-#'   ipadmdad,
+#'   admdad,
 #'   plot_vars = list(
 #'     `Discharge disposition` = list(
 #'         plot_var = "discharge_disposition",
