@@ -7,6 +7,7 @@
 plot_summary(
   data,
   plot_vars = NULL,
+  facet_group = NULL,
   show_stats = TRUE,
   prct = FALSE,
   base_size = NULL,
@@ -22,6 +23,12 @@ Table containing data to be plotted.}
 Character vector or list of variables to be plotted. If no \code{plot_vars} input
 is provided, the function will automatically plot all variables, ignoring any
 encounter/patient/physician IDs and date-time variables.}
+
+\item{facet_group}{(\code{character})\cr
+Name of variable to be used as facet variable. This only works if \code{plot_vars}
+only specifies 1 variable to be plotted. Users can then create separate
+subplots per \code{facet_group} level, for example, to plot separate histograms/
+barplots for each hospital (\code{facet_group = "hospital_num"})/}
 
 \item{show_stats}{(\code{logical})\cr
 Flag indicating whether to show descriptive stats above each plot.}
