@@ -131,14 +131,19 @@ plot_over_time <- function(
     line_group <- facet_group
   }
   
+  check_input(list(time_var, time_int, func, colors), "character")
+  if (!is.null(plot_var)) check_input(plot_var, "character")
+  if (!is.null(line_group)) check_input(line_group, "character")
+  if (!is.null(color_group)) check_input(color_group, "character")
+  if (!is.null(facet_group)) check_input(facet_group, "character")
+  if (!is.null(smooth_method)) check_input(smooth_method, "character")
+  check_input(list(min_n, line_width, base_size), c("numeric", "integer"), interval = c(0, Inf))
+  check_input(list(show_overall, return_data), "logical")
   check_input(
     data,
     c("data.table", "data.frame"),
     colnames = c(plot_var, time_var, line_group, color_group, facet_group)
   )
-  check_input(list(time_var, time_int, func, colors), "character")
-  check_input(list(min_n, line_width, base_size), c("numeric", "integer"), interval = c(0, Inf))
-  check_input(list(show_overall, return_data), "logical")
   
   ## show warning if plot_var is the same as any of the grouping variables
   if (!is.null(plot_var) && plot_var %in% c(time_var, line_group, color_group, facet_group)) {
