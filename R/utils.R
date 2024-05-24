@@ -536,8 +536,20 @@ check_input <- function(arginput, argtype,
 
 
     ###### CHECK 5 (for data.table/data.frame inputs):
-    ###### Check if relevant columns exist [optional]
+    ###### Check if nrow() > 0 & if relevant columns exist [optional]
     if (any(argtype %in% c("data.frame", "data.table")) && !is.null(colnames)) {
+      
+      if (nrow(arginput) == 0) {
+        stop(
+          paste0(
+            "Invalid user input in '", as.character(sys.calls()[[1]])[1],
+            "': '", argname, "' input table has 0 rows.",
+            "\nPlease carefully check your input."
+          ),
+          call. = FALSE
+        )
+      }
+      
       # get missing columns
       missing_cols <- setdiff(colnames, colnames(arginput))
 

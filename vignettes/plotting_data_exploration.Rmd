@@ -33,16 +33,16 @@ knitr::opts_chunk$set(
 )
 
 ## uncomment this when trying to knit vignette locally
-# library(ggplot2)
-# library(ggpubr)
-# library(lemon)
-# library(ggthemes)
-# library(ggpubr)
-# library(scales)
-# source("H:/GitHub/Rgemini/R/plot_summary.R")
-# source("H:/GitHub/Rgemini/R/plot_over_time.R")
-# source("H:/GitHub/Rgemini/R/plot_theme.R")
-# source("H:/GitHub/Rgemini/R/utils.R")
+library(ggplot2)
+library(ggpubr)
+library(lemon)
+library(ggthemes)
+library(ggpubr)
+library(scales)
+source("H:/GitHub/Rgemini/R/plot_summary.R")
+source("H:/GitHub/Rgemini/R/plot_over_time.R")
+source("H:/GitHub/Rgemini/R/plot_theme.R")
+source("H:/GitHub/Rgemini/R/utils.R")
 
 options(knitr.kable.NA = '')
 
@@ -111,6 +111,7 @@ plot_summary(ipadmdad[, .(discharge_disposition, number_of_alc_days)])
 
 In general, date-time variables should be avoided in `plot_summary()` unless they have been preprocessed to reduce the number of categories (e.g., grouped into months/years). To plot time trends, please use the [*plot_over_time()*](#plot_over_time) function instead.
 
+&nbsp;
 
 ## Providing `plot_vars` as a list
 
@@ -133,6 +134,30 @@ plot_summary(
 )
 ```
 
+&nbsp;
+
+
+## Applying facet grouping
+
+`plot_summary` can also be used to plot separate histograms/barplots by subgroups. This can be achieved by providing a `facet_group` variable that will be passed to `facet_wrap` to create separate subplots by a grouping variable, such as `"hospital_num"`.
+
+For example, here we plot gender separately for each hospital:
+
+```{r}
+plot_summary(
+  ipadmdad, 
+  plot_vars = "gender",
+  facet_group = "hospital_num"
+)
+```
+
++ **Note:** 
+  + `facet_group` is currently only supported if users specify a single plotting variable.
+  + When specifying a `facet_group`, any percentage values will be calculated within a given facet level.
+  + When sorting categorical variables by frequency, values will be sorted according to the frequency in the whole data set (i.e., across facet levels).
+
+
+&nbsp;
 
 ## Additional user inputs
 
@@ -160,6 +185,7 @@ plot_summary(
 
 To create a separate figure for each variable, you can specify `ncol = 1` and `nrow = 1`.
 
+&nbsp;
 
 ## Note on cell suppression
 

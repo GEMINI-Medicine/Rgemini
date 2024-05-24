@@ -131,16 +131,15 @@ plot_over_time <- function(
     line_group <- facet_group
   }
   
-  Rgemini:::check_input(
+  check_input(
     data,
     c("data.table", "data.frame"),
     colnames = c(plot_var, time_var, line_group, color_group, facet_group)
   )
+  check_input(list(time_var, time_int, func, colors), "character")
+  check_input(list(min_n, line_width, base_size), c("numeric", "integer"), interval = c(0, Inf))
+  check_input(list(show_overall, return_data), "logical")
   
-  if (nrow(data) == 0) {
-    stop(paste0("User input `", deparse(substitute(data)), "` has 0 rows. Please carefully check your input table."))
-  }
-
   ## show warning if plot_var is the same as any of the grouping variables
   if (!is.null(plot_var) && plot_var %in% c(time_var, line_group, color_group, facet_group)) {
     warning(paste0("User-specified plot_var '", plot_var, "' is also used as a grouping variable.\n",
@@ -207,6 +206,8 @@ plot_over_time <- function(
     func <- "prct"
   } else if (grepl("missing|^na", func, ignore.case = TRUE)) {
     func <- "missing"
+  } else {
+    stop("Invalid user input for `func`. Please check the function documentation for valid options.")
   }
 
   ##### Plot colors #####

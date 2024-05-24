@@ -20,6 +20,12 @@
 #' is provided, the function will automatically plot all variables, ignoring any
 #' encounter/patient/physician IDs and date-time variables.
 #'
+#' @param facet_group (`character`)\cr
+#' Name of variable to be used as facet variable. This only works if `plot_vars`
+#' only specifies 1 variable to be plotted. Users can then create separate
+#' subplots per `facet_group` level, for example, to plot separate histograms/
+#' barplots for each hospital (`facet_group = "hospital_num"`)/
+#' 
 #' @param show_stats (`logical`)\cr
 #' Flag indicating whether to show descriptive stats above each plot.
 #'
@@ -57,6 +63,7 @@
 #'
 #' @import ggplot2 scales
 #' @importFrom ggpubr ggarrange
+#' @importFrom lemon facet_rep_wrap
 #' @export
 #'
 #' @examples
@@ -95,6 +102,7 @@
 #'
 plot_summary <- function(data,
                          plot_vars = NULL,
+                         facet_group = NULL,
                          show_stats = TRUE,
                          prct = FALSE,
                          base_size = NULL,
@@ -267,7 +275,12 @@ plot_summary <- function(data,
       sub_fig <- ggplot(
         data, aes(
           x = get(var$plot_var),
-          y = if (prct == TRUE) (after_stat(count)) / sum(after_stat(count)) else (after_stat(count))
+          y = if (prct == TRUE) { # if showing %, calculate % within each subplot
+            (after_stat(count)) / tapply(
+              after_stat(count), after_stat(PANEL), sum)[after_stat(PANEL)]
+          } else { 
+            after_stat(count)
+          }
         )
       ) +
         suppressWarnings( # in case of additional arguments that can't be passed to geom_histogram
@@ -345,7 +358,12 @@ plot_summary <- function(data,
           } else {
             as.factor(data[[var$plot_var]]) # no sorting
           },
-          y = after_stat(count)
+          y = if (prct == TRUE) { # if showing %, calculate % within each subplot
+            (after_stat(count)) / tapply(
+              after_stat(count), after_stat(PANEL), sum)[after_stat(PANEL)]
+          } else { 
+            after_stat(count)
+          }
         )
       ) +
         geom_bar(color = "grey20", fill = color) +
@@ -358,7 +376,8 @@ plot_summary <- function(data,
         sub_fig <- sub_fig +
           geom_text(
             stat = "count", aes(
-              label = if (length(unique(data[[var$plot_var]])) <= 20) paste0(round(100 * after_stat(count) / sum(after_stat(count)), 1), "%") else ""
+              label = if (length(unique(data[[var$plot_var]])) <= 20) paste0(round(100 * after_stat(count) /  tapply(
+                after_stat(count), after_stat(PANEL), sum)[after_stat(PANEL)], 1), "%") else ""
             ),
             size = base_size / 5,
             vjust = -0.5,
@@ -368,13 +387,19 @@ plot_summary <- function(data,
           labs(subtitle = paste0("Missing: ", missing, "\n\n "))
       }
     }
-
+    
     ## Fix axis labels & apply plot theme
     sub_fig <- sub_fig +
-      xlab(var$plot_var) + labs(title = var$varlabel) +
+      xlab(var$plot_var) + 
+      labs(
+        title = if (is.null(facet_group)) {
+          var$varlabel 
+        } else { 
+          (paste0(var$varlabel, " - By ", facet_group))
+        }) +
       scale_y_continuous(
         name = if (prct == TRUE) "p" else "count",
-        labels = if (prct == TRUE) percent else rescale_none,
+        labels = if (prct == TRUE) scales::percent else rescale_none,
         expand = expansion(mult = c(0, 0.15))
       ) +
       plot_theme(base_size = base_size, aspect.ratio = 1) +
@@ -396,12 +421,36 @@ plot_summary <- function(data,
   ######## PREPARE OUTPUT ########
   ## create figure for each variable
   sub_figs <- lapply(plot_vars, plot_subplots, data = data)
-
-  ## Combine subplots into final figure(s)
-  if (exists("nrow", inherits = FALSE)) { # if nrow/ncol were determined within function
-    fig <- suppressWarnings(ggarrange(plotlist = sub_figs, nrow = nrow, ncol = ncol))
+  if (length(plot_vars) == 1 && !is.null(facet_group)) {
+    fig <- sub_figs[[1]] + lemon::facet_rep_wrap(~get(facet_group), scales = "fixed", ...) 
+    
+    ## show message when prct = TRUE (% are calculated within each facet level)
+    if (prct == TRUE) {
+      cat(paste0(
+        "\n**Note:**\n",
+        "The shown percentages reflect % calculated within each level of facet_group variable `", 
+        facet_group, "`.\n", 
+        "To compare overall counts between facet levels, please specify `prct = FALSE`.\n\n"
+      ))
+    }
+    
+    
   } else {
-    fig <- suppressWarnings(ggarrange(plotlist = sub_figs, ...))
+    
+    ## show warning if more than 1 plot_var and user provided facet_group (not supported)
+    if (!is.null(facet_group)) {
+      warning(
+        paste0("Ignoring facet_group variable `", facet_group, "` because `length(plot_vars) > 1`.\n",
+               "Grouping by a facet variable is currently only supported when specifying a single `plot_vars` variable."),
+        immediate. = TRUE
+      )
+    }
+    ## Combine subplots into final figure(s)
+    if (exists("nrow", inherits = FALSE)) { # if nrow/ncol were determined within function
+      fig <- suppressWarnings(ggarrange(plotlist = sub_figs, nrow = nrow, ncol = ncol))
+    } else {
+      fig <- suppressWarnings(ggarrange(plotlist = sub_figs, ...))
+    }
   }
 
   return(fig)
