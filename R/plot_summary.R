@@ -56,7 +56,7 @@
 #' - `binwidth`/`bins`/`breaks`: for numeric/integer variables, specifying the
 #' histogram bins
 #' - `normal`: for numeric/integer variables, whether to assume normal
-#' distribution (will show mean [\SD]\ if `show_stats = TRUE`)
+#' distribution (will show mean \[SD\] if `show_stats = TRUE`)
 #'
 #' @return (`ggplot`)\cr A ggplot figure with subplots showing histograms/
 #' barplots for all variables specified in `plot_vars`.
