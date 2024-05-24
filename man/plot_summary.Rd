@@ -67,6 +67,22 @@ data and obtain information about distributional properties of a wide range
 of variables, requiring just a single line of code.
 }
 
+\section{Additional inputs when providing \code{plot_vars} as a list}{
+
+When \code{plot_vars} are provided as a list, users can specify additional
+characteristics for each individual variable, such as:
+\itemize{
+\item \code{class} (\code{character}): variable type, e.g., \code{"numeric"}, \code{"character"},
+\code{"logical"} etc.
+\item \code{sort} (\code{character}): for categorical variables, whether to sort bars in
+ascending (\code{"^a"}) or descending (starting with \code{"^d"}) frequency
+\item \code{binwidth}/\code{bins}/\code{breaks}: for numeric/integer variables, specifying the
+histogram bins
+\item \code{normal}: for numeric/integer variables, whether to assume normal
+distribution (will show mean \link[=\\SD]{\SD}\ if \code{show_stats = TRUE})
+}
+}
+
 \examples{
 # simulate GEMINI data table
 admdad <- dummy_ipadmdad(
@@ -83,7 +99,7 @@ plot_summary(
 
 ## Providing plot_vars as a list input
 plot_summary(
-  ipadmdad,
+  admdad,
   plot_vars = list(
     `Discharge disposition` = list(
         plot_var = "discharge_disposition",
