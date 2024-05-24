@@ -33,16 +33,16 @@ knitr::opts_chunk$set(
 )
 
 ## uncomment this when trying to knit vignette locally
-library(ggplot2)
-library(ggpubr)
-library(lemon)
-library(ggthemes)
-library(ggpubr)
-library(scales)
-source("H:/GitHub/Rgemini/R/plot_summary.R")
-source("H:/GitHub/Rgemini/R/plot_over_time.R")
-source("H:/GitHub/Rgemini/R/plot_theme.R")
-source("H:/GitHub/Rgemini/R/utils.R")
+# library(ggplot2)
+# library(ggpubr)
+# library(lemon)
+# library(ggthemes)
+# library(ggpubr)
+# library(scales)
+# source("H:/GitHub/Rgemini/R/plot_summary.R")
+# source("H:/GitHub/Rgemini/R/plot_over_time.R")
+# source("H:/GitHub/Rgemini/R/plot_theme.R")
+# source("H:/GitHub/Rgemini/R/utils.R")
 
 options(knitr.kable.NA = '')
 
@@ -123,6 +123,7 @@ The default plots provide a quick and easy way of exploring the data, but you ma
 - **Normal distribution (*for continuous variables*):** By default, `plot_summary` will show medians [Q1, Q3] for continuous variables. For normally distributed variables, users can specify `normal = TRUE` to obtain means [SD] instead.
 - **Subplot titles:** Users can change the subplot titles by providing the desired title as the name for each list item (e.g., "# Days in ALC" instead of "Number of Alc Days")
 
+For example:
 
 ```{r, fig.height = 4, fig.width = 7.5}
 plot_summary(
@@ -150,6 +151,8 @@ plot_summary(
   facet_group = "hospital_num"
 )
 ```
+
+&nbsp;
 
 + **Note:** 
   + `facet_group` is currently only supported if users specify a single plotting variable.
@@ -211,7 +214,11 @@ plot_over_time(
 )
 ```
 
+&nbsp;
+
 Each subplot shows the mean age at an individual hospital, and the thick line represents the mean age across all sites (note: hospitals with more encounters contribute more to this line than hospitals with fewer encounters).
+
+&nbsp;
 
 
 ## Overview of optional inputs
@@ -230,6 +237,8 @@ There are several ways users can customize the default plot by providing additio
 - [`return_data`](#return_data): Whether to return aggregated data instead of plotting results
 - Additional plotting aesthetics like `line_width`, `ylimits`, and `colors` (see function documentation for more details)
 
+&nbsp;
+
 
 ### `func` {#func}
 
@@ -246,6 +255,8 @@ plot_over_time(
 )
 ```
 
+&nbsp;
+
 When plotting percentages, any entries that are `NA`/`""` are automatically removed from both the numerator and denominator. 
 
 If we wanted to plot `discharge_disposition`, which is of class `integer`, the function would by default plot the `"mean"`. However, in reality, discharge disposition represents a categorical variable, so we could either transform `discharge_disposition` into a factor variable before plotting, or alternatively, we could run the following code to plot the percentage of encounters where `discharge_disposition %in% c(7, 72, 73, 74)` (i.e., % of hospitalizations that resulted in in-hospital death):
@@ -259,6 +270,9 @@ plot_over_time(
 )
 ```
 
+
+&nbsp;
+
 We can also simply plot the number of rows per month * hospital by specifying `func = "n"`. This is a great way to check for potential data availability issues (e.g., time periods with 0 rows might reflect gaps in data availability). In our example here, the number of rows corresponds to the number of unique encounters in `ipadmdad`, but depending on the table you provide as `data` input, the count of rows might reflect other variables, such as total number of pharmacy orders, lab tests etc.
 
 ```{r}
@@ -267,8 +281,12 @@ plot_over_time(
   func = "n"
 )
 ```
+
+&nbsp;
+
 Note the when we plot `n`, the thick "overall" line represents the median of all (individual hospital) lines, rather than the total count of rows across all sites.
 
+&nbsp;
 
 Finally, `plot_over_time()` can also be used to plot the percentage of missing data by specifying `func = "na"` or `"missing"`, which plots the percentage of all entries that are either `NA`, `""`, or `" "`. Let's plot the % of encounters with missing ALC flag and rename the y-axis title to `"% Missing ALC"`:
 
@@ -280,6 +298,8 @@ plot_over_time(
 ) + labs(y = "% Missing ALC flag")
 ```
 
+
+&nbsp;
 
 ### `time_var` and `time_int` {#time}
 
@@ -295,6 +315,8 @@ plot_over_time(
   time_int = "fisc_year"
 )
 ```
+
+&nbsp;
 
 ... or the number of encounters that were admitted each season\*:
 
@@ -312,6 +334,8 @@ plot_over_time(
 \***Note:** If you are plotting by admission date-time, you might be underestimating encounters at the end of the data availability timeline (because patients only appear in GEMINI data once they have been discharged). Therefore, plotting by admission date should only be done with caution and might require a buffer period that excludes data points at the end of the data availability period.
 
 
+&nbsp;
+
 ***Custom `time_int`***
 
 Note that users can in principle specify any custom time interval as long as this is provided as a column in the `data` input. For example, let's say we want to plot the number of encounters that were admitted to hospital each day in April 2020. Users can calculate the admission date prior to running the function and then provide it as the `time_int` input:
@@ -327,6 +351,8 @@ plot_over_time(
 )
 ```
 
+&nbsp;
+
 ### `line_group` {#line_group}
 
 In all plots shown above, individual hospitals are shown in different subplots. We could also show all hospitals in a single plot by specifying `facet_group = NULL`. In that case, the function still assumes that users want to aggregate by hospitals, and thus, hospitals will be shown as individual lines (default: `line_group = "hospital_num"`):
@@ -340,8 +366,11 @@ plot_over_time(
 )
 ```
 
+&nbsp;
+
 Alternatively, users can also specify other `line_group` variables representing individual physicians, patients, or other grouping variables. 
 
+&nbsp;
 
 ### `color_group` {#color_group}
 
@@ -361,8 +390,11 @@ plot_over_time(
 )
 ```
 
+&nbsp;
+
 By default, the first color palette defined by `gemini_colors()` ("GEMINI Rainbow") is used for `color_group` colors (see section [Plotting theme & colors](#plot_theme) for more details).
 
+&nbsp;
 
 Another application of `color_group` could be to plot all individual hospitals in a single plot and apply color-coding to distinguish individual sites. This can be achieved by setting `facet_group` to `NULL` and specifying `hospital_num` as a `color_group`. This is not a good option if you are plotting a lot of hospitals at the same time, but we could for example only plot hospitals 1-6. Let's also pick a different color palette from `gemini_colors()` here: 
 
@@ -376,6 +408,8 @@ plot_over_time(
 )
 ```
 
+&nbsp;
+
 Similarly, we could plot all academic & community hospitals in a single plot and apply color coding based on `hospital_type`. Here, the thick lines represent the overall mean age at each hospital type. Note that the data are aggregated across all encounters of each group level (e.g., the cyan line represents the mean age of all encounters at any community site). This means that larger hospitals will contribute more to the average than smaller hospitals:
 
 ```{r fig.height = 4, fig.width = 6}
@@ -387,6 +421,7 @@ plot_over_time(
 )
 ```
 
+&nbsp;
 
 If this plot is too busy and you simply want to illustrate the aggregated results by hospital type, you could suppress the individual hospital lines by specifying `line_group = NULL`. You can also provide any custom `colors` and specify `ylimits`. Additionally, let's add some annotations highlighting the onset of the first COVID-19 wave in March 2020:
 
@@ -404,6 +439,7 @@ plot_over_time(
   annotate("segment", x = as.Date("2020-03-01"), xend = as.Date("2020-03-01"), y = 63, yend = 79, color = "#022061", linetype = 2)
 ```
 
+&nbsp;
 
 ### `facet_group` {#facet_group}
 
@@ -417,6 +453,9 @@ plot_over_time(
   show_overall = TRUE
 )
 ```
+
+
+&nbsp;
 
 ***Additional inputs for facet plots***
 
@@ -437,10 +476,14 @@ plot_over_time(
 )
 ```
 
+&nbsp;
 
 + **Note:** 
   + If you specify a `ylimits` input, this will overwrite `scales = "free"` as `ylimits` will fix all y-axes to the specified range.
   + Specifying free x-scales (`scales = "free_x"` or `scales = "free"`) can result in differences in plotted timelines between hospitals and is generally not recommended for the purpose of this function.  
+
+
+&nbsp;
 
 ### `min_n` {#min_n}
 
@@ -457,6 +500,9 @@ plot_over_time(
   show_overall = FALSE
 )
 ```
+
+&nbsp;
+
 A warning message is shown to inform users about any groups (or individual cells) that were excluded due to cell suppression.
 
 ### `smooth_method` {#smooth_method}
