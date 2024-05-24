@@ -71,6 +71,7 @@ reference:
   - check_input
   - coerce_to_datatable
   - find_db_tablename
+  - fix_var_str
   - lunique
   - mapping_message
   - matches("ni")

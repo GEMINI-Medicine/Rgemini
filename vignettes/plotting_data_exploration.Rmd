@@ -505,6 +505,8 @@ plot_over_time(
 
 A warning message is shown to inform users about any groups (or individual cells) that were excluded due to cell suppression.
 
+&nbsp;
+
 ### `smooth_method` {#smooth_method}
 
 To facilitate visualization of time trends, users can specify a smoothing method (also see `? geom_smooth`), such as `"auto"` for a flexible, non-linear trend line or `"lm"` for a linear trend line. Individual data points are now shown as dots. Note that the trend line is fitted to the aggregated data points (i.e., in this case, each month contributes equally to the trend line, regardless of number of data points). 
@@ -517,8 +519,11 @@ plot_over_time(
 )
 ```
 
+&nbsp;
+
 In this plot, the "Overall" line now represents a trend line fitted to the data aggregated across all hospitals.
 
+&nbsp;
 
 You could also only show the overall, aggregated trend line (plus overall data points aggregated across the whole dataset) in a single plot. Here, we plot a linear trend for illustration purposes:
 
@@ -532,7 +537,7 @@ plot_over_time(
 )
 ```
 
-
+&nbsp;
 
 ### `return_data` {#return_data}
 
@@ -550,21 +555,28 @@ res <- plot_over_time(
 )
 ```
 
-This will return a list of 2 `data.table` objects, where the 1st entry corresponds to the results aggregated by time interval (default = `"month"`) and **all** grouping variables (`line_group`, `color_group`, and `facet_group` - if any). For example, here we grouped by `line_group = "hospital_num"` (default) and `color_group = "hospital_type"` so the output will look like this:
+&nbsp;
+
+This will return a list of 2 `data.table` objects: 
+
+The 1st list entry corresponds to the results aggregated by time interval (default = `"month"`) and **all** grouping variables (`line_group`, `color_group`, and `facet_group` - if any). For example, here we grouped by `line_group = "hospital_num"` (default) and `color_group = "hospital_type"` so the output will look like this:
 
 ```{r}
 knitr::kable(head(res[[1]]))
 ```
 
+&nbsp;
 
 The 2nd list entry corresponds to the higher-level grouping into the "overall" results (i.e., thick summary line in the plots above), which only groups by time interval and `color_group` (if any), such as `hospital_type` in our example:
 ```{r}
 knitr::kable(head(res[[2]]))
 ```
 
+&nbsp;
+
 In both tables, `n` corresponds to the number of data points in each cell.
 
-
+&nbsp;
 
 ## Notes on using `plotly`
 
@@ -575,6 +587,7 @@ library(plotly)
 ggplotly(plot_over_time(data = ipadmdad, plot_var = "age"))
 ```
 
+&nbsp;
 
 You can apply any necessary adjustments to the returned ggplot and/or run `plotly::layout()` to achieve the desired aesthetics. For example, to move the "Discharge Month" label and change the legend position:
 
