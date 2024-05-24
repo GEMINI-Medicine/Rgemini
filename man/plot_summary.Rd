@@ -79,7 +79,7 @@ ascending (\code{"^a"}) or descending (starting with \code{"^d"}) frequency
 \item \code{binwidth}/\code{bins}/\code{breaks}: for numeric/integer variables, specifying the
 histogram bins
 \item \code{normal}: for numeric/integer variables, whether to assume normal
-distribution (will show mean \link[=\\SD]{\SD}\ if \code{show_stats = TRUE})
+distribution (will show mean [SD] if \code{show_stats = TRUE})
 }
 }
 
