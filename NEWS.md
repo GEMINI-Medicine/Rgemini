@@ -3,8 +3,14 @@
 * Adds plotting functions for data exploration: `plot_summary()` and `plot_over_time()`
 * Adds functions for plotting theme & colors: `plot_theme()` and `gemini_colors()`
 * Updated unit tests & small bug fix in `daily_census` 
+* Updated unit tests & small bug fix in `daily_census` 
+* Enable `prettyNum` formatting in table 1 render functions
 * Updated unit tests & small bug fix in `daily_census`
 * Ordered package names in pkgdown reference file
+* Update mlaps hospital query
+* New option to derive ICU entries as a clinical outcome with customizable time windows in `icu_entry()`
+* Small bug fix in `disability()`
+
 
 # Rgemini 0.4.2
 

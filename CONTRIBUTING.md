@@ -1,52 +1,61 @@
 # How to contribute to `Rgemini`
 
-We welcome contributions to `Rgemini` by all GEMINI team members. To submit a contribution:
+We welcome contributions to `Rgemini` by all GEMINI team members. 
 
-1. Create a [new issue](https://github.com/GEMINI-Medicine/Rgemini/issues/) providing sufficient details about the bug report/feature request.
+To submit suggestions for bug fixes/enhancements, please create a [new issue](https://github.com/GEMINI-Medicine/Rgemini/issues/) providing sufficient details about the bug report/feature request.
 
-2. Assign yourself to the issue, or discuss the issue with the team to identify other (co-)developers.
+## Code development 
 
-3. Create a new branch off `develop`. The branch name should contain the issue number. 
+To make changes to the `Rgemini` codebase/documentation, please follow these steps:
 
-4. Commit all changes to this newly created branch and include the issue number in each commit message. 
+1. Create a new issue or assign yourself to an existing issue you want to work on.
 
-5. Once you finish code development, add a new item at the top of `NEWS.md` concisely describing what's changed. 
+2. Create a new branch off `develop`. The branch name should contain the issue number. 
 
-6. If appropriate, add unit tests in the `tests/testthat/` directory.
+3. Commit all changes to this newly created branch and include the issue number in each commit message. 
 
-7. If adding new functions with new documentation, update the `_pkgdown.yml` file by adding the new function to the appropriate reference section. Note that the `Rgemini` repository currently has a CI/CD workflow to generate and commit documentation on any pushed commit, but `devtools::document()` can also be run during development to debug locally. 
+4. Once you finish code development, add a new item at the top of `NEWS.md` concisely describing what's changed. 
 
-8. Note that any new package data should be saved as a `.rda` file in the `data/` directory, and should be documented with `roxygen` in `data.R`.
+5. If appropriate, add unit tests in the `tests/testthat/` directory. For bug fixes, it's usually helpful to include a unit test for the identified bug.
 
-9. Function derived from journal article publications requiring citations upon use (e.g. clinical scores) should include a `references` section in `roxygen`. The citation format is: `1st_author_last_name 1st_author_initial, et al. Journal Abbreviation, Year. https://doi.org/xxxx.`. URLs should be presented as-is without hyperlinking and DOI URLs should be used whenever possible. Note that commonly known online resources (e.g. links CIHI documentations, data dictionary) might not require a `references` section and can be included as hyperlinks in any `roxygen` section.
+6. If adding new functions with new documentation, update the `_pkgdown.yml` file by adding the new function to the appropriate reference section. Note that the `Rgemini` repository currently has a CI/CD workflow to generate and commit documentation on any pushed commit, but `devtools::document()` can also be run during development to debug locally. 
 
-10. Submit a [pull request](https://help.github.com/articles/using-pull-requests) into the `develop` branch.
+7. Note that any new package data should be saved as a `.rda` file in the `data/` directory, and should be documented with `roxygen` in `data.R`.
 
-11. Ask a team member to review the changes (see guidelines for reviewers below) and implement additional changes based on the reviewer's feedback.
+8. Functions derived based on published articles (e.g. clinical scores) should include a `references` section in `roxygen`. The citation format is: `1st_author_last_name 1st_author_initial, et al. Journal Abbreviation, Year. https://doi.org/xxxx.`. URLs should be presented as-is without hyperlinking and DOI URLs should be used whenever possible. Note that commonly known online resources (e.g. links CIHI documentations, data dictionary) might not require a `references` section and can be included as hyperlinks in any `roxygen` section.
 
-12. Once the reviewer has approved the pull request, squash all commits (confirm the PR # is referenced in the squash commit message) and merge the branch into `develop`, close the issue, and delete the branch you developed on.
+9. Submit a [pull request (PR)](https://help.github.com/articles/using-pull-requests) into the `develop` branch.
+
+10. Ask a team member to review the changes (see guidelines for reviewers below) and implement additional changes based on the reviewer's feedback.
+
+11. Once the reviewer has approved the pull request, resolve any merge conflicts and CI/CD errors.
+    
+12. Finally, squash all commits (confirm the PR # is referenced in the squash commit message) and merge the branch into `develop`, close the issue, and delete the branch you developed on.
 
 
+## Reviewing code
 
-# Reviewing code
+All pull requests (PRs) should be carefully reviewed by at least one person. When reviewing code:
 
-All pull requests should be carefully reviewed by at least one person. When reviewing code:
+1. Assign yourself as reviewer for this PR (go to "Pull requests" -> click on the PR -> click on "assign yourself" under "Reviewers").
+   
+2. Pull the updated code from the branch associated with the issue. You can also install the package from a specific branch using `remotes::install_github("GEMINI-Medicine/Rgemini@<branch_name>")`
 
-1. Pull the updated code from the branch associated with the issue. You can also install the package from a specific branch using `remotes::install_github("GEMINI-Medicine/Rgemini@<branch_name>")`
+3. Make sure that you can run the code without error messages. Check that it produces the expected outcome and resolves the issue. 
 
-2. Make sure that you can run the code without error messages. Check that it produces the expected outcome and resolves the issue. 
+4. If possible, review each line of code that has been changed/added and provide feedback on anything you think could be improved. To comment on individual lines of code, go to "Pull requests" -> click on the PR -> "Files changed" -> `+` to add your comments. You can also share general feedback when you submit your review, or use the "Conversation" section of the PR to discuss open questions with the developer throughout the review process.
 
-3. If possible, review each line of code that has been changed/added and provide feedback on anything you think could be improved. 
-
-4. For more details on what to look out for during code reviews, please refer to the
+5. For more details on what to look out for during code reviews, please refer to the
 [Code Review Checklist](https://docs.google.com/document/d/16kiIgwWjXYhBM5AFToXD7X9OjqNYs0xQZh9VDfSwYQU/edit?usp=sharing).
 You can also find some general instructions on how to review pull requests
 [here](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/about-pull-request-reviews).
+  
+6. As a reviewer, you usually should not push any changes to the code yourself, but instead, mention any suggestions in your review and the developer will be responsible for implementing the changes.
 
-5. Finally, check for any merge conflicts and resolve them together with the developer before approving the pull request. 
+7. Once the developer has addressed your comments, approve the pull request (the developer will then merge the PR and close the issue).
 
 
-# Merging into `master`
+## Merging into `master`
 
 We typically accumulate multiple changes on the `develop` branch before merging all changes into `master` and updating the package version number.
 
@@ -72,5 +81,4 @@ At least one person should review the pull request into `master` and should run 
 
 10. Notify the team about the updated version. Ideally, all members should immediately update to the newest version of `Rgemini`.
 
-11. Update for HPC4Health users: Please submit a request on the [HPC4Health File Transfer Log](https://app.smartsheet.com/sheets/p7P77qF97wcxgr2V4Cr6Vjqw3vjhCpRMQQH3Jwm1).
-The systems team will then transfer the updated package to Nexus, allowing HPC4Health users to install the newest version of `Rgemini`.
+11. Update for HPC4Health users: Download the `tar.gz` file of the newest package version and save it in `R:/GEMINI/HPC4Health/Rgemini versions/`. Submit a request on the [HPC4Health File Transfer Log](https://app.smartsheet.com/sheets/p7P77qF97wcxgr2V4Cr6Vjqw3vjhCpRMQQH3Jwm1) for the package file to be transferred to `/mnt/nfs/pkgs/`. Ask the systems team to send out an email to all HPC4Health users announcing the new release.
