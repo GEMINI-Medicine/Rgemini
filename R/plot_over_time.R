@@ -155,7 +155,7 @@ plot_over_time <- function(
   #  (e.g., hospital_num is nested within hospital_type), otherwise, color-coding doesn't make sense
   if (!is.null(line_group) && !is.null(color_group)) {
     # check for 1:1 nesting within color group
-    nesting <- ipadmdad[, .(count = uniqueN(get(color_group))), by = get(line_group)]
+    nesting <- data[, .(count = uniqueN(get(color_group))), by = get(line_group)]
     if (any(nesting$count > 1)) {
       warning(paste0(
         "line_group variable `", line_group, 
