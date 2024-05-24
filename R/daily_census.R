@@ -109,12 +109,12 @@
 #' represent true counts of 0 patients (assuming the cohort provides sufficient coverage of all hospitalized patients).
 #' Note: If data availability periods differ between hospitals, `census` counts will only be set to 0 for dates
 #' that fall within the min-max date range for that particular site.
-#' 
+#'
 #' In other scenarios, users may want to disregard days where `census = 0` by specifying `include_zero = FALSE`.
 #' For example, when looking at daily census counts per physician, days where `census = 0` likely reflect days
 #' where a given physician was not on service. Therefore, those days should not be included in the estimate of
 #' physicians' typical patient volume.
-#' 
+#'
 #'
 #' @return (`data.table`)\cr
 #' data.table with the daily counts of hospitalized patients (`census`) at each hospital. Additionally, the
@@ -213,8 +213,7 @@ daily_census <- function(cohort,
   ## scu_exclude provided as data.frame/data.table?
   if (!is.null(scu_exclude)) {
     check_input(scu_exclude, c("data.table", "data.frame"),
-      colnames = c("genc_id", "scu_admit_date_time", "scu_discharge_date_time"),
-      coltypes = c("", "character", "character")
+      colnames = c("genc_id", "scu_admit_date_time", "scu_discharge_date_time")
     )
   }
 
@@ -298,7 +297,6 @@ daily_census <- function(cohort,
   #####  Prepare SCU data  #####
   if (!is.null(scu_exclude)) {
     scu_exclude <- coerce_to_datatable(scu_exclude)
-    scu_exclude[scu_exclude == ""] <- NA
     # only keep genc_ids that are relevant for cohort
     scu_exclude <- scu_exclude[genc_id %in% cohort$genc_id, .(genc_id, scu_unit_number, scu_admit_date_time, scu_discharge_date_time)]
 
@@ -318,17 +316,19 @@ daily_census <- function(cohort,
     check_scu <- scu_exclude[is.na(scu_admit_date_time) | is.na(scu_discharge_date_time) |
       scu_admit_date_time > scu_discharge_date_time, ]
     if (nrow(check_scu) > 0) {
+      cat("\n")
       warning(
-        paste0("Identified "), nrow(check_scu),
-        " rows with invalid or missing SCU admission or discharge date-time in `scu_exclude`.
-        Invalid values might be due to unexpected date-time formats (e.g., missing timestamps) or can be due
-        to `scu_admit_date_time` > `scu_discharge_date_time`.
-        These entries cannot be excluded from the census calculation, and therefore, the corresponding
-        `genc_ids` will be counted towards the census during each day of their hospitalization, potentially
-        resulting in an overestimate of the daily census.
-        Please consider pre-processing/imputing invalid date-times.
-        For example, for entries with missing timestamp in `scu_discharge_date_time`, you may want to impute timestamps
-        with 09:00 (or a value > `time_of_day`, i.e., assume genc_id was still in ICU at time census is calculated).",
+        paste0("Identified a total of ", nrow(check_scu),
+        " rows with invalid or missing SCU admission or discharge date-time in `scu_exclude`.\n",
+        "Invalid values might be due to unexpected date-time formats (e.g., missing timestamps)",
+        " or can be due to `scu_admit_date_time` > `scu_discharge_date_time`.",
+        " These entries cannot be excluded from the census calculation, and therefore, the",
+        " corresponding `genc_ids` will be counted towards the census during each day of their",
+        " hospitalization, potentially resulting in an overestimate of the daily census.\n",
+        "Please consider pre-processing/imputing invalid date-times.",
+        " For example, for entries with missing timestamp in `scu_discharge_date_time`, you",
+        " may want to impute timestamps with a value > 8:00am (i.e., assume genc_id was still",
+        " in ICU at time the census is calculated)."),
         immediate. = TRUE
       )
     }
