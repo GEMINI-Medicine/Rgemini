@@ -25,7 +25,7 @@
 #' only specifies 1 variable to be plotted. Users can then create separate
 #' subplots per `facet_group` level, for example, to plot separate histograms/
 #' barplots for each hospital (`facet_group = "hospital_num"`)/
-#' 
+#'
 #' @param show_stats (`logical`)\cr
 #' Flag indicating whether to show descriptive stats above each plot.
 #'
@@ -45,18 +45,18 @@
 #' Additional arguments passed to `ggpubr::ggarrange()` that allow for finer
 #' control of subplot arrangement (e.g., `ncol`, `nrow`, `widths`, `heights`,
 #' `align` etc.; see `? ggarrange` for more details).
-#' 
+#'
 #' @section Additional inputs when providing `plot_vars` as a list:
 #' When `plot_vars` are provided as a list, users can specify additional
 #' characteristics for each individual variable, such as:
 #' - `class` (`character`): variable type, e.g., `"numeric"`, `"character"`,
-#' `"logical"` etc. 
+#' `"logical"` etc.
 #' - `sort` (`character`): for categorical variables, whether to sort bars in
 #' ascending (`"^a"`) or descending (starting with `"^d"`) frequency
 #' - `binwidth`/`bins`/`breaks`: for numeric/integer variables, specifying the
 #' histogram bins
 #' - `normal`: for numeric/integer variables, whether to assume normal
-#' distribution (will show mean [\SD]\ if `show_stats = TRUE`)
+#' distribution (will show mean \[SD\] if `show_stats = TRUE`)
 #'
 #' @return (`ggplot`)\cr A ggplot figure with subplots showing histograms/
 #' barplots for all variables specified in `plot_vars`.
@@ -79,14 +79,14 @@
 #'   data = admdad,
 #'   plot_vars = c("age", "gender", "discharge_disposition")
 #' )
-#' 
+#'
 #' ## Providing plot_vars as a list input
 #' plot_summary(
 #'   admdad,
 #'   plot_vars = list(
 #'     `Discharge disposition` = list(
 #'         plot_var = "discharge_disposition",
-#'         class = "character", 
+#'         class = "character",
 #'         sort = "desc"
 #'     ),
 #'     `# Days in ALC` = list(
@@ -96,8 +96,8 @@
 #'     )
 #'   )
 #' )
-#' 
-#' 
+#'
+#'
 #' @seealso `vignette("plotting_data_exploration", package = "Rgemini")`
 #'
 plot_summary <- function(data,
@@ -278,7 +278,7 @@ plot_summary <- function(data,
           y = if (prct == TRUE) { # if showing %, calculate % within each subplot
             (after_stat(count)) / tapply(
               after_stat(count), after_stat(PANEL), sum)[after_stat(PANEL)]
-          } else { 
+          } else {
             after_stat(count)
           }
         )
@@ -344,10 +344,10 @@ plot_summary <- function(data,
           immediate. = TRUE
         )
       }
-      
+
       ## get counts for (optional) sorting
       data[, freq := .N, by = data[[var$plot_var]]]
-      
+
       ## create barplot
       sub_fig <- ggplot(
         data, aes(
@@ -361,7 +361,7 @@ plot_summary <- function(data,
           y = if (prct == TRUE) { # if showing %, calculate % within each subplot
             (after_stat(count)) / tapply(
               after_stat(count), after_stat(PANEL), sum)[after_stat(PANEL)]
-          } else { 
+          } else {
             after_stat(count)
           }
         )
@@ -370,7 +370,7 @@ plot_summary <- function(data,
         scale_x_discrete( # limit x-tick labels to 10 characters
           label = function(x) stringr::str_trunc(x, 10)
         )
-      
+
       ## add stats/labels
       if (show_stats == TRUE) {
         sub_fig <- sub_fig +
@@ -387,14 +387,14 @@ plot_summary <- function(data,
           labs(subtitle = paste0("Missing: ", missing, "\n\n "))
       }
     }
-    
+
     ## Fix axis labels & apply plot theme
     sub_fig <- sub_fig +
-      xlab(var$plot_var) + 
+      xlab(var$plot_var) +
       labs(
         title = if (is.null(facet_group)) {
-          var$varlabel 
-        } else { 
+          var$varlabel
+        } else {
           (paste0(var$varlabel, " - By ", facet_group))
         }) +
       scale_y_continuous(
@@ -422,21 +422,21 @@ plot_summary <- function(data,
   ## create figure for each variable
   sub_figs <- lapply(plot_vars, plot_subplots, data = data)
   if (length(plot_vars) == 1 && !is.null(facet_group)) {
-    fig <- sub_figs[[1]] + lemon::facet_rep_wrap(~get(facet_group), scales = "fixed", ...) 
-    
+    fig <- sub_figs[[1]] + lemon::facet_rep_wrap(~get(facet_group), scales = "fixed", ...)
+
     ## show message when prct = TRUE (% are calculated within each facet level)
     if (prct == TRUE) {
       cat(paste0(
         "\n**Note:**\n",
-        "The shown percentages reflect % calculated within each level of facet_group variable `", 
-        facet_group, "`.\n", 
+        "The shown percentages reflect % calculated within each level of facet_group variable `",
+        facet_group, "`.\n",
         "To compare overall counts between facet levels, please specify `prct = FALSE`.\n\n"
       ))
     }
-    
-    
+
+
   } else {
-    
+
     ## show warning if more than 1 plot_var and user provided facet_group (not supported)
     if (!is.null(facet_group)) {
       warning(
