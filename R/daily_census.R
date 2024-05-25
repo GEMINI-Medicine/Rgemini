@@ -267,8 +267,8 @@ daily_census <- function(cohort,
   cohort[, hospital_num := as.factor(hospital_num)]
 
   ## make sure dates are in correct format
-  cohort[, admission_date_time := convert_datetime(admission_date_time)]
-  cohort[, discharge_date_time := convert_datetime(discharge_date_time)]
+  cohort[, admission_date_time := convert_dt(admission_date_time)]
+  cohort[, discharge_date_time := convert_dt(discharge_date_time)]
 
   ## Filter cohort by relevant time period
   cohort <- cohort[discharge_date_time >= time_period_start &
@@ -309,8 +309,8 @@ daily_census <- function(cohort,
 
     ## make sure dates are in correct format
     # date formats that are missing HM information cannot be removed from census -> are set to NA
-    scu_exclude[, scu_admit_date_time := convert_datetime(scu_admit_date_time, addtl_msg = "")]
-    scu_exclude[, scu_discharge_date_time := convert_datetime(scu_discharge_date_time, addtl_msg = "")]
+    scu_exclude[, scu_admit_date_time := convert_dt(scu_admit_date_time, addtl_msg = "")]
+    scu_exclude[, scu_discharge_date_time := convert_dt(scu_discharge_date_time, addtl_msg = "")]
 
     ## check for missing/invalid SCU times
     check_scu <- scu_exclude[is.na(scu_admit_date_time) | is.na(scu_discharge_date_time) |

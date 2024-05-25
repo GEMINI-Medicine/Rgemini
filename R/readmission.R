@@ -228,8 +228,8 @@ readmission <- function(dbcon,
   DBI::dbSendQuery(dbcon, "Drop table if exists temp_readmission_data;")
 
   ############  Convert date-times into appropriate format   ############
-  data[, discharge_date_time := convert_datetime(discharge_date_time)]
-  data[, admission_date_time := convert_datetime(admission_date_time)]
+  data[, discharge_date_time := convert_dt(discharge_date_time)]
+  data[, admission_date_time := convert_dt(admission_date_time)]
   data <- data[order(patient_id_hashed, discharge_date_time, admission_date_time)]
 
 

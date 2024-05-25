@@ -52,9 +52,10 @@ stat_holidays_ON <- function(data,
                              include_observed_holidays = TRUE) {
   ## check inputs
   # make sure provided date column can be converted to YYYY-MM-DD date format
-  # convert_datetime will also show warning about any missing entries
-  data$date <- as.Date(convert_datetime(
-    data[[date_column]], format = c("ymd", "ymd HM", "ymd HMS")
+  # (with timestamp being optional) + show warnings about any missing entries
+  data$date <- as.Date(convert_dt(
+    data[[date_column]], orders = "ymd HMS", truncated = 3, # HMS optional
+    dt_varname = date_column
   ))
 
   years <- 2000:2100

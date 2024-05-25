@@ -53,11 +53,11 @@ length_of_stay <- function(ipadmdad,
   ## remap variable names in case field names change in the database/users want
   # to use other date-time variables (e.g., entry into palliative care)
   ipadmdad <- coerce_to_datatable(ipadmdad)
-  
+
   res <- ipadmdad[, .(
     genc_id,
-    adm_dtvar = convert_datetime(get(adm_dtvar)),
-    dis_dtvar = convert_datetime(get(dis_dtvar))
+    adm_dtvar = convert_dt(get(adm_dtvar)),
+    dis_dtvar = convert_dt(get(dis_dtvar))
   )]
 
   res[, ":="(los_hrs_derived = as.numeric(difftime(

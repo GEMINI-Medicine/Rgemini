@@ -136,9 +136,9 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
   data <- data[age >= 18, ] # age < 18 should not be in DB
 
   ############  Convert date-times into appropriate format   ############
-  data[, discharge_date_time := convert_datetime(discharge_date_time)]
-  data[, admission_date_time := convert_datetime(admission_date_time)]
-  
+  data[, discharge_date_time := convert_dt(discharge_date_time)]
+  data[, admission_date_time := convert_dt(admission_date_time)]
+
   ############  Identify hospital coded Acute Transfer (AT)   ############
   data <- data[order(patient_id_hashed, discharge_date_time, admission_date_time)]
 

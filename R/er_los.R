@@ -36,7 +36,7 @@
 #' consider removing them from your analyses.
 #' Encounter IDs in the `er` table that have missing/invalid `triage_date_time`
 #' or `left_er_date_time` will be returned with `er_los = NA`.
-#' 
+#'
 #' @export
 #'
 #' @examples
@@ -66,16 +66,16 @@ er_los <- function(cohort, er) {
 
   ##### Prepare er data #####
   er[, `:=`(
-    triage_date_time = convert_datetime(
+    triage_date_time = convert_dt(
       triage_date_time, addtl_msg = ""
     ),
-    left_er_date_time = convert_datetime(
+    left_er_date_time = convert_dt(
       left_er_date_time, addtl_msg = ""
     )
   )]
 
-  # convert_datetime will already show warnings about missing/invalid date-times
-  # but adding a general warning here for how those are dealt with within er_los
+  # convert_dt will already show warnings about missing/invalid date-times but
+  # adding a general warning here for how those are dealt with within er_los
   if (sum(is.na(er$triage_date_time) | is.na(er$left_er_date_time)) > 0) {
     cat("\n")
     warning(
