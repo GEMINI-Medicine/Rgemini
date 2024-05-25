@@ -58,10 +58,14 @@ Please refer to the CIHI DAD abstracting manual for more details.
 }
 \note{
 :
-By design, function will not return any NA values.
-Encounter IDs in the \code{cohort} table that are not present in the \code{ipscu} table are assumed to have no visits to ICU.
-For these encounters, a value of 0 will be assigned to the derived fields.
-When one tries to left-join the output of this function to another table, make sure the list of encounters aligns in both tables
+Encounter IDs in the \code{cohort} table that are not present in the \code{ipscu} table
+are assumed to have no visits to ICU. For these encounters, a value of 0 will
+be assigned to the derived fields.
+Encounter IDs in the \code{ipscu} table that have missing/invalid
+\code{scu_admit_date_time} or \code{scu_discharge_date_time} will be returned with
+\code{icu_los = NA}.
+When one tries to left-join the output of this function to another table,
+make sure the list of encounters aligns in both tables
 }
 \examples{
 # Compute ICU LoS for all encounters in ipadmdad:
