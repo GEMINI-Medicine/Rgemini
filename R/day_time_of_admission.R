@@ -46,13 +46,13 @@ day_time_of_admission <- function(ipadmdad,
   ## coerce data frame to data table if necessary
   ipadmdad <- coerce_to_datatable(ipadmdad)
 
-  ## select relevant variables
-  res <- ipadmdad[, .(genc_id, dtvar = get(dtvar))]
-
   ## make sure dtvar is in appropriate format (ymd + HM/HMS timestamp)
-  res[, dtvar := convert_dt(
-    dtvar, orders = c("ymd HM", "ymd HMS"), dt_varname = dtvar
+  ipadmdad[, dtvar := convert_dt(
+    get(dtvar), orders = c("ymd HM", "ymd HMS"), dt_varname = dtvar
   )]
+
+  ## select relevant variables
+  res <- ipadmdad[, .(genc_id, dtvar)]
 
   ## daytime = 08:00 to 16:59
   ## nighttime = 17:00 to 07:59

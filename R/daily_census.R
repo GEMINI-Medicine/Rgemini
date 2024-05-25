@@ -158,8 +158,8 @@ daily_census <- function(cohort,
 
   ## If no time_period input provided, use min/max discharge dates
   if (is.null(time_period)) {
-    time_period_start <- min(as.Date(cohort$discharge_date_time))
-    time_period_end <- max(as.Date(cohort$discharge_date_time))
+    time_period_start <- min(as.Date(cohort$discharge_date_time), na.rm = TRUE)
+    time_period_end <- max(as.Date(cohort$discharge_date_time), na.rm = TRUE)
   } else {
     tryCatch(
       { # if time period is provided, make sure it can be converted to date
@@ -231,7 +231,7 @@ daily_census <- function(cohort,
          Please make sure the start date specified in 'time_period[1]' is earlier than the end date 'time_period[2]'.")
   }
   # time_period_start needs to be >= earliest discharge date
-  if (time_period_start < min(as.Date(cohort$discharge_date_time))) {
+  if (time_period_start < min(as.Date(cohort$discharge_date_time), na.rm = TRUE)) {
     stop(paste0(
       "Invalid user input for argument 'time_period'.
         The start of the time period you specified (", time_period[1], ") is earlier than the earliest discharge date in the cohort (",
@@ -239,7 +239,7 @@ daily_census <- function(cohort,
     ))
   }
   # time_period_end needs to be <= latest discharge date
-  if (time_period_end > max(as.Date(cohort$discharge_date_time))) {
+  if (time_period_end > max(as.Date(cohort$discharge_date_time), na.rm = TRUE)) {
     stop(paste0(
       "Invalid user input for argument 'time_period'.
         The end of the time period you specified (", time_period[2], ") is later than the latest discharge date in the cohort (",
@@ -267,8 +267,12 @@ daily_census <- function(cohort,
   cohort[, hospital_num := as.factor(hospital_num)]
 
   ## make sure dates are in correct format
-  cohort[, admission_date_time := convert_dt(admission_date_time)]
-  cohort[, discharge_date_time := convert_dt(discharge_date_time)]
+  cohort[, admission_date_time := convert_dt(
+    admission_date_time, addtl_msg = "These entries cannot be counted towards the census and will be removed.\n"
+  )]
+  cohort[, discharge_date_time := convert_dt(
+    discharge_date_time, addtl_msg = "These entries cannot be counted towards the census and will be removed.\n"
+  )]
 
   ## Filter cohort by relevant time period
   cohort <- cohort[discharge_date_time >= time_period_start &
@@ -316,19 +320,18 @@ daily_census <- function(cohort,
     check_scu <- scu_exclude[is.na(scu_admit_date_time) | is.na(scu_discharge_date_time) |
       scu_admit_date_time > scu_discharge_date_time, ]
     if (nrow(check_scu) > 0) {
-      cat("\n")
       warning(
-        paste0("Identified a total of ", nrow(check_scu),
-        " rows with invalid or missing SCU admission or discharge date-time in `scu_exclude`.\n",
+        paste("Identified a total of", nrow(check_scu),
+        "rows with invalid or missing SCU admission or discharge date-time in `scu_exclude`.\n",
         "Invalid values might be due to unexpected date-time formats (e.g., missing timestamps)",
-        " or can be due to `scu_admit_date_time` > `scu_discharge_date_time`.",
-        " These entries cannot be excluded from the census calculation, and therefore, the",
-        " corresponding `genc_ids` will be counted towards the census during each day of their",
-        " hospitalization, potentially resulting in an overestimate of the daily census.\n",
+        "or can be due to `scu_admit_date_time` > `scu_discharge_date_time`.",
+        "These entries cannot be excluded from the census calculation, and therefore, the",
+        "corresponding `genc_ids` will be counted towards the census during each day of their",
+        "hospitalization, potentially resulting in an overestimate of the daily census.\n",
         "Please consider pre-processing/imputing invalid date-times.",
-        " For example, for entries with missing timestamp in `scu_discharge_date_time`, you",
-        " may want to impute timestamps with a value > 8:00am (i.e., assume genc_id was still",
-        " in ICU at time the census is calculated)."),
+        "For example, for entries with missing timestamp in `scu_discharge_date_time`, you",
+        "may want to impute timestamps with a value > 8:00am (i.e., assume genc_id was still",
+        "in ICU at 8:00am on a given day)."),
         immediate. = TRUE
       )
     }
@@ -354,8 +357,8 @@ daily_census <- function(cohort,
     if (nrow(data) > 0) { # skip if table is empty (can happen for some time period x hospital_num combos)
 
       ## Find min & max available date for each site
-      min_date <- as.Date(min(data$discharge_date_time))
-      max_date <- as.Date(max(data$discharge_date_time))
+      min_date <- min(as.Date(data$discharge_date_time), na.rm = TRUE)
+      max_date <- max(as.Date(data$discharge_date_time), na.rm = TRUE)
 
       ## create time series with relevant dates to search for (according to site's data avilability)
       # beginning of time period: either earliest discharge date of site or time_period_start, whichever is later

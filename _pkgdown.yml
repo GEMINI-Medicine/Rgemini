@@ -60,7 +60,7 @@ reference:
 - contents:
   - check_input
   - coerce_to_datatable
-  - convert_datetime
+  - convert_dt
   - find_db_tablename
   - lunique
   - mapping_message

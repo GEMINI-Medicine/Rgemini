@@ -714,6 +714,7 @@ convert_dt <- function(dt_var,
                        dt_varname = NULL,
                        addtl_msg = NULL,
                        ...) {
+
   ## initialize all counts of missing/invalid entries
   n_missing_dt <- n_invalid_dt <- n_date_only <- n_zeros <- 0
 
@@ -815,19 +816,21 @@ convert_dt <- function(dt_var,
   # show general warning about missing/invalid date-times
   # (can be customized by providing `addtl_msg`)
   if (any(c(n_missing_dt, n_invalid_dt, n_date_only, n_zeros) > 0)) {
-    if (is.null(addtl_msg)) {
-      cat("\n")
+    if (is.null(addtl_msg) || !addtl_msg %in% c("", " ", "\n")) {
       warning(
-        ifelse(is.null(addtl_msg), paste0("\n",
-                                          "Please carefully consider how to deal with missing/invalid date-time",
-                                          " entries and perform any additional pre-processing prior to running",
-                                          " the function `", as.character(sys.calls()[[1]])[1],
-                                          "` (e.g., impute missing dates/timestamps etc.).\n"
-        ),
-        addtl_msg
+        ifelse(is.null(addtl_msg),
+               paste0("Please carefully consider how to deal with missing/invalid date-time",
+                      " entries and perform any additional pre-processing prior to running",
+                      " the function `", as.character(sys.calls()[[1]])[1],
+                      "` (e.g., impute missing dates/timestamps etc.).\n"
+               ),
+               addtl_msg
         ), immediate. = TRUE, call. = FALSE
       )
+    } else {
+      cat("\n")
     }
+
   }
 
   return(dt_var_res)

@@ -76,12 +76,13 @@ er_los <- function(cohort, er) {
 
   # convert_dt will already show warnings about missing/invalid date-times but
   # adding a general warning here for how those are dealt with within er_los
-  if (sum(is.na(er$triage_date_time) | is.na(er$left_er_date_time)) > 0) {
-    cat("\n")
+  n_invalid_dt <- sum(is.na(er$triage_date_time) | is.na(er$left_er_date_time))
+  if (n_invalid_dt > 0) {
     warning(
       paste(
-        "All entries with missing/invalid `triage_date_time` or `left_er_date_time`",
-        "will be returned as `er_los = NA`.",
+        "Identified a total of", n_invalid_dt,
+        "entries with missing/invalid `triage_date_time` or `left_er_date_time`.",
+        "These entries will be returned as `er_los = NA`.",
         "Please carefully check the `er` table and perform any additional",
         "pre-processing for date-time variables if necessary.\n"
       ),

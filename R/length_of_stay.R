@@ -56,8 +56,8 @@ length_of_stay <- function(ipadmdad,
 
   res <- ipadmdad[, .(
     genc_id,
-    adm_dtvar = convert_dt(get(adm_dtvar)),
-    dis_dtvar = convert_dt(get(dis_dtvar))
+    adm_dtvar = convert_dt(get(adm_dtvar), dt_varname = adm_dtvar),
+    dis_dtvar = convert_dt(get(dis_dtvar), dt_varname = dis_dtvar)
   )]
 
   res[, ":="(los_hrs_derived = as.numeric(difftime(

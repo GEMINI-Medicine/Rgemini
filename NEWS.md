@@ -3,8 +3,8 @@
 * Updated unit tests & small bug fix in `daily_census`
 * Ordered package names in pkgdown reference file
 * Small bug fix in `disability()`
-* Added new utility function `convert_datetime()`
-* Enhancement of `Rgemini` functions to allow for different date-time formats & show warnings for missing/invalid date-times.
+* New function `convert_dt()` to handle date-time variables and show missing/invalid entries.
+* Enhancement of `Rgemini` functions to allow for different date-time inputs.
 
 # Rgemini 0.4.2
 

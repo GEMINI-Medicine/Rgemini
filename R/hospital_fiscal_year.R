@@ -35,7 +35,8 @@ hospital_fiscal_year <- function(date_ymd) {
   # make sure provided date column can be converted to YYYY-MM-DD date format
   # (with timestamp being optional) + show warnings about any missing entries
   date_ymd <- convert_dt(
-    date_ymd, orders = "ymd HMS", truncated = 3 # HMS optional
+    date_ymd, orders = "ymd HMS", truncated = 3, # HMS optional
+    dt_varname = deparse(substitute(date_ymd))
   )
 
   # obtain year from date vector
