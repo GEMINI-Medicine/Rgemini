@@ -7,10 +7,9 @@
 hospital_fiscal_year(date_ymd)
 }
 \arguments{
-\item{date_ymd}{(\code{character} | \verb{POSIXct POSIXt})\cr
-A vector of dates or date-times, typically in \code{yyyy-mm-dd} or
-\verb{yyyy-mm-dd hh:mm} format, but other formats are acceptable as long as they
-can be interpreted by \code{lubridate::year()} and \code{lubridate::month()}.}
+\item{date_ymd}{(\code{character})\cr
+A character vector of dates or date-times.
+The date value must be in \code{yyyy-mm-dd} format.}
 }
 \value{
 Numeric vector with the same number of entries as input, containing the
@@ -26,8 +25,9 @@ Hospital fiscal year is defined as April ~ March. For example, in case of
 }
 \section{Warning}{
 
-NA values in returned vector indicates either missing date or inputs that
-cannot be converted into dates.
+NA values in returned vector indicates either missing date or its format is
+incorrect. All dates must be in \code{yyyy-mm-dd} format and precede the timestamp
+(e.g., \verb{yyyy-mm-dd hh:mm}).
 }
 
 \examples{
