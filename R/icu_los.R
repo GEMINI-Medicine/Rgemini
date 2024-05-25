@@ -50,10 +50,14 @@
 #' derived numeric fields "icu_los_hrs_derived" and "icu_los_days_derived".
 #'
 #' @note:
-#' By design, function will not return any NA values.
-#' Encounter IDs in the `cohort` table that are not present in the `ipscu` table are assumed to have no visits to ICU.
-#' For these encounters, a value of 0 will be assigned to the derived fields.
-#' When one tries to left-join the output of this function to another table, make sure the list of encounters aligns in both tables
+#' Encounter IDs in the `cohort` table that are not present in the `ipscu` table
+#' are assumed to have no visits to ICU. For these encounters, a value of 0 will
+#' be assigned to the derived fields.
+#' Encounter IDs in the `ipscu` table that have missing/invalid
+#' `scu_admit_date_time` or `scu_discharge_date_time` will be returned with
+#' `icu_los = NA`.
+#' When one tries to left-join the output of this function to another table,
+#' make sure the list of encounters aligns in both tables
 #'
 #' @export
 #'
@@ -93,10 +97,27 @@ icu_los <- function(cohort, ipscu) {
     dplyr::mutate(across(where(is.character), na_if, "")) %>%
     .[!trimws(as.character(scu_unit_number)) %in% c("90", "93", "95", "99")] %>%
     .[, ":="(
-      scu_admit_date_time = lubridate::ymd_hm(scu_admit_date_time),
-      scu_discharge_date_time = lubridate::ymd_hm(scu_discharge_date_time)
-    )] %>%
-    .[!is.na(scu_admit_date_time) & !is.na(scu_discharge_date_time)]
+      scu_admit_date_time = convert_dt(scu_admit_date_time, addtl_msg = ""),
+      scu_discharge_date_time = convert_dt(scu_discharge_date_time, addtl_msg = "")
+    )]
+
+  # convert_dt will already show warnings about missing/invalid date-times but
+  # adding a general warning here for how those are dealt with within icu_los
+  n_invalid_dt <- sum(
+    is.na(ipscu$scu_admit_date_time) | is.na(ipscu$scu_discharge_date_time)
+  )
+  if (n_invalid_dt > 0) {
+    warning(
+      paste(
+        "Identified a total of", n_invalid_dt,
+        "entries with missing/invalid `scu_admit_date_time` or `scu_discharge_date_time`.",
+        "These entries will be returned as `icu_los = NA`.",
+        "Please carefully check the `ipscu` table and perform any additional",
+        "pre-processing for date-time variables if necessary.\n"
+      ),
+      immediate. = TRUE
+    )
+  }
 
   ###### Derive ICU length of stay fields ######
   ipscu <- ipscu %>%
@@ -111,8 +132,16 @@ icu_los <- function(cohort, ipscu) {
 
   ###### Merge results with cohort ######
   res <- cohort[, .(genc_id)] %>%
-    dplyr::left_join(ipscu, by = "genc_id") %>%
-    dplyr::mutate(across(starts_with("icu"), ~ ifelse(is.na(.), 0, .))) # assign 0 to encounters with no ICU visits
+    dplyr::left_join(ipscu, by = "genc_id")
+
+  ## Prepare final output
+  # for genc_ids that don't exist in ipscu table, impute ICU LOS with 0
+  # (assume no time was spent in ICU); keep all other NA (for genc_ids that
+  # exist in ipscu table but have invalid/missing ICU date-times)
+  res[!genc_id %in% ipscu$genc_id, `:=`(
+    icu_los_hrs_derived = 0,
+    icu_los_days_derived = 0
+  )]
 
   return(res)
 }
