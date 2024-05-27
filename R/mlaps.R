@@ -199,16 +199,16 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
 #' mLAPS
 #'
 #' @details
-#' Modified Laboratory based Acute Physiology Score (mLAPS) uses 14 lab test values.
-#' In this modified version, High senstive Troponin tests are ignored and treated as normal.
+#' Modified Laboratory based Acute Physiology Score (mLAPS) uses 12 lab test values from 11 unique lab tests.
+#' In this modified version, troponin tests are not considered in the mLAPS calculation.
 #'
 #' @param ipadmdad (`data.frame`)\cr
 #' Table equivalent to a subset of the `admdad` table defined in the
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/wp-content/uploads/2023/12/GEMINI-Data-Repository-Data-Dictionary-v3.0.2.html).
 #'
 #' @param lab (`data.table`, `data.frame`)\cr
 #' Table equivalent to a subset of the `lab` table defined in the
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/wp-content/uploads/2023/12/GEMINI-Data-Repository-Data-Dictionary-v3.0.2.html).
 #'
 #' @param hours_after_admission (`numeric`)\cr
 #' Consider lab tests collected **up to** `hours_after_admission` hours after inpatient admission in the calculation.
