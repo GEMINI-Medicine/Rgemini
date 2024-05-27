@@ -9,11 +9,11 @@ mlaps(ipadmdad, lab, hours_after_admission = 0, component_wise = FALSE)
 \arguments{
 \item{ipadmdad}{(\code{data.frame})\cr
 Table equivalent to a subset of the \code{admdad} table defined in the
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.}
+\href{https://geminimedicine.ca/wp-content/uploads/2023/12/GEMINI-Data-Repository-Data-Dictionary-v3.0.2.html}{GEMINI Data Repository Dictionary}.}
 
 \item{lab}{(\code{data.table}, \code{data.frame})\cr
 Table equivalent to a subset of the \code{lab} table defined in the
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.}
+\href{https://geminimedicine.ca/wp-content/uploads/2023/12/GEMINI-Data-Repository-Data-Dictionary-v3.0.2.html}{GEMINI Data Repository Dictionary}.}
 
 \item{hours_after_admission}{(\code{numeric})\cr
 Consider lab tests collected \strong{up to} \code{hours_after_admission} hours after inpatient admission in the calculation.
@@ -40,8 +40,8 @@ If \code{componentwise == FALSE}:
 mLAPS
 }
 \details{
-Modified Laboratory based Acute Physiology Score (mLAPS) uses 13 lab test values.
-In this modified version, High senstive Troponin tests are ignored and treated as normal.
+Modified Laboratory based Acute Physiology Score (mLAPS) uses 12 lab test values from 11 unique lab tests.
+In this modified version, troponin tests are not considered in the mLAPS calculation.
 }
 \note{
 When an encounter has multiple recorded lab results for a given "LAPS-relevant" test, the test result which results in the
