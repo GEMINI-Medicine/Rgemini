@@ -63,7 +63,13 @@
 #' If user specified time window x hour is used, field "icu_entry_in_xhr_derived" is computed in addition to "icu_entry_derived".
 #'
 #' @note:
-#' By design, function will not return any NA values.
+#' By design, this function will not return any NA values for `icu_entry`, unless the flag is time sensitive
+#' (i.e., if `as_outcome` is `TRUE`, or when deriving ICU admission within a certain time window/after a cut-off).
+#' For time sensitive flags, any genc_ids with an ICU entry but *no* valid ICU admission date-time will be returned as NA.
+#' If a genc_id has *at least one* valid ICU admission date-time, any valid entries will be included in the calculation.
+#' Note that a lot of invalid ICU admission date-times contain date information only. Users may choose to impute
+#' missing time stamps prior to running this function.
+#'
 #' When one tries to left-join the output of this function to another table,
 #' make sure the list of encounters aligns in both tables.
 #' As there are 2 dependent parameters (exclude_cutoff, entry_since_cutoff)
@@ -96,14 +102,13 @@
 
 icu_entry <- function(cohort, ipscu, as_outcome = FALSE, exclude_cutoff = 0, entry_since_cutoff = c(24, 48, 72)) {
   ###### Check user inputs ######
-
   ## table provided as data.frame/data.table
   if (!any(class(cohort) %in% c("data.frame", "data.table"))) {
     stop("Invalid user input for cohort. Please provide a data.frame or a data.table.")
   }
 
   if (!any(class(ipscu) %in% c("data.frame", "data.table"))) {
-    stop("Invalid user input for ipscu Please provide a data.frame or a data.table.")
+    stop("Invalid user input for ipscu. Please provide a data.frame or a data.table.")
   }
 
   ## table contains required fields
@@ -130,7 +135,8 @@ icu_entry <- function(cohort, ipscu, as_outcome = FALSE, exclude_cutoff = 0, ent
   )]
   ipscu <- ipscu[, .(
     genc_id,
-    scu_admit_date_time = convert_dt(scu_admit_date_time, addtl_msg = ""), scu_unit_number
+    scu_admit_date_time, # convert to dt below, once we've filtered relevant rows
+    scu_unit_number
   )]
 
   ## filter out step-down units as they are not considered as icus, and merge in admission date time
@@ -139,27 +145,31 @@ icu_entry <- function(cohort, ipscu, as_outcome = FALSE, exclude_cutoff = 0, ent
     dplyr::mutate(across(where(is.character), na_if, "")) %>%
     .[!trimws(as.character(scu_unit_number)) %in% c("90", "93", "95", "99")] %>%
     .[, .(genc_id, scu_admit_date_time)] %>%
-    dplyr::left_join(res, by = "genc_id")
+    dplyr::left_join(res, by = "genc_id") %>% data.table()
 
-  ###### filter out those with invalid entry time  ######
-  ipscu_invalid_time <- nrow(ipscu[is.na(scu_admit_date_time), ])
-  if (ipscu_invalid_time > 0) {
+  ###### show warning for those with invalid entry time  ######
+  ## convert scu_admit_date_time into correct format / show warning for missing values
+  ipscu <- ipscu[, scu_admit_date_time := convert_dt(scu_admit_date_time, addtl_msg = "")]
+
+  # identify genc_ids with ICU entry where ALL entries have a missing/invalid date-time
+  all_missing <- ipscu[, .(all_na = all(is.na(scu_admit_date_time))), by = genc_id][all_na == TRUE]
+  if (nrow(all_missing) > 0) {
     warning(
       paste(
-        "Identified a total of", ipscu_invalid_time,
-        "entries with invalid or missing `scu_admit_date_time`.\n",
-        "These entries are removed and will be returned as `icu_entry = NA`.",
+        "Identified a total of", nrow(all_missing),
+        "genc_ids in the ICU table that have 0 entries with valid `scu_admit_date_time`.\n",
+        "These genc_ids will be returned as `NA` for any ICU flags that are time sensitive",
+        "(e.g., ICU entry within a certain time window/after an exclusion cut-off).",
+        "For all other genc_ids, any valid ICU admission date-times will be included.\n",
         "Please carefully check the `ipscu` table and perform any additional",
-        "pre-processing for date-time variables if necessary.\n"
+        "pre-processing for date-time variables if necessary (e.g., impute missing timestamps).\n"
       ),
       immediate. = TRUE
     )
   }
 
-  ipscu <- ipscu[!is.na(scu_admit_date_time), ]
-
   ##### Define cutoff time (i.e time point since which icu entry will be considered. Records prior to this cutoff are removed).
-  ipscu[, exclude_time_cutoff :=  admission_date_time + lubridate::hours(exclude_cutoff)] #Default to admission_date_time (ipatient admission time).
+  ipscu[, exclude_time_cutoff := admission_date_time + lubridate::hours(exclude_cutoff)] #Default to admission_date_time (ipatient admission time).
 
   ###### icu as an outcome or not ######
   if (as_outcome == TRUE) {
@@ -171,17 +181,26 @@ icu_entry <- function(cohort, ipscu, as_outcome = FALSE, exclude_cutoff = 0, ent
       " records have icu-entry time before or equal to ", cutoff_msg, ". They are removed from deriving ICU entry as an outcome.\n"
     ))
 
-    ipscu <- ipscu %>%  dplyr::filter(scu_admit_date_time > exclude_time_cutoff)
+    # only keep those with scu_admit_date_time after the cut-off
+    ipscu <- ipscu %>% dplyr::filter(scu_admit_date_time > exclude_time_cutoff)
   }
 
   ###### Derive ICU entry fields ######
 
-  ## derive ICU entry at any time point
+  ## derive ICU entry at any time point (regardless of whether valid date-time)
   res[, icu_entry_derived := ifelse(genc_id %in% ipscu$genc_id, TRUE, FALSE)]
 
+  ## if as_outcome is set to TRUE, ICU entry is time sensitive
+  # -> need to set icu_entry to NA for genc_ids with any missing/invalid ICU date-time
+  if (as_outcome == TRUE) {
+    res[genc_id %in% all_missing$genc_id, icu_entry_derived := NA]
+  }
+
   ## derive ICU entry within a specified time window since the cutoff time.
+  #  for genc_ids with any missing/invalid scu_admit_date_time, return NA
   lapply(entry_since_cutoff, function(x) {
-    res[, paste0("icu_entry_in_", x, "hr_derived") :=
+    res[!genc_id %in% all_missing$genc_id,
+        paste0("icu_entry_in_", x, "hr_derived") :=
           ifelse(genc_id %in% ipscu[scu_admit_date_time <= (exclude_time_cutoff + lubridate::hours(x)), genc_id],
                  TRUE,
                  FALSE)]
