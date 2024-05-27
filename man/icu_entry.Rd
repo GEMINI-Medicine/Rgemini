@@ -79,7 +79,13 @@ Please refer to the CIHI DAD abstracting manual for more details.
 }
 \note{
 :
-By design, function will not return any NA values.
+By design, this function will not return any NA values for \code{icu_entry}, unless the flag is time sensitive
+(i.e., if \code{as_outcome} is \code{TRUE}, or when deriving ICU admission within a certain time window/after a cut-off).
+For time sensitive flags, any genc_ids with an ICU entry but \emph{no} valid ICU admission date-time will be returned as NA.
+If a genc_id has \emph{at least one} valid ICU admission date-time, any valid entries will be included in the calculation.
+Note that a lot of invalid ICU admission date-times contain date information only. Users may choose to impute
+missing time stamps prior to running this function.
+
 When one tries to left-join the output of this function to another table,
 make sure the list of encounters aligns in both tables.
 As there are 2 dependent parameters (exclude_cutoff, entry_since_cutoff)
