@@ -66,9 +66,9 @@
 #' By design, this function will not return any NA values for `icu_entry`, unless the flag is time sensitive
 #' (i.e., if `as_outcome` is `TRUE`, or when deriving ICU admission within a certain time window/after a cut-off).
 #' For time sensitive flags, any genc_ids with an ICU entry but *no* valid ICU admission date-time will be returned as NA.
-#' If a genc_id has *at least one* valid ICU admission date-time, any valid entries will be included in the calculation.
+#' If a genc_id has *at least one* valid ICU admission date-time, all valid entries will be included in the calculation.
 #' Note that a lot of invalid ICU admission date-times contain date information only. Users may choose to impute
-#' missing time stamps prior to running this function.
+#' missing timestamps prior to running this function.
 #'
 #' When one tries to left-join the output of this function to another table,
 #' make sure the list of encounters aligns in both tables.
@@ -160,7 +160,7 @@ icu_entry <- function(cohort, ipscu, as_outcome = FALSE, exclude_cutoff = 0, ent
         "genc_ids in the ICU table that have 0 entries with valid `scu_admit_date_time`.\n",
         "These genc_ids will be returned as `NA` for any ICU flags that are time sensitive",
         "(e.g., ICU entry within a certain time window/after an exclusion cut-off).",
-        "For all other genc_ids, any valid ICU admission date-times will be included.\n",
+        "For all other genc_ids, any entries with valid ICU admission date-times will be included in determining ICU entry.\n",
         "Please carefully check the `ipscu` table and perform any additional",
         "pre-processing for date-time variables if necessary (e.g., impute missing timestamps).\n"
       ),
