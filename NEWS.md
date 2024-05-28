@@ -1,16 +1,12 @@
 # Rgemini `develop`
 
-* Updated unit tests & small bug fix in `daily_census` 
+* Updated unit tests & small bug fix in `daily_census()` 
 * Enable `prettyNum` formatting in table 1 render functions
-* Updated unit tests & small bug fix in `daily_census`
 * Ordered package names in pkgdown reference file
-<<<<<<< issue_111
-* Update mlaps hospital query
-=======
+* Update `mlaps()` hospital query
 * New option to derive ICU entries as a clinical outcome with customizable time windows in `icu_entry()`
 * Small bug fix in `disability()`
-
->>>>>>> develop
+* Update unit test and small bug fix in `frailty_score()`
 
 # Rgemini 0.4.2
 
