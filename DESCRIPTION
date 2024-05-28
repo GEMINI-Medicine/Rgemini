@@ -12,12 +12,17 @@ Imports:
     comorbidity, 
     data.table, 
     DBI, 
-    dplyr, 
-    janitor, 
+    dplyr,
+	ggplot2,
+	ggpubr,
+	ggthemes,
+    janitor,
+	lemon,
     lubridate, 
     purrr,
     reshape2,
     RPostgreSQL,
+	scales,
     stddiff, 
     stringi, 
     stringr, 
@@ -28,11 +33,15 @@ Imports:
     MCMCpack,
     sn
 Suggests: 
-    ggplot2,
+    colorBlindness,
+    ggsci,
     kableExtra,
     knitr,
+    plotly,
+    RColorBrewer,
     rmarkdown,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    viridis
 Config/testthat/edition: 3
 RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE)
