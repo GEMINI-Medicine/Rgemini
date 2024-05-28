@@ -53,11 +53,13 @@
 #' Encounter IDs in the `cohort` table that are not present in the `ipscu` table
 #' are assumed to have no visits to ICU. For these encounters, a value of 0 will
 #' be assigned to the derived fields.
-#' Encounter IDs in the `ipscu` table that have missing/invalid
+#' Encounter IDs in the `ipscu` table that have any missing/invalid
 #' `scu_admit_date_time` or `scu_discharge_date_time` will be returned with
-#' `icu_los = NA`.
+#' `icu_los = NA`. Some of those entries have valid date information (but no
+#' timestamp). Users may choose to impute missing timestamps prior to running
+#' this function.
 #' When one tries to left-join the output of this function to another table,
-#' make sure the list of encounters aligns in both tables
+#' make sure the list of encounters aligns in both tables.
 #'
 #' @export
 #'
@@ -101,19 +103,21 @@ icu_los <- function(cohort, ipscu) {
       scu_discharge_date_time = convert_dt(scu_discharge_date_time, addtl_msg = "")
     )]
 
+  # find genc_ids with at least 1 missing/invalid date-time
+  n_invalid_dt <- length(unique(
+    ipscu[is.na(scu_admit_date_time) | is.na(scu_discharge_date_time)]$genc_id
+  ))
+
   # convert_dt will already show warnings about missing/invalid date-times but
   # adding a general warning here for how those are dealt with within icu_los
-  n_invalid_dt <- sum(
-    is.na(ipscu$scu_admit_date_time) | is.na(ipscu$scu_discharge_date_time)
-  )
   if (n_invalid_dt > 0) {
     warning(
       paste(
         "Identified a total of", n_invalid_dt,
-        "entries with missing/invalid `scu_admit_date_time` or `scu_discharge_date_time`.",
+        "genc_ids with at least 1 missing/invalid `scu_admit_date_time` or `scu_discharge_date_time`.",
         "These entries will be returned as `icu_los = NA`.",
         "Please carefully check the `ipscu` table and perform any additional",
-        "pre-processing for date-time variables if necessary.\n"
+        "pre-processing for date-time variables if necessary (e.g., impute missing timestamps).\n"
       ),
       immediate. = TRUE
     )
