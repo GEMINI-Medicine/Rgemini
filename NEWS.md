@@ -8,6 +8,7 @@
 * Update `mlaps()` hospital query
 * New option to derive ICU entries as a clinical outcome with customizable time windows in `icu_entry()`
 * Small bug fix in `disability()`
+* Updated `Rgemini:::check_input()` to return error for `odbc` connections 
 * Updated unit test and small bug fix in `frailty_score()`
 
 
