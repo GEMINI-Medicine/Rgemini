@@ -29,7 +29,6 @@ knitr::opts_chunk$set(
   fig.height = 6, 
   fig.width = 8,
   fig.align = "left"
-  
 )
 ```
 
