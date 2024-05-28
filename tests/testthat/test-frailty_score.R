@@ -34,3 +34,12 @@ testthat::test_that("Encounters not qualify for frailty assessment are excluded 
   testthat::expect_equal(res$frailty_score_derived, c(2, 3))
   testthat::expect_equal(res$genc_id, c(1, 3))
 })
+
+testthat::test_that("Encounters no frailty condition are returned with a frailty score of 0", {
+  set.seed(2)
+  cohort_dum <- data.table(genc_id=c(1), age=c(89))
+  ipdiag_dum <- dummy_diag(nid=1, nrow=10, ipdiagnosis=T, pattern ="A05$") # no frailty condition
+
+  testthat::expect_warning(res <- frailty_score(cohort_dum, ipdiag_dum, NULL))
+  testthat::expect_equal(res$frailty_score_derived, c(0))
+})
