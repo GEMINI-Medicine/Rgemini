@@ -4,6 +4,7 @@
 * Ordered package names in pkgdown reference file
 * New option to derive ICU entries as a clinical outcome with customizable time windows in `icu_entry()`
 * Small bug fix in `disability()`
+* Updated `Rgemini:::check_input()` to return error for `odbc` connections 
 
 
 # Rgemini 0.4.2
