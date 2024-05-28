@@ -136,7 +136,9 @@ icd_to_ccsr <- function(dbcon, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, r
 
   #######  Check user inputs  #######
   ## Valid DB connection?
-  check_input(dbcon, "DBI")
+  if (!isPostgresqlIdCurrent(dbcon)) {
+    stop("Invalid user input for argument dbcon. Please input a valid database connection.")
+  }
 
   ## dxtable provided as data.frame/data.table?
   if (!any(class(dxtable) %in% c("data.frame", "data.table"))) {
