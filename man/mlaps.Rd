@@ -40,8 +40,10 @@ If \code{componentwise == FALSE}:
 mLAPS
 }
 \details{
+
 Modified Laboratory based Acute Physiology Score (mLAPS) uses 12 lab test values from 11 unique lab tests.
 In this modified version, troponin tests are not considered in the mLAPS calculation.
+
 }
 \note{
 When an encounter has multiple recorded lab results for a given "LAPS-relevant" test, the test result which results in the

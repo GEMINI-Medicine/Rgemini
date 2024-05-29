@@ -4,27 +4,33 @@ template:
 
 reference:
 - title: Derived Variables
+  desc: These functions derive variables from existing data.
 - contents:
-  - matches("comorbidity")
+  - charlson_comorbidity_index
+  - comorbidity_index
   - covid_flag
   - daily_census
-  - disability
-  - frailty_score
   - day_time_of_admission
-  - hospital_fiscal_year
-  - season
-  - stat_holidays_ON
-  - readmission
+  - disability
+  - elixhauser_comorbidity_index
   - episodes_of_care
-  - matches("icu")
+  - er_los
+  - frailty_score
+  - hospital_fiscal_year
+  - icu_entry
+  - icu_los
   - in_hospital_mortality
+  - laps_assign_test
   - length_of_stay
+  - loop_mlaps
+  - mlaps
   - n_imaging
   - n_missing
-  - n_routine_bloodwork
   - n_rbc_transfusions
-  - er_los
-  - matches("laps")
+  - n_routine_bloodwork
+  - readmission
+  - season
+  - stat_holidays_ON
 - title: Data Transformation
   desc: These functions aid in querying the data, either by applying filters or mapping values.
 - contents:
@@ -35,8 +41,8 @@ reference:
 - title: Cell Suppression
   desc: This includes all helper functions associated with producing a Table 1.
 - contents:
-  - starts_with("render")
   - max_pairwise_smd
+  - starts_with("render")
 - title: Dummy Data
   desc: Helper functions designed to produce sample data.
 - contents:
@@ -45,6 +51,16 @@ reference:
   - dummy_ipadmdad
   - dummy_lab
   - sample_icd
+- title: Plotting Functions
+  desc: Functions for common plotting needs.
+- contents:
+  - gemini_colors
+  - plot_color_palettes
+  - plot_over_time
+  - plot_summary
+  - plot_theme
+  - scale_color_gemini
+  - scale_fill_gemini
 - title: Mapping files
   desc: Files containing variable mappings.
 - contents:
@@ -52,10 +68,11 @@ reference:
   - mapping_disability
 - title: Utility Functions
 - contents:
-  - lunique
-  - matches("ni")
-  - find_db_tablename
-  - coerce_to_datatable
-  - return_hospital_field
   - check_input
+  - coerce_to_datatable
+  - find_db_tablename
+  - fix_var_str
+  - lunique
   - mapping_message
+  - matches("ni")
+  - return_hospital_field

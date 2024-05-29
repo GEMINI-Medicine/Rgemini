@@ -173,7 +173,7 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
           INNER JOIN ", admdad_table, " a
             ON l.genc_id = a.genc_id
           WHERE l.test_type_mapped_omop IN (", paste(LAPS_OMOP_CONCEPTS, collapse = ", "), ")",
-          paste0("AND a.", hospital_field, " = '", hospital_id, "'"),
+          paste0("AND l.", hospital_field, " = '", hospital_id, "'"),
           "AND EXTRACT(YEAR FROM a.discharge_date_time::DATE) = ", year,
           if (!is.null(cohort)) {
             paste("AND l.genc_id IN (", paste(cohort$genc_id, collapse = ", "), ")")

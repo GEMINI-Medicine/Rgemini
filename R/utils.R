@@ -448,19 +448,28 @@ check_input <- function(arginput, argtype,
     ###### CHECK 1 (for all input types): Check if type is correct
     ## For DB connections
     if (any(grepl("dbi|con|posgre|sql", argtype, ignore.case = TRUE))) {
-      if (!RPostgreSQL::isPostgresqlIdCurrent(arginput) &&
-        !grepl("PostgreSQL", class(arginput)[1])) {
+      if (inherits(arginput, "OdbcConnection") || !grepl("PostgreSQL", class(arginput)[1])) {
         stop(
           paste0(
             "Invalid user input in '",
             as.character(sys.calls()[[1]])[1], "': '",
-            argname, "' needs to be a valid database connection.\n",
-            "We recommend the following method to establish a DB connection:\n",
+            argname, "' needs to be a valid PostgreSQL database connection.\n",
+            "Database connections established with `odbc` are currently not supported.\n",
+            "Instead, please use the following method to establish a DB connection:\n",
             "drv <- dbDriver('PostgreSQL')\n",
             "dbcon <- DBI::dbConnect(drv, dbname = 'db_name', ",
             "host = 'domain_name.ca', port = 1234, ",
             "user = getPass('Enter user:'), password = getPass('password'))\n",
             "\nPlease refer to the function documentation for more details."
+          ),
+          call. = FALSE
+        )
+      } else if (!RPostgreSQL::isPostgresqlIdCurrent(arginput)) {
+        # if PostgreSQL connection, make sure it's still active
+        stop(
+          paste0(
+            "Please make sure your database connection is still active.\n",
+            "You may need to reconnect to the database if the connection has timed out."
           ),
           call. = FALSE
         )
@@ -536,8 +545,20 @@ check_input <- function(arginput, argtype,
 
 
     ###### CHECK 5 (for data.table/data.frame inputs):
-    ###### Check if relevant columns exist [optional]
+    ###### Check if nrow() > 0 & if relevant columns exist [optional]
     if (any(argtype %in% c("data.frame", "data.table")) && !is.null(colnames)) {
+      
+      if (nrow(arginput) == 0) {
+        stop(
+          paste0(
+            "Invalid user input in '", as.character(sys.calls()[[1]])[1],
+            "': '", argname, "' input table has 0 rows.",
+            "\nPlease carefully check your input."
+          ),
+          call. = FALSE
+        )
+      }
+      
       # get missing columns
       missing_cols <- setdiff(colnames, colnames(arginput))
 
@@ -629,3 +650,20 @@ mapping_message <- function(what, addtl = NULL) {
 
   cat(msg)
 }
+
+
+
+#' @title
+#' Fix variable strings
+#'
+#' @description
+#' Removes any "_" from variable names and applies title case capitalization.
+#' This is currently used for axis labels/titles in plotting functions.
+#'
+#' @param str (`character`)
+#' Character string to be cleaned up
+#'
+fix_var_str <- function(str) {
+  str <- tools::toTitleCase(gsub("[_.]", " ", str))
+}
+  
