@@ -1,10 +1,17 @@
 # Rgemini `develop`
 
-* Updated unit tests & small bug fix in `daily_census`
+* Adds plotting functions for data exploration: `plot_summary()` and `plot_over_time()`
+* Adds functions for plotting theme & colors: `plot_theme()` and `gemini_colors()`
+* Updated unit tests & small bug fix in `daily_census()` 
+* Enable `prettyNum` formatting in table 1 render functions
 * Ordered package names in pkgdown reference file
+* Update `mlaps()` hospital query
+* New option to derive ICU entries as a clinical outcome with customizable time windows in `icu_entry()`
 * Small bug fix in `disability()`
 * New function `convert_dt()` to handle date-time variables and show missing/invalid entries.
 * Enhancement of `Rgemini` functions to allow for different date-time inputs.
+* Updated `Rgemini:::check_input()` to return error for `odbc` connections 
+* Updated unit test and small bug fix in `frailty_score()`
 
 # Rgemini 0.4.2
 

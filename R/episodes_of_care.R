@@ -91,8 +91,12 @@
 #' }
 #'
 episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
-  if (!RPostgreSQL::isPostgresqlIdCurrent(dbcon)) {
-    stop("\n Please input a valid database connection")
+
+  ## check user inputs
+  check_input(dbcon, "DBI")
+  if (!is.null(restricted_cohort)){
+    check_input(restricted_cohort, c("data.table", "data.frame"),
+                colnames = "genc_id")
   }
 
   ############ Load lookup_transfer ############

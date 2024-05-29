@@ -37,7 +37,7 @@ To make changes to the `Rgemini` codebase/documentation, please follow these ste
 
 All pull requests (PRs) should be carefully reviewed by at least one person. When reviewing code:
 
-1. Assign yourself to the PR (go to "Pull requests" -> click on the PR -> click on "assign yourself" under "Assignees").
+1. Assign yourself as reviewer for this PR (go to "Pull requests" -> click on the PR -> click on "assign yourself" under "Reviewers").
    
 2. Pull the updated code from the branch associated with the issue. You can also install the package from a specific branch using `remotes::install_github("GEMINI-Medicine/Rgemini@<branch_name>")`
 

@@ -176,6 +176,6 @@ frailty_score  <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
     return(res_component)
     }
 
-  return(res_score)
+  return(res)
 
 }

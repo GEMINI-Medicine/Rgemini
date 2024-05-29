@@ -49,6 +49,7 @@ testthat::test_that("When both exclude_xhr_post_ipadmit and entry_window are cus
   testthat::expect_equal(res$icu_entry_in_3hr_derived, c(FALSE, FALSE))
 })
 
+
 testthat::test_that("genc_ids with missing/invalid ICU admission date-time are handled correctly", {
   cohort_dum <- data.table(genc_id=c(1, 2) , admission_date_time=c("2020-07-15 02:00", "2020-07-15 15:00"))
 
@@ -64,3 +65,4 @@ testthat::test_that("genc_ids with missing/invalid ICU admission date-time are h
   # time-sensitive entry depends on availability of at least 1 entry with valid date-time
   testthat::expect_equal(res$icu_entry_in_24hr_derived, c(NA, TRUE))
 })
+
