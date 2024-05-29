@@ -112,4 +112,5 @@ to ensure the identification time interval is as intented. See examples below fo
  icu_entry (cohort, ipscu, as_outcome=TRUE, exclude_cutoff=24, entry_since_cutoff=48) # Note: entry_since_cutoff=48 (instead of 72) because 24+48=72
 }
 
+
 }
