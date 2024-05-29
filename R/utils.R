@@ -100,10 +100,10 @@ coerce_to_datatable <- function(data) {
 #' names that *start with* the same name as specified in DRM (e.g., any that
 #' start with "ipintervention").
 #' For other tables, the function uses a stricter search to avoid finding
-#' multiple matches: Specifically, for "admdad", "lab", and "transfusion", the
-#' function tries to identify tables with the exact same name (i.e.,
-#' "admdad/lab/transfusion") or the corresponding table name with a "_subset"
-#' suffix (for HPC datacuts).
+#' multiple matches: Specifically, for "admdad", "lab", "transfusion", and
+#' "radiology" the function tries to identify tables with the exact same name
+#' (i.e., "admdad/lab/transfusion") or the corresponding table name with a
+#' "_subset" suffix (for HPC datacuts).
 #'
 #' @param dbcon (`DBIConnection`)\cr
 #' A database connection to any GEMINI database.
@@ -118,6 +118,7 @@ coerce_to_datatable <- function(data) {
 #' - `"ipcmg"`
 #' - `"transfusion"`
 #' - `"lab"`
+#' - `"radiology"`
 #'
 #' Users need to specify the full DRM table name (e.g., `"admdad"` instead of
 #' `"adm"`) to avoid potential confusion with other tables.
@@ -152,15 +153,15 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
   check_input(drm_table, "character",
     categories = c(
       "admdad", "ipdiagnosis", "ipintervention", "ipcmg",
-      "lab", "transfusion"
+      "lab", "transfusion", "radiology"
     )
   )
 
   ## Define search criteria for different tables
   search_fn <- function(table_names, table = drm_table) {
 
-    if (drm_table %in% c("lab", "transfusion", "admdad")) {
-      # for lab & transfusion table table:
+    if (drm_table %in% c("lab", "transfusion", "admdad", "radiology")) {
+      # for admdad/lab/transfusion/radiology table:
       # check for specific table names lab/lab_subset and transfusion/transfusion_subset
       # (otherwise, lab/transfusion_mapping or other tables might be returned)
       res <- table_names[table_names %in% c(table, paste0(table, "_subset"))]
