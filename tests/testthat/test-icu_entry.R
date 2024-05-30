@@ -61,7 +61,7 @@ testthat::test_that("genc_ids with missing/invalid ICU admission date-time are h
   res <- suppressWarnings(icu_entry(cohort_dum, ipscu_dum, entry_since_cutoff = 24))
 
   # global ICU entry flag should be returned regardless of date-time missingness
-  testthat::expect_equal(res$icu_entry_derived , c(TRUE, TRUE))
+  testthat::expect_equal(res$icu_entry_derived, c(TRUE, TRUE))
   # time-sensitive entry depends on availability of at least 1 entry with valid date-time
   testthat::expect_equal(res$icu_entry_in_24hr_derived, c(NA, TRUE))
 })
