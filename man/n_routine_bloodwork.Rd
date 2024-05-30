@@ -18,13 +18,12 @@ corresponds to a single encounter. Must contain GEMINI Encounter ID
 
 \item{exclude_ed}{(\code{logical})
 Whether to exclude tests in emergency department. When set to \code{TRUE}, tests
-performed in ED settings (testing time befoore admission time) will not be
+performed in ED settings (testing time before admission time) will not be
 counted. When set to \code{FALSE}, tests will not be filtered by time and all tests
 in lab table will be counted. Please be aware that this may include tests before
 triage time, tests after discharge time, and tests without testing time.
-
-Tests in ED are defined as \code{collection_date_time} earlier
-than \code{admission_date_time}. Tests with missing \code{collection_date_time} will be
+Tests in ED are defined as \code{collection_date_time} earlier than
+\code{admission_date_time}. Tests with missing \code{collection_date_time} will be
 excluded when \code{exclude_ed} is set to \code{TRUE}.}
 }
 \value{
@@ -33,7 +32,7 @@ additional derived numeric field labelled as "n_routine_bloodwork_derived"
 }
 \description{
 \code{n_routine_bloodwork} returns the number of routine bloodwork (Sodium and
-Hemoglobin tests) for each hospital admission. Sodium and Heamoglobin tests
+Hemoglobin tests) for each hospital admission. Sodium and Hemoglobin tests
 are defined by OMOP codes. Sodium is the code 3019550. Hemoglobin is 3000963.
 }
 \details{
@@ -45,13 +44,11 @@ Lab table in the database should include field that classifies each test into
 a few different categories. Therefore, this function should be run after some
 standardization efforts on lab table (performed by GEMINI). Currently, the
 number of routine bloodwork tests is one of the performance metrics in
-MyPracticeReport.
+\href{https://www.hqontario.ca/Quality-Improvement/Practice-Reports/MyPractice-General-Medicine}{MyPracticeReport}.
 
 Function automatically removes tests without valid numeric result value.
 Exceptions are boundary result value (e.g. ">120" mmol/L), and these
 are still counted as valid tests.
-
-Any tests being performed in both ED and in-patient settings will be counted.
 }
 \section{Warning}{
 
@@ -59,7 +56,7 @@ Function returns data.table with id field \code{genc_id} and one numeric field
 indicating the number of bloodwork tests per encounter. By design,
 function will not return any NA values. If a \code{genc_id} does not have any
 entries in the "lab" table, the admission gets assigned 0 number of tests.
-User should check lab data availability and decide whether the imputed \code{0}s are
+User should check lab data coverage and decide whether the imputed \code{0}s are
 appropriate or not.
 When one tries to left-join the output of this function with another table
 (another list of admissions in the left), make sure list of admissions (or

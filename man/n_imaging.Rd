@@ -27,7 +27,7 @@ Tests in ED are defined as \code{ordered_date_time} earlier than \code{admission
 When \code{ordered_date_time} is not available, \code{performed_date_time} is used instead.}
 }
 \value{
-data.table with the same number of rows as input "cohort", with additional
+data.table with the same number of rows as input \code{cohort}, with additional
 derived numeric fields labelled as "n_img_xray_derived",  "n_img_ct_derived",
 "n_img_mri_derived",  "n_img_us_derived", "n_img_other_derived",
 "n_img_int_derived" and "n_img_ct_mri_us_derived".
@@ -36,7 +36,7 @@ derived numeric fields labelled as "n_img_xray_derived",  "n_img_ct_derived",
 \code{n_imaging} returns the number of radiology tests for hospital admission.
 }
 \details{
-This function takes a list of admissions and a GEMINI databse connection to
+This function takes a list of admissions and a GEMINI database connection to
 generate numeric fields counting the number of different radiology tests for
 each admission.
 
@@ -55,29 +55,21 @@ into below 7 categories.
 
 Therefore, this function should be run after some standardization efforts on
 imaging table (performed by GEMINI team). Currently, the number of advanced
-radiology tests is one of the performance metrics in MyPracticeReport. CT,
+radiology tests is one of the performance metrics in \href{https://www.hqontario.ca/Quality-Improvement/Practice-Reports/MyPractice-General-Medicine}{MyPracticeReport}. CT,
 MRI and Ultrasound are considered advance imaging tests, which can be
 retrieved by the derived variable (\code{n_img_ct_mri_us_derived}).
 }
 \note{
-Currently, the function does not take data availability into account. For
+Currently, the function does not take radiology data coverage into account. For
 patients without imaging tests, the function will return 0 in result columns.
-User should check radiology data availability and decide whether the imputed
+User should check radiology data coverage and decide whether the imputed
 \code{0}s are appropriate or not.
 }
 \section{Warning}{
 
-Function returns data.table with id field and several numeric fields. By
+Function returns \code{data.table} with id field and several numeric fields. By
 design, function will not return any NA values. When one tries to left-join
 the output of this function with another table (another list of admissions in
 the left), make sure list of admissions (or patient) aligns in both tables.
-}
-
-\section{Note}{
-
-The function takes optional inputs specifying the field label for the
-variables corresponding to date-time of the performed imaging test and
-mapped imaging modality, respectively. This is to avoid hardcoding variable
-names within the function in case field labels differ between databases.
 }
 

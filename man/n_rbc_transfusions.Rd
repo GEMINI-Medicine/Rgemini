@@ -63,4 +63,9 @@ Transfusion data from two hospitals with known data quality issues are
 automatically removed by this function. Any \code{genc_ids} from those sites are
 not included in the returned output. When merging the output of this function
 with another table, those \code{genc_ids} should have a value of \code{NA}.
+
+Currently, the function does not take \code{transfusion} or \code{lab} data coverage
+into account. For patients without RBC transfusion, the function will return
+\code{0} in result columns. User should check transfusion and lab data coverage and
+decide whether the imputed \code{0}s are appropriate or not.
 }
