@@ -39,12 +39,12 @@
 #' @examples
 #' # Default n_days of 30:
 #' \dontrun{
-#' derive_n_hosp_prev(cohort)
+#' hospitalizations_last_n_days(cohort)
 #' }
 #'
 #' # User-input window of 182 days (6 months)
 #' \dontrun{
-#' derive_n_hosp_prev(cohort, n_days = 182)
+#' hospitalizations_last_n_days(cohort, n_days = 182)
 #' }
 #'
 #' 
