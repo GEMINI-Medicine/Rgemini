@@ -12,7 +12,9 @@ A categorical variable to summarize.}
 
 \item{...}{\cr
 Optionally accept a named \code{digits} (\code{integer}) or \code{single_level_binary} (\code{logical}) argument
-which specifiesthe number of digits to round percentages to.}
+which specifies the number of digits to round percentages to.
+Also accepts additional inputs that are passed to \code{prettyNum()} to apply
+additional formatting to shown results (e.g., \code{big.mark = ","}).}
 }
 \value{
 named (\code{character})\cr
