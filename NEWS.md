@@ -12,6 +12,7 @@
 * Enhancement of `Rgemini` functions to allow for different date-time inputs.
 * Updated `Rgemini:::check_input()` to return error for `odbc` connections 
 * Updated unit test and small bug fix in `frailty_score()`
+* Adds `hospitalizations_last_n_days()` to calculate the number of previous hospitalizations in a given window.
 
 # Rgemini 0.4.2
 
