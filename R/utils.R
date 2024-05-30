@@ -631,11 +631,11 @@ mapping_message <- function(what, addtl = NULL) {
 }
 
 #' @title
-#' Availability Message
+#' Coverage Message
 #'
 #' @description
 #' Message to display to inform the user that the function being used does not
-#' check clinical data availability.
+#' check clinical data coverage.
 #'
 #' @param what (`character`)\cr
 #' Which clinical table is used.
@@ -646,13 +646,13 @@ mapping_message <- function(what, addtl = NULL) {
 #' @return
 #' Prints a message to the console.
 #'
-availability_message <- function(what, addtl = NULL) {
+coverage_message <- function(what, addtl = NULL) {
   msg <- paste0(
     "\n***Note:***\nThis function does not check ", what,
-    " data availability for the input cohort. It returns 0 for test of interest if no record is \nfound in ",
-    what, " table. The result 0s may not be appropriate for patients whose ",
-    what, " data is not available. \nPlease carefully check ", what,
-    " data availability for your cohort, or contact the GEMINI team if you require additional support.\n",
+    " data coverage for the input cohort. It returns 0 for any genc_ids with no record\nin ",
+    what, " table. The result 0s may not be appropriate for patients who are not within ",
+    what, " data coverage period(s). \nPlease carefully check ", what,
+    " data coverage for your cohort, or contact the GEMINI team if you require additional support.\n",
     addtl
   )
 

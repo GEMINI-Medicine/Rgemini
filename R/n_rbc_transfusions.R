@@ -53,6 +53,11 @@
 #' not included in the returned output. When merging the output of this function
 #' with another table, those `genc_ids` should have a value of `NA`.
 #'
+#' Currently, the function does not take `transfusion` or `lab` data coverage
+#' into account. For patients without RBC transfusion, the function will return
+#' `0` in result columns. User should check transfusion and lab data coverage and
+#' decide whether the imputed `0`s are appropriate or not.
+#'
 #' @import RPostgreSQL lubridate
 #'
 #' @export
@@ -64,7 +69,7 @@ n_rbc_transfusions <-function(dbcon,
 
   # warning messages
   mapping_message("RBC transfusions")
-  availability_message("transfusion/lab")
+  coverage_message("transfusion/lab")
 
   cat("\nThis function may take a few minutes to run...\n\n")
 
@@ -73,13 +78,16 @@ n_rbc_transfusions <-function(dbcon,
   check_input(cohort,
               argtype = c("data.table", "data.frame"),
               colnames = c("genc_id", "hospital_num"))
-  check_input(exclude_ed, argtype = "logical")
+  check_input(exclude_ed, argtype  = "logical")
   cohort <- coerce_to_datatable(cohort)
 
   ## If relevant: Show warning notifying user of hospital exclusion
   if (any(c(105,106) %in% unique(cohort$hospital_num))) {
-    warning("Excluding hospitals with known transfusion data quality issues.
-            Please refer to the function documentation for more details.", immediate. = TRUE)
+    cat(paste0(
+      "Excluding hospitals with known transfusion data quality issues. ",
+      "Please refer to the function documentation for more details.\n",
+      nrow(cohort[hospital_num %in% c(105, 106)]), " genc_ids in the input cohort ",
+      "are from these hospitals, and they are excluded from the output table.\n\n"))
 
   }
   cohort_subset <- cohort[hospital_num %ni% c(105, 106)]
@@ -99,7 +107,7 @@ n_rbc_transfusions <-function(dbcon,
         paste(
           "select t.genc_id, t.issue_date_time, a.admission_date_time
            from", transfusion_table, "t
-           left join admdad a
+           left join", admdad_table, "a
            on t.genc_id = a.genc_id
            where t.blood_product_mapped_omop in ('4022173','4137859','4144461') and
            t.issue_date_time >= a.admission_date_time and a.genc_id in ("
@@ -114,17 +122,17 @@ n_rbc_transfusions <-function(dbcon,
       ),
       # IN method is used instead of temp table method to pull based on genc_id list,
       # to ensure function works in HPC environment
-      paste(cohort$genc_id, collapse = ", "), ")"
+      paste(cohort_subset$genc_id, collapse = ", "), ")"
     )
   ) %>% as.data.table
 
   # load hemoglobin from db
   hemoglobin <- dbGetQuery(
     dbcon,
-    paste0(
+    paste(
       "select genc_id, collection_date_time, result_value
-      from lab
-      where test_type_mapped_omop = '3000963' and genc_id in (",
+      from", lab_table,
+      "where test_type_mapped_omop = '3000963' and genc_id in (",
       paste(unique(transfusion$genc_id), collapse = ", "), ");"
     )
   ) %>% as.data.table()
@@ -134,11 +142,11 @@ n_rbc_transfusions <-function(dbcon,
   transfusion[, issue_date_time_pre48 := issue_date_time - hours(48)]
   hemoglobin[, collection_date_time := ymd_hm(collection_date_time)]
 
-  # keep numeric values or those starting with <, >, @
+  # keep numeric values or those starting with <, >, @, ; less than
   # exclude other non-numeric hgb result values
   hemoglobin[, result_value := as.numeric(
-    stringr::str_split(result_value,pattern = "@|<|>",
-                       simplify = TRUE)[,1])]
+    stringr::str_replace_all(tolower(result_value), "@([a-z0-9]*)|<|>|less than|;", "")
+    )]
   # non-equi merge to match transfusion with hgb value in 48 hours
   trans_with_hgb <- transfusion[hemoglobin[!is.na(result_value)],
                                 .(genc_id,
@@ -171,7 +179,7 @@ n_rbc_transfusions <-function(dbcon,
   prehgbless80 <- trans_with_hgb[result_value < 80, .(n_app_rbc_transfusion_derived = .N), genc_id]
 
   res <- Reduce(function(x, y) merge(x,y, by = "genc_id", all.x= T),
-                x = list(cohort[, .(genc_id)],
+                x = list(cohort_subset[, .(genc_id)],
                          n_trans,
                          prehgbless80))
   res[is.na(res)] <- 0
