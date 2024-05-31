@@ -15,9 +15,9 @@ The data to check class of and coerce to \code{data.table} if necessary.}
 The original data provided as an argument, but as a \code{data.table}.
 }
 \description{
-Some \code{Rgemini} functions rely on \code{data.table} operations and assume the input is provided
-in \code{data.table} format. If it  is not, coerce with message to ensure the function logic
-works without breaking.
+Some \code{Rgemini} functions rely on \code{data.table} operations and assume the input
+is provided in \code{data.table} format. If it  is not, coerce with message to
+ensure the function logic works without breaking.
 }
 \examples{
 mtcars <- coerce_to_datatable(mtcars)

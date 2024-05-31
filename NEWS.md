@@ -1,7 +1,46 @@
+# Rgemini `develop`
+
+* Adds plotting functions for data exploration: `plot_summary()` and `plot_over_time()`
+* Adds functions for plotting theme & colors: `plot_theme()` and `gemini_colors()`
+* Updated unit tests & small bug fix in `daily_census()` 
+* Enable `prettyNum` formatting in table 1 render functions
+* Ordered package names in pkgdown reference file
+* Update `mlaps()` hospital query
+* New option to derive ICU entries as a clinical outcome with customizable time windows in `icu_entry()`
+* Small bug fix in `disability()`
+* Updated `Rgemini:::check_input()` to return error for `odbc` connections 
+* Updated unit test and small bug fix in `frailty_score()`
+* Adds `hospitalizations_last_n_days()` to calculate the number of previous hospitalizations in a given window.
+
+# Rgemini 0.4.2
+
+* Small bug fix in `Rgemini:::find_db_tablename`
+
+# Rgemini 0.4.1
+
+* Small bug fix in `Rgemini:::check_input`
+
+# Rgemini 0.4.0
+
+* Adds `n_missing()` function to check number of missingness.
+* Switch function `frailty_score()` to calculate the CIHI Hospital Frailty Risk Score for each encounter.
+* Deprecates function `frailty_score()` that calculates the UK Hospital Frailty Risk Score.
+* New utility function checking user inputs
+* Adds core `mlaps()` function and wrapper function to run over multiple sites and years.
+* Adds `er_los()` function to calculate emergency room length-of-stay.
+* New function `dummy_ipadmdad()` to simulate "ipadmdad" data with random hospital-level intercepts
+* Enhanced `daily_census()` function to allow exclusion of days with 0 counts
+* Additional input argument in `covid_flag()` for inclusion of ER diagnoses
+* New function `disability()` that derives disability flag for each encounter.
+* Adds function to calculate Elixhauser comorbidity scores `elixhauser_comorbidity_index()`.
+* Adds utility function to generate warning about mapped values.
+* Standardizes citation format in function references section.
+
 # Rgemini 0.3.1
 
 * Allows the user to specify the number of digits to round percentages to in cell suppression of categorical variables, without forcing rounding to integer.
 * Allows user to render only one level for binary variables in `table1`.
+* Fixes singularity due to missing levels in `table1`.
 * Fixes `find_db_tablename` and `readmission` for DBs with foreign data wrappers.
 
 # Rgemini 0.3.0

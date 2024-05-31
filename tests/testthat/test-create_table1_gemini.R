@@ -74,3 +74,15 @@ test_that("categorial cell suppression doesn't round to the nearest integer", {
     c("", "a" = "1000 (49.8%)", "b" = "1010 (50.2%)")
   )
 })
+
+test_that("when a factor variable is missing levels, still can calculate SMD", {
+  g <- rep(LETTERS[1:3], each = 30)
+  x <- c(rep('d', 20), rep('e', 10), rep('d', 16), rep('e', 12), rep('f', 1), rep('g', 1), rep('d', 10), rep('e', 19), rep('g',1))
+
+  df <- data.frame(hosp = g, gender = x)
+
+  expect_equal(
+    max_pairwise_smd(split(df$gender, df$hosp)),
+    0.734
+  )
+})

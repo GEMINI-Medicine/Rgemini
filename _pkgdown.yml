@@ -4,42 +4,76 @@ template:
 
 reference:
 - title: Derived Variables
+  desc: These functions derive variables from existing data.
 - contents:
-  - matches("charlson")
+  - charlson_comorbidity_index
+  - comorbidity_index
   - covid_flag
   - daily_census
-  - frailty_score
   - day_time_of_admission
+  - disability
+  - elixhauser_comorbidity_index
+  - episodes_of_care
+  - er_los
+  - frailty_score
   - hospital_fiscal_year
+  - hospitalizations_last_n_days
+  - icu_entry
+  - icu_los
+  - in_hospital_mortality
+  - laps_assign_test
+  - length_of_stay
+  - loop_mlaps
+  - mlaps
+  - n_imaging
+  - n_missing
+  - n_rbc_transfusions
+  - n_routine_bloodwork
+  - readmission
   - season
   - stat_holidays_ON
-  - readmission
-  - episodes_of_care
-  - matches("icu")
-  - in_hospital_mortality
-  - length_of_stay
-  - n_imaging
-  - n_routine_bloodwork
-  - n_rbc_transfusions
 - title: Data Transformation
   desc: These functions aid in querying the data, either by applying filters or mapping values.
 - contents:
   - diagnoses_at_admission
   - icd_to_ccsr
+  - max_result_value
+  - min_result_value
 - title: Cell Suppression
   desc: This includes all helper functions associated with producing a Table 1.
 - contents:
-  - starts_with("render")
   - max_pairwise_smd
+  - starts_with("render")
 - title: Dummy Data
   desc: Helper functions designed to produce sample data.
 - contents:
+  - dummy_admdad
   - dummy_diag
+  - dummy_ipadmdad
+  - dummy_lab
   - sample_icd
+- title: Plotting Functions
+  desc: Functions for common plotting needs.
+- contents:
+  - gemini_colors
+  - plot_color_palettes
+  - plot_over_time
+  - plot_summary
+  - plot_theme
+  - scale_color_gemini
+  - scale_fill_gemini
+- title: Mapping files
+  desc: Files containing variable mappings.
+- contents:
+  - mapping_cihi_frailty
+  - mapping_disability
 - title: Utility Functions
 - contents:
-  - lunique
-  - matches("ni")
-  - find_db_tablename
+  - check_input
   - coerce_to_datatable
-  - count_missing
+  - find_db_tablename
+  - fix_var_str
+  - lunique
+  - mapping_message
+  - matches("ni")
+  - return_hospital_field

@@ -28,6 +28,9 @@ The `census` provides a cross-sectional count of patients that occupied a hospit
 
 **Note:** Although this function can be applied to different cohorts and research contexts, the interpretation of the function outputs may vary according to the inputs users provide. For example, if users pre-filter their cohort based on certain diagnosis criteria, the `census` counts will only include those patients, and similarly, the `capacity_ratio` would not reflect a real indicator of capacity, but rather a measure of whether occupancy is above/below typical occupancy *for a certain group of patients* (also see [*section on group_var input*](#grouping) below). 
 
+Moreover, users should use caution when analyzing cohorts with small sample size or when including grouping variables that can result in counts of 0 on some days. In that case, users need to make an informed decision about whether `census = 0` is meaningful within the context of their research question, or whether days with patient counts of 0 should be returned as `census = NA` (i.e., those days are excluded from the `capacity_ratio` estimate; also see [*section on include_zero input*](#include_zero) below).
+
+
 # Running `daily_census()` with default arguments
 
 To run the `daily_census` function, users need to provide an input table `cohort` containing all encounters that are part of their cohort of interest.
@@ -170,7 +173,7 @@ admdad$age_cat <- ifelse(admdad$age <= 65,'<=65','>65')
 # Compute census by gender & age categories
 census_output <- daily_census(admdad, group_var = c("gender","age_cat")) 
 
-head(census_output,10)
+head(census_output, 10)
 ```
 
 > **Mock output table showing census grouping by age & gender categories:**
@@ -244,6 +247,11 @@ census_output <- daily_census(admdad, buffer = 10)
 ```
 
 Note: In this example, if users specify a `time_period` input that ends 10 days earlier than the latest available data, the buffer period will be ignored and all available data will be used to calculate census for the time period of interest. In other words, the actual buffer period that is applied within the function depends on a combination of the specified time period, data availability per site, and the buffer argument in order to ensure that the maximum amount of available data are used in the census calculation. 
+
+
+## `include_zero` {#include_zero}
+
+By default, the function includes days where `census = 0` in the output (`include_zero = TRUE`). This means that census counts on those days are considered to be true 0s (i.e., "no patient was hospitalized"), and therefore, 0s are included in the capacity ratio estimate. For example, when analyzing cohorts of patients with a rare disease, days where no patients with that disease were in hospital are conceptually meaningful and should be counted towards the typical occupancy. By contrast, when analyzing the daily census counts per physician, days where `census = 0` likely reflect days where a given physician was not on service. Therefore, those days should not be included in the estimate of physicians' typical patient volume, and thus, users should set `include_zero` to `FALSE` (i.e., `census` counts and `capacity_ratio` will be returned as `NA` for days where no patient was associated with a given physician).
 
 
 # Calculating customized measures of capacity

@@ -71,9 +71,8 @@ n_imaging <- function(cohort,
                       dtvar = "performed_date_time",
                       mapvar = "modality_mapped") {
 
-  cat("\n***Note:***
-  The output of this function is based on manual mapping of imaging modalities by a GEMINI Subject Matter Expert.
-  Please carefully check mapping coverage for your cohort of interest, or contact the GEMINI team if you require additional support.\n")
+
+  mapping_message("imaging modalities")
 
   ## remap variable names in case field names change in the database
   cohort <- coerce_to_datatable(cohort)

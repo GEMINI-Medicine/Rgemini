@@ -59,30 +59,37 @@ Users require specific linkages between these fields should consider customizing
 \examples{
 
 ### Simulate a erdiagnosis table for 5 unique subjects with total 20 records:
-\dontrun{ set.seed(1)
-          erdiag <- dummy_diag(nid=5, nrow=20, ipdiagnosis=F) }
+\dontrun{
+set.seed(1)
+erdiag <- dummy_diag(nid = 5, nrow = 20, ipdiagnosis = F)
+}
 
 ### Simulate a ipdiagnosis table with diagnosis codes starting with "E11":
-\dontrun{ set.seed(1)
-          ipdiag <- dummy_diag(nid=5, nrow=20, ipdiagnosis=T, pattern ="^E11") }
+\dontrun{
+set.seed(1)
+ipdiag <- dummy_diag(nid = 5, nrow = 20, ipdiagnosis = T, pattern = "^E11")
+}
 
 ### Simulate a ipdiagnosis table with random diagnosis codes in diagnosis type 3 or 6 only:
-\dontrun{ set.seed(1)
-          ipdiag <- dummy_diag(nid=5, nrow=20, diagnosis_type=(c("3", "6"))) \%>\%
-             filter(diagnosis_type!="M") # remove default rows with diagnosis_type="M" from each ID
+\dontrun{
+set.seed(1)
+ipdiag <- dummy_diag(nid = 5, nrow = 20, diagnosis_type = (c("3", "6"))) \%>\%
+  filter(diagnosis_type != "M") # remove default rows with diagnosis_type="M" from each ID
 }
 
 ### Simulate a ipdiagnosis table with ICD-10-CA codes:
 \dontrun{
 drv <- dbDriver("PostgreSQL")
 dbcon <- DBI::dbConnect(drv,
-                        dbname = "db",
-                        host = "172.XX.XX.XXX",
-                        port = 1234,
-                        user = getPass("Enter user:"),
-                        password = getPass("password"))
+  dbname = "db",
+  host = "172.XX.XX.XXX",
+  port = 1234,
+  user = getPass("Enter user:"),
+  password = getPass("password")
+)
 
 set.seed(1)
-ipdiag <- dummy_diag(nid=5, nrow=20, ipdiagnosis=T, dbcon=dbcon, source="icd_lookup")}
+ipdiag <- dummy_diag(nid = 5, nrow = 20, ipdiagnosis = T, dbcon = dbcon, source = "icd_lookup")
+}
 
 }

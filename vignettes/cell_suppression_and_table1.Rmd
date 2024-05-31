@@ -137,20 +137,6 @@ table1(
 ```
 &nbsp;
 
-## Customizing output - Rounding
-
-We can also specify the number of digits to round means, medians, or percentages to using the `digits` argument.
-
-```{r}
-table1(
-  ~ gender + age + condition | exposure, 
-  data = data, 
-  render = render_cell_suppression.default, 
-  digits = 2
-  )
-```
-&nbsp;
-
 ## Finer control {.tabset}
 
 `render_cell_suppression.default` is a wrapper around individual *render* functions for each covariate datatype. For finer control, use the primary cell suppression functionality as implemented in the following render functions:
@@ -292,6 +278,46 @@ table1(
 Important conceptual notes:
 
 We don't employ the same strategy for stratification variables as we do for categorical variables, where we successively suppress additional strata until the total number of suppressed individuals is six or more. This is because any categorical variable with six or more observations in each category will indirectly provide the total for that strata. Therefore it is safest to apply strict suppression on the strata totals, and remove the "Overall" column as shown above.
+
+## Rounding
+
+We can also specify the number of digits to round means, medians, or percentages to using the `digits` argument. Note that `table1` exposes this by default through the `digits` argument.
+
+```{r}
+table1(
+  ~ gender + age + condition | exposure, 
+  data = data,
+  digits = 2
+  )
+```
+&nbsp;
+
+However, the default behaviour of `table1` is to round the *total* number of digits (otherwise known as "significant digits") to the value of `digits`. By design, the `Rgemini` render functions round the digits *after the decimal place* to the value of `digits`. What this means, is that if combining default `table1` render functions with `Rgemini` render functions, there will be a mismatch in the way that rounding is handled (by default).
+
+```{r}
+table1(
+  ~ gender + age + condition | exposure, 
+  data = data,
+  render.categorical = render_cell_suppression.categorical,
+  #render.continuous = render.continuous, <- this is implicitly using table1's default continuous rendering function
+  digits = 5
+  )
+```
+&nbsp;
+
+Note above that continuous variables (which are using the default `table1` render function), are rounded to five *significant digits*, while the categorical variables (which use `Rgemini's` render function), are rounded to five digits *after the decimal place*. While it is generally discouraged to use cell suppression for only some variable types and not others, we can synchronize the behaviour of the two render functions by supplying the argument `rounding.fn = round_pad`, which will tell the `table1` render functions to use `digits` digits *after the decimal place*.
+
+```{r}
+table1(
+  ~ gender + age + condition | exposure, 
+  data = data,
+  render.categorical = render_cell_suppression.categorical,
+  #render.continuous = render.continuous, <- this is implicit
+  digits = 5,
+  rounding.fn = round_pad
+  )
+```
+&nbsp;
 
 # Calculating standardized mean differences
 

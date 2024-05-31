@@ -125,7 +125,7 @@ carefully read the documentation to understand how exactly invalid PDX categorie
 drv <- dbDriver("PostgreSQL")
 dbcon <- DBI::dbConnect(drv,
                         dbname = "db",
-                        host = "172.XX.XX.XXX",
+                        host = "domain_name.ca",
                         port = 1234,
                         user = getPass("Enter user:"),
                         password = getPass("password"))

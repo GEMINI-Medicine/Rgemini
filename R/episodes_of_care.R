@@ -72,7 +72,7 @@
 #' @seealso `vignette("epicare_and_readmission", package = "Rgemini")`
 #'
 #' @references
-#' [CIHI guidelines](https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital)
+#' [CIHI readmission guidelines](https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital)
 #'
 #' @importFrom lubridate ymd_hm
 #'
@@ -83,7 +83,7 @@
 #' drv <- dbDriver("PostgreSQL")
 #' dbcon <- DBI::dbConnect(drv,
 #'                         dbname = "db",
-#'                         host = "172.XX.XX.XXX",
+#'                         host = "domain_name.ca",
 #'                         port = 1234,
 #'                         user = getPass("Enter user:"),
 #'                         password = getPass("password"))
@@ -92,8 +92,12 @@
 #' }
 #'
 episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
-  if (!RPostgreSQL::isPostgresqlIdCurrent(dbcon)) {
-    stop("\n Please input a valid database connection")
+
+  ## check user inputs
+  check_input(dbcon, "DBI")
+  if (!is.null(restricted_cohort)){
+    check_input(restricted_cohort, c("data.table", "data.frame"),
+                colnames = "genc_id")
   }
 
   ############ Load lookup_transfer ############

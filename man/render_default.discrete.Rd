@@ -4,11 +4,15 @@
 \alias{render_default.discrete}
 \title{Render Default (Discrete)}
 \usage{
-render_default.discrete(x)
+render_default.discrete(x, ...)
 }
 \arguments{
 \item{x}{(\code{character} or \code{factor})\cr
 A discrete variable to summarize.}
+
+\item{...}{\cr
+Further arguments, passed to \code{prettyNum()} for additional formatting (e.g.,
+\code{big.mark = ","}).}
 }
 \value{
 named (\code{character})\cr
