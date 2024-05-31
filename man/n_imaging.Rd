@@ -8,8 +8,8 @@ n_imaging(dbcon, cohort, exclude_ed = FALSE)
 }
 \arguments{
 \item{dbcon}{(\code{DBIConnection})\cr
-A database connection to any GEMINI database. \code{DBI} connection is recommended
-as \code{odbc} connection may cause connection issues in certain environment.}
+A database connection to any GEMINI database. Only \code{DBI} connection is
+accepted as \code{odbc} connection may cause connection issues in certain environment.}
 
 \item{cohort}{(\code{data.frame} or \code{data.table})
 Cohort table with all relevant encounters of interest, where each row

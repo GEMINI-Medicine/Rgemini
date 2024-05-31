@@ -8,8 +8,8 @@ n_routine_bloodwork(dbcon, cohort, exclude_ed = FALSE)
 }
 \arguments{
 \item{dbcon}{(\code{DBIConnection})\cr
-A database connection to any GEMINI database. \code{DBI} connection is recommended
-as \code{odbc} connection may cause connection issues in certain environment.}
+A database connection to any GEMINI database. Only \code{DBI} connection is
+accepted as \code{odbc} connection may cause connection issues in certain environment.}
 
 \item{cohort}{(\code{data.frame} or \code{data.table})
 Cohort table with all relevant encounters of interest, where each row
@@ -46,9 +46,8 @@ standardization efforts on lab table (performed by GEMINI). Currently, the
 number of routine bloodwork tests is one of the performance metrics in
 \href{https://www.hqontario.ca/Quality-Improvement/Practice-Reports/MyPractice-General-Medicine}{MyPracticeReport}.
 
-Function automatically removes tests without valid numeric result value.
-Exceptions are boundary result value (e.g. ">120" mmol/L), and these
-are still counted as valid tests.
+Function does NOT removes tests without valid numeric result value to include
+all tests where blood was drawn from the patients.
 }
 \section{Warning}{
 
