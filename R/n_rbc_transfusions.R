@@ -21,8 +21,8 @@
 #' occurring in approximately 2% of blood transfusions in GEMINI data.
 #'
 #' @param dbcon (`DBIConnection`)\cr
-#' A database connection to any GEMINI database. `DBI` connection is recommended
-#' as `odbc` connection may cause connection issues in certain environment.
+#' A database connection to any GEMINI database. Only `DBI` connection is
+#' accepted as `odbc` connection may cause connection issues in certain environment.
 #'
 #' @param cohort (`data.frame` or `data.table`)
 #' Cohort table with all relevant encounters of interest where each row
@@ -74,7 +74,7 @@ n_rbc_transfusions <-function(dbcon,
   cat("\nThis function may take a few minutes to run...\n\n")
 
   # input check
-  check_input(dbcon, argtype = "dbcon")
+  check_input(dbcon, argtype = "DBI")
   check_input(cohort,
               argtype = c("data.table", "data.frame"),
               colnames = c("genc_id", "hospital_num"))

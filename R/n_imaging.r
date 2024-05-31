@@ -36,8 +36,8 @@
 #' the left), make sure list of admissions (or patient) aligns in both tables.
 #'
 #' @param dbcon (`DBIConnection`)\cr
-#' A database connection to any GEMINI database. `DBI` connection is recommended
-#' as `odbc` connection may cause connection issues in certain environment.
+#' A database connection to any GEMINI database. Only `DBI` connection is
+#' accepted as `odbc` connection may cause connection issues in certain environment.
 #'
 #' @param cohort (`data.frame` or `data.table`)
 #' Cohort table with all relevant encounters of interest, where each row
@@ -75,6 +75,7 @@ n_imaging <- function(dbcon,
   coverage_message("radiology")
 
   # check input type and column name
+  check_input(dbcon, argtype = "DBI")
   check_input(cohort, argtype = c("data.table", "data.frame"), colnames =  c("genc_id"))
   check_input(exclude_ed, argtype = "logical")
   cohort <- coerce_to_datatable(cohort)

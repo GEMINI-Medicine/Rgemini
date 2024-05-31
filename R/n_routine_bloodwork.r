@@ -17,9 +17,8 @@
 #' number of routine bloodwork tests is one of the performance metrics in
 #' [MyPracticeReport](https://www.hqontario.ca/Quality-Improvement/Practice-Reports/MyPractice-General-Medicine).
 #'
-#' Function automatically removes tests without valid numeric result value.
-#' Exceptions are boundary result value (e.g. ">120" mmol/L), and these
-#' are still counted as valid tests.
+#' Function does NOT removes tests without valid numeric result value to include
+#' all tests where blood was drawn from the patients.
 #'
 #' @section Warning:
 #' Function returns data.table with id field `genc_id` and one numeric field
@@ -38,8 +37,8 @@
 #' 3000963 - Hemoglobin (Mass/volume) in Blood
 #'
 #' @param dbcon (`DBIConnection`)\cr
-#' A database connection to any GEMINI database. `DBI` connection is recommended
-#' as `odbc` connection may cause connection issues in certain environment.
+#' A database connection to any GEMINI database. Only `DBI` connection is
+#' accepted as `odbc` connection may cause connection issues in certain environment.
 #'
 #' @param cohort (`data.frame` or `data.table`)
 #' Cohort table with all relevant encounters of interest, where each row
@@ -77,6 +76,7 @@ n_routine_bloodwork <- function(dbcon,
 
 
   # check input type and column name
+  check_input(dbcon, argtype = "DBI")
   check_input(cohort, argtype = c("data.table", "data.frame"), colnames =  c("genc_id"))
   check_input(exclude_ed, argtype = "logical")
   cohort <- coerce_to_datatable(cohort)
