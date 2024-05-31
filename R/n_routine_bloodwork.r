@@ -114,13 +114,10 @@ n_routine_bloodwork <- function(dbcon,
     )
   ) %>% as.data.table
 
-  # only count tests with a valid result_value (numeric or starting with "<", ">")
-  lab <-
-    lab %>%
-    .[!is.na(as.numeric(
-        stringr::str_replace_all(tolower(result_value), "@([a-z0-9]*)|<|>|less than|;", "")
-      ))] %>%
-    .[, .(n_routine_bloodwork_derived = .N), .(genc_id)]
+  # only count tests with a valid
+  # to be consistent with MyPracticeReport definition, all results are included
+  # without restricting to numeric result values.
+  lab <- lab[, .(n_routine_bloodwork_derived = .N), .(genc_id)]
 
   # merge with provided admission list
   res <-
