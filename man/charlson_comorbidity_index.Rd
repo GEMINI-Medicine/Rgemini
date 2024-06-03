@@ -36,7 +36,8 @@ By default, for each encounter, outputs the comorbidity score. If \code{raw_como
 outputs a wide \code{data.table} with a column for each comorbidity for each encounter.
 }
 \description{
-Based on the methodology from \href{https://pubmed.ncbi.nlm.nih.gov/21330339/}{Quan et al. 2011}
+Based on the methodology from \href{https://doi.org/10.1016/0021-9681(87)90171-8}{Charlson et al. 1988},
+\href{https://www.jstor.org/stable/3768193}{Quan H et al. 2005}, and \href{https://doi.org/10.1093/aje/kwq433}{Quan et al. 2011}
 using ICD-10 codes as the mapping algorithm,
 implemented in the R \href{https://ellessenne.github.io/comorbidity/index.html}{comorbidity} package
 by \href{https://doi.org/10.21105/joss.00648}{Gasparini, 2018}.
@@ -52,6 +53,8 @@ This affects comorbidities present in a patient with different degrees of severi
 }
 \references{
 \itemize{
+\item{Charlson M, et al. Journal of Chronic Diseases, 1988. https://doi.org/10.1016/0021-9681(87)90171-8}
+\item{Quen H, et al. Med Care, 2005. https://www.jstor.org/stable/3768193}
 \item{Quan H, et al. Am J Epidemiol, 2011. https://doi.org/10.1093/aje/kwq433}
 \item{Gasparini A. JOSS, 2018. https://doi.org/10.21105/joss.00648}
 }
