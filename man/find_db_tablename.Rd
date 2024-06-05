@@ -21,6 +21,7 @@ DBs/datacuts):
 \item \code{"ipcmg"}
 \item \code{"transfusion"}
 \item \code{"lab"}
+\item \code{"radiology"}
 }
 
 Users need to specify the full DRM table name (e.g., \code{"admdad"} instead of
@@ -48,10 +49,10 @@ the function uses \code{grepl("^tablename", drm_table)} to look for table
 names that \emph{start with} the same name as specified in DRM (e.g., any that
 start with "ipintervention").
 For other tables, the function uses a stricter search to avoid finding
-multiple matches: Specifically, for "admdad", "lab", and "transfusion", the
-function tries to identify tables with the exact same name (i.e.,
-"admdad/lab/transfusion") or the corresponding table name with a "_subset"
-suffix (for HPC datacuts).
+multiple matches: Specifically, for "admdad", "lab", "transfusion", and
+"radiology" the function tries to identify tables with the exact same name
+(i.e., "admdad/lab/transfusion") or the corresponding table name with a
+"_subset" suffix (for HPC datacuts).
 }
 \examples{
 \dontrun{

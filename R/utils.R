@@ -100,10 +100,10 @@ coerce_to_datatable <- function(data) {
 #' names that *start with* the same name as specified in DRM (e.g., any that
 #' start with "ipintervention").
 #' For other tables, the function uses a stricter search to avoid finding
-#' multiple matches: Specifically, for "admdad", "lab", and "transfusion", the
-#' function tries to identify tables with the exact same name (i.e.,
-#' "admdad/lab/transfusion") or the corresponding table name with a "_subset"
-#' suffix (for HPC datacuts).
+#' multiple matches: Specifically, for "admdad", "lab", "transfusion", and
+#' "radiology" the function tries to identify tables with the exact same name
+#' (i.e., "admdad/lab/transfusion") or the corresponding table name with a
+#' "_subset" suffix (for HPC datacuts).
 #'
 #' @param dbcon (`DBIConnection`)\cr
 #' A database connection to any GEMINI database.
@@ -118,6 +118,7 @@ coerce_to_datatable <- function(data) {
 #' - `"ipcmg"`
 #' - `"transfusion"`
 #' - `"lab"`
+#' - `"radiology"`
 #'
 #' Users need to specify the full DRM table name (e.g., `"admdad"` instead of
 #' `"adm"`) to avoid potential confusion with other tables.
@@ -152,15 +153,15 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
   check_input(drm_table, "character",
     categories = c(
       "admdad", "ipdiagnosis", "ipintervention", "ipcmg",
-      "lab", "transfusion"
+      "lab", "transfusion", "radiology"
     )
   )
 
   ## Define search criteria for different tables
   search_fn <- function(table_names, table = drm_table) {
 
-    if (drm_table %in% c("lab", "transfusion", "admdad")) {
-      # for lab & transfusion table table:
+    if (drm_table %in% c("lab", "transfusion", "admdad", "radiology")) {
+      # for admdad/lab/transfusion/radiology table:
       # check for specific table names lab/lab_subset and transfusion/transfusion_subset
       # (otherwise, lab/transfusion_mapping or other tables might be returned)
       res <- table_names[table_names %in% c(table, paste0(table, "_subset"))]
@@ -642,8 +643,8 @@ check_input <- function(arginput, argtype,
 #' Prints a message to the console.
 #'
 mapping_message <- function(what, addtl = NULL) {
-  msg <- paste(
-    "\n***Note:***\nThe output of this function is based on manual mapping of", what, "by a GEMINI Subject Matter Expert.\n",
+  msg <- paste0(
+    "\n***Note:***\nThe output of this function is based on manual mapping of ", what, " by a GEMINI Subject Matter Expert.\n",
     "Please carefully check mapping coverage for your cohort of interest, or contact the GEMINI team if you require additional support.\n",
     addtl
   )
@@ -651,7 +652,34 @@ mapping_message <- function(what, addtl = NULL) {
   cat(msg)
 }
 
+#' @title
+#' Coverage Message
+#'
+#' @description
+#' Message to display to inform the user that the function being used does not
+#' check clinical data coverage.
+#'
+#' @param what (`character`)\cr
+#' Which clinical table is used.
+#'
+#' @param addtl (`character`)\cr
+#' An additional, specific message to append to the generic message.
+#'
+#' @return
+#' Prints a message to the console.
+#'
+coverage_message <- function(what, addtl = NULL) {
+  msg <- paste0(
+    "\n***Note:***\nThis function does not check ", what,
+    " data coverage for the input cohort. It returns 0 for any genc_ids with no record\nin ",
+    what, " table. The result 0s may not be appropriate for patients who are not within ",
+    what, " data coverage period(s). \nPlease carefully check ", what,
+    " data coverage for your cohort, or contact the GEMINI team if you require additional support.\n",
+    addtl
+  )
 
+  cat(msg)
+}
 
 #' @title
 #' Fix variable strings
@@ -666,4 +694,4 @@ mapping_message <- function(what, addtl = NULL) {
 fix_var_str <- function(str) {
   str <- tools::toTitleCase(gsub("[_.]", " ", str))
 }
-  
+

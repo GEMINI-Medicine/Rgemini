@@ -5,6 +5,7 @@
 * Updated unit tests & small bug fix in `daily_census()` 
 * Enable `prettyNum` formatting in table 1 render functions
 * Ordered package names in pkgdown reference file
+* `n_imaging`, `n_routine_bloodwork` and `n_rbc_transfusion` refactored and updated to be able to exclude clinical records in ED.
 * Update `mlaps()` hospital query
 * New option to derive ICU entries as a clinical outcome with customizable time windows in `icu_entry()`
 * Small bug fix in `disability()`
