@@ -17,6 +17,7 @@ reference:
   - er_los
   - frailty_score
   - hospital_fiscal_year
+  - hospitalizations_last_n_days
   - icu_entry
   - icu_los
   - in_hospital_mortality
@@ -51,6 +52,16 @@ reference:
   - dummy_ipadmdad
   - dummy_lab
   - sample_icd
+- title: Plotting Functions
+  desc: Functions for common plotting needs.
+- contents:
+  - gemini_colors
+  - plot_color_palettes
+  - plot_over_time
+  - plot_summary
+  - plot_theme
+  - scale_color_gemini
+  - scale_fill_gemini
 - title: Mapping files
   desc: Files containing variable mappings.
 - contents:
@@ -61,6 +72,7 @@ reference:
   - check_input
   - coerce_to_datatable
   - find_db_tablename
+  - fix_var_str
   - lunique
   - mapping_message
   - matches("ni")

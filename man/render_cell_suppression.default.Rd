@@ -45,7 +45,8 @@ A function to render missing (i.e. NA) values. Can also be a character string,
 in which case it is passed to \code{table1:::parse.abbrev.render.code()}. Set to \code{NULL} to ignore missing values.}
 
 \item{...}{\cr
-Further arguments, passed to \code{table1:::stats.apply.rounding()}.}
+Further arguments, passed to \code{table1:::stats.apply.rounding()} or
+\code{prettyNum()} for additional formatting (e.g., \code{big.mark = ","}).}
 }
 \value{
 (\code{character})\cr
