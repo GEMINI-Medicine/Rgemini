@@ -731,7 +731,7 @@ coverage_message <- function(what, addtl = NULL) {
 #' shown by default:
 #' "Please carefully consider how to deal with missing/invalid date-time entries
 #' and perform any additional pre-processing prior to running the function
-#' [\function_name\] (e.g., impute missing dates/timestamps etc.)."
+#' \[function_name\] (e.g., impute missing dates/timestamps etc.)."
 #'
 #' @param ...
 #' Additional parameters passed to `lubridate::parse_date_time()`, such as
