@@ -52,9 +52,7 @@ entries were found. If \code{addtl_msg = NULL}, the following message will be
 shown by default:
 "Please carefully consider how to deal with missing/invalid date-time entries
 and perform any additional pre-processing prior to running the function
-[\function_name] (e.g., impute missing dates/timestamps etc.)."
-
-[\function_name]: R:\%5C\%5Cfunction_name\%5C}
+[function_name] (e.g., impute missing dates/timestamps etc.)."}
 
 \item{...}{Additional parameters passed to \code{lubridate::parse_date_time()}, such as
 \code{truncated} , \code{exact}, etc.}
