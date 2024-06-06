@@ -116,8 +116,9 @@ icu_los <- function(cohort, ipscu) {
         "Identified a total of", n_invalid_dt,
         "genc_ids with at least 1 missing/invalid `scu_admit_date_time` or `scu_discharge_date_time`.",
         "These entries will be returned as `icu_los = NA`.",
-        "Please carefully check the `ipscu` table and perform any additional",
-        "pre-processing for date-time variables if necessary (e.g., impute missing timestamps).\n"
+        "Some of these entries might have valid date information (but no timestamp).",
+        "Please carefully check the `ipscu` table and consider whether it might be",
+        "useful to impute missing timestamps.\n"
       ),
       immediate. = TRUE
     )

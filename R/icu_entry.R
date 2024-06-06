@@ -157,7 +157,7 @@ icu_entry <- function(cohort, ipscu, as_outcome = FALSE, exclude_cutoff = 0, ent
     warning(
       paste(
         "Identified a total of", nrow(all_missing),
-        "genc_ids in the ICU table that have 0 entries with valid `scu_admit_date_time`.\n",
+        "genc_ids where all ICU entries have a missing/invalid `scu_admit_date_time`.\n",
         "These genc_ids will be returned as `NA` for any ICU flags that are time sensitive",
         "(e.g., ICU entry within a certain time window/after an exclusion cut-off).",
         "For all other genc_ids, any entries with valid ICU admission date-times will be included in determining ICU entry.\n",
