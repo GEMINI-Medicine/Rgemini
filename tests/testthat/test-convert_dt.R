@@ -33,7 +33,6 @@ test_that(
   }
 )
 
-
 test_that(
   "dates-times provided as POSIXct POSIXt input are returned correctly", {
 
@@ -78,7 +77,6 @@ test_that(
   }
 )
 
-
 test_that(
   "warnings for 00:00 timestamps are returned correctly", {
 
@@ -105,7 +103,6 @@ test_that(
     )
   }
 )
-
 
 test_that(
   "Truncation works as expected", {
