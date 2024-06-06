@@ -29,30 +29,32 @@ To make changes to the `Rgemini` codebase/documentation, please follow these ste
 10. Ask a team member to review the changes (see guidelines for reviewers below) and implement additional changes based on the reviewer's feedback.
 
 11. Once the reviewer has approved the pull request, resolve any merge conflicts and CI/CD errors.
-    
+
 12. Finally, squash all commits (confirm the PR # is referenced in the squash commit message) and merge the branch into `develop`, close the issue, and delete the branch you developed on.
 
 
 ## Reviewing code
 
-All pull requests (PRs) should be carefully reviewed by at least one person. When reviewing code:
+All pull requests (PRs) should be carefully reviewed by at least one person. For detailed instructions on what to look out for during review, please refer to the
+[Code Review Checklist](https://docs.google.com/document/d/16kiIgwWjXYhBM5AFToXD7X9OjqNYs0xQZh9VDfSwYQU/edit?usp=sharing). 
+
+Briefly, when reviewing code:
 
 1. Assign yourself as reviewer for this PR (go to "Pull requests" -> click on the PR -> click on "assign yourself" under "Reviewers").
-   
+  
 2. Pull the updated code from the branch associated with the issue. You can also install the package from a specific branch using `remotes::install_github("GEMINI-Medicine/Rgemini@<branch_name>")`
 
 3. Make sure that you can run the code without error messages. Check that it produces the expected outcome and resolves the issue. 
 
-4. If possible, review each line of code that has been changed/added and provide feedback on anything you think could be improved. To comment on individual lines of code, go to "Pull requests" -> click on the PR -> "Files changed" -> `+` to add your comments. You can also share general feedback when you submit your review, or use the "Conversation" section of the PR to discuss open questions with the developer throughout the review process.
+4. If possible, review each line of code that has been changed/added and provide feedback on anything you think could be improved. To comment on individual lines of code, go to "Pull requests" -> click on the PR -> "Files changed" -> `+` to add your comments.
 
-5. For more details on what to look out for during code reviews, please refer to the
-[Code Review Checklist](https://docs.google.com/document/d/16kiIgwWjXYhBM5AFToXD7X9OjqNYs0xQZh9VDfSwYQU/edit?usp=sharing).
-You can also find some general instructions on how to review pull requests
-[here](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/about-pull-request-reviews).
-  
-6. As a reviewer, you usually should not push any changes to the code yourself, but instead, mention any suggestions in your review and the developer will be responsible for implementing the changes.
+5. You can also share general feedback when you submit your review, or use the "Conversation" section of the PR to discuss open questions with the developer throughout the review process.
 
-7. Once the developer has addressed your comments, approve the pull request (the developer will then merge the PR and close the issue).
+6. Please share all feedback on GitHub (instead of slack/email) for transparency and to make sure previous discussions are well documented. 
+
+7. As a reviewer, you usually should not push any changes to the code yourself, but instead, mention any suggestions in your review and the developer will be responsible for implementing the changes.
+
+8. Once the developer has addressed your comments, approve the pull request (the developer will then merge the PR and close the issue).
 
 
 ## Merging into `master`

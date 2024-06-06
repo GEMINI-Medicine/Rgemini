@@ -4,16 +4,27 @@
 \alias{n_routine_bloodwork}
 \title{Compute the number of routine bloodwork tests per encounter}
 \usage{
-n_routine_bloodwork(dbcon, cohort)
+n_routine_bloodwork(dbcon, cohort, exclude_ed = FALSE)
 }
 \arguments{
 \item{dbcon}{(\code{DBIConnection})\cr
-A database connection to any GEMINI database.}
+A database connection to any GEMINI database. Only \code{DBI} connection is
+accepted as \code{odbc} connection may cause connection issues in certain environment.}
 
 \item{cohort}{(\code{data.frame} or \code{data.table})
 Cohort table with all relevant encounters of interest, where each row
 corresponds to a single encounter. Must contain GEMINI Encounter ID
 (\code{genc_id}).}
+
+\item{exclude_ed}{(\code{logical})
+Whether to exclude tests in emergency department. When set to \code{TRUE}, tests
+performed in ED settings (testing time before admission time) will not be
+counted. When set to \code{FALSE}, tests will not be filtered by time and all tests
+in lab table will be counted. Please be aware that this may include tests before
+triage time, tests after discharge time, and tests without testing time.
+Tests in ED are defined as \code{collection_date_time} earlier than
+\code{admission_date_time}. Tests with missing \code{collection_date_time} will be
+excluded when \code{exclude_ed} is set to \code{TRUE}.}
 }
 \value{
 data.table object with the same number of rows as input "cohort", with
@@ -21,27 +32,22 @@ additional derived numeric field labelled as "n_routine_bloodwork_derived"
 }
 \description{
 \code{n_routine_bloodwork} returns the number of routine bloodwork (Sodium and
-Hemoglobin tests) for each hospital admission. Sodium and Heamoglobin tests
+Hemoglobin tests) for each hospital admission. Sodium and Hemoglobin tests
 are defined by OMOP codes. Sodium is the code 3019550. Hemoglobin is 3000963.
 }
 \details{
-This function takes a list of admissions and DRM table equivalent of lab
-table (see
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary})
-to generate numeric fields counting the number of Sodium and Hemoglobin tests
+This function takes a list of admissions and an GEMINI databse connection to
+generate numeric fields counting the number of Sodium and Hemoglobin tests
 for each admission.
 
 Lab table in the database should include field that classifies each test into
 a few different categories. Therefore, this function should be run after some
 standardization efforts on lab table (performed by GEMINI). Currently, the
 number of routine bloodwork tests is one of the performance metrics in
-MyPracticeReport.
+\href{https://www.hqontario.ca/Quality-Improvement/Practice-Reports/MyPractice-General-Medicine}{MyPracticeReport}.
 
-Function automatically removes tests without valid numeric result value.
-Exceptions are boundary result value (e.g. ">120" mmol/L), and these
-are still counted as valid tests.
-
-Any tests being performed in both ED and in-patient settings will be counted.
+Function does NOT removes tests without valid numeric result value to include
+all tests where blood was drawn from the patients.
 }
 \section{Warning}{
 
@@ -49,9 +55,11 @@ Function returns data.table with id field \code{genc_id} and one numeric field
 indicating the number of bloodwork tests per encounter. By design,
 function will not return any NA values. If a \code{genc_id} does not have any
 entries in the "lab" table, the admission gets assigned 0 number of tests.
+User should check lab data coverage and decide whether the imputed \code{0}s are
+appropriate or not.
 When one tries to left-join the output of this function with another table
 (another list of admissions in the left), make sure list of admissions (or
-patient) aligns in both tables
+patient) aligns in both tables.
 
 This function requires mappings by a Subject Matter Expert to ensure that all
 tests are mapped to

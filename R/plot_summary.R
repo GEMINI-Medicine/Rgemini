@@ -114,8 +114,8 @@ plot_summary <- function(data,
   if (is.null(plot_vars)) {
     plot_vars <- colnames(data)[
       !grepl("genc_id|patient_id|epicare|_date|date_|_time|time_|cpso",
-        colnames(data),
-        ignore.case = TRUE
+             colnames(data),
+             ignore.case = TRUE
       ) &
         !colnames(data) %in% c(
           "admitting_physician", "mrp",
@@ -255,166 +255,168 @@ plot_summary <- function(data,
 
     ## check whether any non-NA values remain
     if (!length(data[[var$plot_var]]) > 0) {
-      stop(
+      warning(
         paste(
           "No non-missing values found in variable '", var$plot_var,
-          "'. Please carefully check your 'data' input."
-        )
+          "'. Skipping this variable. Please carefully check your 'data' input."
+        ), immediate. = TRUE
       )
-    }
+      return(NULL)
+    } else {
 
 
-    ######## CREATE PLOTS ########
-    ## for numeric variables
-    if (any(
-      var$class %in% c("numeric", "integer"),
-      is.null(var$class) &&
+      ######## CREATE PLOTS ########
+      ## for numeric variables
+      if (any(
+        var$class %in% c("numeric", "integer"),
+        is.null(var$class) &&
         class(data[[var$plot_var]]) %in% c("numeric", "integer")
-    )) {
-      ## plot histogram
-      sub_fig <- ggplot(
-        data, aes(
-          x = get(var$plot_var),
-          y = if (prct == TRUE) { # if showing %, calculate % within each subplot
-            (after_stat(count)) / tapply(
-              after_stat(count), after_stat(PANEL), sum)[after_stat(PANEL)]
-          } else {
-            after_stat(count)
-          }
-        )
-      ) +
-        suppressWarnings( # in case of additional arguments that can't be passed to geom_histogram
-          geom_histogram(
-            color = "grey20", fill = color,
-            binwidth = var$binwidth, bins = var$bins, ...
+      )) {
+        ## plot histogram
+        sub_fig <- ggplot(
+          data, aes(
+            x = get(var$plot_var),
+            y = if (prct == TRUE) { # if showing %, calculate % within each subplot
+              (after_stat(count)) / tapply(
+                after_stat(count), after_stat(PANEL), sum)[after_stat(PANEL)]
+            } else {
+              after_stat(count)
+            }
           )
-        )
-
-      ## add breaks
-      if (!is.null(var$breaks)) {
-        sub_fig <- sub_fig +
-          scale_x_continuous(breaks = c(var$breaks, max(var$breaks))) +
-          # expand limits doesn't work properly here, so specify limits using
-          # coord_cartesian to preserve edge data points
-          coord_cartesian(
-            xlim = c(
-              min(var$breaks) - 0.05 * (max(var$breaks) - min(var$breaks)),
-              max(var$breaks) + 0.05 * (max(var$breaks) - min(var$breaks))
+        ) +
+          suppressWarnings( # in case of additional arguments that can't be passed to geom_histogram
+            geom_histogram(
+              color = "grey20", fill = color,
+              binwidth = var$binwidth, bins = var$bins, ...
             )
           )
-      }
 
-      ## add summary stats
-      if (show_stats == TRUE) {
-        if (!is.null(var$normal) && var$normal == TRUE) {
+        ## add breaks
+        if (!is.null(var$breaks)) {
           sub_fig <- sub_fig +
-            labs(subtitle = paste0(
-              "Mean = ", round(mean(data[[var$plot_var]]), 2),
-              " (SD = ", round(sd(data[[var$plot_var]]), 2), ")",
-              "\nMissing: ", missing,
-              "\n "
-            ))
-        } else {
+            scale_x_continuous(breaks = c(var$breaks, max(var$breaks))) +
+            # expand limits doesn't work properly here, so specify limits using
+            # coord_cartesian to preserve edge data points
+            coord_cartesian(
+              xlim = c(
+                min(var$breaks) - 0.05 * (max(var$breaks) - min(var$breaks)),
+                max(var$breaks) + 0.05 * (max(var$breaks) - min(var$breaks))
+              )
+            )
+        }
+
+        ## add summary stats
+        if (show_stats == TRUE) {
+          if (!is.null(var$normal) && var$normal == TRUE) {
+            sub_fig <- sub_fig +
+              labs(subtitle = paste0(
+                "Mean = ", round(mean(data[[var$plot_var]]), 2),
+                " (SD = ", round(sd(data[[var$plot_var]]), 2), ")",
+                "\nMissing: ", missing,
+                "\n "
+              ))
+          } else {
+            sub_fig <- sub_fig +
+              labs(subtitle = paste0(
+                "Median = ", round(median(data[[var$plot_var]]), 2),
+                " [Q1 = ", round(quantile(data[[var$plot_var]], 0.25), 2),
+                ", Q3 = ", round(quantile(data[[var$plot_var]], 0.75), 2), "]",
+                "\nMissing: ", missing,
+                "\n "
+              ))
+          }
+        }
+
+        ## for non-numeric variables
+      } else if (any( # if variable is not numeric/user didn't specify numeric
+        !var$class %in% c("integer", "numeric"),
+        is.null(var$class) && !class(data[[var$plot_var]]) %in% c("integer", "numeric")
+      )) {
+        # show warning about large number of categories
+        if (length(unique(as.factor(data[[var$plot_var]]))) > 20) {
+          warning(
+            paste0(
+              "Plotting > 20 categories on x-axis for variable '", var$plot_var, "'.\n",
+              "This might take a while and can result in poor readability of the x-tick labels. ",
+              ifelse(show_stats == TRUE, paste0("% labels for ", var$plot_var, " have been removed.\n"), "\n"),
+              "We recommend applying additional grouping before running this function ",
+              "or plotting this variable in a separate figure.\n"
+            ),
+            immediate. = TRUE
+          )
+        }
+
+        ## get counts for (optional) sorting
+        data[, freq := .N, by = list(data[[var$plot_var]])]
+
+        ## create barplot
+        sub_fig <- ggplot(
+          data, aes(
+            x = if (!is.null(var$sort) && grepl("^a", var$sort, ignore.case = TRUE)) {
+              reorder(as.factor(data[[var$plot_var]]), freq) # sort ascending
+            } else if (!is.null(var$sort) && grepl("^d", var$sort, ignore.case = TRUE)) {
+              reorder(as.factor(data[[var$plot_var]]), -freq) # sort descending
+            } else {
+              as.factor(data[[var$plot_var]]) # no sorting
+            },
+            y = if (prct == TRUE) { # if showing %, calculate % within each subplot
+              (after_stat(count)) / tapply(
+                after_stat(count), after_stat(PANEL), sum)[after_stat(PANEL)]
+            } else {
+              after_stat(count)
+            }
+          )
+        ) +
+          geom_bar(color = "grey20", fill = color) +
+          scale_x_discrete( # limit x-tick labels to 10 characters
+            label = function(x) stringr::str_trunc(x, 10)
+          )
+
+        ## add stats/labels
+        if (show_stats == TRUE) {
           sub_fig <- sub_fig +
-            labs(subtitle = paste0(
-              "Median = ", round(median(data[[var$plot_var]]), 2),
-              " [Q1 = ", round(quantile(data[[var$plot_var]], 0.25), 2),
-              ", Q3 = ", round(quantile(data[[var$plot_var]], 0.75), 2), "]",
-              "\nMissing: ", missing,
-              "\n "
-            ))
+            geom_text(
+              stat = "count", aes(
+                label = if (length(unique(data[[var$plot_var]])) <= 20) paste0(round(100 * after_stat(count) /  tapply(
+                  after_stat(count), after_stat(PANEL), sum)[after_stat(PANEL)], 1), "%") else ""
+              ),
+              size = base_size / 5,
+              vjust = -0.5,
+              hjust = 0.5,
+              angle = 0
+            ) +
+            labs(subtitle = paste0("Missing: ", missing, "\n\n "))
         }
       }
 
-      ## for non-numeric variables
-    } else if (any( # if variable is not numeric/user didn't specify numeric
-      !var$class %in% c("integer", "numeric"),
-      is.null(var$class) && !class(data[[var$plot_var]]) %in% c("integer", "numeric")
-    )) {
-      # show warning about large number of categories
-      if (length(unique(as.factor(data[[var$plot_var]]))) > 20) {
-        warning(
-          paste0(
-            "Plotting > 20 categories on x-axis for variable '", var$plot_var, "'.\n",
-            "This might take a while and can result in poor readability of the x-tick labels. ",
-            ifelse(show_stats == TRUE, paste0("% labels for ", var$plot_var, " have been removed.\n"), "\n"),
-            "We recommend applying additional grouping before running this function ",
-            "or plotting this variable in a separate figure.\n"
-          ),
-          immediate. = TRUE
-        )
-      }
-
-      ## get counts for (optional) sorting
-      data[, freq := .N, by = data[[var$plot_var]]]
-
-      ## create barplot
-      sub_fig <- ggplot(
-        data, aes(
-          x = if (!is.null(var$sort) && grepl("^a", var$sort, ignore.case = TRUE)) {
-            reorder(as.factor(data[[var$plot_var]]), freq) # sort ascending
-          } else if (!is.null(var$sort) && grepl("^d", var$sort, ignore.case = TRUE)) {
-            reorder(as.factor(data[[var$plot_var]]), -freq) # sort descending
-          } else {
-            as.factor(data[[var$plot_var]]) # no sorting
-          },
-          y = if (prct == TRUE) { # if showing %, calculate % within each subplot
-            (after_stat(count)) / tapply(
-              after_stat(count), after_stat(PANEL), sum)[after_stat(PANEL)]
-          } else {
-            after_stat(count)
-          }
-        )
-      ) +
-        geom_bar(color = "grey20", fill = color) +
-        scale_x_discrete( # limit x-tick labels to 10 characters
-          label = function(x) stringr::str_trunc(x, 10)
-        )
-
-      ## add stats/labels
-      if (show_stats == TRUE) {
-        sub_fig <- sub_fig +
-          geom_text(
-            stat = "count", aes(
-              label = if (length(unique(data[[var$plot_var]])) <= 20) paste0(round(100 * after_stat(count) /  tapply(
-                after_stat(count), after_stat(PANEL), sum)[after_stat(PANEL)], 1), "%") else ""
-            ),
-            size = base_size / 5,
-            vjust = -0.5,
-            hjust = 0.5,
-            angle = 0
-          ) +
-          labs(subtitle = paste0("Missing: ", missing, "\n\n "))
-      }
-    }
-
-    ## Fix axis labels & apply plot theme
-    sub_fig <- sub_fig +
-      xlab(var$plot_var) +
-      labs(
-        title = if (is.null(facet_group)) {
-          var$varlabel
-        } else {
-          (paste0(var$varlabel, " - By ", facet_group))
-        }) +
-      scale_y_continuous(
-        name = if (prct == TRUE) "p" else "count",
-        labels = if (prct == TRUE) scales::percent else rescale_none,
-        expand = expansion(mult = c(0, 0.15))
-      ) +
-      plot_theme(base_size = base_size, aspect.ratio = 1) +
-      theme(plot.subtitle = element_text(hjust = 0))
-
-
-    ## if more than 10 x-tick labels (or tick labels with > 5 characters),
-    # add angle for better visibility
-    if (length(ggplot_build(sub_fig)$layout$panel_params[[1]]$x$breaks) > 10 ||
-      any(nchar(unique(as.character(data[[var$plot_var]])))) > 5) {
+      ## Fix axis labels & apply plot theme
       sub_fig <- sub_fig +
-        theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
-    }
+        xlab(var$plot_var) +
+        labs(
+          title = if (is.null(facet_group)) {
+            var$varlabel
+          } else {
+            (paste0(var$varlabel, " - By ", facet_group))
+          }) +
+        scale_y_continuous(
+          name = if (prct == TRUE) "p" else "count",
+          labels = if (prct == TRUE) scales::percent else rescale_none,
+          expand = expansion(mult = c(0, 0.15))
+        ) +
+        plot_theme(base_size = base_size, aspect.ratio = 1) +
+        theme(plot.subtitle = element_text(hjust = 0))
 
-    return(sub_fig)
+
+      ## if more than 10 x-tick labels (or tick labels with > 5 characters),
+      # add angle for better visibility
+      if (length(ggplot_build(sub_fig)$layout$panel_params[[1]]$x$breaks) > 10 ||
+          any(nchar(unique(as.character(data[[var$plot_var]])))) > 5) {
+        sub_fig <- sub_fig +
+          theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+      }
+
+      return(sub_fig)
+    }
   }
 
 
@@ -447,9 +449,9 @@ plot_summary <- function(data,
     }
     ## Combine subplots into final figure(s)
     if (exists("nrow", inherits = FALSE)) { # if nrow/ncol were determined within function
-      fig <- suppressWarnings(ggarrange(plotlist = sub_figs, nrow = nrow, ncol = ncol))
+      fig <- suppressWarnings(ggarrange(plotlist = sub_figs[!sapply(sub_figs, is.null)], nrow = nrow, ncol = ncol))
     } else {
-      fig <- suppressWarnings(ggarrange(plotlist = sub_figs, ...))
+      fig <- suppressWarnings(ggarrange(plotlist = sub_figs[!sapply(sub_figs, is.null)], ...))
     }
   }
 
