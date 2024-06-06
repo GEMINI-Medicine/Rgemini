@@ -547,7 +547,7 @@ check_input <- function(arginput, argtype,
     ###### CHECK 5 (for data.table/data.frame inputs):
     ###### Check if nrow() > 0 & if relevant columns exist [optional]
     if (any(argtype %in% c("data.frame", "data.table")) && !is.null(colnames)) {
-      
+
       if (nrow(arginput) == 0) {
         stop(
           paste0(
@@ -558,7 +558,7 @@ check_input <- function(arginput, argtype,
           call. = FALSE
         )
       }
-      
+
       # get missing columns
       missing_cols <- setdiff(colnames, colnames(arginput))
 
@@ -754,6 +754,8 @@ convert_dt <- function(dt_var,
       immediate. = TRUE, call. = FALSE
     )
   }
+  # remove any missing entries (to be excluded from denominators for checks below)
+  dt_var_non_missing <- dt_var[!n_missing(dt_var, na_strings = c("", " "), index = TRUE)]
 
   ## convert to correct format
   if (!any(grepl("POSIX", class(dt_var)))) {
@@ -766,7 +768,7 @@ convert_dt <- function(dt_var,
     if (n_invalid_dt > 0) {
       warning(
         paste0(
-          n_invalid_dt, " (", round(100 * n_invalid_dt / length(dt_var), 1), "%)",
+          n_invalid_dt, " (", round(100 * n_invalid_dt / length(dt_var_non_missing), 1), "%)",
           " of all non-missing entries in variable `", dt_varname,
           "` could not be parsed with date-time order(s): \"",
           paste(orders, collapse = "\", \""), "\"."
@@ -795,7 +797,7 @@ convert_dt <- function(dt_var,
       if (n_date_only > 0) {
         warning(
           paste0(
-            n_date_only, " (", round(100 * n_date_only / length(dt_var), 1), "%)",
+            n_date_only, " (", round(100 * n_date_only / length(dt_var_non_missing), 1), "%)",
             " of all non-missing entries in variable `", dt_varname,
             "` could not be parsed due to missing timestamps."
           ),
@@ -817,12 +819,12 @@ convert_dt <- function(dt_var,
   if (any(grepl("hm", orders, ignore.case = TRUE))) {
     if (check_ts_zeros == TRUE) {
       n_zeros <- sum(
-        grepl(" 00:00", as.character(dt_var)) | nchar(as.character(dt_var)) < 12
-      ) - n_missing_dt
+        grepl(" 00:00", as.character(dt_var_non_missing)) | nchar(as.character(dt_var_non_missing)) < 12
+      )
       if (n_zeros > 0) {
         warning(
           paste0(
-            n_zeros, " (", round(100 * n_zeros / length(dt_var), 1), "%)",
+            n_zeros, " (", round(100 * n_zeros / length(dt_var_non_missing), 1), "%)",
             " of all non-missing entries in variable `",
             dt_varname, "` have timestamp \"00:00/00:00:00\". ",
             "Please consider if these entries may represent missing timestamps."
@@ -857,7 +859,7 @@ convert_dt <- function(dt_var,
 
 }
 
-  
+
 #' Fix variable strings
 #'
 #' @description

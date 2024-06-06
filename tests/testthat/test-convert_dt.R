@@ -6,11 +6,9 @@ test_that(
 
     # this should return warnings due to missing/invalid entries
     # warnings: 3 missing, 2 invalid, 1 invalid due to date-only
-    expect_warning(convert_dt(date_time))
+    expect_warning(res <- convert_dt(date_time))
 
-    # run it without warnings and then check outputs below
-    res <- suppressWarnings(convert_dt(date_time))
-
+    # check outputs
     expect_equal(class(res), c("POSIXct", "POSIXt"))
     expect_equal(res, as.POSIXct(c("2023-01-01 12:05:00", "2018-12-24 14:00",
                                    NA, NA, NA, NA, NA), tz = "UTC"))
@@ -25,8 +23,7 @@ test_that(
                    "2017-01-01 13:12:20", "2021-02-05", "2019-12-05")
 
     # should not result in warning due to multiple acceptable formats
-    expect_no_warning(convert_dt(date_time, orders = c("ymd HM", "ymd HMS", "ymd")))
-    res <- convert_dt(date_time, orders = c("ymd HM", "ymd HMS", "ymd"))
+    expect_no_warning(res <- convert_dt(date_time, orders = c("ymd HM", "ymd HMS", "ymd")))
 
     expect_equal(class(res), c("POSIXct", "POSIXt"))
     expect_equal(
@@ -44,12 +41,14 @@ test_that(
     date_time <- ymd_hms(c("2016-01-01 12:00:33", "2022-01-01 00:00:23", "2020-01-01 12:00:54", "2014-01-01 00:00:14", "2021-02-05 10:00:46"))
     res <- convert_dt(date_time, orders = "ymd HMS")
     expect_equal(class(res), c("POSIXct", "POSIXt"))
+    # output should be identical to input
     expect_equal(date_time, res)
 
     ## pre-processed with ymd_hm
     date_time <- ymd_hm(c("2016-01-01 12:00", "2022-01-01 00:00", "2020-01-01 12:00", "2014-01-01 00:00", "2021-02-05 10:00"))
     res <- convert_dt(date_time, orders = "ymd HM")
     expect_equal(class(res), c("POSIXct", "POSIXt"))
+    # output should be identical to input
     expect_equal(date_time, res)
 
   }
@@ -99,6 +98,11 @@ test_that(
       convert_dt("2020-01-01 00:00:00", orders = c("ymd HM", "ymd HMS"), check_ts_zeros = TRUE, truncated = 3)
     )
 
+    # make sure this check runs if variable has NAs/""
+    #convert_dt("", orders = c("ymd HM", "ymd HMS"), check_ts_zeros = TRUE)
+    expect_warning(
+      convert_dt(c("2021-04-05 00:00","", NA), orders = c("ymd HM", "ymd HMS"), check_ts_zeros = TRUE)
+    )
   }
 )
 
