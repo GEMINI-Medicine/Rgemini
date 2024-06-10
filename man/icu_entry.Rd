@@ -42,7 +42,9 @@ Default is exclude_cutoff = 0, where any ICU entries before IP admission time ar
 \item{entry_since_cutoff}{(\code{integer}, \code{vector})\cr
 Time window of ICU entry since IP admission (or since x hours post IP admission when user specifies \code{exclude_cutoff}), in hours.
 This parameter, together with \code{exclude_cutoff} specifies the time interval during which ICU admissions are identified.
-By default, \code{exclude_cutoff = 0} and \verb{ }entry_since_cutoff = c(24, 48, 72)\verb{, function calculates ICU entry within 24, 48 and 72 hours since IP admission. Users can specify different values for the two parameters to customize the time interval of interest. For example, when }exclude_cutoff = 24\code{and}entry_since_cutoff = 48`, function determines whether a patient
+By default, \code{exclude_cutoff = 0} and \code{entry_since_cutoff = c(24, 48, 72)}, function calculates ICU entry within 24, 48 and 72 hours since IP admission.
+Users can specify different values for the two parameters to customize the time interval of interest.
+For example, when \code{exclude_cutoff = 24} and \code{entry_since_cutoff = 48}, function determines whether a patient
 was admitted to ICU between 24 to 72 (24+48) hours post IP admission (i.e. time interval (24, 72] hours)).}
 }
 \value{
@@ -77,7 +79,13 @@ Please refer to the CIHI DAD abstracting manual for more details.
 }
 \note{
 :
-By design, function will not return any NA values.
+By design, this function will not return any NA values for \code{icu_entry}, unless the flag is time sensitive
+(i.e., if \code{as_outcome} is \code{TRUE}, or when deriving ICU admission within a certain time window/after a cut-off).
+For time sensitive flags, any genc_ids with an ICU entry but \emph{no} valid ICU admission date-time will be returned as NA.
+If a genc_id has \emph{at least one} valid ICU admission date-time, all valid entries will be included in the calculation.
+Note that a lot of invalid ICU admission date-times contain date information only. Users may choose to impute
+missing timestamps prior to running this function.
+
 When one tries to left-join the output of this function to another table,
 make sure the list of encounters aligns in both tables.
 As there are 2 dependent parameters (exclude_cutoff, entry_since_cutoff)
@@ -91,14 +99,14 @@ to ensure the identification time interval is as intented. See examples below fo
  icu_entry (cohort, ipscu, as_outcome=FALSE, entry_since_cutoff=24)
 }
 
-## ICU admission within the first 24 hours since IP admission, as a clinical outcome 
+## ICU admission within the first 24 hours since IP admission, as a clinical outcome
 ## excluding records with ICU entries prior to IP admission:
 \dontrun{
  icu_entry (cohort, ipscu, as_outcome=TRUE, entry_since_cutoff=24)
-} 
+}
 
 ## ICU admission within the first 72 hours since IP admission, as a clinical outcome
-## excluding records with ICU entries prior to the first 24 hours of IP admission (i.e. you are interested in knowing 
+## excluding records with ICU entries prior to the first 24 hours of IP admission (i.e. you are interested in knowing
 ## patients who were admitted to ICU between the interval of (24, 72] hours since IP admission):
 \dontrun{
  icu_entry (cohort, ipscu, as_outcome=TRUE, exclude_cutoff=24, entry_since_cutoff=48) # Note: entry_since_cutoff=48 (instead of 72) because 24+48=72

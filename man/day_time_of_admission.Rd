@@ -10,11 +10,12 @@ day_time_of_admission(ipadmdad, dtvar = "admission_date_time")
 \item{ipadmdad}{(\code{data.table} or \code{data.frame})\cr
 Table with all relevant encounters of interest from DRM table "ipadmdad" (see
 \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}).
-Must contain two fields: \code{genc_id} and a date-time variable (typically \code{admission_date_time}).
-Date-time variable must be in "yyyy-mm-dd hh:mm" format.}
+Must contain two fields: \code{genc_id} and a date-time variable (typically
+\code{admission_date_time} in "yyyy-mm-dd hh:mm" format).}
 
 \item{dtvar}{(\code{character})\cr
-Character string defining the date-time variable of interest (e.g., "admission_date_time").}
+Character string defining the date-time variable of interest
+(e.g., "admission_date_time").}
 }
 \value{
 data.table with the same number of rows as input "ipadmdad", with additional

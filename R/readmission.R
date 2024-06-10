@@ -105,7 +105,6 @@
 #' @references
 #' [CIHI readmission guidelines](https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital)
 #'
-#' @importFrom lubridate ymd_hm
 #' @export
 #'
 #' @examples
@@ -228,6 +227,9 @@ readmission <- function(dbcon,
   # Drop temp table after queries
   DBI::dbSendQuery(dbcon, "Drop table if exists temp_readmission_data;")
 
+  ############  Convert date-times into appropriate format   ############
+  data[, discharge_date_time := convert_dt(discharge_date_time)]
+  data[, admission_date_time := convert_dt(admission_date_time)]
   data <- data[order(patient_id_hashed, discharge_date_time, admission_date_time)]
 
 
@@ -312,13 +314,13 @@ readmission <- function(dbcon,
     cat("\nExcluding MAID ...\n")
     ## Identify MAID epicare: consider whole epicare as maid=TRUE if ANY encounter of the epicare has maid=TRUE
     # MAID epicare after FY18-19
-    epi_maid_post <- data[ymd_hm(discharge_date_time) >= ymd_hm("2018-04-01 00:00") &
+    epi_maid_post <- data[discharge_date_time >= lubridate::ymd_hm("2018-04-01 00:00") &
                             discharge_disposition == 73]$epicare
 
     # MAID epicare before FY18-19
     cci_maid <- ipintervention[intervention_code %in% c("1ZZ35HAP7", "1ZZ35HAP1", "1ZZ35HAN3"), ] # MAID intervention
     cci_maid <- merge(cci_maid, data[, c("genc_id", "discharge_date_time")], by = "genc_id", all.x = TRUE)
-    cci_maid <- cci_maid[ymd_hm(discharge_date_time) < ymd_hm("2018-04-01 00:00") &
+    cci_maid <- cci_maid[discharge_date_time < lubridate::ymd_hm("2018-04-01 00:00") &
                            genc_id %in% data[discharge_disposition == 7, genc_id]]
     ids <- cci_maid[, lunique(intervention_code), genc_id] %>% .[V1 == 3, genc_id]
     epi_maid_pre <- data[genc_id %in% ids]$epicare
@@ -557,12 +559,12 @@ readmission <- function(dbcon,
   # buffer = readmission window (e.g., 7 or 30 days) + additional 30 days (because patient needs to be discharged before
   # appearing in DB & typical length of hospitalization is < 30 days)
   lapply(readm_win, function(win) {
-    data[, paste0("buffer", win) := ymd_hm(max(discharge_date_time)) - days(win + 30), by = get(hospital_var)]
+    data[, paste0("buffer", win) := max(discharge_date_time) - days(win + 30), by = get(hospital_var)]
   })
 
   # if encounter is out of time buffer, there's not enough time for readmission to happen (readmission=NA)
   lapply(readm_win, function(win) {
-    data[ymd_hm(data$discharge_date_time) > data[[paste0("buffer", win)]], paste0("readmit", win) := NA]
+    data[data$discharge_date_time > data[[paste0("buffer", win)]], paste0("readmit", win) := NA]
   })
 
 
@@ -580,7 +582,7 @@ readmission <- function(dbcon,
   })
   na_rate_buffer <- lapply(readm_win, function(win) {
     # get % epicares where last encounter is past buffer period, separately for each readmission window
-    round(100 * nrow(check_idx[ymd_hm(discharge_date_time) > get(paste0("buffer", win))]) /
+    round(100 * nrow(check_idx[discharge_date_time > get(paste0("buffer", win))]) /
             lunique(data$epicare), digits = 1)
   })
   if (any(na_rate_overall > 25)) {

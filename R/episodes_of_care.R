@@ -74,7 +74,6 @@
 #' @references
 #' [CIHI readmission guidelines](https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital)
 #'
-#' @importFrom lubridate ymd_hm
 #'
 #' @export
 #'
@@ -140,6 +139,10 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
   data <- data[!admit_category %in% c("R", "RI"), ] # cadaveric donors should not be in DB
   data <- data[age >= 18, ] # age < 18 should not be in DB
 
+  ############  Convert date-times into appropriate format   ############
+  data[, discharge_date_time := convert_dt(discharge_date_time)]
+  data[, admission_date_time := convert_dt(admission_date_time)]
+
   ############  Identify hospital coded Acute Transfer (AT)   ############
   data <- data[order(patient_id_hashed, discharge_date_time, admission_date_time)]
 
@@ -154,8 +157,8 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
   ## Defined as time difference between admission date-time of (n+1)th encounter minus
   ## discharge date-time of (n)th encounter
   data[, time_to_next_admission := as.numeric(difftime(
-    shift(ymd_hm(admission_date_time), type = "lead"), # (n+1)th encounter
-    ymd_hm(discharge_date_time), # (n)th encounter
+    shift(admission_date_time, type = "lead"), # (n+1)th encounter
+    discharge_date_time, # (n)th encounter
     units = "hours"
   ))]
 
@@ -164,8 +167,8 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
 
 
   ## Defined as time difference between admission date-time of nth encounter - discharge date-time of (n-1)th encounter
-  data[, time_since_last_admission := as.numeric(difftime(ymd_hm(admission_date_time), # nth encounter
-    shift(ymd_hm(discharge_date_time), type = "lag"), # (n-1)th discharge
+  data[, time_since_last_admission := as.numeric(difftime(admission_date_time, # nth encounter
+    shift(discharge_date_time, type = "lag"), # (n-1)th discharge
     units = "hours"
   ))]
 

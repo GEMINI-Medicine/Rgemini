@@ -30,14 +30,13 @@
 #' derived numeric fields `er_los_hrs_derived` and `er_los_days_derived`.
 #'
 #' @note
-#' By design, function will not return any `NA` values.
 #' Encounter IDs in the `cohort` table that are not present in the `er` table
-#' are assumed to have no ER visit.
-#' Encounter IDs in the `er` table but with either missing `triage_date_time` or
-#' `left_er_date_time` will be excluded from the calculation.
-#' For these encounters, a value of 0 will be assigned to the derived fields.
+#' are assumed to have no ER visit and are returned with `er_los = 0`. Please
+#' check if any of these entries might be due to data availability issues and
+#' consider removing them from your analyses.
+#' Encounter IDs in the `er` table that have missing/invalid `triage_date_time`
+#' or `left_er_date_time` will be returned with `er_los = NA`.
 #'
-#' @importFrom lubridate ymd_hm
 #' @export
 #'
 #' @examples
@@ -47,7 +46,6 @@
 #' }
 #'
 er_los <- function(cohort, er) {
-
   ###### Check user inputs ######
   check_input(
     arginput = cohort,
@@ -68,10 +66,29 @@ er_los <- function(cohort, er) {
 
   ##### Prepare er data #####
   er[, `:=`(
-    triage_date_time = ymd_hm(triage_date_time),
-    left_er_date_time = ymd_hm(left_er_date_time)
+    triage_date_time = convert_dt(
+      triage_date_time, addtl_msg = ""
+    ),
+    left_er_date_time = convert_dt(
+      left_er_date_time, addtl_msg = ""
+    )
   )]
-  er <- er[!is.na(triage_date_time) & !is.na(left_er_date_time)]
+
+  # convert_dt will already show warnings about missing/invalid date-times but
+  # adding a general warning here for how those are dealt with within er_los
+  n_invalid_dt <- sum(is.na(er$triage_date_time) | is.na(er$left_er_date_time))
+  if (n_invalid_dt > 0) {
+    warning(
+      paste(
+        "Identified a total of", n_invalid_dt,
+        "entries with missing/invalid `triage_date_time` or `left_er_date_time`.",
+        "These entries will be returned as `er_los = NA`.",
+        "Please carefully check the `er` table and perform any additional",
+        "pre-processing for date-time variables if necessary.\n"
+      ),
+      immediate. = TRUE
+    )
+  }
 
   ### Derive er length of stay ###
   er[, `:=`(
@@ -90,9 +107,17 @@ er_los <- function(cohort, er) {
     er[, .(genc_id, er_los_hrs_derived, er_los_days_derived)],
     by = "genc_id",
     all.x = TRUE, all.y = FALSE
-  ) %>%
-    # assign 0 to encounters with no ER visits
-    dplyr::mutate(across(starts_with("er_los"), ~ ifelse(is.na(.), 0, .)))
+  )
+
+  ## Prepare final output
+  # for genc_ids that don't exist in er table, impute ER LOS with 0
+  # (assume no time was spent in ER)
+  # keep all other NA (for genc_ids that exist in er table but have
+  # invalid/missing er date-times)
+  res[!genc_id %in% er$genc_id, `:=`(
+    er_los_hrs_derived = 0,
+    er_los_days_derived = 0
+  )]
 
   return(res)
 }
