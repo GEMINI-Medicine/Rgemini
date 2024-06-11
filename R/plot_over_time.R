@@ -130,7 +130,7 @@ plot_over_time <- function(
   if (is.null(line_group) && !is.null(facet_group)) {
     line_group <- facet_group
   }
-  
+
   check_input(list(time_var, time_int, func, colors), "character")
   if (!is.null(plot_var)) check_input(plot_var, "character")
   if (!is.null(line_group)) check_input(line_group, "character")
@@ -144,13 +144,13 @@ plot_over_time <- function(
     c("data.table", "data.frame"),
     colnames = c(plot_var, time_var, line_group, color_group, facet_group)
   )
-  
+
   ## show warning if plot_var is the same as any of the grouping variables
   if (!is.null(plot_var) && plot_var %in% c(time_var, line_group, color_group, facet_group)) {
     warning(paste0("User-specified plot_var '", plot_var, "' is also used as a grouping variable.\n",
                    "Please check your inputs and specify a plot_var that is different from the variables used for grouping."))
   }
-  
+
   ## When specifying a color_group, any line_group variable generally needs to be nested within color_group
   #  (e.g., hospital_num is nested within hospital_type), otherwise, color-coding doesn't make sense
   if (!is.null(line_group) && !is.null(color_group)) {
@@ -158,14 +158,14 @@ plot_over_time <- function(
     nesting <- data[, .(count = uniqueN(get(color_group))), by = get(line_group)]
     if (any(nesting$count > 1)) {
       warning(paste0(
-        "line_group variable `", line_group, 
+        "line_group variable `", line_group,
         "` is not fully nested within color_group `", color_group, "`.\n",
-        "Note that color grouping cannot be applied within lines, but only across lines.\n", 
+        "Note that color grouping cannot be applied within lines, but only across lines.\n",
         "Please ensure that you specified the correct grouping variables.\n")
       )
     }
   }
-  
+
   ##### Prepare data #####
   data <- copy(data) %>% as.data.table()
 
@@ -332,7 +332,11 @@ plot_over_time <- function(
     warning("Some time points do not have any data or have been removed due to cell suppression.
       This might introduce a bias in the plotted time trends. Please carefully inspect data availability & coverage.
       Missing data found for the following combinations: ", immediate. = TRUE)
-    print(res[is.na(outcome), -c("outcome", "n")])
+    if (func == "count") {
+      print(res[is.na(outcome), -c("outcome")]) # outcome = n for counts...
+    } else {
+      print(res[is.na(outcome), -c("outcome", "n")])
+    }
   }
 
 
@@ -428,16 +432,16 @@ plot_over_time <- function(
       )
 
       fig <- fig + labs(color = NULL)
-      
-      
+
+
       ## overall line is only shown for neighbouring/connected data points that
       # are not interrupted by NA, otherwise, geom_line can't connect the points
       # e.g., single time point or points surrounded by NA are removed by geom_line
       # -> Identify isolated points (i.e., points surrounded by NA) and plot them
       # with geom_point() instead
-      isolated_points <- res %>% 
+      isolated_points <- res %>%
         group_by(across(all_of(grouping_overall[grouping_overall != time_int]))) %>%
-        arrange(get(time_int)) %>% 
+        arrange(get(time_int)) %>%
         mutate(isolated = ifelse(
           (is.na(lag(outcome)) & is.na(lead(outcome))) |  # points surrounded by NA
             (row_number() == 1 & is.na(lead(outcome))) |  # 1st point and next = NA
@@ -447,18 +451,18 @@ plot_over_time <- function(
         )) %>%
         ungroup() %>%
         filter(is.na(outcome) == FALSE & isolated == TRUE)
-      
+
       ## add isolated points with geom_point
       fig <- fig + geom_point(
-        data = isolated_points, 
-        size = line_width, 
+        data = isolated_points,
+        size = line_width,
         alpha = ifelse(is.null(facet_group) || (
           (!is.null(facet_group) && !is.null(line_group) && facet_group != line_group) &&
             (is.null(color_group) || (!is.null(line_group) && !is.null(color_group) && line_group != color_group))
         ), 1, 0.2),
         show.legend = FALSE
       )
-      
+
 
       # if smooth trend line is shown, but individual lines are suppressed,
       # let's also show scatter plot for overall curve
@@ -475,7 +479,7 @@ plot_over_time <- function(
             alpha = 0.2,
             show.legend = FALSE
           )
-      } 
+      }
     }
 
 
@@ -491,15 +495,15 @@ plot_over_time <- function(
                 ((!is.null(facet_group) && !is.null(line_group) && line_group == facet_group))))
           )
       } else {
-        
+
         ## when no smoothing is applied, individual line will be shown, however,
         # only for uninterrupted time periods that can be connected with geom_line
         # e.g., single time point or points surrounded by NA are removed by geom_line
         # -> Identify isolated points (i.e., points surrounded by NA) and plot them
         # with geom_point() instead
-        isolated_points <- res %>% 
+        isolated_points <- res %>%
           group_by(across(all_of(grouping[grouping != time_int]))) %>%
-          arrange(get(time_int)) %>% 
+          arrange(get(time_int)) %>%
           mutate(isolated = ifelse(
             (is.na(lag(outcome)) & is.na(lead(outcome))) |  # points surrounded by NA
               (row_number() == 1 & is.na(lead(outcome))) |  # 1st point and next = NA
@@ -509,20 +513,20 @@ plot_over_time <- function(
           )) %>%
           ungroup() %>%
           filter(is.na(outcome) == FALSE & isolated == TRUE)
-        
+
         ## show warning
         if (nrow(isolated_points) > 0) {
           warning(paste("Due to gaps in the data timeline for certain groups,",
                         "there are some data points that can't be connected via geom_line().",
                         "These data points have been plotted with geom_point() instead.",
                         "Please consider removing categories with interrupted data availability."))
-          
+
         }
-        
+
         ## add isolated points with geom_point
         fig <- fig + geom_point(
-          data = isolated_points, 
-          size = line_width, 
+          data = isolated_points,
+          size = line_width,
           alpha = ifelse(
             show_overall && ((is.null(facet_group) ||
                                 ((!is.null(facet_group) && !is.null(line_group) && (facet_group != line_group)) &&
@@ -553,9 +557,9 @@ plot_over_time <- function(
           method = smooth_method, # if smooth method is specified, fit trend line according to specified method
           na.rm = TRUE
         )
-      ) 
-      
-      
+      )
+
+
 
       if (!is.null(facet_group)) {
         ## show warning for facet variables with > 50 levels
