@@ -1,19 +1,26 @@
-# Rgemini `develop`
+# Rgemini `0.5.0`
 
-* Adds plotting functions for data exploration: `plot_summary()` and `plot_over_time()`
-* Adds functions for plotting theme & colors: `plot_theme()` and `gemini_colors()`
-* Updated unit tests & small bug fix in `daily_census()` 
-* Enable `prettyNum` formatting in table 1 render functions
-* Ordered package names in pkgdown reference file
-* `n_imaging`, `n_routine_bloodwork` and `n_rbc_transfusion` refactored and updated to be able to exclude clinical records in ED.
-* Update `mlaps()` hospital query
-* New option to derive ICU entries as a clinical outcome with customizable time windows in `icu_entry()`
-* Small bug fix in `disability()`
-* New function `convert_dt()` to handle date-time variables and show missing/invalid entries.
-* Enhancement of `Rgemini` functions to allow for different date-time inputs.
-* Updated `Rgemini:::check_input()` to return error for `odbc` connections 
-* Updated unit test and small bug fix in `frailty_score()`
-* Adds `hospitalizations_last_n_days()` to calculate the number of previous hospitalizations in a given window.
+* **New functions:**
+	* Plotting functions & vignette for data exploration: `plot_summary()` and `plot_over_time()`
+	* Plotting functions & vignette for plot aesthetics: `plot_theme()` and `gemini_colors()`
+	* `hospitalizations_last_n_days()` to calculate the number of previous hospitalizations in a given window
+	* `convert_dt()` to handle date-time variables and show missing/invalid entries
+
+* **Function enhancements:**
+	* `n_imaging`, `n_routine_bloodwork` and `n_rbc_transfusion` refactored and updated to be able to exclude clinical records in ED
+	* Option to derive ICU entries as a clinical outcome with customizable time windows in `icu_entry()`
+	* For functions with date-time inputs: Allow for character and POSIXct inputs
+	* Improved efficiency in `mlaps()` hospital query
+
+* **Minor bug fixes & updated unit tests:**
+	* `frailty_score()`: Return frailty score 0
+	* `daily_census()`: Limit time period by discharge date 
+	* `disability()`: Only return encounters in cohort input 
+	* Table 1 render functions: Enable `prettyNum` formatting
+	* `Rgemini:::check_input()`: Return error for `odbc` connections 
+
+* **Small documentation updates & clean-up of pkdgown reference file**
+
 
 # Rgemini 0.4.2
 
