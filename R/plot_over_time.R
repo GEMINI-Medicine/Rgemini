@@ -175,11 +175,8 @@ plot_over_time <- function(
   if (!time_int %in% colnames(data)) {
     time_label <- fix_var_str(paste(strsplit(time_var, "[_]")[[1]][1], time_int))
 
-    # if user already provided date-time variable in POSIX/POSIXct format, keep
-    # as is, otherwise, transform into appropriate format
-    if (!any(grepl("POSIX", class(data[[time_var]])))) {
-      data[, paste(time_var) := lubridate::parse_date_time(get(time_var), orders = c("ymd HM", "ymd HMS", "ymd"))]
-    }
+    # convert date-time and show warning for missing/invalid entries
+    data[, paste(time_var) := convert_dt(get(time_var), orders = c("ymd HMS"), truncated = 3)]
 
     if (grepl("month", time_int, ignore.case = TRUE)) {
       data[, month := lubridate::ym(format(as.Date(get(time_var), format = "%Y-%m-%d"), "%Y-%m"))]
