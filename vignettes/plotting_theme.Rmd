@@ -47,7 +47,7 @@ This vignette introduces a standardized plotting theme ([*plot_theme()*](#plot_t
 
 `Rgemini::plot_theme()` adds a simple theme to any `ggplot` figures. The theme is based on `ggthemes::theme_foundation()`, with some additional tweaks, and users can easily adjust the theme as needed. By default, `plot_theme()` is applied to all other plotting functions in `Rgemini` (e.g., `plot_summary()` and `plot_over_time()`). 
 
-The following example illustrates the theme applied to a basic barplot. We also use the default color palette from `gemini_colors()` here for illustration purposes (see section [Color Palettes](#gemini_colors) for more details):
+The following example illustrates the theme applied to a basic barplot. **Note:** `plot_theme` does not change the bar colors, but only the general plot aesthetics (e.g., background/axes/grid/fonts). However, for illustration purposes, we also add the default color palette from `gemini_colors()` using `fill` here  (see section [Color Palettes](#gemini_colors) for more details):
 
 ```{r}
 library(Rgemini)
