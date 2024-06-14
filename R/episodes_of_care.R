@@ -36,8 +36,10 @@
 #' service within GEMINI. Episodes involving inter-facility transfers are linked regardless of diagnosis. An acute
 #' care transfer is assumed to have occurred if either of the following criteria are met (see
 #' [CIHI guidelines](https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital):
-#' 1) An admission occurs within 7 hours after discharge, regardless of whether the transfer is coded by hospitals.
-#' OR 2) An admission occurs within 7-12 hours after discharge, and at least one hospital has coded the transfer.
+#' \itemize{
+#'   \item{An admission occurs within 7 hours after discharge, regardless of whether the transfer is coded by hospitals. OR}
+#'   \item{An admission occurs within 7-12 hours after discharge, and at least one hospital has coded the transfer.}
+#' }
 #'
 #' Acute transfers that are coded by hospitals (`AT_in_coded` and `AT_out_coded`) are defined by the DAD fields
 #' `institution_from` and `institution_to`:
@@ -45,11 +47,10 @@
 #' remaining entries are set to `FALSE`.
 #'
 #' Acute transfers that actually occurred (`AT_in_occurred` and `AT_out_occurred`) are defined as follows:
-#' `AT_in_occurred`/`AT_out_occurred` is `TRUE`, when admission is within 7 hrs of discharge regardless of transfer
-#' coding, or, admission is within 7-12hrs of discharge and >=1 hospital coded the transfer.
-#' `AT_in_occurred`/`AT_out_occurred` is `NA`, when admission time since previous discharge is unknown and
-#' >=1 hospital coded the transfer. This is because it cannot be determined if the transfer actually took place or
-#' not.
+#' `AT_in_occurred`/`AT_out_occurred` is `TRUE` when admission is within 7 hrs of discharge regardless of transfer
+#' coding, or, admission is within 7-12hrs of discharge and at least one hospital coded the transfer.
+#' `AT_in_occurred`/`AT_out_occurred` is `NA` when the transfer was coded but admission time since previous discharge is unknown.
+#' This is because it cannot be determined if the transfer actually took place or not.
 #' `AT_in_occurred`/`AT_out_occurred` is `FALSE`, for all remaining entries.
 #'
 #' Each episode of care (`epicare`) is defined by linked transfers identified based on `AT_in_occurred`/

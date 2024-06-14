@@ -104,7 +104,7 @@ laps_assign_test <- function(x, breaks, points) {
 #' @importFrom purrr map2_df
 #' @export
 #'
-#' @example
+#' @examples
 #' \dontrun{
 #' drv <- DBI::dbDriver("PostgreSQL")
 #' db <- DBI::dbConnect(
