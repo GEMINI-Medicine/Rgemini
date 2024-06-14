@@ -176,7 +176,9 @@ plot_over_time <- function(
     time_label <- fix_var_str(paste(strsplit(time_var, "[_]")[[1]][1], time_int))
 
     # convert date-time and show warning for missing/invalid entries
-    data[, paste(time_var) := convert_dt(get(time_var), orders = c("ymd HMS"), truncated = 3)]
+    data[, paste(time_var) := convert_dt(
+      get(time_var), orders = c("ymd HMS"), truncated = 3, dt_varname = time_var
+    )]
 
     if (grepl("month", time_int, ignore.case = TRUE)) {
       data[, month := lubridate::ym(format(as.Date(get(time_var), format = "%Y-%m-%d"), "%Y-%m"))]
