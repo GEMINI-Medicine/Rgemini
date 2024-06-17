@@ -1,12 +1,14 @@
 pandoc: 3.1.11
-pkgdown: 2.0.7
+pkgdown: 2.0.9
 pkgdown_sha: ~
 articles:
   cell_suppression_and_table1: cell_suppression_and_table1.html
   daily_census: daily_census.html
   epicare_and_readmission: epicare_and_readmission.html
   icd_to_ccsr: icd_to_ccsr.html
-last_built: 2024-03-08T00:56Z
+  plotting_data_exploration: plotting_data_exploration.html
+  plotting_theme: plotting_theme.html
+last_built: 2024-06-17T19:37Z
 urls:
   reference: https://gemini-medicine.github.io/Rgemini/reference
   article: https://gemini-medicine.github.io/Rgemini/articles

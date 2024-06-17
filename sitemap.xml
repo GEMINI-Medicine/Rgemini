@@ -28,6 +28,12 @@
     <loc>https://gemini-medicine.github.io/Rgemini/articles/index.html</loc>
   </url>
   <url>
+    <loc>https://gemini-medicine.github.io/Rgemini/articles/plotting_data_exploration.html</loc>
+  </url>
+  <url>
+    <loc>https://gemini-medicine.github.io/Rgemini/articles/plotting_theme.html</loc>
+  </url>
+  <url>
     <loc>https://gemini-medicine.github.io/Rgemini/authors.html</loc>
   </url>
   <url>
@@ -47,6 +53,12 @@
   </url>
   <url>
     <loc>https://gemini-medicine.github.io/Rgemini/reference/comorbidity_index.html</loc>
+  </url>
+  <url>
+    <loc>https://gemini-medicine.github.io/Rgemini/reference/convert_dt.html</loc>
+  </url>
+  <url>
+    <loc>https://gemini-medicine.github.io/Rgemini/reference/coverage_message.html</loc>
   </url>
   <url>
     <loc>https://gemini-medicine.github.io/Rgemini/reference/covid_flag.html</loc>
@@ -97,13 +109,22 @@
     <loc>https://gemini-medicine.github.io/Rgemini/reference/find_db_tablename.html</loc>
   </url>
   <url>
+    <loc>https://gemini-medicine.github.io/Rgemini/reference/fix_var_str.html</loc>
+  </url>
+  <url>
     <loc>https://gemini-medicine.github.io/Rgemini/reference/frailty_score.html</loc>
+  </url>
+  <url>
+    <loc>https://gemini-medicine.github.io/Rgemini/reference/gemini_colors.html</loc>
   </url>
   <url>
     <loc>https://gemini-medicine.github.io/Rgemini/reference/grapes-ni-grapes.html</loc>
   </url>
   <url>
     <loc>https://gemini-medicine.github.io/Rgemini/reference/hospital_fiscal_year.html</loc>
+  </url>
+  <url>
+    <loc>https://gemini-medicine.github.io/Rgemini/reference/hospitalizations_last_n_days.html</loc>
   </url>
   <url>
     <loc>https://gemini-medicine.github.io/Rgemini/reference/icd_to_ccsr.html</loc>
@@ -166,6 +187,18 @@
     <loc>https://gemini-medicine.github.io/Rgemini/reference/n_routine_bloodwork.html</loc>
   </url>
   <url>
+    <loc>https://gemini-medicine.github.io/Rgemini/reference/plot_color_palettes.html</loc>
+  </url>
+  <url>
+    <loc>https://gemini-medicine.github.io/Rgemini/reference/plot_over_time.html</loc>
+  </url>
+  <url>
+    <loc>https://gemini-medicine.github.io/Rgemini/reference/plot_summary.html</loc>
+  </url>
+  <url>
+    <loc>https://gemini-medicine.github.io/Rgemini/reference/plot_theme.html</loc>
+  </url>
+  <url>
     <loc>https://gemini-medicine.github.io/Rgemini/reference/readmission.html</loc>
   </url>
   <url>
@@ -203,6 +236,12 @@
   </url>
   <url>
     <loc>https://gemini-medicine.github.io/Rgemini/reference/sample_icd.html</loc>
+  </url>
+  <url>
+    <loc>https://gemini-medicine.github.io/Rgemini/reference/scale_color_gemini.html</loc>
+  </url>
+  <url>
+    <loc>https://gemini-medicine.github.io/Rgemini/reference/scale_fill_gemini.html</loc>
   </url>
   <url>
     <loc>https://gemini-medicine.github.io/Rgemini/reference/season.html</loc>

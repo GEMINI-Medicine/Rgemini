@@ -8,7 +8,7 @@ whether the number of hospitalized patients on a particular day was above (&amp;
 (or max occupancy) during the time period of interest. By default, capacity is estimated as median(census)
 but users can specify other measures of typical/max capacity (see capacity_func input). Note that if cohorts
 are filtered/grouped based on patient characteristics (e.g., diagnosis, age etc.), this indicator simply reflects
-a standardized measure of patient counts, rather than a measure of true capacity limitations of medical wards."><title>Compute daily census — daily_census • Rgemini</title><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Compute daily census — daily_census"><meta property="og:description" content="Calculates the daily number of patients that were hospitalized at each site during the specified time period.
+a standardized measure of patient counts, rather than a measure of true capacity limitations of medical wards."><title>Compute daily census — daily_census • Rgemini</title><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js" integrity="sha512-7O5pXpc0oCRrxk8RUfDYFgn0nO1t+jLuIOQdOMRp4APB7uZ4vSjspzp5y6YDtDs4VzUSTbWzBFZ/LKJhnyFOKw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Compute daily census — daily_census"><meta property="og:description" content="Calculates the daily number of patients that were hospitalized at each site during the specified time period.
 The daily census is defined as a cross-sectional count of bed occupancy at a given time of the day (8am by default).
 It is calculated as the number of patients who were admitted before and discharged after that point in time
 (i.e., the number of patients who occupied a bed at 8am on each day).
@@ -24,11 +24,11 @@ a standardized measure of patient counts, rather than a measure of true capacity
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
     
 
-    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
+    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light" data-bs-theme="light"><div class="container">
     
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,6 +46,8 @@ a standardized measure of patient counts, rather than a measure of true capacity
     <a class="dropdown-item" href="../articles/daily_census.html">Daily Census</a>
     <a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a>
     <a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a>
+    <a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a>
+    <a class="dropdown-item" href="../articles/plotting_theme.html">Plotting Functions - Themes &amp; Colors</a>
   </div>
 </li>
 <li class="nav-item">
@@ -100,8 +102,8 @@ a standardized measure of patient counts, rather than a measure of true capacity
 Cohort table with all relevant encounters of interest, where each row corresponds to a single encounter.
 Must contain the following columns:</p><ul><li><p><code>genc_id</code> (<code>integer</code>): GEMINI encounter ID</p></li>
 <li><p><code>hospital_num</code> or <code>hospital_id</code> (<code>integer</code> or <code>character</code>): Hospital ID</p></li>
-<li><p><code>admission_date_time</code> (<code>character</code>): Date-time of admission in YYYY-MM-DD HH:MM format</p></li>
-<li><p><code>discharge_date_time</code> (<code>character</code>): Date-time of discharge in YYYY-MM-DD HH:MM format</p></li>
+<li><p><code>admission_date_time</code> (<code>character</code> | <code>POSIXct POSIXt</code>): Date-time of admission in YYYY-MM-DD HH:MM format</p></li>
+<li><p><code>discharge_date_time</code> (<code>character</code> | <code>POSIXct POSIXt</code>): Date-time of discharge in YYYY-MM-DD HH:MM format</p></li>
 </ul><p>If a <code>group_var</code> is specified (see below), this should be included in the <code>cohort</code> table as well.</p></dd>
 
 
@@ -120,8 +122,8 @@ table typically refers to the <code>ipscu</code> table (see
 However, users may want to filter the <code>ipscu</code> table by specific SCU unit numbers that should be excluded from the
 census calculation. Entries where <code>scu_unit_number = 99</code> (<code>"No SCU"</code>) are automatically removed by this function.</p>
 <p>The <code>scu_exclude</code> input table needs to contain the following columns:</p><ul><li><p><code>genc_id</code> (<code>integer</code>): GEMINI encounter ID</p></li>
-<li><p><code>scu_admit_date_time</code> (<code>character</code>): Date-time of SCU admission in YYYY-MM-DD HH:MM format</p></li>
-<li><p><code>scu_discharge_date_time</code> (<code>character</code>): Date-time SCU of discharge in YYYY-MM-DD HH:MM format</p></li>
+<li><p><code>scu_admit_date_time</code> (<code>character</code> | <code>POSIXct POSIXt</code>): Date-time of SCU admission in YYYY-MM-DD HH:MM format</p></li>
+<li><p><code>scu_discharge_date_time</code> (<code>character</code> | <code>POSIXct POSIXt</code>): Date-time SCU of discharge in YYYY-MM-DD HH:MM format</p></li>
 </ul><p>For all entries in the <code>scu_exclude</code> table that have a valid <code>scu_admit_date_time</code> and
 <code>scu_discharge_date_time</code>, the encounter will not be counted towards the census during any time periods where
 they were in the SCU (i.e., time periods where they did not occupy a bed in a non-SCU ward). If no input is
@@ -194,7 +196,9 @@ output).</p>
 <p>By default (<code>include_zero = TRUE</code>), the function will return days where no <code>genc_ids</code> were hospitalized as <code>census = 0</code>.
 This is the desired behavior in cases where counts of 0 patients are conceptually meaningful. For example, when users
 want to analyze how many patients with a rare condition are in hospital on a typical day, days where <code>census = 0</code>
-represent true counts of 0 patients (assuming the cohort provides sufficient coverage of all hospitalized patients).</p>
+represent true counts of 0 patients (assuming the cohort provides sufficient coverage of all hospitalized patients).
+Note: If data availability periods differ between hospitals, <code>census</code> counts will only be set to 0 for dates
+that fall within the min-max date range for that particular site.</p>
 <p>In other scenarios, users may want to disregard days where <code>census = 0</code> by specifying <code>include_zero = FALSE</code>.
 For example, when looking at daily census counts per physician, days where <code>census = 0</code> likely reflect days
 where a given physician was not on service. Therefore, those days should not be included in the estimate of
@@ -243,11 +247,11 @@ For any dates inside the buffer period, <code>census</code> and <code>capacity_r
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by GEMINIdata.</p>
+  <p>Developed by GEMINIdata.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
 </div>
 
     </footer></div>
