@@ -8,6 +8,7 @@
 
 * **Function enhancements:**
 	* `n_imaging`, `n_routine_bloodwork` and `n_rbc_transfusion` refactored and updated to be able to exclude clinical records in ED
+	* Inclusion of all routine blood tests (regardless of result value) in `n_routine_bloodwork()`
 	* Option to derive ICU entries as a clinical outcome with customizable time windows in `icu_entry()`
 	* For functions with date-time inputs: Allow for character and POSIXct inputs
 	* Improved efficiency in `mlaps()` hospital query
