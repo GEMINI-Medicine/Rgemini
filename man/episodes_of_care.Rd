@@ -50,9 +50,9 @@ An episode of care refers to all contiguous inpatient hospitalizations admitted 
 service within GEMINI. Episodes involving inter-facility transfers are linked regardless of diagnosis. An acute
 care transfer is assumed to have occurred if either of the following criteria are met (see
 \href{https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital}{CIHI guidelines}:
-\enumerate{
-\item An admission occurs within 7 hours after discharge, regardless of whether the transfer is coded by hospitals.
-OR 2) An admission occurs within 7-12 hours after discharge, and at least one hospital has coded the transfer.
+\itemize{
+\item{An admission occurs within 7 hours after discharge, regardless of whether the transfer is coded by hospitals. OR}
+\item{An admission occurs within 7-12 hours after discharge, and at least one hospital has coded the transfer.}
 }
 
 Acute transfers that are coded by hospitals (\code{AT_in_coded} and \code{AT_out_coded}) are defined by the DAD fields
@@ -61,9 +61,11 @@ Acute transfers that are coded by hospitals (\code{AT_in_coded} and \code{AT_out
 remaining entries are set to \code{FALSE}.
 
 Acute transfers that actually occurred (\code{AT_in_occurred} and \code{AT_out_occurred}) are defined as follows:
-\code{AT_in_occurred}/\code{AT_out_occurred} is \code{TRUE}, when admission is within 7 hrs of discharge regardless of transfer
-coding, or, admission is within 7-12hrs of discharge and >=1 hospital coded the transfer.
-\code{AT_in_occurred}/\code{AT_out_occurred} is \code{NA}, when admission time since previous discharge is unknown and=1 hospital coded the transfer. This is because it cannot be determined if the transfer actually took place ornot.AT_in_occurred/AT_out_occurred is FALSE, for all remaining entries.
+\code{AT_in_occurred}/\code{AT_out_occurred} is \code{TRUE} when admission is within 7 hrs of discharge regardless of transfer
+coding, or, admission is within 7-12hrs of discharge and at least one hospital coded the transfer.
+\code{AT_in_occurred}/\code{AT_out_occurred} is \code{NA} when the transfer was coded but admission time since previous discharge is unknown.
+This is because it cannot be determined if the transfer actually took place or not.
+\code{AT_in_occurred}/\code{AT_out_occurred} is \code{FALSE}, for all remaining entries.
 
 Each episode of care (\code{epicare}) is defined by linked transfers identified based on \code{AT_in_occurred}/
 \code{AT_out_occurred}. A unique numeric ID is assigned to each unique episode of care. That is, contiguous encounters

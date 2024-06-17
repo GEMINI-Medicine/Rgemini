@@ -73,7 +73,7 @@ lunique <- function(x) {
 #'
 coerce_to_datatable <- function(data) {
   var <- deparse(substitute(data))
-
+  data <- copy(data) # take copy to avoid changing original table
   if (!is.data.table(data)) {
     data <- as.data.table(data)
     warning(var, " was passed as a data.frame and has been coerced to a data.table.\n", immediate. = TRUE)
@@ -100,10 +100,10 @@ coerce_to_datatable <- function(data) {
 #' names that *start with* the same name as specified in DRM (e.g., any that
 #' start with "ipintervention").
 #' For other tables, the function uses a stricter search to avoid finding
-#' multiple matches: Specifically, for "admdad", "lab", and "transfusion", the
-#' function tries to identify tables with the exact same name (i.e.,
-#' "admdad/lab/transfusion") or the corresponding table name with a "_subset"
-#' suffix (for HPC datacuts).
+#' multiple matches: Specifically, for "admdad", "lab", "transfusion", and
+#' "radiology" the function tries to identify tables with the exact same name
+#' (i.e., "admdad/lab/transfusion") or the corresponding table name with a
+#' "_subset" suffix (for HPC datacuts).
 #'
 #' @param dbcon (`DBIConnection`)\cr
 #' A database connection to any GEMINI database.
@@ -118,6 +118,7 @@ coerce_to_datatable <- function(data) {
 #' - `"ipcmg"`
 #' - `"transfusion"`
 #' - `"lab"`
+#' - `"radiology"`
 #'
 #' Users need to specify the full DRM table name (e.g., `"admdad"` instead of
 #' `"adm"`) to avoid potential confusion with other tables.
@@ -152,15 +153,15 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
   check_input(drm_table, "character",
     categories = c(
       "admdad", "ipdiagnosis", "ipintervention", "ipcmg",
-      "lab", "transfusion"
+      "lab", "transfusion", "radiology"
     )
   )
 
   ## Define search criteria for different tables
   search_fn <- function(table_names, table = drm_table) {
 
-    if (drm_table %in% c("lab", "transfusion", "admdad")) {
-      # for lab & transfusion table table:
+    if (drm_table %in% c("lab", "transfusion", "admdad", "radiology")) {
+      # for admdad/lab/transfusion/radiology table:
       # check for specific table names lab/lab_subset and transfusion/transfusion_subset
       # (otherwise, lab/transfusion_mapping or other tables might be returned)
       res <- table_names[table_names %in% c(table, paste0(table, "_subset"))]
@@ -448,14 +449,14 @@ check_input <- function(arginput, argtype,
     ###### CHECK 1 (for all input types): Check if type is correct
     ## For DB connections
     if (any(grepl("dbi|con|posgre|sql", argtype, ignore.case = TRUE))) {
-      if (!RPostgreSQL::isPostgresqlIdCurrent(arginput) &&
-        !grepl("PostgreSQL", class(arginput)[1])) {
+      if (inherits(arginput, "OdbcConnection") || !grepl("PostgreSQL", class(arginput)[1])) {
         stop(
           paste0(
             "Invalid user input in '",
             as.character(sys.calls()[[1]])[1], "': '",
-            argname, "' needs to be a valid database connection.\n",
-            "We recommend the following method to establish a DB connection:\n",
+            argname, "' needs to be a valid PostgreSQL database connection.\n",
+            "Database connections established with `odbc` are currently not supported.\n",
+            "Instead, please use the following method to establish a DB connection:\n",
             "drv <- dbDriver('PostgreSQL')\n",
             "dbcon <- DBI::dbConnect(drv, dbname = 'db_name', ",
             "host = 'domain_name.ca', port = 1234, ",
@@ -464,17 +465,26 @@ check_input <- function(arginput, argtype,
           ),
           call. = FALSE
         )
+      } else if (!RPostgreSQL::isPostgresqlIdCurrent(arginput)) {
+        # if PostgreSQL connection, make sure it's still active
+        stop(
+          paste0(
+            "Please make sure your database connection is still active.\n",
+            "You may need to reconnect to the database if the connection has timed out."
+          ),
+          call. = FALSE
+        )
       }
 
       ## For all other inputs
     } else if ((any(argtype == "integer") && !all(is_integer(arginput))) ||
-      (!any(argtype == "integer") && !any(class(arginput) %in% argtype) &&
-        (!(any(argtype == "numeric") && all(is_integer(arginput)))))) { # in case argtype is "numeric" and provided input is "integer", don't show error
+               (!any(argtype == "integer") && !any(class(arginput) %in% argtype) &&
+                (!(any(argtype == "numeric") && all(is_integer(arginput)))))) { # in case argtype is "numeric" and provided input is "integer", don't show error
       stop(
         paste0(
           "Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
           argname, "' needs to be of type '", paste(argtype,
-            collapse = "' or '"
+                                                    collapse = "' or '"
           ), "'.",
           "\nPlease refer to the function documentation for more details."
         ),
@@ -536,8 +546,20 @@ check_input <- function(arginput, argtype,
 
 
     ###### CHECK 5 (for data.table/data.frame inputs):
-    ###### Check if relevant columns exist [optional]
+    ###### Check if nrow() > 0 & if relevant columns exist [optional]
     if (any(argtype %in% c("data.frame", "data.table")) && !is.null(colnames)) {
+
+      if (nrow(arginput) == 0) {
+        stop(
+          paste0(
+            "Invalid user input in '", as.character(sys.calls()[[1]])[1],
+            "': '", argname, "' input table has 0 rows.",
+            "\nPlease carefully check your input."
+          ),
+          call. = FALSE
+        )
+      }
+
       # get missing columns
       missing_cols <- setdiff(colnames, colnames(arginput))
 
@@ -563,8 +585,8 @@ check_input <- function(arginput, argtype,
       # ignore coltypes without specification ("")
       check_col_type <- function(col, coltype) {
         if (coltype != "" && !any(grepl(coltype,
-          class(as.data.table(arginput)[[col]]),
-          ignore.case = TRUE
+                                        class(as.data.table(arginput)[[col]]),
+                                        ignore.case = TRUE
         ))) {
           stop(
             paste0(
@@ -621,11 +643,261 @@ check_input <- function(arginput, argtype,
 #' Prints a message to the console.
 #'
 mapping_message <- function(what, addtl = NULL) {
-  msg <- paste(
-    "\n***Note:***\nThe output of this function is based on manual mapping of", what, "by a GEMINI Subject Matter Expert.\n",
+  msg <- paste0(
+    "\n***Note:***\nThe output of this function is based on manual mapping of ", what, " by a GEMINI Subject Matter Expert.\n",
     "Please carefully check mapping coverage for your cohort of interest, or contact the GEMINI team if you require additional support.\n",
     addtl
   )
 
   cat(msg)
+}
+
+#' @title
+#' Coverage Message
+#'
+#' @description
+#' Message to display to inform the user that the function being used does not
+#' check clinical data coverage.
+#'
+#' @param what (`character`)\cr
+#' Which clinical table is used.
+#'
+#' @param addtl (`character`)\cr
+#' An additional, specific message to append to the generic message.
+#'
+#' @return
+#' Prints a message to the console.
+#'
+coverage_message <- function(what, addtl = NULL) {
+  msg <- paste0(
+    "\n***Note:***\nThis function does not check ", what,
+    " data coverage for the input cohort. It returns 0 for any genc_ids with no record\nin ",
+    what, " table. The result 0s may not be appropriate for patients who are not within ",
+    what, " data coverage period(s). \nPlease carefully check ", what,
+    " data coverage for your cohort, or contact the GEMINI team if you require additional support.\n",
+    addtl
+  )
+
+  cat(msg)
+}
+
+#' @title
+#' Convert date-time variables into POSIXct/POSIXt format.
+#'
+#' @description
+#' This function converts date-time variables into a user-specified format.
+#' `convert_dt` is called by other `Rgemini` functions to make sure that
+#' any date-time inputs are in the expected order (typically `"ymd HM"`). It
+#' can also be used independently of other `Rgemini` functions to clean up
+#' date-times for analyses.
+#' The function additionally returns warning messages about missing/invalid
+#' date-time entries that can be useful for debugging.
+#'
+#' @param dt_var \cr
+#' A vector containing the date-time values to be converted to the specified
+#' format. The vector can be of any class that can be converted to date-times by
+#' `lubridate::parse_date_time()` (usually "character" or "POSIXct"). If
+#' users have already pre-processed date-time variables into POSIXct (e.g.,
+#' using `lubridate::ymd_hm()`) prior to running the function,
+#' `convert_dt()` will simply return the original `dt_var`.
+#'
+#' @param orders (`character`)\cr
+#' Order(s) to be used to parse `dt_var`, such as `"ymd HM"` (default),
+#' `"ymd HMS"`, `"ymd"` etc. Will be passed to `lubridate::parse_date_time()`,
+#' which accepts date-time formats without expecting "%" prefix (see `orders`
+#' input argument in \link[lubridate]{parse_date_time}.
+#'
+#' Multiple acceptable formats can be specified by providing a character vector,
+#' e.g. `format = c("ymd HM", "ymd HMS", "ymd")`.
+#'
+#' If expecting a date format in "ymd" (regardless of whether timestamp exists
+#' or not), use `convert_dt(dt_var, orders = "ymdHMS", truncated = 3)`.
+#'
+#' @param check_ts_zeros (`logical`)\cr
+#' Whether to check for timestamps "00:00", which may represent missing times
+#' for some variables. This is only user species any `orders` containing time
+#' information, e.g., `orders = c("ymd HM", "ymd HMS")`.
+#'
+#' @param dt_varname (`character`)\cr
+#' Name of variable referring to user-provided date-time variable. This is only
+#' used for warning messages to improve clarity. Usually, `dt_varname` can be
+#' inferred directly based on the provided input, but in some cases where
+#' inputs are passed between multiple functions, it can be helpful to specify
+#' the variable name explicitly (for example, see `stat_holidays_ON()`.
+#'
+#' @param addtl_msg (`character`)\cr
+#' Additional warning message to be shown if any missing/invalid date-time
+#' entries were found. If `addtl_msg = NULL`, the following message will be
+#' shown by default:
+#' "Please carefully consider how to deal with missing/invalid date-time entries
+#' and perform any additional pre-processing prior to running the function
+#' \[function_name\] (e.g., impute missing dates/timestamps etc.)."
+#'
+#' @param ...
+#' Additional parameters passed to `lubridate::parse_date_time()`, such as
+#' `truncated` , `exact`, etc.
+#'
+#' @return (`POSIXct` | `POSIXt`)\cr
+#' Returns converted `dt_var` parsed according to specified date-time `orders`.
+#'
+#' Will also return the following warning messages (if applicable):
+#' 1) Number (%) of entries in `dt_var` that are missing (NA, "", " ")
+#' 2) Number (%) of entries in `dt_var` that could not be parsed into specified
+#' format
+#' 3) For formats containing (non-optional) timestamps: Number (%) of entries in
+#' `dt_var` that only contain date information
+#'
+#' Any missing/invalid date-time entries will be returned as `NA` by this
+#' function.
+#'
+#' @import lubridate
+#'
+#' @export
+#'
+#' @examples
+#' my_date_time <- c("2020-01-01 12:00", "2021-03-06 09:25")
+#' convert_dt(my_date_time, orders = "ymd HM")
+convert_dt <- function(dt_var,
+                       orders = "ymd HM",
+                       check_ts_zeros = FALSE,
+                       dt_varname = NULL,
+                       addtl_msg = NULL,
+                       ...) {
+
+  ## initialize all counts of missing/invalid entries
+  n_missing_dt <- n_invalid_dt <- n_date_only <- n_zeros <- 0
+
+  ## get name of date-time variable if not explicitly specified
+  if (is.null(dt_varname)) {
+    dt_varname <- deparse(substitute(dt_var))
+  }
+
+  ## Check 1: Missing entries (NA, "", " ")
+  n_missing_dt <- sum(n_missing(dt_var, na_strings = c("", " "), index = TRUE))
+  if (n_missing_dt > 0) {
+    warning(
+      paste0(
+        n_missing(dt_var, na_strings = c("", " ")), " entries in variable `",
+        dt_varname, "` are missing (NA, \"\", or \" \")."
+      ),
+      immediate. = TRUE, call. = FALSE
+    )
+  }
+  # remove any missing entries (to be excluded from denominators for checks below)
+  dt_var_non_missing <- dt_var[!n_missing(dt_var, na_strings = c("", " "), index = TRUE)]
+
+  ## convert to correct format
+  if (!any(grepl("POSIX", class(dt_var)))) {
+    # suppress generic warning from parse_date_time here and show more
+    # informative warning below instead
+    dt_var_res <- lubridate::parse_date_time(dt_var, orders = orders, quiet = TRUE, ...)
+
+    ## Check 2: Entries that can't be parsed according to specified format
+    n_invalid_dt <- sum(is.na(dt_var_res)) - n_missing_dt
+    if (n_invalid_dt > 0) {
+      warning(
+        paste0(
+          n_invalid_dt, " (", round(100 * n_invalid_dt / length(dt_var_non_missing), 1), "%)",
+          " of all non-missing entries in variable `", dt_varname,
+          "` could not be parsed with date-time order(s): \"",
+          paste(orders, collapse = "\", \""), "\"."
+        ),
+        immediate. = TRUE, call. = FALSE
+      )
+    }
+
+    ## Check 3: Check if timestamp exists
+    #  Will only be checked if expected format contains time ("HM"/"HMS" etc.)
+    #  and `truncated` (if specified) wouldn't make time stamp optional
+    #  Date-only inputs like "2020-01-01" would fail check
+
+    # check if truncation should be applied to order characters
+    args <- list(...)
+    orders_trunc <- if (!is.null(args$truncated)) {
+      substr(orders, 1, nchar(orders) - args$truncated)
+    } else {
+      orders
+    }
+
+    if (all(grepl("hm", orders_trunc, ignore.case = TRUE))) {
+      # if user provided non-POSIXct input, check characters for timestamp info
+      ts_regex <- "([0-1][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?"
+      n_date_only <- sum(!grepl(ts_regex, as.character(dt_var))) - n_missing_dt
+      if (n_date_only > 0) {
+        warning(
+          paste0(
+            n_date_only, " (", round(100 * n_date_only / length(dt_var_non_missing), 1), "%)",
+            " of all non-missing entries in variable `", dt_varname,
+            "` could not be parsed due to missing timestamps."
+          ),
+          immediate. = TRUE, call. = FALSE
+        )
+      }
+    }
+
+  } else {
+    # if date-time variable was already pre-processed into POSIXct/POSIXt by
+    # user, return variable as is
+    dt_var_res <- dt_var
+  }
+
+  ## Check 4 (optional): Check how many have timestamp 00:00
+  #  Will only be checked if any expected format contains time ("HM"/"HMS" etc.)
+  #  Any entries with "00:00"/"00:00:00" after date component will fail.
+  #  Check will be performed regardless of any truncation if check_ts_zeros = T
+  if (any(grepl("hm", orders, ignore.case = TRUE))) {
+    if (check_ts_zeros == TRUE) {
+      n_zeros <- sum(
+        grepl(" 00:00", as.character(dt_var_non_missing)) | nchar(as.character(dt_var_non_missing)) < 12
+      )
+      if (n_zeros > 0) {
+        warning(
+          paste0(
+            n_zeros, " (", round(100 * n_zeros / length(dt_var_non_missing), 1), "%)",
+            " of all non-missing entries in variable `",
+            dt_varname, "` have timestamp \"00:00/00:00:00\". ",
+            "Please consider if these entries may represent missing timestamps."
+          ),
+          immediate. = TRUE, call. = FALSE
+        )
+      }
+    }
+  }
+
+  # show general warning about missing/invalid date-times
+  # (can be customized by providing `addtl_msg`)
+  if (any(c(n_missing_dt, n_invalid_dt, n_date_only, n_zeros) > 0)) {
+    if (is.null(addtl_msg) || !addtl_msg %in% c("", " ", "\n")) {
+      warning(
+        ifelse(is.null(addtl_msg),
+               paste0("Please carefully consider how to deal with missing/invalid date-time",
+                      " entries and perform any additional pre-processing prior to running",
+                      " the function `", as.character(sys.calls()[[1]])[1],
+                      "` (e.g., impute missing dates/timestamps etc.).\n"
+               ),
+               addtl_msg
+        ), immediate. = TRUE, call. = FALSE
+      )
+    } else {
+      cat("\n")
+    }
+
+  }
+
+  return(dt_var_res)
+
+}
+
+
+#' Fix variable strings
+#'
+#' @description
+#' Removes any "_" from variable names and applies title case capitalization.
+#' This is currently used for axis labels/titles in plotting functions.
+#'
+#' @param str (`character`)
+#' Character string to be cleaned up
+#'
+fix_var_str <- function(str) {
+  str <- tools::toTitleCase(gsub("[_.]", " ", str))
 }

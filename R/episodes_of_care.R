@@ -36,8 +36,10 @@
 #' service within GEMINI. Episodes involving inter-facility transfers are linked regardless of diagnosis. An acute
 #' care transfer is assumed to have occurred if either of the following criteria are met (see
 #' [CIHI guidelines](https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital):
-#' 1) An admission occurs within 7 hours after discharge, regardless of whether the transfer is coded by hospitals.
-#' OR 2) An admission occurs within 7-12 hours after discharge, and at least one hospital has coded the transfer.
+#' \itemize{
+#'   \item{An admission occurs within 7 hours after discharge, regardless of whether the transfer is coded by hospitals. OR}
+#'   \item{An admission occurs within 7-12 hours after discharge, and at least one hospital has coded the transfer.}
+#' }
 #'
 #' Acute transfers that are coded by hospitals (`AT_in_coded` and `AT_out_coded`) are defined by the DAD fields
 #' `institution_from` and `institution_to`:
@@ -45,11 +47,10 @@
 #' remaining entries are set to `FALSE`.
 #'
 #' Acute transfers that actually occurred (`AT_in_occurred` and `AT_out_occurred`) are defined as follows:
-#' `AT_in_occurred`/`AT_out_occurred` is `TRUE`, when admission is within 7 hrs of discharge regardless of transfer
-#' coding, or, admission is within 7-12hrs of discharge and >=1 hospital coded the transfer.
-#' `AT_in_occurred`/`AT_out_occurred` is `NA`, when admission time since previous discharge is unknown and
-#' >=1 hospital coded the transfer. This is because it cannot be determined if the transfer actually took place or
-#' not.
+#' `AT_in_occurred`/`AT_out_occurred` is `TRUE` when admission is within 7 hrs of discharge regardless of transfer
+#' coding, or, admission is within 7-12hrs of discharge and at least one hospital coded the transfer.
+#' `AT_in_occurred`/`AT_out_occurred` is `NA` when the transfer was coded but admission time since previous discharge is unknown.
+#' This is because it cannot be determined if the transfer actually took place or not.
 #' `AT_in_occurred`/`AT_out_occurred` is `FALSE`, for all remaining entries.
 #'
 #' Each episode of care (`epicare`) is defined by linked transfers identified based on `AT_in_occurred`/
@@ -74,7 +75,6 @@
 #' @references
 #' [CIHI readmission guidelines](https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital)
 #'
-#' @importFrom lubridate ymd_hm
 #'
 #' @export
 #'
@@ -92,8 +92,12 @@
 #' }
 #'
 episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
-  if (!RPostgreSQL::isPostgresqlIdCurrent(dbcon)) {
-    stop("\n Please input a valid database connection")
+
+  ## check user inputs
+  check_input(dbcon, "DBI")
+  if (!is.null(restricted_cohort)){
+    check_input(restricted_cohort, c("data.table", "data.frame"),
+                colnames = "genc_id")
   }
 
   ############ Load lookup_transfer ############
@@ -136,6 +140,10 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
   data <- data[!admit_category %in% c("R", "RI"), ] # cadaveric donors should not be in DB
   data <- data[age >= 18, ] # age < 18 should not be in DB
 
+  ############  Convert date-times into appropriate format   ############
+  data[, discharge_date_time := convert_dt(discharge_date_time)]
+  data[, admission_date_time := convert_dt(admission_date_time)]
+
   ############  Identify hospital coded Acute Transfer (AT)   ############
   data <- data[order(patient_id_hashed, discharge_date_time, admission_date_time)]
 
@@ -150,8 +158,8 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
   ## Defined as time difference between admission date-time of (n+1)th encounter minus
   ## discharge date-time of (n)th encounter
   data[, time_to_next_admission := as.numeric(difftime(
-    shift(ymd_hm(admission_date_time), type = "lead"), # (n+1)th encounter
-    ymd_hm(discharge_date_time), # (n)th encounter
+    shift(admission_date_time, type = "lead"), # (n+1)th encounter
+    discharge_date_time, # (n)th encounter
     units = "hours"
   ))]
 
@@ -160,8 +168,8 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
 
 
   ## Defined as time difference between admission date-time of nth encounter - discharge date-time of (n-1)th encounter
-  data[, time_since_last_admission := as.numeric(difftime(ymd_hm(admission_date_time), # nth encounter
-    shift(ymd_hm(discharge_date_time), type = "lag"), # (n-1)th discharge
+  data[, time_since_last_admission := as.numeric(difftime(admission_date_time, # nth encounter
+    shift(discharge_date_time, type = "lag"), # (n-1)th discharge
     units = "hours"
   ))]
 

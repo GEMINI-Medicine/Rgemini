@@ -1,7 +1,7 @@
 Package: Rgemini
 Type: Package
 Title: R Functions for GEMINI Data
-Version: 0.4.2
+Version: 0.5.0
 Author: GEMINI
 Maintainer: GEMINIdata <Gemini.data@unityhealth.to>
 Description: Common functions for GEMINI data analyses.
@@ -12,12 +12,17 @@ Imports:
     comorbidity, 
     data.table, 
     DBI, 
-    dplyr, 
-    janitor, 
+    dplyr,
+	ggplot2,
+	ggpubr,
+	ggthemes,
+    janitor,
+	lemon,
     lubridate, 
     purrr,
     reshape2,
     RPostgreSQL,
+	scales,
     stddiff, 
     stringi, 
     stringr, 
@@ -28,11 +33,15 @@ Imports:
     MCMCpack,
     sn
 Suggests: 
-    ggplot2,
+    colorBlindness,
+    ggsci,
     kableExtra,
     knitr,
+    plotly,
+    RColorBrewer,
     rmarkdown,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    viridis
 Config/testthat/edition: 3
 RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE)

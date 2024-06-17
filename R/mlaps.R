@@ -104,7 +104,7 @@ laps_assign_test <- function(x, breaks, points) {
 #' @importFrom purrr map2_df
 #' @export
 #'
-#' @example
+#' @examples
 #' \dontrun{
 #' drv <- DBI::dbDriver("PostgreSQL")
 #' db <- DBI::dbConnect(
@@ -130,6 +130,8 @@ laps_assign_test <- function(x, breaks, points) {
 loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_wise = FALSE) {
 
   hospital_field <- return_hospital_field(db)
+  # find table corresponding to admdad
+  admdad_table <- find_db_tablename(db, "admdad", verbose = FALSE)
 
   admdad <- DBI::dbGetQuery(
     db,
@@ -138,8 +140,8 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
         genc_id,
         admission_date_time,
         EXTRACT(YEAR FROM discharge_date_time::DATE) AS year,",
-        hospital_field, "AS hospital_id",
-      "FROM admdad",
+      hospital_field, "AS hospital_id",
+      "FROM ", admdad_table,
       if (!is.null(cohort)) {
         paste("WHERE genc_id IN (", paste(cohort$genc_id, collapse = ", "), ")")
       }
@@ -150,6 +152,9 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
   hospital_years <- admdad %>%
     select(hospital_id, year) %>%
     unique()
+
+  # find table corresponding to lab
+  lab_table <- find_db_tablename(db, "lab", verbose = FALSE)
 
   res <- purrr::map2_df(
     hospital_years$hospital_id,
@@ -164,11 +169,11 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
             l.test_type_mapped_omop,
             l.result_value,
             l.result_unit
-          FROM lab l
-          INNER JOIN admdad a
+          FROM ", lab_table, "l
+          INNER JOIN ", admdad_table, " a
             ON l.genc_id = a.genc_id
           WHERE l.test_type_mapped_omop IN (", paste(LAPS_OMOP_CONCEPTS, collapse = ", "), ")",
-          paste0("AND a.", hospital_field, " = '", hospital_id, "'"),
+          paste0("AND l.", hospital_field, " = '", hospital_id, "'"),
           "AND EXTRACT(YEAR FROM a.discharge_date_time::DATE) = ", year,
           if (!is.null(cohort)) {
             paste("AND l.genc_id IN (", paste(cohort$genc_id, collapse = ", "), ")")
@@ -194,16 +199,16 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
 #' mLAPS
 #'
 #' @details
-#' Modified Laboratory based Acute Physiology Score (mLAPS) uses 14 lab test values.
-#' In this modified version, High senstive Troponin tests are ignored and treated as normal.
+#' Modified Laboratory based Acute Physiology Score (mLAPS) uses 12 lab test values from 11 unique lab tests.
+#' In this modified version, troponin tests are not considered in the mLAPS calculation.
 #'
 #' @param ipadmdad (`data.frame`)\cr
 #' Table equivalent to a subset of the `admdad` table defined in the
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/wp-content/uploads/2023/12/GEMINI-Data-Repository-Data-Dictionary-v3.0.2.html).
 #'
 #' @param lab (`data.table`, `data.frame`)\cr
 #' Table equivalent to a subset of the `lab` table defined in the
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/wp-content/uploads/2023/12/GEMINI-Data-Repository-Data-Dictionary-v3.0.2.html).
 #'
 #' @param hours_after_admission (`numeric`)\cr
 #' Consider lab tests collected **up to** `hours_after_admission` hours after inpatient admission in the calculation.
@@ -235,7 +240,7 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
 #' If lab data was unavailable, it might be more accurate to assign the LAPS score for these encounters as `NA`.
 #' In general it is recommended to take care and be intentional when imputing LAPS scores.
 #'
-#' @importFrom lubridate ymd_hm hours
+#' @importFrom lubridate hours
 #' @export
 #'
 #' @references
@@ -257,7 +262,7 @@ mlaps <- function(ipadmdad, lab, hours_after_admission = 0, component_wise = FAL
       ipadmdad %>% select(genc_id, admission_date_time),
       by = "genc_id"
     ) %>%
-    filter(lubridate::ymd_hm(collection_date_time) < (lubridate::ymd_hm(admission_date_time) + lubridate::hours(hours_after_admission)))
+    filter(convert_dt(collection_date_time) < (convert_dt(admission_date_time) + lubridate::hours(hours_after_admission)))
 
   laps <- lab %>%
     mutate(result_value = ifelse(

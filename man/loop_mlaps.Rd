@@ -44,6 +44,24 @@ A wrapper around the \code{mlaps()} function which breaks down the calculation o
 large number of encounters by hospital-year. This avoids memory issues that can be caused
 by loading large chunks of the lab table.
 }
+\examples{
+\dontrun{
+drv <- DBI::dbDriver("PostgreSQL")
+db <- DBI::dbConnect(
+  drv,
+  dbname = "db_name",
+  host = "domain_name.ca",
+  port = 1234,
+  user = getPass::getPass("Enter Username"),
+  password = getPass::getPass("Enter Password")
+  )
+
+cohort <- DBI::dbGetQuery(db, "SELECT genc_id FROM public.admdad LIMIT 200;")
+
+laps <- loop_laps(db, cohort = cohort)
+}
+
+}
 \references{
 When the function is used, please cite the following:
 https://doi.org/10.1097/MLR.0b013e3181589bb6

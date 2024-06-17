@@ -27,7 +27,7 @@ Hospital fiscal year is defined as April ~ March. For example, in case of
 
 NA values in returned vector indicates either missing date or its format is
 incorrect. All dates must be in \code{yyyy-mm-dd} format and precede the timestamp
-(e.g., \verb{yyy-mm-dd hh:mm}).
+(e.g., \verb{yyyy-mm-dd hh:mm}).
 }
 
 \examples{

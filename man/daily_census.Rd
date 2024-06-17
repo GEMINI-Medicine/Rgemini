@@ -22,8 +22,8 @@ Must contain the following columns:
 \itemize{
 \item \code{genc_id} (\code{integer}): GEMINI encounter ID
 \item \code{hospital_num} or \code{hospital_id} (\code{integer} or \code{character}): Hospital ID
-\item \code{admission_date_time} (\code{character}): Date-time of admission in YYYY-MM-DD HH:MM format
-\item \code{discharge_date_time} (\code{character}): Date-time of discharge in YYYY-MM-DD HH:MM format
+\item \code{admission_date_time} (\code{character} | \verb{POSIXct POSIXt}): Date-time of admission in YYYY-MM-DD HH:MM format
+\item \code{discharge_date_time} (\code{character} | \verb{POSIXct POSIXt}): Date-time of discharge in YYYY-MM-DD HH:MM format
 }
 
 If a \code{group_var} is specified (see below), this should be included in the \code{cohort} table as well.}
@@ -43,8 +43,8 @@ census calculation. Entries where \code{scu_unit_number = 99} (\code{"No SCU"}) 
 The \code{scu_exclude} input table needs to contain the following columns:
 \itemize{
 \item \code{genc_id} (\code{integer}): GEMINI encounter ID
-\item \code{scu_admit_date_time} (\code{character}): Date-time of SCU admission in YYYY-MM-DD HH:MM format
-\item \code{scu_discharge_date_time} (\code{character}): Date-time SCU of discharge in YYYY-MM-DD HH:MM format
+\item \code{scu_admit_date_time} (\code{character} | \verb{POSIXct POSIXt}): Date-time of SCU admission in YYYY-MM-DD HH:MM format
+\item \code{scu_discharge_date_time} (\code{character} | \verb{POSIXct POSIXt}): Date-time SCU of discharge in YYYY-MM-DD HH:MM format
 }
 
 For all entries in the \code{scu_exclude} table that have a valid \code{scu_admit_date_time} and
@@ -114,6 +114,8 @@ By default (\code{include_zero = TRUE}), the function will return days where no 
 This is the desired behavior in cases where counts of 0 patients are conceptually meaningful. For example, when users
 want to analyze how many patients with a rare condition are in hospital on a typical day, days where \code{census = 0}
 represent true counts of 0 patients (assuming the cohort provides sufficient coverage of all hospitalized patients).
+Note: If data availability periods differ between hospitals, \code{census} counts will only be set to 0 for dates
+that fall within the min-max date range for that particular site.
 
 In other scenarios, users may want to disregard days where \code{census = 0} by specifying \code{include_zero = FALSE}.
 For example, when looking at daily census counts per physician, days where \code{census = 0} likely reflect days
