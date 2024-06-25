@@ -26,6 +26,13 @@
 #' Which table(s) to include. If multiple, specify a character vector
 #' (e.g., `table = c("lab", "pharmacy", "radiology")`).
 #'
+#' @param plot_minmax (`logical`)
+#' Flag indicating whether to plot minimum - maximum available dates per site
+#' per table.
+#'
+#' @param plot_coverage (`logical`)
+#' Flag indicating whether to plot coverage (% `genc_ids` with entry in table).
+#'
 #' @import RPostgreSQL ggplot2
 #'
 #' @return
@@ -38,7 +45,9 @@
 
 data_coverage <- function(dbcon,
                           cohort,
-                          table) {
+                          table,
+                          plot_minmax = TRUE,
+                          plot_coverage = TRUE) {
 
   #########  CHECK INPUTS  #########
   # check input type and column name
@@ -95,32 +104,97 @@ data_coverage <- function(dbcon,
   lapply(table, get_coverage_flag)
 
 
-  #########  PLOT COVERAGE PERIOD  #########
-  ## prepare data for plotting
-  n_tables <- length(unique(table))
-  plot_data <- melt.data.table(lookup_coverage,
-                               id.vars = c("genc_id", hosp_var, "discharge_date"),
-                               measure.vars = table,
-                               variable.name = "table",
-                               value.name = "coverage_flag") %>%
-    filter(coverage_flag == TRUE) %>%
-    group_by(hospital = get(hosp_var), table) %>%
-    summarize(min = min(as.Date(discharge_date)),
-              max = max(as.Date(discharge_date))) %>%
-    mutate(hospital = factor(hospital),
-           table = factor(table),
-           y = (-as.numeric(hospital) - (as.numeric(table) - 1) * 0.5/n_tables + (n_tables - 1) * 0.25/n_tables)) %>%
-    data.table()
+  #########  PLOT AVAILABILITY PERIOD  #########
+  if (plot_minmax == TRUE) {
 
-  ## plot overall coverage period
-  ggplot(plot_data) +
-    geom_rect(aes(xmin = min, xmax = max, ymin = y - 0.25/n_tables, ymax = y + 0.25/n_tables, fill = table)) +
-    scale_y_continuous(name = "Hospital", breaks = -unique(as.numeric(plot_data$hospital)), labels = unique(plot_data$hospital), expand = c(0.01, 0.01)) +
-    scale_x_date(name = "Discharge Date", date_labels = "%b\n%Y", breaks = "6 months", expand = c(0, 0)) +
-    scale_fill_manual(values = gemini_colors()) +
-    labs(title = "Data Coverage", fill = "Table") +
-    plot_theme(base_size = 12) +
-    theme(axis.text.x = element_text(angle = 60, hjust = 1), legend.key.height = unit(0.02, "npc"))
+    ## prepare data for plotting
+    n_tables <- length(unique(table))
+
+    ## transform to long format to plot min-max date per table
+    plot_data <- melt.data.table(
+      lookup_coverage,
+      id.vars = c("genc_id", hosp_var, "discharge_date"),
+      measure.vars = table,
+      variable.name = "table",
+      value.name = "coverage_flag"
+    )[coverage_flag == TRUE, ]
+
+    plot_data[, `:=` (hospital = as.factor(get(hosp_var)), table = as.factor(table))]
+
+    plot_data <- plot_data[, .(
+      min = min(as.Date(discharge_date)),
+      max = max(as.Date(discharge_date))
+    ), by = c("hospital", "table")]
+
+    ## offset y based on number of hospitals & tables to be plotted
+    plot_data[, y := (
+      -as.numeric(hospital) - (as.numeric(table) - 1) * 0.5 / n_tables + (n_tables - 1) * 0.25 / n_tables
+    )]
+
+    ## plot overall coverage period
+    print(
+      ggplot(plot_data) +
+        geom_rect(aes(xmin = min, xmax = max, ymin = y - 0.25/n_tables, ymax = y + 0.25/n_tables, fill = table)) +
+        scale_y_continuous(name = "Hospital", breaks = -unique(as.numeric(plot_data$hospital)), labels = unique(plot_data$hospital), expand = c(0.01, 0.01)) +
+        scale_x_date(name = "Discharge Date", date_labels = "%b\n%Y", breaks = "6 months", expand = c(0, 0)) +
+        scale_fill_manual(values = gemini_colors()) +
+        labs(
+          title = "Data Availability by Hospital & Table",
+          caption = paste0("Note: This plot only provides a rough overview of the min-max available dates per site and table. Please carefully inspect data coverage\n",
+                           "within each data availability period to gain more detailed insights into data coverage and potential gaps in data availability."),
+          fill = "Table") +
+        plot_theme(base_size = 12) +
+        theme(
+          axis.text.x = element_text(angle = 60, hjust = 1),
+          legend.key.height = unit(0.02, "npc"),
+          plot.caption = element_text(hjust = 0, face = "italic", color = "red"))
+    )
+
+  }
+
+  #########  PLOT % GENC_IDs WITH TABLE ENTRY By MONTH  #########
+  if (plot_coverage == TRUE) {
+
+    cat("*** Plotting data coverage. This may take a while... ***")
+
+    plot_coverage <- function(table) {
+      ## query data
+      # write temp_table to improve query efficiency
+      suppressWarnings(DBI::dbSendQuery(dbcon,"Drop table if exists temp_data;"))
+      DBI::dbWriteTable(dbcon, c("pg_temp","temp_data"), cohort[,.(genc_id)], row.names = F, overwrite = T)
+
+      # dt_var <- case_when(
+      #   grepl(table %in% c("lab", "lab_subset")) ~ "collection_date_time",
+      #   grepl(table %in% c("pharmacy", "pharmacy_subset")) ~ "order_date_time",
+      #   grepl(table %in% c("transfusion", "transfusion_subset")) ~ "issue_date_time",
+      #   .default = ""
+      # )
+
+      data_hosp <- lapply(unique(sort(cohort$hospital_id)), function(hospital_id) {
+
+        cat(paste0("\n*** Querying ", table, " data for ", hospital_id), " ***")
+        data_hosp <- dbGetQuery(dbcon, paste0("SELECT DISTINCT genc_id
+                                       FROM ", table,
+                                       " WHERE EXISTS
+                                       (SELECT 1 FROM temp_data temp
+                                       WHERE temp.genc_id = ", table, ".genc_id);")) %>%
+          data.table()
+
+        return(data_hosp)
+
+      })
+
+      #data <- dbGetQuery(dbcon, paste0("SELECT DISTINCT genc_id from ", table, " where genc_id in (select genc_id from temp_data);")) %>% data.table()
+      cohort[, data_entry := genc_id %in% data$genc_id]
+      suppressWarnings(invisible(capture.output( # don't show warnings about differences in time points here?
+        plot_over_time(cohort, plot_var = "data_entry", ylimits = c(-2, 102)) +
+          labs(title = paste0("Data coverage - ", table), y = paste0("% genc_ids with entry in ", table, " table"))
+      )))
+    }
+
+    lapply(table, plot_coverage)
+  }
+
 
   return(lookup_coverage)
 }
