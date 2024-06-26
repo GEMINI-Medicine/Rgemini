@@ -4,7 +4,7 @@
 \alias{data_coverage}
 \title{Check data coverage}
 \usage{
-data_coverage(dbcon, cohort, table)
+data_coverage(dbcon, cohort, table, plot_minmax = TRUE, plot_coverage = TRUE)
 }
 \arguments{
 \item{dbcon}{(\code{DBIConnection})\cr
@@ -22,6 +22,13 @@ corresponds to a single encounter. Must contain the following columns:
 \item{table}{(\code{character})
 Which table(s) to include. If multiple, specify a character vector
 (e.g., \code{table = c("lab", "pharmacy", "radiology")}).}
+
+\item{plot_minmax}{(\code{logical})
+Flag indicating whether to plot minimum - maximum available dates per site
+per table.}
+
+\item{plot_coverage}{(\code{logical})
+Flag indicating whether to plot coverage (\% \code{genc_ids} with entry in table).}
 }
 \value{
 data.table object with the same number of rows as input "cohort", with
