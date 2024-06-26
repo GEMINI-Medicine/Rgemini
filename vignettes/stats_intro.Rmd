@@ -1,0 +1,125 @@
+---
+title: "Introduction to statistical analyses with GEMINI data"
+output:
+  html_vignette:
+    number_sections: true
+    toc: true
+    dfprint: kable
+
+vignette: >
+  %\VignetteIndexEntry{Statistics - Introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+```
+
+
+*  *  *  *
+
+
+# Introduction & overview
+
+This vignette illustrates an example analysis with (dummy) GEMINI data. The goal of this vignette is to provide an educational resource for analysts to make informed decisions at each analysis step. Throughout the vignette, we also provide links to existing resources with more detailed explanations.
+
+If you would like to discuss any topics in more detail, please use the [Rgemini discussion forum](https://github.com/GEMINI-Medicine/Rgemini/discussions/categories/statistics)
+
+
+*  *  *  *
+
+# Research question & conceptual model 
+
+- Research question: What is the effect of patients' age on clinical outcomes (mortality/LOS)?
+
+## DAG 
+
+- Understand and visualize conceptual model (confirm that project proposal/analysis plan is sound and makes sense)
+- Consider relevant covariates/confounders/mediators -> explain rationale for adjusted vs. unadjusted estimates
+- Covariates to include here:
+  - gender
+  - admission year
+  - Charlson comorbidity
+  - mLAPS
+  - ...
+- Additional things to consider:
+  - clustering by hospital
+
+```{r}
+
+```
+
+
+*  *  *  *
+
+# Data checks & cohort generation
+
+- Plot everything over time by hospital, look for missingness (adjust cohort if necessary/perform imputation)
+- Define cohort, outcomes, covariates [verify numbers match up] 
+
+```{r}
+# read sample data
+data <- readRDS("R:/GEMINI/Research Projects/Rgemini/stats_vignette/dummy_data_stats.rds")
+```
+
+
+*  *  *  *
+
+# Descriptive statistics
+
+- Generate table1 and descriptive plots (but no outcome peeking) 
+- Confirm that our cohort has sample size to support the analysis. 
+
+```{r}
+
+```
+
+
+*  *  *  *
+
+# Regression model
+
+- Fit a-priori regression models (informed by question & variable types -> decision tree illustrating different variable types and appropriate models)
+- Verify regression model assumptions are met 
+- Link to resources on hypothesis testing (e.g., how to interpret p-values correctly, correcting for multiple comparisons, p-hacking etc.)
+
+```{r}
+
+```
+
+- Do whatever other analyses (subgroups?) 
+- Wherever you can, functionalize your code if you are doing the same thing over and over again 
+
+```{r}
+
+```
+
+
+*  *  *  *
+
+# Result visualization & interpretation
+
+- Identify important plots, make those plots 
+- Think about uncertainty (do my estimates have measure of uncertainty? If not, find way to calculate SE.)
+- Check results against my intuition about what they should be, spot check randomly like this 
+- Incorporate results back into the clinician’s conceptual framework so I can explain the results in their language and emphasize things that matter to them, and downplay things they don’t need to understand [iterative] 
+
+```{r}
+
+```
+
+
+*  *  *  *
+
+# References & resources
+
+- https://bookdown.org/rwnahhas/RMPH/
+
+
+
