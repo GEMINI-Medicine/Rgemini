@@ -33,6 +33,11 @@
 #' @param plot_coverage (`logical`)
 #' Flag indicating whether to plot coverage (% `genc_ids` with entry in table).
 #'
+#' @param ...
+#' Additional inputs that can be passed to `plot_over_time`, e.g.:
+#' - `time_int = "fisc_year"` (instead of default `"month"`)
+#'
+#'
 #' @import RPostgreSQL ggplot2
 #' @importFrom purrr map2_df
 #'
@@ -48,7 +53,9 @@ data_coverage <- function(dbcon,
                           cohort,
                           table,
                           plot_minmax = TRUE,
-                          plot_coverage = TRUE) {
+                          plot_coverage = TRUE,
+                          ...) {
+
 
   #########  CHECK INPUTS  #########
   # check input type and column name
@@ -110,34 +117,26 @@ data_coverage <- function(dbcon,
 
     ## prepare data for plotting
     n_tables <- length(unique(table))
+    plot_data <- copy(data_coverage[data %in% table, ])
 
-    ## transform to long format to plot min-max date per table
-    plot_data <- melt.data.table(
-      lookup_coverage,
-      id.vars = c("genc_id", hosp_var, "discharge_date"),
-      measure.vars = table,
-      variable.name = "table",
-      value.name = "coverage_flag"
-    )[coverage_flag == TRUE, ]
-
-    plot_data[, `:=` (hospital = as.factor(get(hosp_var)), table = as.factor(table))]
-
-    plot_data <- plot_data[, .(
-      min = min(as.Date(discharge_date)),
-      max = max(as.Date(discharge_date))
-    ), by = c("hospital", "table")]
+    ## For any table * hosp combos that don't exist, merge and fill with NA so they correctly show up as empty on graph
+    # only includes hospitals that exist in cohort
+    append <- setDT(tidyr::crossing(data = unique(plot_data[, data]), hospital = unique(cohort$hospital_id)))
+    plot_data <- merge(append, plot_data, by.x = c("hospital", "data"), by.y = c(hosp_var, "data"), all.x = TRUE)
+    plot_data[, `:=` (hospital = as.factor(hospital), data = as.factor(data))]
 
     ## offset y based on number of hospitals & tables to be plotted
     plot_data[, y := (
-      -as.numeric(hospital) - (as.numeric(table) - 1) * 0.5 / n_tables + (n_tables - 1) * 0.25 / n_tables
+      -as.numeric(hospital) - (as.numeric(data) - 1) * 0.5 / n_tables + (n_tables - 1) * 0.25 / n_tables
     )]
 
     ## plot overall coverage period
     print(
       ggplot(plot_data) +
-        geom_rect(aes(xmin = min, xmax = max, ymin = y - 0.25/n_tables, ymax = y + 0.25/n_tables, fill = table)) +
+        geom_rect(aes(xmin = min_date, xmax = max_date, ymin = y - 0.25/n_tables, ymax = y + 0.25/n_tables, fill = table)) +
         scale_y_continuous(name = "Hospital", breaks = -unique(as.numeric(plot_data$hospital)), labels = unique(plot_data$hospital), expand = c(0.01, 0.01)) +
-        scale_x_date(name = "Discharge Date", date_labels = "%b\n%Y", breaks = "6 months", expand = c(0, 0)) +
+        scale_x_date(name = "Discharge Date", date_labels = "%b\n%Y", limits = c(min(as.Date(cohort$discharge_date_time)), max(as.Date(cohort$discharge_date_time))),
+                     breaks = "6 months", expand = c(0, 0)) +
         scale_fill_manual(values = gemini_colors()) +
         labs(
           title = "Data Availability by Hospital & Table",
@@ -156,14 +155,14 @@ data_coverage <- function(dbcon,
   #########  PLOT % GENC_IDs WITH TABLE ENTRY By MONTH  #########
   if (plot_coverage == TRUE) {
 
-    cat("*** Plotting data coverage. This may take a while... ***")
+    cat("*** Plotting data coverage. This may take a while... ***\n")
 
     # write temp table to make query below more efficient
-    suppressWarnings(DBI::dbSendQuery(dbcon,"Drop table if exists temp_data;"))
+    dbExecute(dbcon, "SET client_min_messages TO WARNING;") # suppress temp_table notice
+    DBI::dbSendQuery(dbcon,"Drop table if exists temp_data;")
     DBI::dbWriteTable(dbcon, c("pg_temp","temp_data"), cohort[,.(genc_id)], row.names = F, overwrite = T)
 
-
-    plot_coverage <- function(table, cohort) {
+    plot_coverage <- function(table, cohort, ...) {
 
       ## reset coverage flag, just in case
       cohort[, data_entry := FALSE]
@@ -176,8 +175,8 @@ data_coverage <- function(dbcon,
       # )
 
       ## Query unique genc_ids from table to check if genc_id exists
-      cat(paste0("\nQuerying ", table, " table..."))
-      data_hosp <- lapply(unique(sort(cohort$hospital_id)), function(hospital, cohort) {
+      cat(paste0("Querying ", table, " table..."))
+      data_hosp <- lapply(unique(sort(cohort$hospital_id)), function(hospital, cohort, ...) {
 
         data_hosp <- DBI::dbGetQuery(
           dbcon, paste("SELECT DISTINCT t.genc_id FROM ", table, " t
@@ -192,13 +191,18 @@ data_coverage <- function(dbcon,
       }, cohort = cohort)
 
       ## plot % genc_ids with entry in table
-      suppressWarnings(invisible(capture.output( # don't show warnings about differences in time points here
-        plot_over_time(cohort, plot_var = "data_entry", ylimits = c(-2, 102)) +
-          labs(title = paste0("Data coverage - ", table), y = paste0("% genc_ids with entry in ", table, " table")), type = c("output", "message")
+      capture.output(suppressWarnings(
+        # don't show warnings about differences in time points here
+        print(plot_over_time(cohort, plot_var = "data_entry", show_overall = FALSE, ...) +
+                labs(
+                  title = paste0("Data coverage - ", table),
+                  y = paste0("% genc_ids with entry in ", table, " table")
+                ) + theme(strip.text.y = element_text(margin = margin(b = 10, t = 10)))
       )))
     }
 
     lapply(table, plot_coverage, cohort = cohort)
+
   }
 
 
