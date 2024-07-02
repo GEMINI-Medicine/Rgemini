@@ -4,7 +4,14 @@
 \alias{data_coverage}
 \title{Check data coverage}
 \usage{
-data_coverage(dbcon, cohort, table, plot_minmax = TRUE, plot_coverage = TRUE)
+data_coverage(
+  dbcon,
+  cohort,
+  table,
+  plot_minmax = TRUE,
+  plot_coverage = TRUE,
+  ...
+)
 }
 \arguments{
 \item{dbcon}{(\code{DBIConnection})\cr
@@ -29,6 +36,11 @@ per table.}
 
 \item{plot_coverage}{(\code{logical})
 Flag indicating whether to plot coverage (\% \code{genc_ids} with entry in table).}
+
+\item{...}{Additional inputs that can be passed to \code{plot_over_time}, e.g.:
+\itemize{
+\item \code{time_int = "fisc_year"} (instead of default \code{"month"})
+}}
 }
 \value{
 data.table object with the same number of rows as input "cohort", with
