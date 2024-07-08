@@ -36,38 +36,75 @@ If you would like to discuss any topics in more detail, please use the [Rgemini 
 
 # Research question & conceptual model 
 
-- Research question: What is the effect of patients' age on clinical outcomes (mortality/LOS)?
+- Research question: What is the effect of patients' age on clinical outcomes (mortality/LOS) among patients with pneumonia?
+- Study design (e.g., cross-sectional? case control?) -> link to epidemiology resources
+- Use cross-sectional here
+
+- Bijun
 
 ## DAG 
 
 - Understand and visualize conceptual model (confirm that project proposal/analysis plan is sound and makes sense)
+  - Draw DAG
+  - Define each component (e.g., what are confounders?), link to resources for mediators
+  - Discuss causality
+  
 - Consider relevant covariates/confounders/mediators -> explain rationale for adjusted vs. unadjusted estimates
-- Covariates to include here:
+- Covariates to include here (explain variables):
   - gender
-  - admission year
+  - admission season
   - Charlson comorbidity
   - mLAPS
+  - admitted from ER
   - ...
-- Additional things to consider:
-  - clustering by hospital
+
+  - 1 person to start with sekelton (Kayley)
+  
 
 ```{r}
 
 ```
 
+- Additional things to consider:
+  - clustering by hospital?
+  - additional confounders?
+  - cohort considerations, additional exclusions/inclusions required?
+    - e.g., GIM vs. all-med? ER entry... ? previous hospitalizations
+    - exclude COVID patients (because study period starts before COVID -> don't want results to be confounded by COVID)
+
+
+## Cohort definition
+
+- inclusion/exclusion criteria
+  - show table 
+  - rationale for exclusion/inclusion criteria needs to be clear for section below
+  - 
+  
+Anne
 
 *  *  *  *
 
 # Data checks & cohort generation
 
+- 2 people to start on this
+
 - Plot everything over time by hospital, look for missingness (adjust cohort if necessary/perform imputation)
 - Define cohort, outcomes, covariates [verify numbers match up] 
+
+Anne
 
 ```{r}
 # read sample data
 data <- readRDS("R:/GEMINI/Research Projects/Rgemini/stats_vignette/dummy_data_stats.rds")
 ```
 
+- checks:
+  - data coverage
+  - missing values
+  - data types
+  - derived variables (categorical sex)
+  - outliers
+  
 
 *  *  *  *
 
@@ -88,6 +125,7 @@ data <- readRDS("R:/GEMINI/Research Projects/Rgemini/stats_vignette/dummy_data_s
 - Fit a-priori regression models (informed by question & variable types -> decision tree illustrating different variable types and appropriate models)
 - Verify regression model assumptions are met 
 - Link to resources on hypothesis testing (e.g., how to interpret p-values correctly, correcting for multiple comparisons, p-hacking etc.)
+- center/standardize predictors?
 
 ```{r}
 
