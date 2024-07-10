@@ -73,30 +73,124 @@ If you would like to discuss any topics in more detail, please use the [Rgemini 
     - exclude COVID patients (because study period starts before COVID -> don't want results to be confounded by COVID)
 
 
+
 ## Cohort definition
 
-- inclusion/exclusion criteria
-  - show table 
-  - rationale for exclusion/inclusion criteria needs to be clear for section below
-  - 
-  
+Based on the DAG above, the following exclusion/inclusion criteria will be applied below.
+- Incl. 1: Hospitalizations with Pneumonia as most responsible diagnosis code (MRDx) in in-patient diagnosis table
+- Incl. 2: Hospitalizations with available lab data (mLAPS)
+- Excl. 1: Patients with hospitalization in previous 30 day period
+
+-> rationale for exclusion/inclusion criteria needs to be clear here for section below, add more explanation
+
 Anne
 
 *  *  *  *
 
 # Data checks & cohort generation
 
-- 2 people to start on this
+Now that we have clarified the conceptual framework, let's take a look at the data.
 
-- Plot everything over time by hospital, look for missingness (adjust cohort if necessary/perform imputation)
-- Define cohort, outcomes, covariates [verify numbers match up] 
-
-Anne
+Here, we assume our baseline cohort consists of all GEMINI encounters from 32 hospitals and we'll load this dummy data from a saved file.
 
 ```{r}
 # read sample data
-data <- readRDS("R:/GEMINI/Research Projects/Rgemini/stats_vignette/dummy_data_stats.rds")
+data <- readRDS("R:/GEMINI/Research Projects/Rgemini/stats_vignette/dummy_data_stats.rds") %>% data.table()
 ```
+
+
+We will start with some data quality/coverage checks and cohort generation. The steps in this section are not strictly sequential! Instead, data checks and cohort refinement typically go hand in hand based on an iterative process. Specifically, you will generally start with some basic checks/exploration on the whole dataset, then apply cohort inclusion/exclusion steps, then check the data for cohort-specific issues, which may cause you to refine your inclusions/exclusions etc. etc. ... and you may repeat this process several times before finalizing your cohort. Throughout that process, you will also derive additional variables/create relevant flags which should be included in your data checks to make sure all variables in your final cohort are ready to be analyzed.
+
+
+## Check data coverage
+
+Next, we'll check data coverage. Generally, this should be performed on the whole dataset (prior to applying inclusion/exclusion steps).
+
+A basic sanity check is to plot the number of encounters per hospital per month:
+
+```{r fig.width=12}
+Rgemini::plot_over_time(data, func = "n")
+```
+
+**Things analysts should ask themselves when looking at these plots:**
+1) How many hospitals are available for which periods of time?
+2) Which hospitals have a large vs. small number of encounters (e.g., 102/121/131 have very few encounters)?
+3) Are there any drastic changes in the number of encounters over time (which could reflect changes in the GEMINI cohort or potential biases introduced during cohort generation, see below)?
+
+
+We should also check the individual columns by hospital * month, especially for variables that rely on clinical data (e.g., lab/pharmacy/vitals etc.) to make sure these data are consistently available across sites and time periods. 
+
+For example, in our analyses, we want to include mLAPS as a covariate. Since mLAPS relies on lab data, it's possible there are certain hospitals/time periods without mLAPS values. This is illustrated in the following plot (note: `plot_over_time()` will also print a warning with all hospital * month combinations that have missing data):
+
+```{r fig.width=12}
+Rgemini::plot_over_time(data, plot_var = "mlaps") # note: you can also specify func = "na" to directly plot % missing entries
+```
+
+
+**Things analysts should ask themselves when looking at these plots:**
+- Are there any hospitals/time periods where no lab data are available (even though administrative data may be available)?
+  - E.g., hospitals 102/121 have no mLAPS values, 123/124 only have mLAPS values starting in 2019 etc.
+- Are there any hospitals/time periods with implausible values/outliers?
+
+
+## Apply cohort inclusions/exclusions
+
+Next, we filter the cohort for all relevant encounters. In our example, we only want to include encounters with CCSR = "Pneumonia":
+
+```{r}
+cohort <- data[ccsr_default == "RSP002", ]
+```
+
+As a sanity check, let's check what % of encounters from the original cohort this corresponds to:
+
+```{r}
+100*nrow(cohort)/nrow(data)
+```
+
+## Create additional derived variables
+
+In the example dummy data, some derived variables have already been added (e.g., derived scores for Charlson Comorbidity, mLAPS, LOS, in-hospital mortality, CCSR condition for most responsible diagnosis code MRDx). 
+
+Let's derive some additional covariates, like "admission season":
+
+```{r}
+data[, admission_season := Rgemini::season(admission_date_time)]
+```
+
+
+
+## Check variable distributions
+
+Let's plot some basic descriptives and check the distribution & missingness of all relevant predictors/covariates and outcome variables:
+
+```{r fig.height = 8, fig.width = 8}
+Rgemini::plot_summary(cohort[, .(age, gender, mlaps, admit_charlson_derived, admitted_from_er, los_days_derived, in_hospital_mortality_derived, admission_season)])
+```
+
+**Things analysts should ask themselves when looking at these plots:**
+- What % of entries are missing for each variable?
+  - In our example, only mLAPS and Charlson Score have missing values
+- What are possible reasons for missing entries?
+  - mLAPS relies on lab entries, so one reason for missing entries might be that lab data are not available for certain hospitals/time periods (see below)
+  - For CCI codes: In-patient diagnoses are generally available for all encounters, but diagnoses at admission may not be available if an encounter was not admitted via ED
+- For continuous variables: Does the variable look normally distributed, or is it heavily skewed?
+  - For example, the distribution of length of stay is heavily right-skewed
+- Do the frequencies/distributions generally line up with my knowledge about GEMINI data?
+  - For example: Admission rate from ER is > 90%. This makes sense since GEMINI data largely represent patients with a General Internal Medicine touchpoint (or other medical subspecialties), the vast majority of whom are admitted from the ER
+  
+
+## Plot variables over time & by hospital (again)
+
+... to make sure none of our inclusion/exclusion steps caused any potential biases
+E.g., let's say we would want to analyze trends over time: We would want to make sure we are including the same time period from all hospitals
+
+```{r fig.width=12}
+Rgemini::plot_over_time(data, plot_var = "mlaps") # note: you can also specify func = "na" to directly plot % missing entries
+```
+
+-> adjust cohort again if necessary/perform imputation
+
+
 
 - checks:
   - data coverage
@@ -106,11 +200,13 @@ data <- readRDS("R:/GEMINI/Research Projects/Rgemini/stats_vignette/dummy_data_s
   - outliers
   
 
+
 *  *  *  *
 
 # Descriptive statistics
 
 - Generate table1 and descriptive plots (but no outcome peeking) 
+- Double check that numbers match up across all variables
 - Confirm that our cohort has sample size to support the analysis. 
 
 ```{r}
