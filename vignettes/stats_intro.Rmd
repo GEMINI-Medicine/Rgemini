@@ -36,9 +36,10 @@ If you would like to discuss any topics in more detail, please use the [Rgemini 
 
 # Research question & conceptual model 
 
-- Research question: What is the effect of patients' age on clinical outcomes (mortality/LOS) among patients with pneumonia?
-- Study design (e.g., cross-sectional? case control?) -> link to epidemiology resources
-- Use cross-sectional here
+- Research question: What is the effect of patients' age on clinical outcomes (mortality/LOS) among patients with community acquired pneumonia discharged between 2018 - 2020?
+
+- Study design: retrospective cohort study -> link to epidemiology resources for other designs (e.g., cross-sectional? case control?)
+- Give examples of GEMINI projects for different designs
 
 - Bijun
 
@@ -77,11 +78,15 @@ If you would like to discuss any topics in more detail, please use the [Rgemini 
 ## Cohort definition
 
 Based on the DAG above, the following exclusion/inclusion criteria will be applied below.
-- Incl. 1: Hospitalizations with Pneumonia as most responsible diagnosis code (MRDx) in in-patient diagnosis table
+- Incl. 1: Hospitalizations with Pneumonia as most responsible diagnosis code (MRDx) ICD-10-CA code for pneumonia in in-patient diagnosis table (need to be provided by SME)
+- Excl.?: Exclude post-admission pneumonia diagnoses???
 - Incl. 2: Hospitalizations with available lab data (mLAPS)
-- Excl. 1: Patients with hospitalization in previous 30 day period
+- Incl. 3: Hospitalizations admitted via ED (to exclude hospital-acquired pneumonia)
+- Excl. 1: Patients with hospitalization in previous 30 day period ("-")
 
 -> rationale for exclusion/inclusion criteria needs to be clear here for section below, add more explanation
+
+-> in collaboration with PI, multiple iterations based clinical knowledge/data checks etc. (e.g., discuss during kick-off meeting)
 
 Anne
 
@@ -104,9 +109,11 @@ We will start with some data quality/coverage checks and cohort generation. The 
 
 ## Check data coverage
 
-Next, we'll check data coverage. Generally, this should be performed on the whole dataset (prior to applying inclusion/exclusion steps).
+Next, we'll check data coverage. Generally, this should be performed on the whole dataset (within relevant time period, 2018-2020), (prior to applying inclusion/exclusion steps).
 
 A basic sanity check is to plot the number of encounters per hospital per month:
+
+- don't use term "missing" here (clarify below)
 
 ```{r fig.width=12}
 Rgemini::plot_over_time(data, func = "n")
@@ -135,7 +142,9 @@ Rgemini::plot_over_time(data, plot_var = "mlaps") # note: you can also specify f
 
 ## Apply cohort inclusions/exclusions
 
-Next, we filter the cohort for all relevant encounters. In our example, we only want to include encounters with CCSR = "Pneumonia":
+Next, we filter the cohort for all relevant encounters. In our example, we only want to include encounters with ICD-10-CA code = XXX:
+
+-> change this 
 
 ```{r}
 cohort <- data[ccsr_default == "RSP002", ]
@@ -146,6 +155,8 @@ As a sanity check, let's check what % of encounters from the original cohort thi
 ```{r}
 100*nrow(cohort)/nrow(data)
 ```
+- To add: Filter by relevant time periods with available lab data (+ other inclusion/exclusion steps)
+
 
 ## Create additional derived variables
 
@@ -158,8 +169,7 @@ data[, admission_season := Rgemini::season(admission_date_time)]
 ```
 
 
-
-## Check variable distributions
+## Check variable distributions & missingness
 
 Let's plot some basic descriptives and check the distribution & missingness of all relevant predictors/covariates and outcome variables:
 
@@ -174,10 +184,17 @@ Rgemini::plot_summary(cohort[, .(age, gender, mlaps, admit_charlson_derived, adm
   - mLAPS relies on lab entries, so one reason for missing entries might be that lab data are not available for certain hospitals/time periods (see below)
   - For CCI codes: In-patient diagnoses are generally available for all encounters, but diagnoses at admission may not be available if an encounter was not admitted via ED
 - For continuous variables: Does the variable look normally distributed, or is it heavily skewed?
-  - For example, the distribution of length of stay is heavily right-skewed
+  - For example, the distribution of length of stay is heavily right-skewed (-> what to do?, links to existing resources)
 - Do the frequencies/distributions generally line up with my knowledge about GEMINI data?
   - For example: Admission rate from ER is > 90%. This makes sense since GEMINI data largely represent patients with a General Internal Medicine touchpoint (or other medical subspecialties), the vast majority of whom are admitted from the ER
   
+## Impute missing values
+
+Difference between data coverage vs. missing values within time periods that have data coverage
+
+- mLAPS: Impute missing values with 0 (if lab data generally available)
+- CCI: with 0 
+
 
 ## Plot variables over time & by hospital (again)
 
