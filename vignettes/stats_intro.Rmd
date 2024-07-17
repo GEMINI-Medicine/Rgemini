@@ -19,6 +19,11 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
+library(data.table)
+library(dplyr)
+library(Rgemini)
+library(lubridate)
+
 ```
 
 
@@ -78,29 +83,28 @@ If you would like to discuss any topics in more detail, please use the [Rgemini 
 ## Cohort definition
 
 Based on the DAG above, the following exclusion/inclusion criteria will be applied below.
-- Incl. 1: Hospitalizations with Pneumonia as most responsible diagnosis code (MRDx) ICD-10-CA code for pneumonia in in-patient diagnosis table (need to be provided by SME)
-- Excl.?: Exclude post-admission pneumonia diagnoses???
+- Incl. 1: Hospitalizations with Pneumonia as most responsible diagnosis code (MRDx) ICD-10-CA code for pneumonia in in-patient diagnosis table (need to be provided by SME); Exclude post-admission pneumonia diagnoses???
 - Incl. 2: Hospitalizations with available lab data (mLAPS)
 - Incl. 3: Hospitalizations admitted via ED (to exclude hospital-acquired pneumonia)
-- Excl. 1: Patients with hospitalization in previous 30 day period ("-")
+- Excl. 1: Patients with hospitalization in previous 30 day period (to exclude hospital-acquired pneumonia)
 
 -> rationale for exclusion/inclusion criteria needs to be clear here for section below, add more explanation
 
 -> in collaboration with PI, multiple iterations based clinical knowledge/data checks etc. (e.g., discuss during kick-off meeting)
 
-Anne
 
 *  *  *  *
 
 # Data checks & cohort generation
 
-Now that we have clarified the conceptual framework, let's take a look at the data.
+Now that we have clarified the conceptual framework and cohort definition, let's take a look at the data.
 
 Here, we assume our baseline cohort consists of all GEMINI encounters from 32 hospitals and we'll load this dummy data from a saved file.
 
 ```{r}
 # read sample data
 data <- readRDS("R:/GEMINI/Research Projects/Rgemini/stats_vignette/dummy_data_stats.rds") %>% data.table()
+data <- data[ymd_hm(discharge_date_time) >= "2018-04-01 00:00" & ymd_hm(discharge_date_time) <= "2020-03-31 23:59", ]
 ```
 
 
@@ -109,23 +113,34 @@ We will start with some data quality/coverage checks and cohort generation. The 
 
 ## Check data coverage
 
-Next, we'll check data coverage. Generally, this should be performed on the whole dataset (within relevant time period, 2018-2020), (prior to applying inclusion/exclusion steps).
+- don't use term "missing" here (clarify below)
+
+First, we'll check data coverage. Generally, this should be performed on the whole dataset within the relevant cohort period (2018-2020), prior to applying any additional inclusion/exclusion steps.
+
+We typically check coverage by plotting variables by hospital * discharge month (because the data are pulled based on patients' discharge dates).
+
+**These plots can provide important insights into:**
+1) The number of hospitals that generally have data available for each time period
+2) Some hospitals might have a very large/small number of encounters overall, which can provide information about overall patient volume (e.g., small community hospitals will generally contribute fewer encounters to the overall cohort than large academic hospitals)
+3) We might observe drastic changes in variables over time (which could reflect changes in the GEMINI cohort, bugs in the derived variables, or potential biases introduced during cohort generation)
 
 A basic sanity check is to plot the number of encounters per hospital per month:
-
-- don't use term "missing" here (clarify below)
 
 ```{r fig.width=12}
 Rgemini::plot_over_time(data, func = "n")
 ```
 
-**Things analysts should ask themselves when looking at these plots:**
-1) How many hospitals are available for which periods of time?
-2) Which hospitals have a large vs. small number of encounters (e.g., 102/121/131 have very few encounters)?
-3) Are there any drastic changes in the number of encounters over time (which could reflect changes in the GEMINI cohort or potential biases introduced during cohort generation, see below)?
 
 
-We should also check the individual columns by hospital * month, especially for variables that rely on clinical data (e.g., lab/pharmacy/vitals etc.) to make sure these data are consistently available across sites and time periods. 
+
+
+
+
+
+
+
+
+Note that even if a hospital has a large number of encounters during certain time periods, this does not necessarily mean that GEMINI has all data for these encounters. This is particularly relevant for clinical data (e.g., lab/pharmacy/vitals/transfusions etc.), which may have low coverage for certain hospitals and time periods. Therefore, we should also check data coverage for any relevant clinical variables. 
 
 For example, in our analyses, we want to include mLAPS as a covariate. Since mLAPS relies on lab data, it's possible there are certain hospitals/time periods without mLAPS values. This is illustrated in the following plot (note: `plot_over_time()` will also print a warning with all hospital * month combinations that have missing data):
 
@@ -142,13 +157,135 @@ Rgemini::plot_over_time(data, plot_var = "mlaps") # note: you can also specify f
 
 ## Apply cohort inclusions/exclusions
 
-Next, we filter the cohort for all relevant encounters. In our example, we only want to include encounters with ICD-10-CA code = XXX:
+Next, we filter the cohort for all relevant encounters based on the inclusion/exclusion steps listed above. 
 
--> change this 
+To facilitate this process, let's derive a flag for each inclusion/exclusion criteria for each `genc_id`.
+
+
+### Incl. 1: Pneumonia diagnosis
+
+When filtering by ICD-10-CA diagnosis codes, please consider the following questions:
+
+**1. What diagnosis codes to include/exclude?** 
+This is usually determined by an SME who will provide you with a list of relevant ICD-10-CA codes. In our example, all ICD-10-CA codes from J10-J18 should be included for pneumonia. Usually, you should filter for all diagnosis codes that **start** with the same characters (i.e., including children codes like "J12.8"), unless otherwise specified. If you are unsure, please clarify with the SME. 
+
+**2. Is the diagnosis type relevant?** 
+In our example, the cohort definition specifies "Pneumonia as a most responsible diagnosis code (MRDx)". We therefore need to filter by `diagnosis_type = M`. According to (HSMR methodology)[https://www.cihi.ca/sites/default/files/document/hospital-standardized-mortality-ratio-meth-notes-en.pdf] `diagnosis_type = 6` (Proxy MRDx) should also be included and takes priority over type-M.
+
+**3. Do you want to include diagnosis codes from the ED and/or in-patient diagnosis table?**  
+When filtering for a specific condition based on patient's MRDx, we typically only include in-patient diagnoses as they tend to be more reliable compared to ED diagnoses. However, this decision may be project specific, and in certain cases it might make sense to consider ED diagnoses to increase sensitivity. If you are unsure, please discuss this with the SME. 
+
+
+The example data was already prefiltered for in-patient MRDx codes, so here we simply filter for the relevant diagnosis codes that start with J10-J18:
 
 ```{r}
-cohort <- data[ccsr_default == "RSP002", ]
+# change dummy data to include MRDx ipdiagnosis codes!!!
+# For now, add dummy diagnoses
+data[, ipdiagnosis_mrdx := dummy_diag(nrow(data), nrow(data), diagnosis_type = "M", pattern = "^E11|^J1|^M23")$diagnosis_code]
+
+data[, incl1_diag := grepl("^J12|^J13|^J14|^J15|^J16|^J17|^J18", ipdiagnosis_mrdx)]
 ```
+
+-> Exclude post-admission pneumonia diagnoses???
+
+
+### Incl. 2: Hospitalizations with available lab data
+
+Since we want to include `mLAPS` as a covariate, we need to make sure lab data were in principle available, allowing us to estimate each encounters illness severity based on lab results
+```{r}
+#data[, incl2_lab := ]
+```
+
+
+### Incl. 3: Hospitalizations admitted via ED (to exclude hospital-acquired pneumonia)
+
+```{r}
+data[, incl3_ed := admitted_from_er]
+```
+
+
+### Excl. 1: Patients with hospitalization in previous 30 day period (to exclude hospital-acquired pneumonia)
+
+Note: We need to calculate this based on all available data, before we apply additional exclusions
+- Based on epicare???
+
+```{r}
+data[, excl1_30day := Rgemini::hospitalizations_last_n_days(data)$n_hospitalizations > 0]
+```
+
+
+We can now build our cohort based on the inclusion/exclusion flags as follows:
+
+
+```{r}
+
+cohort_creation_table <- function(cohort, stepnames = NULL, stepnames_short = NULL) {
+  
+  # get exclusion steps (will be shown as -n (-X%) to show what number/% of patients was excluded)
+  excl <- grepl('^ex', stepnames_short, ignore.case = TRUE) 
+  
+  steps <- sapply(cohort, nrow)
+  
+  # create table
+  tabs <- data.table(steps, lag(steps))
+  tabs[, percent.change := round(1000*steps/V2)/10] 
+  
+  # for exclusion steps, show removal as -n (-X%) 
+  if (sum(excl) > 0) {
+    tabs[seq(sum(excl==F)+1, nrow(tabs)), percent.change := -1*round(1000*(1-steps/V2))/10] 
+    tabs[seq(sum(excl==F)+1, nrow(tabs)), steps := -(V2-steps)] 
+  }
+  tabs[is.na(tabs)] <- ""
+  tabs[, ':='(`N (%)` = ifelse(!is.na(percent.change), 
+                               paste0(steps, " (", percent.change, "%)"), 
+                               steps),
+              steps = NULL, percent.change = NULL, V2 = NULL)]
+  
+  
+  tabs <- cbind(stepnames, tabs)
+  
+  
+  # add row with final cohort number (only needed if previous step was showing
+  # exclusion
+  if (excl[length(excl)] == TRUE) {
+    tabs <- rbind(tabs, data.table(stepnames = "Final cohort",
+                                   `N (%)` = nrow(cohort[[length(cohort)]])))
+    stepnames_short <- c(stepnames_short, " ")
+  }
+  
+  tabs <- cbind(stepnames_short, tabs)
+  
+  colnames(tabs) <- c("", "Cohort creation step", "N (%)")
+  
+  return(tabs)
+}
+
+cohort_table <- cohort_creation_table(
+  cohort = list(data, # baseline cohort (discharges between 2018 - 2020) 
+                data[incl1_diag == TRUE], 
+                #
+                data[incl1_diag == TRUE & incl3_ed == TRUE],
+                data[incl1_diag == TRUE & incl3_ed == TRUE & excl1_30day == FALSE]),
+  stepnames = c("All GEMINI encounters discharged between Apr 2018 - March 2020", 
+                "Pneumonia MRDx", 
+                "Admitted from ED",
+                "Hospitalization in previous 30 day period"),
+  stepnames_short = c("", "Incl. 1", "Incl. 2", "Excl. 1")
+)
+
+print(cohort_table)
+
+
+```
+
+
+
+
+
+
+
+
+
 
 As a sanity check, let's check what % of encounters from the original cohort this corresponds to:
 
