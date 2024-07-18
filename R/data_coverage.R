@@ -62,8 +62,8 @@ data_coverage <- function(dbcon,
   # check which variable to use as hospital identifier
   hosp_var <- return_hospital_field(dbcon)
   check_input(cohort,
-    argtype = c("data.table", "data.frame"),
-    colnames = c("genc_id", hosp_var, "discharge_date_time")
+              argtype = c("data.table", "data.frame"),
+              colnames = c("genc_id", hosp_var, "discharge_date_time")
   )
 
   # get data coverage table
@@ -97,12 +97,12 @@ data_coverage <- function(dbcon,
     ## check if genc_ids discharge date falls within min-max date range
     # any genc_ids that fall within any gaps will have coverage = FALSE
     lookup_coverage[, paste0(table) :=
-      data_coverage_lookup[data == table][
-        lookup_coverage,
-        on = .(
-          hospital_id, min_date <= discharge_date, max_date >= discharge_date
-        ), .N, by = .EACHI
-      ]$N > 0]
+                      data_coverage_lookup[data == table][
+                        lookup_coverage,
+                        on = .(
+                          hospital_id, min_date <= discharge_date, max_date >= discharge_date
+                        ), .N, by = .EACHI
+                      ]$N > 0]
   }
 
   ## Apply this to all relevant tables
@@ -195,7 +195,7 @@ data_coverage <- function(dbcon,
       dbcon, c("pg_temp", "temp_data"), cohort[, .(genc_id)],
       row.names = FALSE, overwrite = TRUE
     )
-    # Analyze speed up the use of temp table
+    # Analyze speeds up the use of temp table
     DBI::dbSendQuery(dbcon, "Analyze temp_data")
 
     plot_coverage <- function(table, cohort, ...) {
@@ -205,20 +205,14 @@ data_coverage <- function(dbcon,
       ## Query unique genc_ids from table to check if genc_id exists
       cat(paste0("Querying ", table, " table...\n"))
       data_hosp <- lapply(unique(sort(cohort$hospital_id)), function(hospital, cohort, ...) {
+
+        ## Note: I already tested this and it seems like this query is faster than using EXIST
         data_hosp <- DBI::dbGetQuery(
           dbcon, paste("SELECT DISTINCT t.genc_id FROM ", table, " t
                         INNER JOIN temp_data temp ON t.genc_id = temp.genc_id
                         WHERE", paste0("t.hospital_id = '", hospital, "';"))
         ) %>%
           as.data.table()
-
-        # data_hosp <- DBI::dbGetQuery(
-        #   dbcon, paste("SELECT DISTINCT t.genc_id FROM ", table, " t
-        #                 INNER JOIN temp_data temp ON t.genc_id = temp.genc_id
-        #                 WHERE", paste0("t.hospital_id = '", hospital, "'"),
-        #                "AND exists (select 1 from temp_data c where c.genc_id = t.genc_id)", ";")) %>%
-        #   as.data.table()
-
 
         cohort[hospital_id == hospital, data_entry := genc_id %in% data_hosp$genc_id]
 
@@ -229,10 +223,10 @@ data_coverage <- function(dbcon,
       capture.output(suppressWarnings(
         # don't show warnings about differences in time points here
         print(plot_over_time(cohort, plot_var = "data_entry", show_overall = FALSE, ...) +
-          labs(
-            title = paste0("Data coverage - ", table),
-            y = paste0("% genc_ids with entry in ", table, " table")
-          ) + theme(strip.text.y = element_text(margin = margin(b = 10, t = 10))))
+                labs(
+                  title = paste0("Data coverage - ", table),
+                  y = paste0("% genc_ids with entry in ", table, " table")
+                ) + theme(strip.text.y = element_text(margin = margin(b = 10, t = 10))))
       ))
     }
 
