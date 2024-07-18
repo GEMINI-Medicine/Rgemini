@@ -8,7 +8,7 @@ data_coverage(
   dbcon,
   cohort,
   table,
-  plot_minmax = TRUE,
+  plot_timeline = TRUE,
   plot_coverage = TRUE,
   ...
 )
@@ -30,7 +30,7 @@ corresponds to a single encounter. Must contain the following columns:
 Which table(s) to include. If multiple, specify a character vector
 (e.g., \code{table = c("lab", "pharmacy", "radiology")}).}
 
-\item{plot_minmax}{(\code{logical})
+\item{plot_timeline}{(\code{logical})
 Flag indicating whether to plot minimum - maximum available dates per site
 per table.}
 
