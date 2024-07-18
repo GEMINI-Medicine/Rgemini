@@ -94,23 +94,10 @@ data_coverage <- function(dbcon,
   ## get min-max dates
   get_coverage_flag <- function(table) {
 
-    ## only cap by min-max date??
-    # table_coverage <- data_coverage_lookup[data == table, .(
-    #   min_date = min(as.Date(min_date)),
-    #   max_date = max(as.Date(max_date))
-    # ), by = hosp_var]
-    # lookup_coverage[, paste0(table) :=
-    #                   table_coverage[
-    #                     lookup_coverage, on = .(
-    #                       hospital_id, min_date <= discharge_date, max_date >= discharge_date
-    #                     ), .N, by = .EACHI
-    #                   ]$N > 0
-    # ]
-
     ## check if genc_ids discharge date falls within min-max date range
-    # any genc_ids that fall within gaps will have coverage = FALSE
+    # any genc_ids that fall within any gaps will have coverage = FALSE
     lookup_coverage[, paste0(table) :=
-                      data_coverage_lookup[
+                      data_coverage_lookup[data == table][
                         lookup_coverage, on = .(
                           hospital_id, min_date <= discharge_date, max_date >= discharge_date
                         ), .N, by = .EACHI
@@ -120,6 +107,16 @@ data_coverage <- function(dbcon,
 
   ## Apply this to all relevant tables
   lapply(table, get_coverage_flag)
+
+  warning(paste0(
+    "The returned table contains a flag indicating whether a genc_id was discharged during a time period where `",
+    paste(table, collapse = "`, `"), " `data were generally available. This DOES NOT necessarily mean that each ",
+    "individual genc_id where the flag is TRUE necessarily has an entry in the `",  paste(table, collapse = "`, `"), "` table! ",
+    "Additionally, it does not mean that all data are available throughout the whole length of stay of a given encounter,",
+    " nor that any particular individual columns are fully available/of high quality. ",
+    "Users are advised to perform additional data coverage/quality checks based on their specific needs.\n\n"
+  ), immediate. = TRUE)
+
 
   #########  PLOT AVAILABILITY PERIOD  #########
   if (plot_timeline == TRUE) {
@@ -167,9 +164,10 @@ data_coverage <- function(dbcon,
     warning(paste("The timeline plot only provides a rough overview of time periods with available data.",
                   "Please carefully inspect data coverage by running `data_coverage(..., plot_coverage = TRUE)`",
                   "and carefully inspect the % of encounters with available data per month and hospital",
-                  "to gain more detailed insights into data coverage and potential gaps/drops."), immediate. = TRUE)
+                  "to gain more detailed insights into data coverage and potential gaps/drops.\n\n"), immediate. = TRUE)
 
   }
+
 
   #########  PLOT % GENC_IDs WITH TABLE ENTRY By MONTH  #########
   if (plot_coverage == TRUE) {
