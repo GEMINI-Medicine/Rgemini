@@ -26,7 +26,7 @@
 #' Which table(s) to include. If multiple, specify a character vector
 #' (e.g., `table = c("lab", "pharmacy", "radiology")`).
 #'
-#' @param plot_minmax (`logical`)
+#' @param plot_timeline (`logical`)
 #' Flag indicating whether to plot minimum - maximum available dates per site
 #' per table.
 #'
@@ -52,7 +52,7 @@
 data_coverage <- function(dbcon,
                           cohort,
                           table,
-                          plot_minmax = TRUE,
+                          plot_timeline = TRUE,
                           plot_coverage = TRUE,
                           ...) {
 
@@ -67,13 +67,13 @@ data_coverage <- function(dbcon,
               colnames =  c("genc_id", hosp_var, "discharge_date_time"))
 
   # get data coverage table
-  data_coverage <- dbGetQuery(
+  data_coverage_lookup <- dbGetQuery(
     dbcon, "SELECT * from mapping_files.availability_table;"
   ) %>% data.table()
 
   # only tables that exist in availability_table are valid `table` inputs
   check_input(
-    table, argtype = "character", categories = unique(data_coverage$data)
+    table, argtype = "character", categories = unique(data_coverage_lookup$data)
   )
 
 
@@ -93,62 +93,81 @@ data_coverage <- function(dbcon,
 
   ## get min-max dates
   get_coverage_flag <- function(table) {
-    table_coverage <- data_coverage[data == table, .(
-      min_date = min(as.Date(min_date)),
-      max_date = max(as.Date(max_date))
-    ), by = hosp_var]
+
+    ## only cap by min-max date??
+    # table_coverage <- data_coverage_lookup[data == table, .(
+    #   min_date = min(as.Date(min_date)),
+    #   max_date = max(as.Date(max_date))
+    # ), by = hosp_var]
+    # lookup_coverage[, paste0(table) :=
+    #                   table_coverage[
+    #                     lookup_coverage, on = .(
+    #                       hospital_id, min_date <= discharge_date, max_date >= discharge_date
+    #                     ), .N, by = .EACHI
+    #                   ]$N > 0
+    # ]
 
     ## check if genc_ids discharge date falls within min-max date range
+    # any genc_ids that fall within gaps will have coverage = FALSE
     lookup_coverage[, paste0(table) :=
-                    table_coverage[
-                      lookup_coverage, on = .(
-                        hospital_id, min_date <= discharge_date, max_date >= discharge_date
-                      ), .N, by = .EACHI
-                    ]$N > 0
+                      data_coverage_lookup[
+                        lookup_coverage, on = .(
+                          hospital_id, min_date <= discharge_date, max_date >= discharge_date
+                        ), .N, by = .EACHI
+                      ]$N > 0
     ]
   }
 
   ## Apply this to all relevant tables
   lapply(table, get_coverage_flag)
 
-
   #########  PLOT AVAILABILITY PERIOD  #########
-  if (plot_minmax == TRUE) {
+  if (plot_timeline == TRUE) {
 
     ## prepare data for plotting
     n_tables <- length(unique(table))
-    plot_data <- copy(data_coverage[data %in% table, ])
+
+    plot_data <- copy(data_coverage_lookup[data %in% table, ])
 
     ## For any table * hosp combos that don't exist, merge and fill with NA so they correctly show up as empty on graph
     # only includes hospitals that exist in cohort
-    append <- setDT(tidyr::crossing(data = unique(plot_data[, data]), hospital = unique(cohort$hospital_id)))
+    append <- setDT(tidyr::crossing(data = unique(plot_data[, data]), hospital = unique(cohort$hospital_id)) %>% distinct())
     plot_data <- merge(append, plot_data, by.x = c("hospital", "data"), by.y = c(hosp_var, "data"), all.x = TRUE)
     plot_data[, `:=` (hospital = as.factor(hospital), data = as.factor(data))]
 
     ## offset y based on number of hospitals & tables to be plotted
     plot_data[, y := (
-      -as.numeric(hospital) - (as.numeric(data) - 1) * 0.5 / n_tables + (n_tables - 1) * 0.25 / n_tables
+      -as.numeric(hospital) - (as.numeric(data) - 1) * (2 * 0.25) / n_tables + (n_tables - 1) * 0.25 / n_tables
     )]
 
-    ## plot overall coverage period
+    ## plot overall coverage period (only plot those within relevant date range in cohort)
+    plot_data <- plot_data[max_date >= min(as.Date(cohort$discharge_date_time)) & min_date <= max(as.Date(cohort$discharge_date_time))]
+    # for edge cases where only single date is available, add an extra 2 days, otherwise, this doesn't show up in plot at all
+    # -> probably should remove these entries from coverage table to begin with...
+    plot_data[min_date == max_date, max_date := max_date + lubridate::days(2)]
+    # cap min/max dates according to min/max discharge dates
+    plot_data[min_date < min(as.Date(cohort$discharge_date_time)), min_date := min(as.Date(cohort$discharge_date_time))]
+    plot_data[max_date > max(as.Date(cohort$discharge_date_time)), max_date := max(as.Date(cohort$discharge_date_time))]
+
     print(
       ggplot(plot_data) +
-        geom_rect(aes(xmin = min_date, xmax = max_date, ymin = y - 0.25/n_tables, ymax = y + 0.25/n_tables, fill = table)) +
+        geom_rect(aes(xmin = min_date, xmax = max_date, ymin = y - 0.25 / n_tables, ymax = y + 0.25 / n_tables, fill = data)) +
         scale_y_continuous(name = "Hospital", breaks = -unique(as.numeric(plot_data$hospital)), labels = unique(plot_data$hospital), expand = c(0.01, 0.01)) +
-        scale_x_date(name = "Discharge Date", date_labels = "%b\n%Y", limits = c(min(as.Date(cohort$discharge_date_time)), max(as.Date(cohort$discharge_date_time))),
-                     breaks = "6 months", expand = c(0, 0)) +
+        scale_x_date(name = "Discharge Date", date_labels = "%b\n%Y", breaks = "6 months", expand = c(0, 0)) +
         scale_fill_manual(values = gemini_colors()) +
         labs(
-          title = "Data Availability by Hospital & Table",
-          caption = paste0("Note: This plot only provides a rough overview of the min-max available dates per site and table. Please carefully inspect data coverage\n",
-                           "within each data availability period to gain more detailed insights into data coverage and potential gaps in data availability."),
+          title = "Data Timeline by Hospital & Table",
           fill = "Table") +
         plot_theme(base_size = 12) +
         theme(
           axis.text.x = element_text(angle = 60, hjust = 1),
-          legend.key.height = unit(0.02, "npc"),
-          plot.caption = element_text(hjust = 0, face = "italic", color = "red"))
+          legend.key.height = unit(0.02, "npc"))
     )
+
+    warning(paste("The timeline plot only provides a rough overview of time periods with available data.",
+                  "Please carefully inspect data coverage by running `data_coverage(..., plot_coverage = TRUE)`",
+                  "and carefully inspect the % of encounters with available data per month and hospital",
+                  "to gain more detailed insights into data coverage and potential gaps/drops."), immediate. = TRUE)
 
   }
 
@@ -161,6 +180,8 @@ data_coverage <- function(dbcon,
     dbExecute(dbcon, "SET client_min_messages TO WARNING;") # suppress temp_table notice
     DBI::dbSendQuery(dbcon,"Drop table if exists temp_data;")
     DBI::dbWriteTable(dbcon, c("pg_temp","temp_data"), cohort[,.(genc_id)], row.names = F, overwrite = T)
+    #Analyze speed up the use of temp table
+    DBI::dbSendQuery(dbcon, "Analyze temp_data")
 
     plot_coverage <- function(table, cohort, ...) {
 
@@ -175,7 +196,7 @@ data_coverage <- function(dbcon,
       # )
 
       ## Query unique genc_ids from table to check if genc_id exists
-      cat(paste0("Querying ", table, " table..."))
+      cat(paste0("Querying ", table, " table...\n"))
       data_hosp <- lapply(unique(sort(cohort$hospital_id)), function(hospital, cohort, ...) {
 
         data_hosp <- DBI::dbGetQuery(
@@ -198,7 +219,7 @@ data_coverage <- function(dbcon,
                   title = paste0("Data coverage - ", table),
                   y = paste0("% genc_ids with entry in ", table, " table")
                 ) + theme(strip.text.y = element_text(margin = margin(b = 10, t = 10)))
-      )))
+        )))
     }
 
     lapply(table, plot_coverage, cohort = cohort)
