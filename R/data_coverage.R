@@ -3,8 +3,13 @@
 #'
 #' @description
 #' This function returns a flag for each `genc_id` indicating whether data for
-#' a table of interest (e.g., "lab") were in principle available for that
-#' `genc_id` based on a data coverage table in the database.
+#' a table of interest (e.g., "lab") were in principle available during the time
+#' period in which the `genc_id` was discharged.
+#'
+#' By default, the function will also return several plots and additional
+#' tables that show an overview of data availability timelines by hospital and
+#' table, and data coverage (% `genc_ids` with an entry in a given table for
+#' each month).
 #'
 #' @details
 #'
@@ -27,11 +32,25 @@
 #' (e.g., `table = c("lab", "pharmacy", "radiology")`).
 #'
 #' @param plot_timeline (`logical`)
-#' Flag indicating whether to plot minimum - maximum available dates per site
-#' per table.
+#' Flag indicating whether to plot an overview of data availability timelines
+#' by site and table.
+#' **Note:** This plot does not show actual coverage (e.g., % encounters with
+#' available data), but instead, only shows a rough overview of min-max dates,
+#' and illustrates major gaps in data availability. Specifically, gaps in this
+#' plot illustrate time periods where no data were available for at least 30
+#' consecutive days. Importantly, for time periods without any gaps, data may
+#' only be partially available (i.e., data coverage might be low or certain
+#' columns/values of interest may be missing). Users should further inspect the
+#' coverage plots (`plot_coverage = TRUE`) and perform additional customized
+#' checks based on their needs.
 #'
 #' @param plot_coverage (`logical`)
-#' Flag indicating whether to plot coverage (% `genc_ids` with entry in table).
+#' Flag indicating whether to plot data coverage.
+#' These plots show the percentage of `genc_ids` with an entry in the table(s)
+#' of interest. Data coverage is plotted by hospital and discharge month
+#' (because GEMINI data are pulled based on encounters' discharge date).
+#' Users should carefully inspect these plots for any drops/gaps in coverage
+#' that may not be visible in the timeline plots (see `plot_timeline` above).
 #'
 #' @param ...
 #' Additional inputs that can be passed to `plot_over_time`, e.g.:
@@ -39,16 +58,14 @@
 #'
 #'
 #' @import RPostgreSQL ggplot2
-#' @importFrom purrr map2_df
 #'
 #' @return
-#' data.table object with the same number of rows as input "cohort", with
+#' data.table object with the same number of rows as input `cohort`, with
 #' additional derived column(s) containing a flag indicating whether `genc_id`
-#' falls within data-coverage period for the table of interest.
+#' falls within data coverage period for the table of interest.
 #'
 #' @export
 #'
-
 data_coverage <- function(dbcon,
                           cohort,
                           table,
