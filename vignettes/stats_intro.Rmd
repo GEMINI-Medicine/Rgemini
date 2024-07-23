@@ -18,7 +18,6 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-
 ```
 
 
@@ -36,12 +35,50 @@ If you would like to discuss any topics in more detail, please use the [Rgemini 
 
 # Research question & conceptual model 
 
-- Research question: What is the effect of patients' age on clinical outcomes (mortality/LOS) among patients with community acquired pneumonia discharged between 2018 - 2020?
+In this tutorial, we will consider a hypothetical research study to investigate the question:
 
-- Study design: retrospective cohort study -> link to epidemiology resources for other designs (e.g., cross-sectional? case control?)
-- Give examples of GEMINI projects for different designs
+> **What is the effect of patients' age on clinical outcomes, in-hospital mortality, length of stay (LOS), among patients with community acquired pneumonia discharged between 2018 - 2020?**. 
 
-- Bijun
+
+## Study design
+
+As a general first step in conducting a research study, researchers would carefully consider the study design most suitable for answering the research question. 
+
+- The choice of study design is critical as it sets the framework for conducting the research, directs the analysis method, and influences robustness and validity of the study findings. For example, a cohort study provides stronger evidence for causal relationships than a case-control study. 
+
+- Although analysts typically do not come up the study design themselves, knowing the fundamentals of study designs would help in effectively understanding of research proposals and communicating with PIs/researchers. 
+
+- Below is a brief sketch of the core designs in clinical research. Check out these resources for a refresher on core study designs: [1](https://www.ncbi.nlm.nih.gov/books/NBK470342/), [2](https://doi.org/10.1016/S0140-6736(02)07283-5). Of note, although there are general core study designs, designs and their categorizations are not rigid, and there are grey areas that may not clearly distinguish one design from another.
+
+```{r, echo=FALSE, out.width = "40%", fig.align = "center", fig.cap="Figure 1. Common Study Designs. <span style='color:grey; font-size:11px'> ([Grimes DA and Schulz KF. The Lancet, 2002](https://doi.org/10.1016/S0140-6736(02)07283-5)) </span> " }
+knitr::include_graphics("figures/stat_vignette_study_design.png", dpi = 100)
+```
+
+
+- Clearly, the choice of study design is dependent on the nature of the data being used. 
+  + In experimental studies, data collection is driven by specific research questions (researchers have control over participant recruitment, intervention assignment and measurements collection). 
+  + In contrast, GEMINI data are sourced from **routine data** collected on the basis of hospital admissions primarily for administrative and clinical purposes, not tailored to answering any specific research question. 
+  
+  > Routine data: A major source of GEMINI data is routinely collected electronic health records (EHR). Thus, our data shares similar characteristics and considerations as other EHR-derived databases when conducting research. This topic is beyond the scope of this tutorial. Interest readers are encouraged to check out this [review](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6724703/) for a general overview using EHR-derived data for research (e.g. common terminology, data attributes, study designs, advantages and limitations. Note that the review article was written in a US setting but the discussed topics are generally applicable).
+
+  + The nature of routine data makes GEMINI data particularly suitable for conducting **observational studies**. Below are some example observational studies conducted using GEMINI data:
+    + Retrospective: <span style='font-size:11px'> [Bai AD et al. CHEST, 2024](https://doi.org/10.1016/j.chest.2023.08.008). [McIntyre MT et al. CMAJ, 2023](https://doi.org/10.1503/cmaj.221732). [Doshi S et al. JAMA Intern Med., 2023](https://doi.org/10.1001/jamainternmed.2023.2629).</span>
+    + Cross-sectional: <span style='font-size:11px'>[Razak F et al. CMAJ Open, 2020](https://doi.org/10.9778/cmajo.20200098), [Verma AA et al. CMAJ Open, 2019](https://doi.org/10.9778/cmajo.20180181)</span>
+    + Other designs are possible (e.g. methodology, machine learning etc), see [GEMINI publications](https://geminimedicine.ca/publications/)
+
+
+Now that we understand different study designs and attribute of GEMINI data, let’s determine what study design would be suitable to address our research question.
+
+- The exposure of interest is patient's age at admission. The outcomes of interest are in-hospital mortality and LOS.
+
+- Experimental studies are not suitable for this question (impossible for researchers to manipulate the exposure variable, age). The question is observational by nature.
+
+- The question is looking to estimate the association (magnitude and direction) between age at admission and patients’ clinical outcomes. An analytical study rather than a descriptive study is required. Since in-hospital mortality and LOS can only be known after hospital admission, the temporal relationship between exposure and outcome is implied. Therefore, our research question calls for a cohort study design, which means that researchers would assemble a cohort of patients based on characteristics at admission (e.g. community acquired pneumonia) and then follow them over time for the occurrence of outcomes. 
+
+- As the outcomes of interest have already occurred upon data extraction, the cohort is considered retrospective.
+
+- Therefore, a **retrospective cohort study** would be suitable for addressing the research question. 
+
 
 ## DAG 
 
@@ -271,6 +308,7 @@ Rgemini::plot_over_time(data, plot_var = "mlaps") # note: you can also specify f
 # References & resources
 
 - https://bookdown.org/rwnahhas/RMPH/
+
 
 
 
