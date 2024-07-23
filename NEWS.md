@@ -1,3 +1,6 @@
+# Rgemini `0.5.1`
+* Removed duplicated code in `icu_entry()`
+
 # Rgemini `0.5.0`
 
 * **New functions:**
