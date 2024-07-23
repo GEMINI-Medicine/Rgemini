@@ -1,4 +1,5 @@
 # Rgemini `0.5.1`
+* Improved query efficiency in `mlaps` and other functions for clinical derived variables
 * Removed duplicated code in `icu_entry()`
 
 # Rgemini `0.5.0`
