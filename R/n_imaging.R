@@ -93,25 +93,24 @@ n_imaging <- function(dbcon,
   # query db to pull imaging data
   imaging <- dbGetQuery(
     dbcon,
-      ifelse(exclude_ed == TRUE,
-            # filter by admission date time and exclude tests before admission
-            paste("with temp as (
+    ifelse(exclude_ed == TRUE,
+           # filter by admission date time and exclude tests before admission
+           paste("with temp as (
               select r.*, a.admission_date_time,
               case when r.ordered_date_time is null or r.ordered_date_time = '' or
               r.ordered_date_time = ' ' then r.performed_date_time >= a.admission_date_time
               else r.ordered_date_time >= a.admission_date_time end as case_result
               from", radiology_table, "r
-              left join", admdad_table, "a on r.genc_id = a.genc_id
-            ) select *
+              left join", admdad_table, "a on r.genc_id = a.genc_id where exists (select 1 from cohort_data c where c.genc_id=a.genc_id)
+            ) select genc_id, modality_mapped
             from temp
-            where case_result = 'true'
-            and exists (select 1 from cohort_data c where c.genc_id=temp.genc_id)"),
+            where case_result = 'true'"),
 
-            # not filter by admission date time
-            paste("select * from", radiology_table,  "r
+           # not filter by admission date time
+           paste("select genc_id, modality_mapped from", radiology_table,  "r
                   where exists (select 1 from cohort_data c where c.genc_id=r.genc_id)")
-      )
-    ) %>% as.data.table()
+    )
+  ) %>% as.data.table()
 
   # compute imaging number
   output_vars_names <- c(
