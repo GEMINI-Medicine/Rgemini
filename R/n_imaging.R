@@ -85,32 +85,32 @@ n_imaging <- function(dbcon,
   admdad_table <- find_db_tablename(dbcon, "admdad", verbose = FALSE)
   radiology_table <- find_db_tablename(dbcon, "radiology", verbose = FALSE)
 
+  # speed up query by using temp table with analyze
+  DBI::dbSendQuery(dbcon, "Drop table if exists cohort_data;")
+  DBI::dbWriteTable(dbcon, c("pg_temp","cohort_data"), cohort[, .(genc_id)], row.names = FALSE, overwrite = TRUE)
+  DBI::dbSendQuery(dbcon, "Analyze cohort_data")
+
   # query db to pull imaging data
   imaging <- dbGetQuery(
     dbcon,
-    paste0(
-      ifelse(exclude_ed == TRUE,
-            # filter by admission date time and exclude tests before admission
-            paste("with temp as (
-              select r.*,a.admission_date_time,
+    ifelse(exclude_ed == TRUE,
+           # filter by admission date time and exclude tests before admission
+           paste("with temp as (
+              select r.*, a.admission_date_time,
               case when r.ordered_date_time is null or r.ordered_date_time = '' or
               r.ordered_date_time = ' ' then r.performed_date_time >= a.admission_date_time
               else r.ordered_date_time >= a.admission_date_time end as case_result
               from", radiology_table, "r
-              left join", admdad_table, "a on r.genc_id = a.genc_id
-            ) select *
+              left join", admdad_table, "a on r.genc_id = a.genc_id where exists (select 1 from cohort_data c where c.genc_id=a.genc_id)
+            ) select genc_id, modality_mapped
             from temp
-            where case_result = 'true' and genc_id IN ("),
+            where case_result = 'true'"),
 
-            # not filter by admission date time
-            paste("select * from", radiology_table,  "r
-            where genc_id IN (")
-      ),
-      # IN method is used instead of temp table method to pull based on genc_id list,
-      # to ensure function works in HPC environment
-      paste(cohort$genc_id, collapse = ", "), ")"
+           # not filter by admission date time
+           paste("select genc_id, modality_mapped from", radiology_table,  "r
+                  where exists (select 1 from cohort_data c where c.genc_id=r.genc_id)")
     )
-    ) %>% as.data.table()
+  ) %>% as.data.table()
 
   # compute imaging number
   output_vars_names <- c(

@@ -85,32 +85,32 @@ n_routine_bloodwork <- function(dbcon,
   admdad_table <- find_db_tablename(dbcon, "admdad", verbose = FALSE)
   lab_table <- find_db_tablename(dbcon, "lab", verbose = FALSE)
 
+  # speed up query by using temp table with analyze
+  DBI::dbSendQuery(dbcon, "Drop table if exists cohort_data;")
+  DBI::dbWriteTable(dbcon, c("pg_temp","cohort_data"), cohort[, .(genc_id)], row.names = FALSE, overwrite = TRUE)
+  DBI::dbSendQuery(dbcon, "Analyze cohort_data")
+
   # load lab from db
   lab <- dbGetQuery(
     dbcon,
-    paste0(
-      ifelse(
-        exclude_ed == TRUE,
-        # filter by admission date time and exclude tests before admission
-        paste(
-          "select l.genc_id, l.collection_date_time, l.result_value,
-           l.test_type_mapped_omop, a.admission_date_time
+    ifelse(
+      exclude_ed == TRUE,
+      # filter by admission date time and exclude tests before admission
+      paste(
+        "select l.genc_id, l.result_value,
+           a.admission_date_time
            from", lab_table, "l
            left join", admdad_table, "a
-           on l.genc_id = a.genc_id
-           where l.test_type_mapped_omop in ('3000963','3019550') and
-           l.collection_date_time >= a.admission_date_time and a.genc_id in ("
-        ),
-        # no filter on collection date time
-        paste(
-          "select genc_id, collection_date_time, result_value, test_type_mapped_omop
-           from", lab_table,
-           "where test_type_mapped_omop in ('3019550', '3000963') and genc_id in ("
-        )
+           on l.genc_id = a.genc_id where exists (select 1 from cohort_data c where c.genc_id=a.genc_id)
+           and l.test_type_mapped_omop in ('3000963', '3019550') and
+           l.collection_date_time >= a.admission_date_time"
       ),
-      # IN method is used instead of temp table method to pull based on genc_id list,
-      # to ensure function works in HPC environment
-      paste(cohort$genc_id, collapse = ", "), ")"
+      # no filter on collection date time
+      paste(
+        "select l.genc_id, l.result_value
+           from", lab_table, "l where exists (select 1 from cohort_data c where c.genc_id=l.genc_id)",
+        "and l.test_type_mapped_omop in ('3000963', '3019550')"
+      )
     )
   ) %>% as.data.table
 
