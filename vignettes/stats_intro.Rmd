@@ -90,7 +90,7 @@ If you would like to discuss any topics in more detail, please use the [Rgemini 
 
 ## Cohort definition
 
-Based on the DAG above, we will define our cohort as follows:
+Based on the conceptual model discussed above, we will define our cohort as follows:
 
 + **Inclusion steps**
   - Incl. 1: All GIM encounters discharged between Apr 2018 - Apr 2020
