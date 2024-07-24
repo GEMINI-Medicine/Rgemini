@@ -97,32 +97,31 @@ n_rbc_transfusions <-function(dbcon,
   lab_table <- find_db_tablename(dbcon, "lab", verbose = FALSE)
   transfusion_table <- find_db_tablename(dbcon, "transfusion", verbose = FALSE)
 
+  # speed up query by using temp table with analyze
+  DBI::dbSendQuery(dbcon, "Drop table if exists cohort_data;")
+  DBI::dbWriteTable(dbcon, c("pg_temp","cohort_data"), cohort_subset[, .(genc_id)], row.names = FALSE, overwrite = TRUE)
+  DBI::dbSendQuery(dbcon, "Analyze cohort_data")
+
   # load transfusion from db
   transfusion <- dbGetQuery(
     dbcon,
-    paste0(
-      ifelse(
-        exclude_ed == TRUE,
-        # filter by admission date time and exclude tests before admission
-        paste(
-          "select t.genc_id, t.issue_date_time, a.admission_date_time
+    ifelse(
+      exclude_ed == TRUE,
+      # filter by admission date time and exclude tests before admission
+      paste(
+        "select t.genc_id, t.issue_date_time, a.admission_date_time
            from", transfusion_table, "t
            left join", admdad_table, "a
-           on t.genc_id = a.genc_id
-           where t.blood_product_mapped_omop in ('4022173','4137859','4144461') and
-           t.issue_date_time >= a.admission_date_time and a.genc_id in ("
-        ),
-        # no filter on collection date time
-        paste(
-          "select genc_id, issue_date_time, blood_product_mapped_omop
-           from", transfusion_table,
-          "where blood_product_mapped_omop in ('4022173','4137859','4144461') and
-           genc_id in ("
-        )
+           on t.genc_id = a.genc_id where exists (select 1 from cohort_data c where c.genc_id=a.genc_id)
+           and t.blood_product_mapped_omop in ('4022173','4137859','4144461') and
+           t.issue_date_time >= a.admission_date_time"
       ),
-      # IN method is used instead of temp table method to pull based on genc_id list,
-      # to ensure function works in HPC environment
-      paste(cohort_subset$genc_id, collapse = ", "), ")"
+      # no filter on collection date time
+      paste(
+        "select t.genc_id, t.issue_date_time, t.blood_product_mapped_omop
+           from", transfusion_table, "t where exists (select 1 from cohort_data c where c.genc_id=t.genc_id)",
+        "and t.blood_product_mapped_omop in ('4022173','4137859','4144461')"
+      )
     )
   ) %>% as.data.table
 
@@ -130,17 +129,17 @@ n_rbc_transfusions <-function(dbcon,
   hemoglobin <- dbGetQuery(
     dbcon,
     paste(
-      "select genc_id, collection_date_time, result_value
-      from", lab_table,
-      "where test_type_mapped_omop = '3000963' and genc_id in (",
-      paste(unique(transfusion$genc_id), collapse = ", "), ");"
+      "select l.genc_id, l.collection_date_time, l.result_value
+      from", lab_table, "l",
+      "where test_type_mapped_omop = '3000963'
+      and exists (select 1 from cohort_data c where c.genc_id=l.genc_id);"
     )
   ) %>% as.data.table()
 
   # format date time
-  transfusion[, issue_date_time := ymd_hm(issue_date_time)]
+  transfusion[, issue_date_time := convert_dt(issue_date_time)]
   transfusion[, issue_date_time_pre48 := issue_date_time - hours(48)]
-  hemoglobin[, collection_date_time := ymd_hm(collection_date_time)]
+  hemoglobin[, collection_date_time := convert_dt(collection_date_time)]
 
   # keep numeric values or those starting with <, >, @, ; less than
   # exclude other non-numeric hgb result values
