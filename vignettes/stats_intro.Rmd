@@ -42,7 +42,7 @@ In this tutorial, we will consider a hypothetical research study to investigate 
 
 ## Study design
 
-As a general first step in conducting a research study, researchers would carefully consider the study design most suitable for answering the research question. Although analysts typically do not come up the study design themselves, knowing the fundamentals of study designs would help in effectively understanding of research proposals and communicating with PIs/researchers. 
+As a general first step in conducting a research study, researchers would carefully consider the study design most suitable for answering the research question. Although analysts typically do not come up the study design themselves, knowing the fundamentals of study designs would help in effective understanding of research proposals and communicating with PIs and other researchers. 
 
 <br></br>
 <details>
@@ -65,7 +65,7 @@ knitr::include_graphics("figures/stat_vignette_study_design.png", dpi = 200)
   > <span style='font-size:12px'> **Routine data**: A major source of GEMINI data is routinely collected electronic health records (EHR). Thus, our data shares similar characteristics and considerations as other EHR-derived databases when conducting research. This topic is beyond the scope of this tutorial. Interest readers are encouraged to check out this [review](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6724703/) for a general overview using EHR-derived data for research (e.g. common terminology, data attributes, study designs, advantages and limitations. Note that the review article was written in a US setting but the discussed concepts are generally applicable). </span>
 
   + The nature of routine data makes GEMINI data particularly suitable for conducting **observational studies**. Below are some example observational studies conducted using GEMINI data:
-    + Retrospective: <span style='font-size:11px'> [Bai AD et al. CHEST, 2024](https://doi.org/10.1016/j.chest.2023.08.008). [McIntyre MT et al. CMAJ, 2023](https://doi.org/10.1503/cmaj.221732). [Doshi S et al. JAMA Intern Med., 2023](https://doi.org/10.1001/jamainternmed.2023.2629).</span>
+    + Retrospective cohort: <span style='font-size:11px'> [Bai AD et al. CHEST, 2024](https://doi.org/10.1016/j.chest.2023.08.008). [McIntyre MT et al. CMAJ, 2023](https://doi.org/10.1503/cmaj.221732). [Doshi S et al. JAMA Intern Med., 2023](https://doi.org/10.1001/jamainternmed.2023.2629).</span>
     + Cross-sectional: <span style='font-size:11px'>[Razak F et al. CMAJ Open, 2020](https://doi.org/10.9778/cmajo.20200098), [Verma AA et al. CMAJ Open, 2019](https://doi.org/10.9778/cmajo.20180181)</span>
     + Other designs are possible (e.g. methodology, machine learning etc), see [GEMINI publications](https://geminimedicine.ca/publications/)
 
