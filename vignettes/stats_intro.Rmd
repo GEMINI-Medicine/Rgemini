@@ -14,6 +14,8 @@ vignette: >
 ---
 
 ```{r setup, include = FALSE}
+library(tidyverse)
+library(data.table)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -43,234 +45,36 @@ If you would like to discuss any topics in more detail, please use the [Rgemini 
 
 - Bijun
 
-## DAG 
+# Conceptaulizing the Research Question
 
-- Understand and visualize conceptual model (confirm that project proposal/analysis plan is sound and makes sense)
-  - Draw DAG
-  - Define each component (e.g., what are confounders?), link to resources for mediators
-  - Discuss causality
-  
-- Consider relevant covariates/confounders/mediators -> explain rationale for adjusted vs. unadjusted estimates
-- Covariates to include here (explain variables):
-  - gender
-  - admission season
-  - Charlson comorbidity
-  - mLAPS
-  - admitted from ER
-  - ...
+## Directed Acyclic Graphs
+A visual, conceptual model can help understand the research question and how its components are related to one another. A directed acyclic graph (DAG) is a graphical representation of the relationship between the outcome, exposure, and related variables: [Digitale JC et al. J Clin Epidemiol, 2022](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8821727/). It can be helpful in picking a statistical model by 'drawing' out the assumptions between variables. The following DAG shows a simple theoretical causal relationship between age, the exposure variable, and in-hospital mortality, one of the outcomes of interest. 
 
-  - 1 person to start with sekelton (Kayley)
-  
-
-```{r}
-
+```{r, echo=FALSE, out.width = "60%", fig.align = "center", fig.cap="<span style='color:grey; font-size:11px'> DAG of age and in-hospital mortality</span> " }
+knitr::include_graphics("H://repos/Rgemini/vignettes/figures/dag_img1.png", dpi = 200)
 ```
 
-- Additional things to consider:
-  - clustering by hospital?
-  - additional confounders?
-  - cohort considerations, additional exclusions/inclusions required?
-    - e.g., GIM vs. all-med? ER entry... ? previous hospitalizations
-    - exclude COVID patients (because study period starts before COVID -> don't want results to be confounded by COVID)
+<br></br>
+<details>
+<summary>**Expand section to learn more about DAGs**</summary>
+- In a DAG, causal relationships are always unidirectional (i.e. age can be a cause of in-hospital mortality, but not the reverse). Two causal relationships following each other form a path.
+- There are common ways of describing the relationship between nodes (i.e. variables): 1) parent and children (direct relationship), 2) descendants and ancestors (any node along the path to or from another node)
+- A directed path describes a causal relationship between two nodes
+- An indirect path describes a confounding relationship between two nodes
+- For more information, check out these resources: [DAGs: A simple introduction with simulations in R](https://arelbundock.com/posts/acmq_en_06_dag/), [Applications of DAGs in Causal Inference](https://www.r-bloggers.com/2018/08/applications-of-dags-in-causal-inference/)
+</details>
 
+## Third Variables
+While it is possible to estimate the effect of age on mortality on its own, often called an unadjusted model, it is common practice to control for variables that could have a direct or indirect cause on the exposure and outcome. These variables are called confounders (also referred to as covariates) and controlling for these variables debiases the association between the variables of interest: [Wysocki A et al. Adv Meth Pract Pyschol Sci, 2022](https://journals.sagepub.com/doi/10.1177/25152459221095823#:~:text=After%20outlining%20a%20causal%20structure,of%20the%20predictor%20and%20outcome). 
 
+  - Gender can affect the age that one acquires pneumonia, along with the severity of illness            experienced when pneumonia is acquired: [Corica B et at. Intern   Emerg Med, 2022](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9294783/).
+  - Charlson comorbidities are comorbid conditions that can be used to predict the risk of death and     should be controlled for when considering the outcome of death: [Charlson ME et al. J Chronic Dis, 1987](https://www.sciencedirect.com/science/article/abs/pii/0021968187901718).
+  - mLAPS (modified laboratory acute physiology score) is an indicator of illness severity based on physiological lab data at or before admission  that is used to adjust for risk: [Roberts S et al. Preprint, 2023](https://www.medrxiv.org/content/10.1101/2023.01.06.23284273v1). GEMINI's in-house package, [Rgemini](https://gemini-medicine.github.io/Rgemini/reference/mlaps.html), is a fast and convenient way of deriving this variable.
 
-## Cohort definition
-
-Based on the DAG above, the following exclusion/inclusion criteria will be applied below.
-- Incl. 1: Hospitalizations with Pneumonia as most responsible diagnosis code (MRDx) ICD-10-CA code for pneumonia in in-patient diagnosis table (need to be provided by SME)
-- Excl.?: Exclude post-admission pneumonia diagnoses???
-- Incl. 2: Hospitalizations with available lab data (mLAPS)
-- Incl. 3: Hospitalizations admitted via ED (to exclude hospital-acquired pneumonia)
-- Excl. 1: Patients with hospitalization in previous 30 day period ("-")
-
--> rationale for exclusion/inclusion criteria needs to be clear here for section below, add more explanation
-
--> in collaboration with PI, multiple iterations based clinical knowledge/data checks etc. (e.g., discuss during kick-off meeting)
-
-Anne
-
-*  *  *  *
-
-# Data checks & cohort generation
-
-Now that we have clarified the conceptual framework, let's take a look at the data.
-
-Here, we assume our baseline cohort consists of all GEMINI encounters from 32 hospitals and we'll load this dummy data from a saved file.
-
-```{r}
-# read sample data
-data <- readRDS("R:/GEMINI/Research Projects/Rgemini/stats_vignette/dummy_data_stats.rds") %>% data.table()
+Including all variables in a statistical model is referred to as an adjusted model and can help better understand the causal relationship between an exposure and its outcome. The DAG below takes these variables into account. 
+```{r, echo=FALSE, out.width = "60%", fig.align = "center", fig.cap="<span style='color:grey; font-size:11px'> DAG of age and in-hospital mortality, including confounders </span> " }
+knitr::include_graphics("H://repos/Rgemini/vignettes/figures/dag_img2.png", dpi = 200)
 ```
 
-
-We will start with some data quality/coverage checks and cohort generation. The steps in this section are not strictly sequential! Instead, data checks and cohort refinement typically go hand in hand based on an iterative process. Specifically, you will generally start with some basic checks/exploration on the whole dataset, then apply cohort inclusion/exclusion steps, then check the data for cohort-specific issues, which may cause you to refine your inclusions/exclusions etc. etc. ... and you may repeat this process several times before finalizing your cohort. Throughout that process, you will also derive additional variables/create relevant flags which should be included in your data checks to make sure all variables in your final cohort are ready to be analyzed.
-
-
-## Check data coverage
-
-Next, we'll check data coverage. Generally, this should be performed on the whole dataset (within relevant time period, 2018-2020), (prior to applying inclusion/exclusion steps).
-
-A basic sanity check is to plot the number of encounters per hospital per month:
-
-- don't use term "missing" here (clarify below)
-
-```{r fig.width=12}
-Rgemini::plot_over_time(data, func = "n")
-```
-
-**Things analysts should ask themselves when looking at these plots:**
-1) How many hospitals are available for which periods of time?
-2) Which hospitals have a large vs. small number of encounters (e.g., 102/121/131 have very few encounters)?
-3) Are there any drastic changes in the number of encounters over time (which could reflect changes in the GEMINI cohort or potential biases introduced during cohort generation, see below)?
-
-
-We should also check the individual columns by hospital * month, especially for variables that rely on clinical data (e.g., lab/pharmacy/vitals etc.) to make sure these data are consistently available across sites and time periods. 
-
-For example, in our analyses, we want to include mLAPS as a covariate. Since mLAPS relies on lab data, it's possible there are certain hospitals/time periods without mLAPS values. This is illustrated in the following plot (note: `plot_over_time()` will also print a warning with all hospital * month combinations that have missing data):
-
-```{r fig.width=12}
-Rgemini::plot_over_time(data, plot_var = "mlaps") # note: you can also specify func = "na" to directly plot % missing entries
-```
-
-
-**Things analysts should ask themselves when looking at these plots:**
-- Are there any hospitals/time periods where no lab data are available (even though administrative data may be available)?
-  - E.g., hospitals 102/121 have no mLAPS values, 123/124 only have mLAPS values starting in 2019 etc.
-- Are there any hospitals/time periods with implausible values/outliers?
-
-
-## Apply cohort inclusions/exclusions
-
-Next, we filter the cohort for all relevant encounters. In our example, we only want to include encounters with ICD-10-CA code = XXX:
-
--> change this 
-
-```{r}
-cohort <- data[ccsr_default == "RSP002", ]
-```
-
-As a sanity check, let's check what % of encounters from the original cohort this corresponds to:
-
-```{r}
-100*nrow(cohort)/nrow(data)
-```
-- To add: Filter by relevant time periods with available lab data (+ other inclusion/exclusion steps)
-
-
-## Create additional derived variables
-
-In the example dummy data, some derived variables have already been added (e.g., derived scores for Charlson Comorbidity, mLAPS, LOS, in-hospital mortality, CCSR condition for most responsible diagnosis code MRDx). 
-
-Let's derive some additional covariates, like "admission season":
-
-```{r}
-data[, admission_season := Rgemini::season(admission_date_time)]
-```
-
-
-## Check variable distributions & missingness
-
-Let's plot some basic descriptives and check the distribution & missingness of all relevant predictors/covariates and outcome variables:
-
-```{r fig.height = 8, fig.width = 8}
-Rgemini::plot_summary(cohort[, .(age, gender, mlaps, admit_charlson_derived, admitted_from_er, los_days_derived, in_hospital_mortality_derived, admission_season)])
-```
-
-**Things analysts should ask themselves when looking at these plots:**
-- What % of entries are missing for each variable?
-  - In our example, only mLAPS and Charlson Score have missing values
-- What are possible reasons for missing entries?
-  - mLAPS relies on lab entries, so one reason for missing entries might be that lab data are not available for certain hospitals/time periods (see below)
-  - For CCI codes: In-patient diagnoses are generally available for all encounters, but diagnoses at admission may not be available if an encounter was not admitted via ED
-- For continuous variables: Does the variable look normally distributed, or is it heavily skewed?
-  - For example, the distribution of length of stay is heavily right-skewed (-> what to do?, links to existing resources)
-- Do the frequencies/distributions generally line up with my knowledge about GEMINI data?
-  - For example: Admission rate from ER is > 90%. This makes sense since GEMINI data largely represent patients with a General Internal Medicine touchpoint (or other medical subspecialties), the vast majority of whom are admitted from the ER
-  
-## Impute missing values
-
-Difference between data coverage vs. missing values within time periods that have data coverage
-
-- mLAPS: Impute missing values with 0 (if lab data generally available)
-- CCI: with 0 
-
-
-## Plot variables over time & by hospital (again)
-
-... to make sure none of our inclusion/exclusion steps caused any potential biases
-E.g., let's say we would want to analyze trends over time: We would want to make sure we are including the same time period from all hospitals
-
-```{r fig.width=12}
-Rgemini::plot_over_time(data, plot_var = "mlaps") # note: you can also specify func = "na" to directly plot % missing entries
-```
-
--> adjust cohort again if necessary/perform imputation
-
-
-
-- checks:
-  - data coverage
-  - missing values
-  - data types
-  - derived variables (categorical sex)
-  - outliers
-  
-
-
-*  *  *  *
-
-# Descriptive statistics
-
-- Generate table1 and descriptive plots (but no outcome peeking) 
-- Double check that numbers match up across all variables
-- Confirm that our cohort has sample size to support the analysis. 
-
-```{r}
-
-```
-
-
-*  *  *  *
-
-# Regression model
-
-- Fit a-priori regression models (informed by question & variable types -> decision tree illustrating different variable types and appropriate models)
-- Verify regression model assumptions are met 
-- Link to resources on hypothesis testing (e.g., how to interpret p-values correctly, correcting for multiple comparisons, p-hacking etc.)
-- center/standardize predictors?
-
-```{r}
-
-```
-
-- Do whatever other analyses (subgroups?) 
-- Wherever you can, functionalize your code if you are doing the same thing over and over again 
-
-```{r}
-
-```
-
-
-*  *  *  *
-
-# Result visualization & interpretation
-
-- Identify important plots, make those plots 
-- Think about uncertainty (do my estimates have measure of uncertainty? If not, find way to calculate SE.)
-- Check results against my intuition about what they should be, spot check randomly like this 
-- Incorporate results back into the clinician’s conceptual framework so I can explain the results in their language and emphasize things that matter to them, and downplay things they don’t need to understand [iterative] 
-
-```{r}
-
-```
-
-
-*  *  *  *
-
-# References & resources
-
-- https://bookdown.org/rwnahhas/RMPH/
-
-
+Confounders are not the only variables that can affect the relationship between age and in-hospital mortality or LOS. Mediators, or intermediate variables, lie in the causal pathway between the exposure variable and outcome. In this analysis, a mediator would be caused by age and is a cause of the outcome variables. This type of analysis, mediation analysis, is beyond the scope of this study, but it is important to understand the distinction between controlling for a confounder that could bias results, and including mediators that block the path to an outcome: [MacKinnon D. Res Soc Work Pract, 2011](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3366634/)
 
