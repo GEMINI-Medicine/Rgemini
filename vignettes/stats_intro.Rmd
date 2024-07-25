@@ -15,6 +15,7 @@ vignette: >
 ---
 
 ```{r include = FALSE}
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -25,6 +26,7 @@ knitr::opts_chunk$set(
 )
 
 library(data.table)
+library(tidyverse)
 library(dplyr)
 library(Rgemini)
 library(lubridate)
@@ -49,46 +51,89 @@ If you would like to discuss any topics in more detail, please use the [Rgemini 
 
 # Research question & conceptual model 
 
-- Research question: What is the effect of patients' age on clinical outcomes (mortality/LOS) among patients with community acquired pneumonia discharged between 2018 - 2020?
+In this tutorial, we will consider a hypothetical research study to investigate the question:
 
-- Study design: retrospective cohort study -> link to epidemiology resources for other designs (e.g., cross-sectional? case control?)
-- Give examples of GEMINI projects for different designs
+> **What is the effect of patients' age on clinical outcomes, in-hospital mortality, length of stay (LOS), among patients with pneumonia discharged between 2018 - 2020?**. 
 
-- Bijun
 
-## DAG 
+## Study design
 
-- Understand and visualize conceptual model (confirm that project proposal/analysis plan is sound and makes sense)
-  - Draw DAG
-  - Define each component (e.g., what are confounders?), link to resources for mediators
-  - Discuss causality
-  
-- Consider relevant covariates/confounders/mediators -> explain rationale for adjusted vs. unadjusted estimates
-- Covariates to include here (explain variables):
-  - gender
-  - admission season
-  - Charlson comorbidity
-  - mLAPS
-  - admitted from ER
-  - ...
+As a general first step in conducting a research study, researchers would carefully consider the study design most suitable for answering the research question. Although analysts typically do not come up the study design themselves, knowing the fundamentals of study designs would help in effective understanding of research proposals and communicating with PIs and other researchers. 
 
-  - 1 person to start with sekelton (Kayley)
-  
+<br></br>
+<details>
+<summary>**Expand section to learn about study designs and data considerations**</summary>
 
-```{r}
+- The choice of study design is critical as it sets the framework for conducting the research, directs the analysis method, and influences robustness and validity of the study findings. For example, a cohort study provides stronger evidence for causal relationships than a case-control study. 
 
+- Below is a brief sketch of the core designs in clinical research. Check out these resources for a refresher on core study designs: [1](https://www.ncbi.nlm.nih.gov/books/NBK470342/), [2](https://doi.org/10.1016/S0140-6736(02)07283-5). Of note, although there are general core study designs, designs and their categorizations are not rigid, and there are more complex designs and grey areas that may not clearly distinguish one design from another.
+
+```{r, echo=FALSE, out.width = "40%", fig.align = "center", fig.cap="Figure 1. Common Study Designs. <span style='color:grey; font-size:11px'> ([Grimes DA and Schulz KF. The Lancet, 2002](https://doi.org/10.1016/S0140-6736(02)07283-5)) </span> " }
+knitr::include_graphics("figures/stat_vignette_study_design.png", dpi = 200)
 ```
 
-- Additional things to consider:
-  - clustering by hospital?
-  - additional confounders?
-  - cohort considerations, additional exclusions/inclusions required?
-    - e.g., GIM vs. all-med? ER entry... ? previous hospitalizations
-    - exclude COVID patients (because study period starts before COVID -> don't want results to be confounded by COVID)
+
+- Clearly, the choice of study design is dependent on the nature of the data being used. 
+
+  + In experimental studies, data collection is driven by specific research questions (researchers have control over participant recruitment, intervention assignment and measurements collection). 
+  + In contrast, GEMINI data are sourced from **routine data** collected on the basis of hospital admissions primarily for administrative and clinical purposes, not tailored to answering any specific research question. 
+  
+  > <span style='font-size:12px'> **Routine data**: A major source of GEMINI data is routinely collected electronic health records (EHR). Thus, our data shares similar characteristics and considerations as other EHR-derived databases when conducting research. This topic is beyond the scope of this tutorial. You are encouraged to check out these review articles [1](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6724703/), [2](https://pubmed.ncbi.nlm.nih.gov/38273982/), [3](https://dcricollab.dcri.duke.edu/sites/NIHKR/KR/Acquiring%20and%20Using%20Electronic%20Health%20Record%20Data.pdf) for a general overview of using EHR-derived data for research (e.g. common terminology, data attributes, study designs, advantages and limitations. Note that these articles were written in a US setting but the discussed concepts are generally applicable). </span>
+
+  + The nature of routine data makes GEMINI data particularly suitable for conducting **observational studies**. Below are some example observational studies conducted using GEMINI data:
+    + Retrospective cohort: <span style='font-size:11px'> [Bai AD et al. CHEST, 2024](https://doi.org/10.1016/j.chest.2023.08.008). [McIntyre MT et al. CMAJ, 2023](https://doi.org/10.1503/cmaj.221732). [Doshi S et al. JAMA Intern Med., 2023](https://doi.org/10.1001/jamainternmed.2023.2629).</span>
+    + Cross-sectional: <span style='font-size:11px'>[Razak F et al. CMAJ Open, 2020](https://doi.org/10.9778/cmajo.20200098), [Verma AA et al. CMAJ Open, 2019](https://doi.org/10.9778/cmajo.20180181)</span>
+    + Other designs are possible (e.g. methodology, machine learning etc), see [GEMINI publications](https://geminimedicine.ca/publications/)
+
+</details>
+<br></br>
+
+With knowledge about study designs and GEMINI data characteristics, let’s determine which study design would be suitable for addressing our research question.
+
+- The exposure of interest is patient's age at admission. The outcomes of interest are in-hospital mortality and LOS.
+
+- Experimental studies are not possible for this question (impossible for researchers to manipulate the exposure variable, age). The question is **observational** by nature, which is well suited for using GEMINI data.
+
+- The question is looking to estimate the association (magnitude and direction) between patient's age at admission and their clinical outcomes. An analytical study rather than a descriptive study is required. Since in-hospital mortality and LOS can only be known after hospital admission, the temporal relationship between exposure and outcome is implied. Therefore, our research question calls for a **cohort study design**, which means that researchers would assemble a cohort of patients based on characteristics at admission (e.g. pneumonia) and then follow them over time for the occurrence of outcomes.
+
+- As the outcomes of interest have already occurred upon data extraction, the cohort is considered retrospective.
+
+- Therefore, a **retrospective cohort study** would be suitable for addressing the research question.
 
 
+# Conceptaulizing the Research Question
 
-## Cohort definition
+## Directed Acyclic Graphs
+A visual, conceptual model can help understand the research question and how its components are related to one another. A directed acyclic graph (DAG) is a graphical representation of the relationship between the outcome, exposure, and related variables: [Digitale JC et al. J Clin Epidemiol, 2022](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8821727/). It can be helpful in picking a statistical model by 'drawing' out the assumptions between variables. The following DAG shows a simple theoretical causal relationship between age, the exposure variable, and in-hospital mortality, one of the outcomes of interest. 
+
+```{r, echo=FALSE, out.width = "60%", fig.align = "center", fig.cap="<span style='color:grey; font-size:11px'> DAG of age and in-hospital mortality</span> " }
+knitr::include_graphics("H://repos/Rgemini/vignettes/figures/dag_img1.png", dpi = 200)
+```
+
+<br></br>
+<details>
+<summary>**Expand section to learn more about DAGs**</summary>
+- In a DAG, causal relationships are always unidirectional (i.e. age can be a cause of in-hospital mortality, but not the reverse). Two causal relationships following each other form a path.
+- There are common ways of describing the relationship between nodes (i.e. variables): 1) parent and children (direct relationship), 2) descendants and ancestors (any node along the path to or from another node)
+- A directed path describes a causal relationship between two nodes
+- An indirect path describes a confounding relationship between two nodes
+- For more information, check out these resources: [DAGs: A simple introduction with simulations in R](https://arelbundock.com/posts/acmq_en_06_dag/), [Applications of DAGs in Causal Inference](https://www.r-bloggers.com/2018/08/applications-of-dags-in-causal-inference/)
+</details>
+
+## Third Variables
+While it is possible to estimate the effect of age on mortality on its own, often called an unadjusted model, it is common practice to control for variables that could have a direct or indirect cause on the exposure and outcome. These variables are called confounders (also referred to as covariates) and controlling for these variables debiases the association between the variables of interest: [Wysocki A et al. Adv Meth Pract Pyschol Sci, 2022](https://journals.sagepub.com/doi/10.1177/25152459221095823#:~:text=After%20outlining%20a%20causal%20structure,of%20the%20predictor%20and%20outcome). 
+
+  - Gender can affect the age that one acquires pneumonia, along with the severity of illness            experienced when pneumonia is acquired: [Corica B et at. Intern   Emerg Med, 2022](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9294783/).
+  - Charlson comorbidities are comorbid conditions that can be used to predict the risk of death and     should be controlled for when considering the outcome of death: [Charlson ME et al. J Chronic Dis, 1987](https://www.sciencedirect.com/science/article/abs/pii/0021968187901718).
+  - mLAPS (modified laboratory acute physiology score) is an indicator of illness severity based on physiological lab data at or before admission  that is used to adjust for risk: [Roberts S et al. Preprint, 2023](https://www.medrxiv.org/content/10.1101/2023.01.06.23284273v1). GEMINI's in-house package, [Rgemini](https://gemini-medicine.github.io/Rgemini/reference/mlaps.html), is a fast and convenient way of deriving this variable.
+
+Including all variables in a statistical model is referred to as an adjusted model and can help better understand the causal relationship between an exposure and its outcome. The DAG below takes these variables into account. 
+```{r, echo=FALSE, out.width = "60%", fig.align = "center", fig.cap="<span style='color:grey; font-size:11px'> DAG of age and in-hospital mortality, including confounders </span> " }
+knitr::include_graphics("H://repos/Rgemini/vignettes/figures/dag_img2.png", dpi = 200)
+```
+
+Confounders are not the only variables that can affect the relationship between age and in-hospital mortality or LOS. Mediators, or intermediate variables, lie in the causal pathway between the exposure variable and outcome. In this analysis, a mediator would be caused by age and is a cause of the outcome variables. This type of analysis, mediation analysis, is beyond the scope of this study, but it is important to understand the distinction between controlling for a confounder that could bias results, and including mediators that block the path to an outcome: [MacKinnon D. Res Soc Work Pract, 2011](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3366634/)
+
 
 Based on the conceptual model discussed above, we will define our cohort as follows:
 
@@ -566,45 +611,6 @@ Rgemini::plot_over_time(cohort, plot_var = "mlaps", func = "mean")
 - Generate table1 and additional descriptive plots (but no outcome peeking)
 - Double check that numbers match up across all variables
 - Confirm that our cohort has sample size to support the analysis. 
-
-```{r}
-
-```
-
-
-*  *  *  *
-
-# Regression model
-
-- Fit a-priori regression models (informed by question & variable types -> decision tree illustrating different variable types and appropriate models)
-- Verify regression model assumptions are met 
-- Link to resources on hypothesis testing (e.g., how to interpret p-values correctly, correcting for multiple comparisons, p-hacking etc.)
-- center/standardize predictors?
-
-```{r}
-
-```
-
-- Do whatever other analyses (subgroups?) 
-- Wherever you can, functionalize your code if you are doing the same thing over and over again 
-
-```{r}
-
-```
-
-
-*  *  *  *
-
-# Result visualization & interpretation
-
-- Identify important plots, make those plots 
-- Think about uncertainty (do my estimates have measure of uncertainty? If not, find way to calculate SE.)
-- Check results against my intuition about what they should be, spot check randomly like this 
-- Incorporate results back into the clinician’s conceptual framework so I can explain the results in their language and emphasize things that matter to them, and downplay things they don’t need to understand [iterative] 
-
-```{r}
-
-```
 
 
 *  *  *  *
