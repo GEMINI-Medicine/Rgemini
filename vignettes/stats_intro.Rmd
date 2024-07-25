@@ -4,7 +4,7 @@ output:
   html_vignette:
     number_sections: true
     toc: true
-    toc_depth: 3
+    toc_depth: 2
     dfprint: kable
 
 vignette: >
@@ -101,7 +101,9 @@ With knowledge about study designs and GEMINI data characteristics, let’s dete
 - Therefore, a **retrospective cohort study** would be suitable for addressing the research question.
 
 
-# Conceptaulizing the Research Question
+*  *  *  *
+
+# Conceptualizing the Research Question
 
 ## Directed Acyclic Graphs
 A visual, conceptual model can help understand the research question and how its components are related to one another. A directed acyclic graph (DAG) is a graphical representation of the relationship between the outcome, exposure, and related variables: [Digitale JC et al. J Clin Epidemiol, 2022](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8821727/). It can be helpful in picking a statistical model by 'drawing' out the assumptions between variables. The following DAG shows a simple theoretical causal relationship between age, the exposure variable, and in-hospital mortality, one of the outcomes of interest. 
@@ -135,6 +137,8 @@ knitr::include_graphics("figures/dag_img2.png", dpi = 200)
 Confounders are not the only variables that can affect the relationship between age and in-hospital mortality or LOS. Mediators, or intermediate variables, lie in the causal pathway between the exposure variable and outcome. In this analysis, a mediator would be caused by age and is a cause of the outcome variables. This type of analysis, mediation analysis, is beyond the scope of this study, but it is important to understand the distinction between controlling for a confounder that could bias results, and including mediators that block the path to an outcome: [MacKinnon D. Res Soc Work Pract, 2011](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3366634/)
 
 
+## Cohort definition
+
 Based on the conceptual model discussed above, we will define our cohort as follows:
 
 + **Inclusion steps**
@@ -155,6 +159,8 @@ The reason for the two exclusion steps is to make sure that any covariates we in
 The cohort inclusion/exclusion steps should be developed in close collaboration between the clinical researcher and data analyst. Typically, the steps will need to be refined during the project kick-off meeting to make sure the specific criteria, sequence, and rationale for the cohort definition makes sense. The cohort creation steps may also need to be refined once the analyst has completed the data checks (see next section), which might reveal unforeseen challenges/data issues.
 
 </details>
+
+
 
 *  *  *  *
 
