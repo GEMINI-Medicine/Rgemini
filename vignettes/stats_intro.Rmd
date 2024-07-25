@@ -604,6 +604,7 @@ Rgemini::plot_over_time(cohort, plot_var = "mlaps", func = "mean")
 **Note:** For the purpose of data exploration and data quality checks, it can often be helpful to plot means instead of medians. Because means are more sensitive to outliers than medians (see more details in the following section), it's often easier to detect unexpected trends/outliers when plotting the mean.
 
 
+
 *  *  *  *
 
 # Descriptive statistics
@@ -612,6 +613,45 @@ Rgemini::plot_over_time(cohort, plot_var = "mlaps", func = "mean")
 - Double check that numbers match up across all variables
 - Confirm that our cohort has sample size to support the analysis. 
 
+```{r}
+
+```
+
+
+*  *  *  *
+
+# Regression model
+
+- Fit a-priori regression models (informed by question & variable types -> decision tree illustrating different variable types and appropriate models)
+- Verify regression model assumptions are met 
+- Link to resources on hypothesis testing (e.g., how to interpret p-values correctly, correcting for multiple comparisons, p-hacking etc.)
+- center/standardize predictors?
+
+```{r}
+
+```
+
+- Do whatever other analyses (subgroups?) 
+- Wherever you can, functionalize your code if you are doing the same thing over and over again 
+
+```{r}
+
+```
+
+
+*  *  *  *
+
+# Result visualization & interpretation
+
+- Identify important plots, make those plots 
+- Think about uncertainty (do my estimates have measure of uncertainty? If not, find way to calculate SE.)
+- Check results against my intuition about what they should be, spot check randomly like this 
+- Incorporate results back into the clinician’s conceptual framework so I can explain the results in their language and emphasize things that matter to them, and downplay things they don’t need to understand [iterative] 
+
+```{r}
+
+```
+
 
 *  *  *  *
 
@@ -619,6 +659,8 @@ Rgemini::plot_over_time(cohort, plot_var = "mlaps", func = "mean")
 
 - Missing data: https://onlinecjc.ca/article/S0828-282X(20)31111-9/fulltext#:~:text=Missing%20data%20is%20a%20common,all%20subjects%20in%20the%20sample
 - Introduction to regression analyses: https://bookdown.org/rwnahhas/RMPH/
+
+
 
 
 
