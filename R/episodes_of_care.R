@@ -119,11 +119,13 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
       ## write a temp table to improve querying efficiency
       DBI::dbSendQuery(dbcon,"Drop table if exists temp_data;")
       DBI::dbWriteTable(dbcon, c("pg_temp","temp_data"), restricted_cohort[,.(genc_id)], row.names = F, overwrite = T)
+      #Analyze speed up the use of temp table
+      DBI::dbSendQuery(dbcon,"Analyze temp_data")
 
       admdad <- DBI::dbGetQuery(dbcon, paste0("select genc_id, patient_id_hashed, age, admit_category, admission_date_time,
                                             discharge_date_time, institution_from_type, institution_to_type
                                             from ", admdad_name,
-                                            " where genc_id in (select genc_id from temp_data); ")) %>% as.data.table()
+                                            " a where exists (select 1 from temp_data t where t.genc_id=a.genc_id); ")) %>% as.data.table()
     }
   } else {
     admdad <- DBI::dbGetQuery(dbcon, paste0("select genc_id, patient_id_hashed, age, admit_category, admission_date_time,
