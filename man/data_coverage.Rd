@@ -31,47 +31,91 @@ Which table(s) to include. If multiple, specify a character vector
 (e.g., \code{table = c("lab", "pharmacy", "radiology")}).}
 
 \item{plot_timeline}{(\code{logical})
-Flag indicating whether to plot an overview of data availability timelines
-by site and table.
-\strong{Note:} This plot does not show actual coverage (e.g., \% encounters with
-available data), but instead, only shows a rough overview of min-max dates,
-and illustrates major gaps in data availability. Specifically, gaps in this
-plot illustrate time periods where no data were available for at least 30
-consecutive days. Importantly, for time periods without any gaps, data may
-only be partially available (i.e., data coverage might be low or certain
-columns/values of interest may be missing). Users should further inspect the
+Flag indicating whether to plot an overview of data timelines by hospital and
+table.
+\strong{Note:} This plot only shows a rough overview of min-max dates per table
+for each hospital. Gaps in this plot illustrate time periods where no data
+were available for at least 30 consecutive days. Importantly, for time
+periods without any gaps, overall data volume may still be low and certain
+entries/columns may still be missing. Users should further inspect the
 coverage plots (\code{plot_coverage = TRUE}) and perform additional customized
 checks based on their needs.}
 
 \item{plot_coverage}{(\code{logical})
-Flag indicating whether to plot data coverage.
-These plots show the percentage of \code{genc_ids} with an entry in the table(s)
-of interest. Data coverage is plotted by hospital and discharge month
-(because GEMINI data are pulled based on encounters' discharge date).
-Users should carefully inspect these plots for any drops/gaps in coverage
-that may not be visible in the timeline plots (see \code{plot_timeline} above).}
+Flag indicating whether to plot data coverage. These plots show the
+percentage of \code{genc_ids} with an entry in the table(s) of interest. Data
+coverage is plotted by hospital and discharge month (because GEMINI data are
+pulled based on encounters' discharge date). Users should carefully inspect
+these plots for any drops/gaps in coverage that may not be visible in the
+timeline plots (see \code{plot_timeline} above).}
 
-\item{...}{Additional inputs that can be passed to \code{plot_over_time}, e.g.:
+\item{...}{When \code{plot_coverage = TRUE}: Additional inputs that can be passed to
+\code{Rgemini::plot_over_time()} to control plot aesthetics, e.g.:
 \itemize{
-\item \code{time_int = "fisc_year"} (instead of default \code{"month"})
+\item \code{colors}
+\item \code{ylimits}
+\item \code{base_size}
 }}
 }
 \value{
-data.table object with the same number of rows as input \code{cohort}, with
-additional derived column(s) containing a flag indicating whether \code{genc_id}
-falls within data coverage period for the table of interest.
+If the plotting flags are set to \code{FALSE}, this function will return a single
+\code{data.table} object with a flag for each \code{genc_id} indicating whether the
+encounter was discharged during a time period in which data coverage was
+high for a given table of interest (e.g., \code{"lab"} table).
+
+When the plotting flags are set to \code{TRUE} (default), the function will
+return additional tables (as a list) and plots:
+\itemize{
+\item If \code{plot_timeline = TRUE}: Returns a plot showing an overview of data
+timelines by hospital for each table. Will also return the corresponding
+table \code{timeline_data} that lists the min - max dates of the data timeline
+(in long format, where multiple rows indicate gaps in the data timeline)
+\item If \code{plot_coverage = TRUE}: Returns a plot showing the percentage of
+\code{genc_ids} with an entry in a given table by discharge month and hospital.
+Will also return the same numbers as a table called \code{coverage_data}.
+}
 }
 \description{
-This function returns a flag for each \code{genc_id} indicating whether data for
-a table of interest (e.g., "lab") were in principle available during the time
-period in which the \code{genc_id} was discharged.
-
-By default, the function will also return several plots and additional
-tables that show an overview of data availability timelines by hospital and
-table, and data coverage (\% \code{genc_ids} with an entry in a given table for
-each month).
+This function facilitates data coverage checks that analysts should perform
+during data exploration & cohort generation. Data coverage reflects the
+overall volume of data per table (over time & by hospital). Specifically,
+this function checks for "gaps" in the data timeline (e.g., are there any
+hospitals/time periods for which GEMINI did not receive any data at all?),
+and also provides more detailed insights into coverage by month and hospital
+(e.g., what percentage of encounters have an entry in a given table?).
 }
-\section{Warning}{
+\details{
+Analysts should use the information provided by this function to inform their
+decisions about which hospitals/time periods to include in their analyses,
+depending on the variables of interest. For example, if analyses rely on lab
+data (e.g., \code{mlaps}), users should carefully inspect lab data coverage.
+Importantly, for time periods with high data coverage, individual
+\code{genc_ids} may still have missing entries in the lab table (e.g., because
+testing was not indicated). Users should carefully consider how to handle
+these missing values, and whether or not they can be imputed.
+}
+\examples{
+\dontrun{
+drv <- dbDriver("PostgreSQL")
+dbcon <- DBI::dbConnect(drv,
+  dbname = "db",
+  host = "domain_name.ca",
+  port = 1234,
+  user = getPass("Enter user:"),
+  password = getPass("password")
+)
 
+## run function with default flags to create all plots
+coverage <- data_coverage(db, cohort, table = c("lab", "radiology"))
+
+# get flag per encounter
+coverage_flag_enc <- coverage[[1]]
+
+# get data timeline (min-max dates)
+data_timeline <- coverage[[2]]
+
+# get \% encounters with entry in each table by discharge month & hospital
+prct_coverage <- coverage[[3]]
 }
 
+}
