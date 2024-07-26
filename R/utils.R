@@ -903,6 +903,8 @@ fix_var_str <- function(str) {
 }
 
 
+#' @title Suppress messages/warnings
+#'
 #' @description
 #' Run function without showing any errors/warnings/printed messages
 #'

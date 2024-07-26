@@ -22,7 +22,8 @@
 #' these missing values, and whether or not they can be imputed.
 #'
 #'
-#' @section Warning!
+#' @section Warning!:
+#'
 #' \itemize{
 #'    \item{Data coverage checks should generally be performed on the whole
 #' dataset, prior to applying any additional cohort inclusions/exclusions.}
