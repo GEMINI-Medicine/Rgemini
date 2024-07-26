@@ -94,6 +94,19 @@ Importantly, for time periods with high data coverage, individual
 testing was not indicated). Users should carefully consider how to handle
 these missing values, and whether or not they can be imputed.
 }
+\section{Warning!}{
+
+
+\itemize{
+\item{Data coverage checks should generally be performed on the whole
+dataset, prior to applying any additional cohort inclusions/exclusions.}
+\item{Data coverage checks are particularly relevant for clinical data tables
+(e.g., lab, pharmacy, radiology, transfusions, vitals, clinical notes etc.).}
+\item{This function should be used as a starting point for data coverage checks,
+but users are advised to perform additional checks based on their needs.}
+}
+}
+
 \examples{
 \dontrun{
 drv <- dbDriver("PostgreSQL")
