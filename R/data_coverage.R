@@ -2,20 +2,35 @@
 #' Check data coverage
 #'
 #' @description
-#' This function returns a flag for each `genc_id` indicating whether data for
-#' a table of interest (e.g., "lab") were in principle available during the time
-#' period in which the `genc_id` was discharged.
+#' This function facilitates data coverage checks that analysts should perform
+#' during data exploration & cohort generation. Data coverage reflects the
+#' overall volume of data per table (over time & by hospital). Specifically,
+#' this function checks for "gaps" in the data timeline (e.g., are there any
+#' hospitals/time periods for which GEMINI did not receive any data at all?),
+#' and also provides more detailed insights into coverage by month and hospital
+#' (e.g., what percentage of encounters have an entry in a given table?).
 #'
-#' By default, the function will also return several plots and additional
-#' tables that show an overview of data availability timelines by hospital and
-#' table, and data coverage (% `genc_ids` with an entry in a given table for
-#' each month).
 #'
 #' @details
+#' Analysts should use the information provided by this function to inform their
+#' decisions about which hospitals/time periods to include in their analyses,
+#' depending on the variables of interest. For example, if analyses rely on lab
+#' data (e.g., `mlaps`), users should carefully inspect lab data coverage.
+#' Importantly, for time periods with high data coverage, individual
+#' `genc_ids` may still have missing entries in the lab table (e.g., because
+#' testing was not indicated). Users should carefully consider how to handle
+#' these missing values, and whether or not they can be imputed.
 #'
 #'
-#' @section Warning:
-#'
+#' @section Warning!
+#' \itemize{
+#'    \item{Data coverage checks should generally be performed on the whole
+#' dataset, prior to applying any additional cohort inclusions/exclusions.}
+#'    \item{Data coverage checks are particularly relevant for clinical data tables
+#' (e.g., lab, pharmacy, radiology, transfusions, vitals, clinical notes etc.).}
+#'    \item{This function should be used as a starting point for data coverage checks,
+#' but users are advised to perform additional checks based on their needs.}
+#' }
 #'
 #' @param dbcon (`DBIConnection`)\cr
 #' A database connection to any GEMINI database.
@@ -32,37 +47,75 @@
 #' (e.g., `table = c("lab", "pharmacy", "radiology")`).
 #'
 #' @param plot_timeline (`logical`)
-#' Flag indicating whether to plot an overview of data availability timelines
-#' by site and table.
-#' **Note:** This plot does not show actual coverage (e.g., % encounters with
-#' available data), but instead, only shows a rough overview of min-max dates,
-#' and illustrates major gaps in data availability. Specifically, gaps in this
-#' plot illustrate time periods where no data were available for at least 30
-#' consecutive days. Importantly, for time periods without any gaps, data may
-#' only be partially available (i.e., data coverage might be low or certain
-#' columns/values of interest may be missing). Users should further inspect the
+#' Flag indicating whether to plot an overview of data timelines by hospital and
+#' table.
+#' **Note:** This plot only shows a rough overview of min-max dates per table
+#' for each hospital. Gaps in this plot illustrate time periods where no data
+#' were available for at least 30 consecutive days. Importantly, for time
+#' periods without any gaps, overall data volume may still be low and certain
+#' entries/columns may still be missing. Users should further inspect the
 #' coverage plots (`plot_coverage = TRUE`) and perform additional customized
 #' checks based on their needs.
 #'
 #' @param plot_coverage (`logical`)
-#' Flag indicating whether to plot data coverage.
-#' These plots show the percentage of `genc_ids` with an entry in the table(s)
-#' of interest. Data coverage is plotted by hospital and discharge month
-#' (because GEMINI data are pulled based on encounters' discharge date).
-#' Users should carefully inspect these plots for any drops/gaps in coverage
-#' that may not be visible in the timeline plots (see `plot_timeline` above).
+#' Flag indicating whether to plot data coverage. These plots show the
+#' percentage of `genc_ids` with an entry in the table(s) of interest. Data
+#' coverage is plotted by hospital and discharge month (because GEMINI data are
+#' pulled based on encounters' discharge date). Users should carefully inspect
+#' these plots for any drops/gaps in coverage that may not be visible in the
+#' timeline plots (see `plot_timeline` above).
 #'
 #' @param ...
-#' Additional inputs that can be passed to `plot_over_time`, e.g.:
-#' - `time_int = "fisc_year"` (instead of default `"month"`)
-#'
+#' When `plot_coverage = TRUE`: Additional inputs that can be passed to
+#' `Rgemini::plot_over_time()` to control plot aesthetics, e.g.:
+#' - `colors`
+#' - `ylimits`
+#' - `base_size`
 #'
 #' @import RPostgreSQL ggplot2
 #'
 #' @return
-#' data.table object with the same number of rows as input `cohort`, with
-#' additional derived column(s) containing a flag indicating whether `genc_id`
-#' falls within data coverage period for the table of interest.
+#'
+#' If the plotting flags are set to `FALSE`, this function will return a single
+#' `data.table` object with a flag for each `genc_id` indicating whether the
+#' encounter was discharged during a time period in which data coverage was
+#' high for a given table of interest (e.g., `"lab"` table).
+#'
+#' When the plotting flags are set to `TRUE` (default), the function will
+#' return additional tables (as a list) and plots:
+#'
+#' - If `plot_timeline = TRUE`: Returns a plot showing an overview of data
+#' timelines by hospital for each table. Will also return the corresponding
+#' table `timeline_data` that lists the min - max dates of the data timeline
+#' (in long format, where multiple rows indicate gaps in the data timeline)
+#'
+#' - If `plot_coverage = TRUE`: Returns a plot showing the percentage of
+#' `genc_ids` with an entry in a given table by discharge month and hospital.
+#' Will also return the same numbers as a table called `coverage_data`.
+#'
+#' @examples
+#' \dontrun{
+#' drv <- dbDriver("PostgreSQL")
+#' dbcon <- DBI::dbConnect(drv,
+#'   dbname = "db",
+#'   host = "domain_name.ca",
+#'   port = 1234,
+#'   user = getPass("Enter user:"),
+#'   password = getPass("password")
+#' )
+#'
+#' ## run function with default flags to create all plots
+#' coverage <- data_coverage(db, cohort, table = c("lab", "radiology"))
+#'
+#' # get flag per encounter
+#' coverage_flag_enc <- coverage[[1]]
+#'
+#' # get data timeline (min-max dates)
+#' data_timeline <- coverage[[2]]
+#'
+#' # get % encounters with entry in each table by discharge month & hospital
+#' prct_coverage <- coverage[[3]]
+#' }
 #'
 #' @export
 #'
@@ -79,8 +132,8 @@ data_coverage <- function(dbcon,
   # check which variable to use as hospital identifier
   hosp_var <- return_hospital_field(dbcon)
   check_input(cohort,
-              argtype = c("data.table", "data.frame"),
-              colnames = c("genc_id", hosp_var, "discharge_date_time")
+    argtype = c("data.table", "data.frame"),
+    colnames = c("genc_id", hosp_var, "discharge_date_time")
   )
 
   # get data coverage table
@@ -96,11 +149,11 @@ data_coverage <- function(dbcon,
 
 
   ## prepare output table
-  lookup_coverage <- cohort %>%
+  coverage_by_enc <- cohort %>%
     select(all_of(c("genc_id", "discharge_date_time", hosp_var)))
 
-  lookup_coverage[, discharge_date := as.Date(convert_dt(discharge_date_time))]
-  lookup_coverage$discharge_date_time <- NULL
+  coverage_by_enc[, discharge_date := as.Date(convert_dt(discharge_date_time))]
+  coverage_by_enc$discharge_date_time <- NULL
 
 
   #########  GET FLAG FOR EACH GENC_ID  #########
@@ -113,73 +166,119 @@ data_coverage <- function(dbcon,
   get_coverage_flag <- function(table) {
     ## check if genc_ids discharge date falls within min-max date range
     # any genc_ids that fall within any gaps will have coverage = FALSE
-    lookup_coverage[, paste0(table) :=
-                      data_coverage_lookup[data == table][
-                        lookup_coverage,
-                        on = .(
-                          hospital_id, min_date <= discharge_date, max_date >= discharge_date
-                        ), .N, by = .EACHI
-                      ]$N > 0]
+    coverage_by_enc[, paste0(table) :=
+      data_coverage_lookup[data == table][
+        coverage_by_enc,
+        on = .(
+          hospital_id, min_date <= discharge_date, max_date >= discharge_date
+        ), .N, by = .EACHI
+      ]$N > 0]
   }
 
   ## Apply this to all relevant tables
   lapply(table, get_coverage_flag)
 
-  warning(paste0(
-    "The returned table contains a flag indicating whether a genc_id was discharged during a time period where `",
-    paste(table, collapse = "`, `"), " `data were generally available. This DOES NOT necessarily mean that each ",
-    "individual genc_id where the flag is TRUE necessarily has an entry in the `", paste(table, collapse = "`, `"),
+  cat(paste0(
+    "\n***** Note: *****\n",
+    "The returned table by `genc_id` contains a flag indicating whether a given encounter ",
+    "was discharged during a time period where `", paste(table, collapse = "`/`"),
+    "` data were generally available. This DOES NOT necessarily mean that each ",
+    "individual genc_id where the flag is TRUE has an entry in the `", paste(table, collapse = "`/`"),
     "` table! For example, not all encounters receive an imaging test. However, if `radiology = TRUE`, ",
     "we assume that if a `genc_id` did receive an imaging test, it would likely have an entry in the radiology ",
     "table (if not, we can assume the encounter did not receive an imaging test).\n",
-    "Additionally, the flag being TRUE does not mean that all data are available throughout the whole length of ",
-    "stay of a given encounter, nor that any particular individual columns are fully available/of high quality. ",
+    "Additionally, if the data coverage flag is `TRUE`, it does not mean that all data are available throughout the ",
+    "whole length of stay of a given encounter, nor that all individual columns are fully available/of high quality. ",
     "Users are advised to perform additional data coverage/quality checks based on their specific needs.\n\n"
-  ), immediate. = TRUE)
+  ))
 
+
+  ## check for N genc_ids with coverage for all entries in "table" input
+  cat(paste0(
+    "In the user-provided `cohort` table, there are ",
+    prettyNum(sum(
+      rowSums(coverage_by_enc %>% select(all_of(table))) == length(table)
+    ), big.mark = ","),
+    " `genc_ids` that were discharged during time periods with high coverage for ",
+    ifelse(length(table) == 1, paste0("the `", table, "` table."),
+      ifelse(length(table) == 2, paste0("both the `", paste(table, collapse = "` and `"), "` tables."),
+        paste0("all of the ", length(table), " tables `", paste(table, collapse = "`, and `"), ".")
+      )
+    ),
+    "\n"
+  ))
+
+
+  ## check for N genc_ids where at least 1 table doesn't have coverage
+  cat(paste0(
+    "There are ",
+    prettyNum(sum(
+      rowSums(coverage_by_enc %>% select(all_of(table))) < length(table)
+    ), big.mark = ","),
+    " `genc_ids` that were discharged during time periods where ",
+    ifelse(length(table) == 1, paste0("the `", table, "` table did not have any data coverage."),
+      paste0("at least 1 of the tables (`", paste(table, collapse = "` or `"), "`) did not have any data coverage.")
+    )
+  ))
+
+  cat("\n\n")
 
   #########  PLOT AVAILABILITY PERIOD  #########
   if (plot_timeline == TRUE) {
     ## prepare data for plotting
     n_tables <- length(unique(table))
 
-    plot_data <- copy(data_coverage_lookup[data %in% table, ])
+    timeline_data <- copy(data_coverage_lookup[data %in% table, ])
 
     ## For any table * hosp combos that don't exist, merge and fill with NA so they correctly show up as empty on graph
     # only includes hospitals that exist in cohort
     append <- setDT(tidyr::crossing(
-      data = unique(plot_data[, data]), hospital = unique(cohort$hospital_id)
+      data = unique(timeline_data[, data]), hospital = unique(cohort$hospital_id)
     ) %>% distinct())
-    plot_data <- merge(append, plot_data, by.x = c("hospital", "data"), by.y = c(hosp_var, "data"), all.x = TRUE)
-    plot_data[, `:=`(hospital = as.factor(hospital), data = as.factor(data))]
+    timeline_data <- merge(append, timeline_data, by.x = c("hospital", "data"), by.y = c(hosp_var, "data"), all.x = TRUE)
+    timeline_data[, `:=`(hospital = as.factor(hospital), data = as.factor(data))]
 
     ## offset y based on number of hospitals & tables to be plotted
-    plot_data[, y := (
+    timeline_data[, y := (
       -as.numeric(hospital) - (as.numeric(data) - 1) * (2 * 0.25) / n_tables + (n_tables - 1) * 0.25 / n_tables
     )]
 
     ## plot overall coverage period (only plot those within relevant date range in cohort)
-    plot_data <- plot_data[
+    timeline_data <- timeline_data[
       max_date >= min(as.Date(cohort$discharge_date_time)) & min_date <= max(as.Date(cohort$discharge_date_time))
     ]
     # for edge cases where only single date is available, add an extra 2 days,
     # otherwise, this doesn't show up in plot at all
     # -> probably should remove these entries from coverage table to begin with...
-    plot_data[min_date == max_date, max_date := max_date + lubridate::days(2)]
+    timeline_data[min_date == max_date, max_date := max_date + lubridate::days(2)]
     # cap min/max dates according to min/max discharge dates
-    plot_data[min_date < min(as.Date(cohort$discharge_date_time)), min_date := min(as.Date(cohort$discharge_date_time))]
-    plot_data[max_date > max(as.Date(cohort$discharge_date_time)), max_date := max(as.Date(cohort$discharge_date_time))]
+    timeline_data[min_date < min(as.Date(cohort$discharge_date_time)), min_date := min(as.Date(cohort$discharge_date_time))]
+    timeline_data[max_date > max(as.Date(cohort$discharge_date_time)), max_date := max(as.Date(cohort$discharge_date_time))]
+
+    # determine number of months to adjust breaks on x axis accordingly
+    n_months <- interval(min(timeline_data$min_date, na.rm = TRUE), max(timeline_data$max_date, na.rm = TRUE)) %/% months(1)
 
     print(
-      ggplot(plot_data) +
+      ggplot(timeline_data) +
         geom_rect(
           aes(xmin = min_date, xmax = max_date, ymin = y - 0.25 / n_tables, ymax = y + 0.25 / n_tables, fill = data)
         ) +
         scale_y_continuous(
-          name = "Hospital", breaks = -unique(as.numeric(plot_data$hospital)), labels = unique(plot_data$hospital),
+          name = "Hospital", breaks = -unique(as.numeric(timeline_data$hospital)), labels = unique(timeline_data$hospital),
           expand = c(0.01, 0.01)
         ) +
-        scale_x_date(name = "Discharge Date", date_labels = "%b\n%Y", breaks = "6 months", expand = c(0, 0)) +
+        scale_x_date(
+          name = "Discharge Date",
+          date_labels = "%b %Y",
+          breaks = ifelse(n_months <= 12, "1 month",
+            ifelse(n_months > 12 & n_months <= 48, "3 months",
+              ifelse(n_months > 24 & n_months <= 96, "6 months",
+                "1 year"
+              )
+            )
+          ),
+          expand = c(0, 0)
+        ) +
         scale_fill_manual(values = gemini_colors()) +
         labs(
           title = "Data Timeline by Hospital & Table",
@@ -193,9 +292,9 @@ data_coverage <- function(dbcon,
     )
 
     warning(paste(
-      "The timeline plot only provides a rough overview of time periods with available data.",
+      "The \"Data Timeline\" plot only provides a rough overview of time periods with available data.",
       "Please carefully inspect data coverage by running `data_coverage(..., plot_coverage = TRUE)`",
-      "and carefully inspect the % of encounters with available data per month and hospital",
+      "and check the % of encounters with available data per month and hospital",
       "to gain more detailed insights into data coverage and potential gaps/drops.\n\n"
     ), immediate. = TRUE)
   }
@@ -215,14 +314,13 @@ data_coverage <- function(dbcon,
     # Analyze speeds up the use of temp table
     DBI::dbSendQuery(dbcon, "Analyze temp_data")
 
-    plot_coverage <- function(table, cohort, ...) {
+    get_coverage <- function(table, cohort, ...) {
       ## reset coverage flag, just in case
       cohort[, data_entry := FALSE]
 
       ## Query unique genc_ids from table to check if genc_id exists
       cat(paste0("Querying ", table, " table...\n"))
       data_hosp <- lapply(unique(sort(cohort$hospital_id)), function(hospital, cohort, ...) {
-
         ## Note: I already tested this and it seems like this query is faster than using EXIST
         data_hosp <- DBI::dbGetQuery(
           dbcon, paste("SELECT DISTINCT t.genc_id FROM ", table, " t
@@ -236,27 +334,55 @@ data_coverage <- function(dbcon,
         return(cohort)
       }, cohort = cohort)
 
-      ## plot % genc_ids with entry in table
-      capture.output(suppressWarnings(
-        # don't show warnings about differences in time points here
-        print(plot_over_time(cohort, plot_var = "data_entry", show_overall = FALSE, ...) +
-                labs(
-                  title = paste0("Data coverage - ", table),
-                  y = paste0("% genc_ids with entry in ", table, " table")
-                ) + theme(strip.text.y = element_text(margin = margin(b = 10, t = 10))))
+
+      ## get coverage data (% encounters with an entry in a given table per month & hospital)
+      coverage_data <- quiet(
+        plot_over_time(cohort, plot_var = "data_entry", show_overall = FALSE, return_data = TRUE)[[1]]
+      )
+      coverage_data[, prct_data_entry_TRUE := round(prct_data_entry_TRUE, 2)]
+
+      ## plot coverage
+      print(quiet( # don't show any warnings about differences in time points here
+        plot_over_time(cohort, plot_var = "data_entry", show_overall = FALSE, ...) +
+          labs(
+            title = paste0("Data coverage - ", table),
+            y = paste0("% genc_ids with entry in ", table, " table")
+          ) +
+          scale_y_continuous(expand = expansion(ifelse(lunique(na.omit(coverage_data$prct_data_entry_TRUE)) == 1, 0.01, 0))) +
+          theme(strip.text.y = element_text(margin = margin(b = 10, t = 10)))
       ))
+
+      # return data coverage table
+      setnames(coverage_data, "prct_data_entry_TRUE", paste0("prct_", table, "_entry"))
+      setnames(coverage_data, "n", "n_encounters")
+      return(coverage_data)
     }
 
-    lapply(table, plot_coverage, cohort = cohort)
+    coverage_data <- lapply(table, get_coverage, cohort = cohort)
+    coverage_data <- Reduce(
+      function(x, y) merge(x, y, by = c("hospital_id", "discharge_month", "n_encounters"), all.x = TRUE), coverage_data
+    )
 
-    warning(paste(
+    cat("\n")
+    warning(paste0(
       "The coverage plots show the % of encounters that have an entry in the `", paste(table, collapse = "`, `"),
-      "` based on DISCHARGE month (because all GEMINI data are pulled based on patient's `discharge_date_time`).",
+      "` based on *discharge* month (because all GEMINI data are pulled based on patient's `discharge_date_time`).",
       "For clinical variables, users are advised to also plot coverage by the respective clinical date-time variables ",
       "(e.g., `collection_date_time` for lab data or `issue_date_time` for `transfusion` data).\n\n"
     ), immediate. = TRUE)
   }
 
-
-  return(lookup_coverage)
+  ## return relevant tables based on flags
+  if (plot_timeline == FALSE & plot_coverage == FALSE) {
+    return(coverage_by_enc)
+  } else {
+    output <- list(coverage_by_enc = coverage_by_enc)
+    if (plot_timeline == TRUE) {
+      output <- append(output, list(timeline_data = timeline_data))
+    }
+    if (plot_coverage == TRUE) {
+      output <- append(output, list(coverage_data = coverage_data))
+    }
+    return(output)
+  }
 }
