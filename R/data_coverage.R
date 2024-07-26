@@ -378,7 +378,7 @@ data_coverage <- function(dbcon,
   } else {
     output <- list(coverage_by_enc = coverage_by_enc)
     if (plot_timeline == TRUE) {
-      output <- append(output, list(timeline_data = timeline_data))
+      output <- append(output, list(timeline_data = timeline_data[, -("y")]))
     }
     if (plot_coverage == TRUE) {
       output <- append(output, list(coverage_data = coverage_data))
