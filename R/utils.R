@@ -901,3 +901,17 @@ convert_dt <- function(dt_var,
 fix_var_str <- function(str) {
   str <- tools::toTitleCase(gsub("[_.]", " ", str))
 }
+
+
+#' @description
+#' Run function without showing any errors/warnings/printed messages
+#'
+#' @param func
+#' Function to be run quietly
+#'
+#' @export
+quiet <- function (func) {
+  sink(tempfile(), type = "out")
+  on.exit(sink())
+  invisible(force(suppressMessages(suppressWarnings(func))))
+}
