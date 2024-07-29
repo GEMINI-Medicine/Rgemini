@@ -178,8 +178,18 @@ data <- readRDS("/mnt/nfs/projects/research_projects/Rgemini/stats_vignette/dumm
   data.table()
 ```
 
+To briefly inspect the variables in our data table, we can use `head():`
 
-Next, we will perform some data quality/coverage checks and create our cohort. **The steps in the sections below are not strictly sequential!** Instead, data checks and cohort refinement typically go hand in hand based on an iterative process: We usually start with some basic data checks & exploration on the whole dataset, then apply cohort inclusion/exclusion steps, then check the data for cohort-specific issues, which may cause us to refine your inclusions/exclusions etc. ... Throughout this process, we may also derive additional variables, which should be included in the data checks to make sure all variables in the final cohort are ready to be analyzed.
+```{r}
+head(data)
+```
+
+The [GEMINI data dictionary](https://geminimedicine.ca/wp-content/uploads/2023/12/GEMINI-Data-Repository-Data-Dictionary-v3.0.2.html) contains more information about each of these variables.
+
+
+<br></br>
+
+Next, we will perform data quality/coverage checks and create our cohort. **The steps in the sections below are not strictly sequential!** Instead, data checks and cohort refinement typically go hand in hand based on an iterative process: We usually start with some basic data checks & exploration on the whole dataset, then apply cohort inclusion/exclusion steps, then check the data for cohort-specific issues, which may cause us to refine your inclusions/exclusions etc. ... Throughout this process, we may also derive additional variables, which should be included in the data checks to make sure all variables in the final cohort are ready to be analyzed.
 
 Please also review this [Rgemini vignette](https://gemini-medicine.github.io/Rgemini/articles/plotting_data_exploration.html), which contains more details about some of the functions used below.
 
@@ -482,15 +492,14 @@ Rgemini::plot_summary(
 
 By plotting histograms/bar plots of all relevant cohort variables, we can gain insights into the following:
 
-**1) % of entries with missing values:** In our dummy data, only `mlaps` has missing values (see next section).
+**1) % of entries with missing values:** In our dummy data, only `mlaps` has missing values (see section *4.3.1 Missing values*](#missing) for more details).
 
 **2) Whether the variables are of the expected type (e.g., categorical vs. continuous):** For example, gender in CIHI data largely reflects biological sex, which is treated as a categorical variables with 3 levels (M/F/O).
 
-**3) Whether continuous variables are within the expected range:** For example, in our case, all continuous variables should have values >= 0 (or >= 18 in the case of age) and Charlson Comorbidity Index should be an integer between 0-24.
+**3) Whether continuous variables are within the expected range:** For example, in our case, all continuous variables should have values >= 0 (or >= 18 in the case of age) and Charlson Comorbidity Index should be an integer between 0-24. Length of stay has some extreme values (e.g., >365 days). Although these are no implausible (patients can be hospitalized for very long periods of time), we should carefully consider if these patients are part of our patient population of interest (see section *4.3.2 Considering extreme values*](#extreme)).  
 
-**4) Whether continuous variables are normally distributed or skewed:** For example, length of stay is heavily right-skewed, which we should consider in our modelling decision later on (see ***Regression model*** section below).
+**4) Whether continuous variables are normally distributed or skewed:** For example, length of stay is heavily right-skewed, which we should consider in our modelling decisions later on (see ***Regression model*** section below).
 
-**5) Whether there are any outliers:** For example, in addition to being skewed, length of stay also has some extreme values (e.g., >365 days). 
 
 </details>
 
@@ -498,7 +507,7 @@ In the sections below, we will discuss missing values and outliers in more detai
 
 
 
-### Missing values
+### Missing values {#missing}
 
 Let's first take a closer look at missing values. We need to carefully consider what the reason for missing values is in order to make an informed decision about how to deal with them.
 
@@ -534,7 +543,7 @@ In other scenarios, values might be **missing at random (MAR)**. In that case, w
 </details>
 
 
-### Outliers
+### Considering extreme values {#extreme}
 
 In the summary plot above, we can see that there are some encounters with extremely long length of stay (LOS). Let's check what percentage of encounters have a length of stay longer than 90 days:
 
