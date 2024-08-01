@@ -660,7 +660,7 @@ plot_over_time <- function(
             )
           )
         ),
-        date_labels = ifelse(is.null(facet_group), "%b-%Y", "%m/%y")
+        date_labels = ifelse(is.null(facet_group), "%b %Y", "%m/%y")
       )
     }
 
