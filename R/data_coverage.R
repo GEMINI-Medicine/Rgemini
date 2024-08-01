@@ -338,13 +338,13 @@ data_coverage <- function(dbcon,
 
       ## get coverage data (% encounters with an entry in a given table per month & hospital)
       coverage_data <- quiet(
-        plot_over_time(cohort, plot_var = "data_entry", show_overall = FALSE, return_data = TRUE)[[1]]
+        plot_over_time(cohort, facet_group = hosp_var, line_group = hosp_var, plot_var = "data_entry", show_overall = FALSE, return_data = TRUE)[[1]]
       )
       coverage_data[, prct_data_entry_TRUE := round(prct_data_entry_TRUE, 2)]
 
       ## plot coverage
       print(quiet( # don't show any warnings about differences in time points here
-        plot_over_time(cohort, plot_var = "data_entry", show_overall = FALSE, ...) +
+        plot_over_time(cohort, facet_group = hosp_var, line_group = hosp_var, plot_var = "data_entry", show_overall = FALSE, ...) +
           labs(
             title = paste0("Data coverage - ", table),
             y = paste0("% genc_ids with entry in ", table, " table")
@@ -361,7 +361,7 @@ data_coverage <- function(dbcon,
 
     coverage_data <- lapply(table, get_coverage, cohort = cohort)
     coverage_data <- Reduce(
-      function(x, y) merge(x, y, by = c("hospital_id", "discharge_month", "n_encounters"), all.x = TRUE), coverage_data
+      function(x, y) merge(x, y, by = c(hosp_var, "discharge_month", "n_encounters"), all.x = TRUE, all.y = TRUE), coverage_data
     )
 
     cat("\n")
