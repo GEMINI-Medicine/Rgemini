@@ -145,8 +145,9 @@ plot_over_time <- function(
     colnames = c(plot_var, time_var, line_group, color_group, facet_group)
   )
 
-  ## show warning if plot_var is the same as any of the grouping variables
-  if (!is.null(plot_var) && plot_var %in% c(time_var, line_group, color_group, facet_group)) {
+  ## show warning if plot_var is the same as any of the grouping variables (unless when plotting counts)
+  if (!is.null(plot_var) && plot_var %in% c(time_var, line_group, color_group, facet_group) &&
+      !grepl("^n$|count", func, ignore.case = TRUE)) {
     warning(paste0("User-specified plot_var '", plot_var, "' is also used as a grouping variable.\n",
                    "Please check your inputs and specify a plot_var that is different from the variables used for grouping."))
   }
