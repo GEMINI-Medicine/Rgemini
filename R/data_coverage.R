@@ -64,7 +64,10 @@
 #' coverage is plotted by hospital and discharge month (because GEMINI data are
 #' pulled based on encounters' discharge date). Users should carefully inspect
 #' these plots for any drops/gaps in coverage that may not be visible in the
-#' timeline plots (see `plot_timeline` above).
+#' timeline plots (see `plot_timeline` above). When plotting the `admdad` table,
+#' the function will plot the number of encounters by discharge month to show
+#' overall data volume (note: by definition, 100% of `genc_ids` in GEMINI data
+#' have an entry in `admdad`).
 #'
 #' @param ...
 #' When `plot_coverage = TRUE`: Additional inputs that can be passed to
@@ -179,50 +182,52 @@ data_coverage <- function(dbcon,
   ## Apply this to all relevant tables
   lapply(table, get_coverage_flag)
 
-  cat(paste0(
-    "\n***** Note: *****\n",
-    "The returned table by `genc_id` contains a flag indicating whether a given encounter ",
-    "was discharged during a time period where `", paste(table, collapse = "`/`"),
-    "` data were generally available. This DOES NOT necessarily mean that each ",
-    "individual genc_id where the flag is TRUE has an entry in the `", paste(table, collapse = "`/`"),
-    "` table! For example, not all encounters receive an imaging test. However, if `radiology = TRUE`, ",
-    "we assume that if a `genc_id` did receive an imaging test, it would likely have an entry in the radiology ",
-    "table (if not, we can assume the encounter did not receive an imaging test).\n",
-    "Additionally, if the data coverage flag is `TRUE`, it does not mean that all data are available throughout the ",
-    "whole length of stay of a given encounter, nor that all individual columns are fully available/of high quality. ",
-    "Users are advised to perform additional data coverage/quality checks based on their specific needs.\n\n"
-  ))
+  if (all(grepl("admdad", table))) { # in case user runs function with "admdad" as the only table of interest
+    cat("Note: By definition, all `genc_ids` that exist in the GEMINI data have an entry in the admdad table.\n\n")
+  } else {
+    cat(paste0(
+      "\n***** Note: *****\n",
+      "The returned table by `genc_id` contains a flag indicating whether a given encounter ",
+      "was discharged during a time period where `", paste(table[!grepl("admdad", table)], collapse = "`/`"),
+      "` data were generally available. This DOES NOT necessarily mean that each ",
+      "individual genc_id where the flag is TRUE has an entry in the `", paste(table[!grepl("admdad", table)], collapse = "`/`"),
+      "` table! As an example for the `radiology` table: Not all encounters receive an imaging test. However, if `radiology = TRUE`, ",
+      "we assume that if a `genc_id` did receive an imaging test, it would likely have an entry in the radiology ",
+      "table (if not, we can assume the encounter did not receive an imaging test). ",
+      "Additionally, if the data coverage flag is `TRUE`, it does not mean that all data are available throughout the ",
+      "whole length of stay of a given encounter, nor that all individual columns are fully available/of high quality. ",
+      "Users are advised to perform additional data coverage/quality checks based on their specific needs.\n\n"
+    ))
 
+    ## check for N genc_ids with coverage for all entries in "table" input (ignoring admdad)
+    cat(paste0(
+      "In the user-provided `cohort` table, there are ",
+      prettyNum(sum(
+        rowSums(coverage_by_enc %>% select(all_of(table[!grepl("admdad", table)]))) == length(table[!grepl("admdad", table)])
+      ), big.mark = ","),
+      " `genc_ids` that were discharged during time periods with high coverage for ",
+      ifelse(length(table[!grepl("admdad", table)]) == 1, paste0("the `", table[!grepl("admdad", table)], "` table"),
+             ifelse(length(table[!grepl("admdad", table)]) == 2, paste0("both the `", paste(table[!grepl("admdad", table)], collapse = "` and `"), "` tables"),
+                    paste0("all of the ", length(table[!grepl("admdad", table)]), " tables `", paste(table[!grepl("admdad", table)], collapse = "`, and `"))
+             )
+      ), " (out of a total N = ", prettyNum(lunique(cohort$genc_id), big.mark = ",")," encounters). "
+    ))
 
-  ## check for N genc_ids with coverage for all entries in "table" input
-  cat(paste0(
-    "In the user-provided `cohort` table, there are ",
-    prettyNum(sum(
-      rowSums(coverage_by_enc %>% select(all_of(table))) == length(table)
-    ), big.mark = ","),
-    " `genc_ids` that were discharged during time periods with high coverage for ",
-    ifelse(length(table) == 1, paste0("the `", table, "` table."),
-      ifelse(length(table) == 2, paste0("both the `", paste(table, collapse = "` and `"), "` tables."),
-        paste0("all of the ", length(table), " tables `", paste(table, collapse = "`, and `"), ".")
+    ## check for N genc_ids where at least 1 table doesn't have coverage (ignoring admdad)
+    cat(paste0(
+      prettyNum(sum(
+        rowSums(coverage_by_enc %>% select(all_of(table[!grepl("admdad", table)]))) < length(table[!grepl("admdad", table)])
+      ), big.mark = ","),
+      " `genc_ids` that discharged during time periods where ",
+      ifelse(length(table[!grepl("admdad", table)]) == 1, paste0("the `", table[!grepl("admdad", table)], "` table did not have high data coverage."),
+             paste0("at least 1 of the tables (`", paste(table[!grepl("admdad", table)], collapse = "` or `"), "`) did not have high data coverage.")
       )
-    ),
-    "\n"
-  ))
+    ))
+
+    cat("\n\n")
+  }
 
 
-  ## check for N genc_ids where at least 1 table doesn't have coverage
-  cat(paste0(
-    "There are ",
-    prettyNum(sum(
-      rowSums(coverage_by_enc %>% select(all_of(table))) < length(table)
-    ), big.mark = ","),
-    " `genc_ids` that were discharged during time periods where ",
-    ifelse(length(table) == 1, paste0("the `", table, "` table did not have any data coverage."),
-      paste0("at least 1 of the tables (`", paste(table, collapse = "` or `"), "`) did not have any data coverage.")
-    )
-  ))
-
-  cat("\n\n")
 
   #########  PLOT AVAILABILITY PERIOD  #########
   if (plot_timeline == TRUE) {
@@ -292,12 +297,14 @@ data_coverage <- function(dbcon,
         )
     )
 
-    warning(paste(
-      "The \"Data Timeline\" plot only provides a rough overview of time periods with available data.",
-      "Please carefully inspect data coverage by running `data_coverage(..., plot_coverage = TRUE)`",
-      "and check the % of encounters with available data per month and hospital",
-      "to gain more detailed insights into data coverage and potential gaps/drops.\n\n"
-    ), immediate. = TRUE)
+    if (plot_coverage == FALSE) {
+      warning(paste(
+        "The \"Data Timeline\" plot only provides a rough overview of time periods with available data.",
+        "Please carefully inspect data coverage by running `data_coverage(..., plot_coverage = TRUE)`",
+        "and check the % of encounters with available data per month and hospital",
+        "to gain more detailed insights into data coverage and potential gaps/drops.\n\n"
+      ), immediate. = TRUE)
+    }
   }
 
 
@@ -343,15 +350,28 @@ data_coverage <- function(dbcon,
       coverage_data[, prct_data_entry_TRUE := round(prct_data_entry_TRUE, 2)]
 
       ## plot coverage
-      print(quiet( # don't show any warnings about differences in time points here
-        plot_over_time(cohort, facet_group = hosp_var, line_group = hosp_var, plot_var = "data_entry", show_overall = FALSE, ...) +
-          labs(
-            title = paste0("Data coverage - ", table),
-            y = paste0("% genc_ids with entry in ", table, " table")
-          ) +
-          scale_y_continuous(expand = expansion(ifelse(lunique(na.omit(coverage_data$prct_data_entry_TRUE)) == 1, 0.01, 0))) +
-          theme(strip.text.y = element_text(margin = margin(b = 10, t = 10)))
-      ))
+      if (grepl("admdad", table)) { # plot raw encounter counts for admdad
+        print(quiet( # don't show any warnings about differences in time points here
+          plot_over_time(cohort, facet_group = hosp_var, line_group = hosp_var, func = "n", show_overall = FALSE, min_n = 1, ...) +
+            labs(
+              title = paste0("Data coverage - ", table),
+              y = paste0("N genc_ids in ", table, " table")
+            ) +
+            scale_y_continuous(expand = expansion(ifelse(lunique(na.omit(coverage_data$prct_data_entry_TRUE)) == 1, 0.01, 0))) +
+            theme(strip.text.y = element_text(margin = margin(b = 10, t = 10)))
+        ))
+        cat("...note: By definition, 100% of `genc_ids` have an entry in the admdad table. Plotting the number of encounters in `admdad` instead...\n")
+      } else {
+        print(quiet( # don't show any warnings about differences in time points here
+          plot_over_time(cohort, facet_group = hosp_var, line_group = hosp_var, plot_var = "data_entry", show_overall = FALSE, ...) +
+            labs(
+              title = paste0("Data coverage - ", table),
+              y = paste0("% genc_ids with entry in ", table, " table")
+            ) +
+            scale_y_continuous(expand = expansion(ifelse(lunique(na.omit(coverage_data$prct_data_entry_TRUE)) == 1, 0.01, 0))) +
+            theme(strip.text.y = element_text(margin = margin(b = 10, t = 10)))
+        ))
+      }
 
       # return data coverage table
       setnames(coverage_data, "prct_data_entry_TRUE", paste0("prct_", table, "_entry"))
@@ -366,11 +386,11 @@ data_coverage <- function(dbcon,
 
     cat("\n")
     warning(paste0(
-      "The coverage plots show the % of encounters that have an entry in the `", paste(table, collapse = "`, `"),
-      "` based on *discharge* month (because all GEMINI data are pulled based on patient's `discharge_date_time`).",
+      "The coverage plots show data coverage by *discharge* month (because all GEMINI data are pulled based on patient's `discharge_date_time`).",
       "For clinical variables, users are advised to also plot coverage by the respective clinical date-time variables ",
       "(e.g., `collection_date_time` for lab data or `issue_date_time` for `transfusion` data).\n\n"
     ), immediate. = TRUE)
+
   }
 
   ## return relevant tables based on flags
