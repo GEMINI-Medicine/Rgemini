@@ -47,7 +47,10 @@ percentage of \code{genc_ids} with an entry in the table(s) of interest. Data
 coverage is plotted by hospital and discharge month (because GEMINI data are
 pulled based on encounters' discharge date). Users should carefully inspect
 these plots for any drops/gaps in coverage that may not be visible in the
-timeline plots (see \code{plot_timeline} above).}
+timeline plots (see \code{plot_timeline} above). When plotting the \code{admdad} table,
+the function will plot the number of encounters by discharge month to show
+overall data volume (note: by definition, 100\% of \code{genc_ids} in GEMINI data
+have an entry in \code{admdad}).}
 
 \item{...}{When \code{plot_coverage = TRUE}: Additional inputs that can be passed to
 \code{Rgemini::plot_over_time()} to control plot aesthetics, e.g.:
