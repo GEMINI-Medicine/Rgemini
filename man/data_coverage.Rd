@@ -28,7 +28,10 @@ corresponds to a single encounter. Must contain the following columns:
 
 \item{table}{(\code{character})
 Which table(s) to include. If multiple, specify a character vector
-(e.g., \code{table = c("lab", "pharmacy", "radiology")}).}
+(e.g., \code{table = c("lab", "pharmacy", "radiology")}).
+
+For HPC4Health users: Please specify the full table name as it is listed in
+your datacut (e.g., \code{"admdad_subset"} instead of only \code{"admdad"}).}
 
 \item{plot_timeline}{(\code{logical})
 Flag indicating whether to plot an overview of data timelines by hospital and
@@ -103,10 +106,18 @@ these missing values, and whether or not they can be imputed.
 \itemize{
 \item{Data coverage checks should generally be performed on the whole
 dataset, prior to applying any additional cohort inclusions/exclusions.}
-\item{Data coverage checks are particularly relevant for clinical data tables
-(e.g., lab, pharmacy, radiology, transfusions, vitals, clinical notes etc.).}
-\item{This function should be used as a starting point for data coverage checks,
-but users are advised to perform additional checks based on their needs.}
+\item{If you are an HPC4Health user and your datacut has been pre-filtered
+based on certain inclusion/exclusion criteria (e.g., diagnosis codes),
+please keep in mind that the coverage plots (see \code{plot_coverage}) may be
+skewed in smaller/pre-filtered samples. Please review the list of known
+data coverage issues printed by this function, and reach out to the GEMINI
+team if you need additional support.}
+\item{Data coverage checks are particularly relevant for clinical data
+tables (e.g., lab, pharmacy, radiology, transfusions, vitals, clinical
+notes etc.).}
+\item{This function should be used as a starting point for data coverage
+checks, but users are advised to perform additional checks based on their
+specific needs.}
 }
 }
 
