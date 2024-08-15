@@ -27,11 +27,20 @@
 #' \itemize{
 #'    \item{Data coverage checks should generally be performed on the whole
 #' dataset, prior to applying any additional cohort inclusions/exclusions.}
-#'    \item{Data coverage checks are particularly relevant for clinical data tables
-#' (e.g., lab, pharmacy, radiology, transfusions, vitals, clinical notes etc.).}
-#'    \item{This function should be used as a starting point for data coverage checks,
-#' but users are advised to perform additional checks based on their needs.}
+#'    \item{If you are an HPC4Health user and your datacut has been pre-filtered
+#'    based on certain inclusion/exclusion criteria (e.g., diagnosis codes),
+#'    please keep in mind that the coverage plots (see `plot_coverage`) may be
+#'    skewed in smaller/pre-filtered samples. Please review the list of known
+#'    data coverage issues printed by this function, and reach out to the GEMINI
+#'    team if you need additional support.}
+#'    \item{Data coverage checks are particularly relevant for clinical data
+#'    tables (e.g., lab, pharmacy, radiology, transfusions, vitals, clinical
+#'    notes etc.).}
+#'    \item{This function should be used as a starting point for data coverage
+#'    checks, but users are advised to perform additional checks based on their
+#'    specific needs.}
 #' }
+#'
 #'
 #' @param dbcon (`DBIConnection`)\cr
 #' A database connection to any GEMINI database.
@@ -46,6 +55,9 @@
 #' @param table (`character`)
 #' Which table(s) to include. If multiple, specify a character vector
 #' (e.g., `table = c("lab", "pharmacy", "radiology")`).
+#'
+#' For HPC4Health users: Please specify the full table name as it is listed in
+#' your datacut (e.g., `"admdad_subset"` instead of only `"admdad"`).
 #'
 #' @param plot_timeline (`logical`)
 #' Flag indicating whether to plot an overview of data timelines by hospital and
@@ -136,16 +148,21 @@ data_coverage <- function(dbcon,
   # check which variable to use as hospital identifier
   hosp_var <- return_hospital_field(dbcon)
   check_input(cohort,
-    argtype = c("data.table", "data.frame"),
-    colnames = c("genc_id", hosp_var, "discharge_date_time")
+              argtype = c("data.table", "data.frame"),
+              colnames = c("genc_id", hosp_var, "discharge_date_time")
   )
 
   # get data coverage table
   data_coverage_lookup <- dbGetQuery(
     dbcon, "SELECT * from mapping_files.availability_table;"
   ) %>% data.table()
+  # add _subset suffix if relevant (for HPC users)
+  if (any(grepl("_subset", table))) {
+    data_coverage_lookup[, data := paste(data, "_subset", sep = "")]
+  }
 
   # only tables that exist in availability_table are valid `table` inputs
+  table <- tolower(table)
   check_input(
     table,
     argtype = "character", categories = unique(data_coverage_lookup$data)
@@ -171,18 +188,19 @@ data_coverage <- function(dbcon,
     ## check if genc_ids discharge date falls within min-max date range
     # any genc_ids that fall within any gaps will have coverage = FALSE
     coverage_by_enc[, paste0(table) :=
-      data_coverage_lookup[data == table][
-        coverage_by_enc,
-        on = .(
-          hospital_id, min_date <= discharge_date, max_date >= discharge_date
-        ), .N, by = .EACHI
-      ]$N > 0]
+                      data_coverage_lookup[data == table][
+                        coverage_by_enc,
+                        on = .(
+                          hospital_id, min_date <= discharge_date, max_date >= discharge_date
+                        ), .N, by = .EACHI
+                      ]$N > 0]
   }
 
   ## Apply this to all relevant tables
   lapply(table, get_coverage_flag)
 
-  if (all(grepl("admdad", table))) { # in case user runs function with "admdad" as the only table of interest
+  if (all(grepl("admdad", table))) {
+    # in case user runs function with "admdad" as the only table of interest
     cat("Note: By definition, all `genc_ids` that exist in the GEMINI data have an entry in the admdad table.\n\n")
   } else {
     cat(paste0(
@@ -210,7 +228,7 @@ data_coverage <- function(dbcon,
              ifelse(length(table[!grepl("admdad", table)]) == 2, paste0("both the `", paste(table[!grepl("admdad", table)], collapse = "` and `"), "` tables"),
                     paste0("all of the ", length(table[!grepl("admdad", table)]), " tables `", paste(table[!grepl("admdad", table)], collapse = "`, and `"))
              )
-      ), " (out of a total N = ", prettyNum(lunique(cohort$genc_id), big.mark = ",")," encounters). "
+      ), " (out of a total N = ", prettyNum(lunique(cohort$genc_id), big.mark = ","), " encounters). "
     ))
 
     ## check for N genc_ids where at least 1 table doesn't have coverage (ignoring admdad)
@@ -227,7 +245,8 @@ data_coverage <- function(dbcon,
     cat("\n\n")
   }
 
-
+  # remove any _subset suffix from column names (for HPC users)
+  setnames(coverage_by_enc, names(coverage_by_enc), gsub("_subset", "", names(coverage_by_enc)))
 
   #########  PLOT AVAILABILITY PERIOD  #########
   if (plot_timeline == TRUE) {
@@ -277,11 +296,11 @@ data_coverage <- function(dbcon,
           name = "Discharge Date",
           date_labels = "%b %Y",
           breaks = ifelse(n_months <= 12, "1 month",
-            ifelse(n_months > 12 & n_months <= 48, "3 months",
-              ifelse(n_months > 24 & n_months <= 96, "6 months",
-                "1 year"
-              )
-            )
+                          ifelse(n_months > 12 & n_months <= 48, "3 months",
+                                 ifelse(n_months > 24 & n_months <= 96, "6 months",
+                                        "1 year"
+                                 )
+                          )
           ),
           expand = c(0, 0)
         ) +
@@ -390,11 +409,10 @@ data_coverage <- function(dbcon,
       "For clinical variables, users are advised to also plot coverage by the respective clinical date-time variables ",
       "(e.g., `collection_date_time` for lab data or `issue_date_time` for `transfusion` data).\n\n"
     ), immediate. = TRUE)
-
   }
 
   ## return relevant tables based on flags
-  if (plot_timeline == FALSE & plot_coverage == FALSE) {
+  if (plot_timeline == FALSE && plot_coverage == FALSE) {
     return(coverage_by_enc)
   } else {
     output <- list(coverage_by_enc = coverage_by_enc)
