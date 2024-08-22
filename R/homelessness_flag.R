@@ -97,8 +97,7 @@
 #'    \item{[ALC Diagnosis List](https://www.cihi.ca/sites/default/files/document/alternate-level-care-diagnosis-list-job-aid-en.pdf)}
 #'    \item{Identification of homelessness using health administrative data in Ontario: Richard Lucie, et al. J. Clin. Epidimiol., 2024. https://doi.org/10.1016/j.jclinepi.2024.111430}
 #' }
-#'
-library(stringr)
+#'@export
 homelessness_flag <- function(
     cohort,
     ipdiag,
