@@ -2,35 +2,56 @@
 #' homelessness_flag
 #'
 #' @description
-#' `homelessness_flag` returns homelessness
-#' status for each `genc_id` based on ICD-10-CA
-#' diagnosis codes.
+#' `homelessness_flag` returns homelessness status for each
+#' `genc_id` based on ICD-10-CA diagnosis codes.
 #'
-#' Returns a table ...
+#' Returns a table with a flag identifying encounters with
+#' confirmed homelessness status using ICD-10-CA codes
+#' Z59.0 and Z59.1.
 #'
 #' Homelessness (Z59.0) is coded when an individual
-#' is determined to be homeless. Effective of 2018, ICD-10-CA
+#' is determined to be homeless. Effective of the year 2018-2019, CIHI
 #' mandated that Z59.0 is to be coded when a "patient's record
-#' shows that they are homeless upon admission". After the
-#' requirement took effect in the year 2018-2019, the prevalence
-#' of the flag increased by 84% in comparison to the previous year,
-#' indicating that the rate of homelessness has been underestimated.
-#' For data since 2018, previous studies have shown that ICD-10-CA
-#' codes have a sensitivity of 60-70% for detecting whether a
-#' patient has experienced homelessness at the time of
-#' hospitalization (for details, see ***ADD CITATION***)
-#' Due to this, we recommend to only use ICD-10-CA codes to identify
-#' homelessness after 2018.
+#' shows that they are homeless upon admission". After the mandate,
+#' prevalence of the flag increased by 84% compared to the previous year,
+#' indicating that homelessness has been underestimated. (For details, see
+#' [2018 CIHI mandate to code homelessness](https://www.cihi.ca/en/better-quality-hospital-data-for-identifying-patients-experiencing-homelessness))
+
+#' Inadequate housing (Z59.1) is coded when an individual is
+#' determined to be experiencing poor housing conditions, their
+#' usual housing is uninhabitable, or if they are experiencing
+#' a lack of utilities. Some examples include unsafe living
+#' conditions, safety issues such as a lack of heating, and
+#' if the home isn't safely inhabitable due to repairs in progress.
 #'
 #' @details
 #' Below are the current ICD-10-CA codes related to homelessness.
 #' For more information, please refer to the references in this page.
-#' 
+#'
+#' \itemize{
+#'  \item{Z59.0: }{For confirmed homelessness assign Z59.0.}
+#'  \item{Z59.1: }{For confirmed inadequate housing due to factors relating
+#'  to safety or accessibility, but not necessarily a complete lack
+#'  of housing assign Z59.1.}
+#' }
+#'
+#' @section Notes:
+#' The accuracy of this function relies on hospitals maintaining codings
+#' Z59.0 for homelessness and Z59.1 for inadequate housing. These flags
+#' are validated, adapted flags of ICES validated homelessness indicators.
+#'
+#' For data since 2018, previous studies have
+#' shown that "ICD-10-CA codes have a sensitivity of 60-70% for
+#' detecting whether a patient has experienced homelessness at the
+#' time of hospitalization" (Richard et al, 2024). Due to this,
+#' we recommend to only use ICD-10-CA codes to identify
+#' homelessness after 2018.
+#'
 #' @param cohort (`data.frame` or `data.table`)
 #' Cohort table with all relevant encounters of interest, where each row
 #' corresponds to a single encounter. Must contain GEMINI Encounter ID
 #' (`genc_id`).
-#' 
+#'
 #' @param ipdiag (`data.table`)
 #' `ipdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
 #' This table must contain `genc_id` and `diagnosis_code` (as ICD-10-CA
@@ -40,26 +61,42 @@
 #' `erdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
 #' This table must contain `genc_id` and `er_diagnosis_code` (as ICD-10-CA
 #' alphanumeric code) in long format.
-#' 
-#' Typically, ER diagnoses should be included when deriving the 
-#' homelessness flags in order to increase sensitivity. However, in 
+#'
+#' Typically, ER diagnoses should be included when deriving the
+#' homelessness flags in order to increase sensitivity. However, in
 #' certain scenarios, users may choose to only include IP diagnoses by
 #' specifying `erdiag = NULL`. This may be useful when comparing cohorts
 #' with different rates of ER admissions.
-#' 
-#' @return
-#' data.table with the same number of rows as input `cohort` with an 
-#' additional derived boolean field labelled as 
-#' `"homelessness_icd__flag"`. Possible values are `TRUE`, `FALSE` or
-#' `NA`. `NA` indicates that an encounter does not have a diagnosis code
-#' in the diagnosis table input.
 #'
-#' @example 
-#' 
+#' @return
+#' data.table with the same number of rows as input `cohort` with an
+#' additional derived boolean field labelled as `"homelessness_icd__flag"`.
+#' Possible values are `TRUE`, `FALSE` or `NA`. `NA` indicates that an
+#' encounter does not have a diagnosis code in the diagnosis table input.
+#'
+#' @examples
+#' \dontrun{
+#' drv <- dbDriver("PostgreSQL")
+#' dbcon <- DBI::dbConnect(drv,
+#'                      dbname = "report_db_v3",
+#'                      host = "prime.smh.gemini-hpc.ca",
+#'                      port = 5432,
+#'                      user = getPass("Enter user:"),
+#'                      password = getPass("password"))
+#' ipadm <- dbGetQuery(dbcon, "select * from admdad") %>% data.table()
+#' ipdiagnosis <- dbGetQuery(dbcon, "select * from ipdiagnosis") %>% data.table()
+#' erdiagnosis <- dbGetQuery(dbcon, "select * from erdiagnosis") %>% data.table()
+#' homeless <- homelessness_flag(cohort = ipadm, ipdiag = ipdiagnosis)
+#' # view only genc_id's with homelessness flag
+#' homeless <- homeless %>% filter(homeless$homelessness_icd_flag == TRUE)
+#' }
+#'
 #' @references
-#' [Identification of homelessness using health administrative data in Ontario](https://www.jclinepi.com/article/S0895-4356(24)00185-9/pdf)
-#' 
-
+#' \itemize{
+#'    \item{[ALC Diagnosis List](https://www.cihi.ca/sites/default/files/document/alternate-level-care-diagnosis-list-job-aid-en.pdf)}
+#'    \item{Identification of homelessness using health administrative data in Ontario: Richard Lucie, et al. J. Clin. Epidimiol., 2024. https://doi.org/10.1016/j.jclinepi.2024.111430}
+#' }
+#'
 
 homelessness_flag <- function(
     cohort,
@@ -108,22 +145,3 @@ homelessness_flag <- function(
     )]
     return(res)
 }
-library(RPostgreSQL)
-library(getPass)
-library(dplyr)
-library(data.table)
-library(GEMINIpkg)
-drv <- dbDriver("PostgreSQL")
-dbcon <- DBI::dbConnect(drv,
-  dbname = "report_db_v3",
-  host = "prime.smh.gemini-hpc.ca",
-  port = 5432,
-  user = getPass("Enter user:"),
-  password = getPass("password")
-)
-
-ipadm <- dbGetQuery(dbcon, "select * from admdad") %>% data.table()
-ipdiagnosis <- dbGetQuery(dbcon, "select * from ipdiagnosis") %>% data.table()
-erdiagnosis <- dbGetQuery(dbcon, "select * from erdiagnosis") %>% data.table()
-homeless <- homelessness_flag(cohort = ipadm, ipdiag = ipdiagnosis)
-homeless <- homeless %>% filter(homeless$homelessness_icd_flag == TRUE)
