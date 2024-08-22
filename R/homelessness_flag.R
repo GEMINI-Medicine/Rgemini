@@ -78,11 +78,12 @@
 #' \dontrun{
 #' drv <- dbDriver("PostgreSQL")
 #' dbcon <- DBI::dbConnect(drv,
-#'                      dbname = "report_db_v3",
-#'                      host = "prime.smh.gemini-hpc.ca",
-#'                      port = 5432,
-#'                      user = getPass("Enter user:"),
-#'                      password = getPass("password"))
+#'   dbname = "report_db_v3",
+#'   host = "prime.smh.gemini-hpc.ca",
+#'   port = 5432,
+#'   user = getPass("Enter user:"),
+#'   password = getPass("password")
+#' )
 #' ipadm <- dbGetQuery(dbcon, "select * from admdad") %>% data.table()
 #' ipdiagnosis <- dbGetQuery(dbcon, "select * from ipdiagnosis") %>% data.table()
 #' erdiagnosis <- dbGetQuery(dbcon, "select * from erdiagnosis") %>% data.table()
@@ -97,51 +98,50 @@
 #'    \item{Identification of homelessness using health administrative data in Ontario: Richard Lucie, et al. J. Clin. Epidimiol., 2024. https://doi.org/10.1016/j.jclinepi.2024.111430}
 #' }
 #'
-
+library(stringr)
 homelessness_flag <- function(
     cohort,
     ipdiag,
-    erdiag = NULL
-){
-    ############# CHECK & PREPARE DATA #############
-    if(is.null(erdiag)){
-        cat("\n*** Based on the input you provided, only in-patient diagnoses (ipdiag) will be included in the derived homelessness flag.
+    erdiag = NULL) {
+  ############# CHECK & PREPARE DATA #############
+  if (is.null(erdiag)) {
+    cat("\n*** Based on the input you provided, only in-patient diagnoses (ipdiag) will be included in the derived homelessness flag.
         If you want to include ER diagnoses, please provide the correspondig table as an input to `erdiag`. ***\n")
-    }
+  }
 
-    ## check that cohort contains genc_ids
-    check_input(cohort, c("data.table", "data.frame"), colnames = c("genc_id"))
+  ## check that cohort contains genc_ids
+  check_input(cohort, c("data.table", "data.frame"), colnames = c("genc_id"))
 
-    ## check that ipdiag/erdiag contains genc_id & diagnosis_code
-    check_input(ipdiag, c("data.table", "data.frame"),
-        colnames = c("genc_id", "diagnosis_code"),
-        coltypes = c("", "character")
+  ## check that ipdiag/erdiag contains genc_id & diagnosis_code
+  check_input(ipdiag, c("data.table", "data.frame"),
+    colnames = c("genc_id", "diagnosis_code"),
+    coltypes = c("", "character")
+  )
+  if (!is.null(erdiag)) {
+    check_input(erdiag, c("data.table", "data.frame"),
+      colnames = c("genc_id", "er_diagnosis_code"),
+      coltypes = c("", "character")
     )
-    if (!is.null(erdiag)) {
-        check_input(erdiag, c("data.table", "data.frame"),
-        colnames = c("genc_id", "er_diagnosis_code"),
-        coltypes = c("", "character")
-    )
-    }
-    ## Ensure ipdiag/erdiag are in data.table format before proceeding
-    diagnoses <- coerce_to_datatable(ipdiag[, c("genc_id", "diagnosis_code")])
-    if (!is.null(erdiag)) {
-        erdiag <- coerce_to_datatable(erdiag[, c("genc_id", "er_diagnosis_code")])
-        setnames(erdiag, "er_diagnosis_code", "diagnosis_code")
-        # combine all diagnoses
-        diagnoses <- rbind(diagnoses, erdiag)
-    }
+  }
+  ## Ensure ipdiag/erdiag are in data.table format before proceeding
+  diagnoses <- coerce_to_datatable(ipdiag[, c("genc_id", "diagnosis_code")])
+  if (!is.null(erdiag)) {
+    erdiag <- coerce_to_datatable(erdiag[, c("genc_id", "er_diagnosis_code")])
+    setnames(erdiag, "er_diagnosis_code", "diagnosis_code")
+    # combine all diagnoses
+    diagnoses <- rbind(diagnoses, erdiag)
+  }
 
 
-    ## prepare output table, should have single row per genc_id
-    res <- cohort %>%
-        select(genc_id) %>%
-        distinct() %>%
-        data.table()
+  ## prepare output table, should have single row per genc_id
+  res <- cohort %>%
+    select(genc_id) %>%
+    distinct() %>%
+    data.table()
 
-    ## add flags
-    res[, homelessness_icd_flag := ifelse(!genc_id %in% diagnoses$genc_id, NA, # if no diagnosis code at all for genc_id, set flag to NA
-        ifelse(genc_id %in% diagnoses[grep("^Z590|^Z591", diagnosis_code)]$genc_id, TRUE, FALSE) # if a diagnosis code is present
-    )]
-    return(res)
+  ## add flags
+  res[, homelessness_icd_flag := ifelse(!genc_id %in% diagnoses$genc_id, NA, # if no diagnosis code at all for genc_id, set flag to NA
+    ifelse(genc_id %in% diagnoses[grepl("Z591|Z590", diagnosis_code, ignore.case = TRUE)]$genc_id, TRUE, FALSE) # if a diagnosis code is present
+  )]
+  return(res)
 }
