@@ -1,5 +1,6 @@
 #' @title
 #' Check data coverage
+#' Check
 #'
 #' @description
 #' This function facilitates data coverage checks that analysts should perform
