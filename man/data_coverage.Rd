@@ -2,7 +2,8 @@
 % Please edit documentation in R/data_coverage.R
 \name{data_coverage}
 \alias{data_coverage}
-\title{Check data coverage}
+\title{Check data coverage
+Check}
 \usage{
 data_coverage(
   dbcon,
