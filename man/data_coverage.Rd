@@ -10,7 +10,7 @@ data_coverage(
   table,
   plot_timeline = TRUE,
   plot_coverage = TRUE,
-  as_plotly = TRUE,
+  as_plotly = FALSE,
   ...
 )
 }
@@ -57,8 +57,9 @@ overall data volume (note: by definition, 100\% of \code{genc_ids} in GEMINI dat
 have an entry in \code{admdad}).}
 
 \item{as_plotly}{(\code{logical})
-Will return any figures as interactive plots using \code{plotly}. The flag will be
-ignored if the \code{plotly} package is not installed.}
+Will return any figures as interactive plots using \code{plotly}. Note that this
+may affect plot aesthetics.
+The flag will be ignored if the \code{plotly} package is not installed.}
 
 \item{...}{When \code{plot_coverage = TRUE}: Additional inputs that can be passed to
 \code{Rgemini::plot_over_time()} to control plot aesthetics, e.g.:
@@ -144,9 +145,11 @@ dbcon <- DBI::dbConnect(drv,
   password = getPass("password")
 )
 
+cohort <- dbGetQuery(db, "SELECT genc_id FROM admdad;")
+
 ## run function with default flags to create all plots
 # Note: This might take a while to run...
-coverage <- data_coverage(db, cohort, table = c("admdad", "radiology"))
+coverage <- data_coverage(dbcon, cohort, table = c("admdad", "radiology"))
 
 # get flags per encounter based on encounter's discharge date
 enc_flag <- coverage[["data"]][1] # coverage[["data"]]$coverage_flag_enc
@@ -157,5 +160,15 @@ data_timeline <- coverage[["data"]][2] # coverage[["data"]]$timeline_data
 # get \% encounters with entry in each table by discharge month & hospital
 prct_coverage <- coverage[["data"]][3] # coverage[["data"]]$coverage_data
 }
+
+## run function without any plots
+# (will only return data.table with encounter-level flag)
+coverage <- data_coverage(
+    dbcon,
+    cohort,
+    table = c("admdad", "radiology"),
+    plot_timeline = FALSE,
+    plot_coverage = FALSE
+)
 
 }
