@@ -42,7 +42,6 @@
 #'    specific needs.}
 #' }
 #'
-#'
 #' @param dbcon (`DBIConnection`)\cr
 #' A database connection to any GEMINI database.
 #'
@@ -97,7 +96,6 @@
 #' @import RPostgreSQL ggplot2
 #'
 #' @return
-#'
 #' If the plotting flags are set to `FALSE`, this function will return a single
 #' `data.table` object with a flag for each `genc_id` indicating whether the
 #' encounter was discharged during a time period in which data for a given
@@ -163,7 +161,6 @@
 #' }
 #'
 #' @export
-#'
 data_coverage <- function(dbcon,
                           cohort,
                           table,
