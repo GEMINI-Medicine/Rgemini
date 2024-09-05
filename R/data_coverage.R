@@ -83,8 +83,9 @@
 #' have an entry in `admdad`).
 #'
 #' @param as_plotly (`logical`)
-#' Will return any figures as interactive plots using `plotly`. The flag will be
-#' ignored if the `plotly` package is not installed.
+#' Will return any figures as interactive plots using `plotly`. Note that this
+#' may affect plot aesthetics.
+#' The flag will be ignored if the `plotly` package is not installed.
 #'
 #' @param ...
 #' When `plot_coverage = TRUE`: Additional inputs that can be passed to
@@ -134,9 +135,11 @@
 #'   password = getPass("password")
 #' )
 #'
+#' cohort <- dbGetQuery(db, "SELECT genc_id FROM admdad;")
+#'
 #' ## run function with default flags to create all plots
 #' # Note: This might take a while to run...
-#' coverage <- data_coverage(db, cohort, table = c("admdad", "radiology"))
+#' coverage <- data_coverage(dbcon, cohort, table = c("admdad", "radiology"))
 #'
 #' # get flags per encounter based on encounter's discharge date
 #' enc_flag <- coverage[["data"]][1] # coverage[["data"]]$coverage_flag_enc
@@ -148,6 +151,16 @@
 #' prct_coverage <- coverage[["data"]][3] # coverage[["data"]]$coverage_data
 #' }
 #'
+#' ## run function without any plots
+#' # (will only return data.table with encounter-level flag)
+#' coverage <- data_coverage(
+#'     dbcon,
+#'     cohort,
+#'     table = c("admdad", "radiology"),
+#'     plot_timeline = FALSE,
+#'     plot_coverage = FALSE
+#' )
+#'
 #' @export
 #'
 data_coverage <- function(dbcon,
@@ -155,7 +168,7 @@ data_coverage <- function(dbcon,
                           table,
                           plot_timeline = TRUE,
                           plot_coverage = TRUE,
-                          as_plotly = TRUE,
+                          as_plotly = FALSE,
                           ...) {
   #########  CHECK INPUTS  #########
   # check input type and column name
@@ -290,7 +303,7 @@ data_coverage <- function(dbcon,
     gsub("_subset", "", names(coverage_flag_enc))
   )
 
-  #########  PLOT AVAILABILITY PERIOD  #########
+  #########  PLOT DATA TIMELINE  #########
   # Plotting the min-max dates and illustrating major gaps
   if (plot_timeline == TRUE) {
     # prepare data for plotting
@@ -320,9 +333,9 @@ data_coverage <- function(dbcon,
 
     # plot overall coverage period
     # (only plot those within relevant date range in cohort)
-    timeline_data <- timeline_data[
-      max_date >= min(as.Date(cohort$discharge_date_time)) &
-        min_date <= max(as.Date(cohort$discharge_date_time))
+    timeline_data <- timeline_data[is.na(min_date) |
+      (max_date >= min(as.Date(cohort$discharge_date_time)) &
+        min_date <= max(as.Date(cohort$discharge_date_time)))
     ]
     # for edge cases where only single date is available, add an extra 2 days,
     # otherwise, this doesn't show up in plot at all...
@@ -384,7 +397,7 @@ data_coverage <- function(dbcon,
 
     # show figure as plotly?
     if (as_plotly == TRUE && system.file(package = "plotly") != "") {
-      plotly::ggplotly(timeline_plot)
+      print(plotly::ggplotly(timeline_plot))
     } else {
       if (as_plotly == TRUE && system.file(package = "plotly") == "") {
         warning("Package `plotly` not installed. Returning figures as ggplots instead.")
@@ -447,7 +460,7 @@ data_coverage <- function(dbcon,
 
       # get coverage data
       # (% encounters with an entry in a given table per month & hospital)
-      coverage_data <- quiet(
+      coverage_data <- quiet( # don't show any warnings from plot_over_time
         plot_over_time(
           cohort,
           facet_group = hosp_var,
@@ -503,7 +516,8 @@ data_coverage <- function(dbcon,
 
       # show figure as plotly?
       if (as_plotly == TRUE && system.file(package = "plotly") != "") {
-        plotly::ggplotly(coverage_plot)
+        print(plotly::ggplotly(coverage_plot) %>%
+                plotly::style(showlegend = FALSE))
       } else {
         if (as_plotly == TRUE && system.file(package = "plotly") == "") {
           warning("Package `plotly` not installed. Returning figures as ggplots instead.")
@@ -522,9 +536,13 @@ data_coverage <- function(dbcon,
     coverage <- lapply(table, get_coverage, cohort = cohort)
 
     # combine all columns (one per table) into single table
-    coverage_data <- do.call(
-      merge, sapply(coverage, function(x) x[["data"]], simplify = FALSE)
-    )
+    if (length(table) == 1) {
+      coverage_data <- coverage[[1]]$data
+    } else {
+      coverage_data <- do.call(
+        merge, sapply(coverage, function(x) x[["data"]], simplify = FALSE)
+      )
+    }
     # combine all coverage plots into single list
     coverage_plot <- sapply(coverage, function(x) x[["plot"]], simplify = FALSE)
     names(coverage_plot) <- table
@@ -532,7 +550,7 @@ data_coverage <- function(dbcon,
     cat("\n")
     warning(paste0(
       "The coverage plots show data coverage by *discharge* month (because ",
-      "all GEMINI data are pulled based on patient's `discharge_date_time`). ",
+      "all GEMINI data are pulled based on encounters's `discharge_date_time`). ",
       "For clinical variables, users are advised to also plot coverage by the ",
       "respective clinical date-time variables (e.g., `collection_date_time` ",
       "for lab data or `issue_date_time` for `transfusion` data).\n\n"
