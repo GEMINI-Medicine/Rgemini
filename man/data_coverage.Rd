@@ -2,8 +2,7 @@
 % Please edit documentation in R/data_coverage.R
 \name{data_coverage}
 \alias{data_coverage}
-\title{Check data coverage
-Check}
+\title{Check data coverage}
 \usage{
 data_coverage(
   dbcon,
@@ -11,6 +10,7 @@ data_coverage(
   table,
   plot_timeline = TRUE,
   plot_coverage = TRUE,
+  as_plotly = TRUE,
   ...
 )
 }
@@ -56,6 +56,10 @@ the function will plot the number of encounters by discharge month to show
 overall data volume (note: by definition, 100\% of \code{genc_ids} in GEMINI data
 have an entry in \code{admdad}).}
 
+\item{as_plotly}{(\code{logical})
+Will return any figures as interactive plots using \code{plotly}. The flag will be
+ignored if the \code{plotly} package is not installed.}
+
 \item{...}{When \code{plot_coverage = TRUE}: Additional inputs that can be passed to
 \code{Rgemini::plot_over_time()} to control plot aesthetics, e.g.:
 \itemize{
@@ -67,39 +71,47 @@ have an entry in \code{admdad}).}
 \value{
 If the plotting flags are set to \code{FALSE}, this function will return a single
 \code{data.table} object with a flag for each \code{genc_id} indicating whether the
-encounter was discharged during a time period in which data coverage was
-high for a given table of interest (e.g., \code{"lab"} table).
+encounter was discharged during a time period in which data for a given
+table (e.g., \code{"lab"}) were \emph{in principle} available. If the flag is \code{FALSE},
+the \code{genc_id} was dicharged during a time period where GEMINI did not receive
+any data for the table of interest. If the flag is \code{TRUE}, the \code{genc_id} was
+discharged during a time period where GEMINI received \emph{some} data from a
+given hospital (however, coverage may still be low, so users are advised to
+perform additional coverage checks, e.g., by using the plotting features of
+this function).
 
 When the plotting flags are set to \code{TRUE} (default), the function will
-return additional tables (as a list) and plots:
+return additional data tables (\code{output[["data"]]}) and plots
+(\code{output[["plots"]]}):
 \itemize{
-\item If \code{plot_timeline = TRUE}: Returns a plot showing an overview of data
-timelines by hospital for each table. Will also return the corresponding
-table \code{timeline_data} that lists the min - max dates of the data timeline
-(in long format, where multiple rows indicate gaps in the data timeline)
-\item If \code{plot_coverage = TRUE}: Returns a plot showing the percentage of
-\code{genc_ids} with an entry in a given table by discharge month and hospital.
-Will also return the same numbers as a table called \code{coverage_data}.
+\item If \code{plot_timeline = TRUE}: Returns \code{timeline_plot} showing an overview of
+data timelines by hospital for each table. Will also return the corresponding
+data table \code{timeline_data} that lists the min - max dates of each table per
+site (in long format, where tables with multiple rows per hospital indicate
+gaps in the data timeline)
+\item If \code{plot_coverage = TRUE}: Returns \code{coverage_plot} showing the percentage
+of \code{genc_ids} with an entry in a given table by discharge month and hospital.
+Will also return the plotted data as \code{coverage_data} to facilitate further
+inspection.
 }
 }
 \description{
 This function facilitates data coverage checks that analysts should perform
-during data exploration & cohort generation. Data coverage reflects the
-overall volume of data per table (over time & by hospital). Specifically,
-this function checks for "gaps" in the data timeline (e.g., are there any
-hospitals/time periods for which GEMINI did not receive any data at all?),
-and also provides more detailed insights into coverage by month and hospital
+during data exploration & cohort generation. Specifically, this function
+checks for "gaps" in the data timeline (e.g., are there any hospitals/time
+periods for which GEMINI did not receive any data at all?), and also provides
+more detailed insights into data volume & coverage by month and hospital
 (e.g., what percentage of encounters have an entry in a given table?).
+All checks performed by this function are applied at the table level (i.e.,
+missing values in individual columns are not considered and should be checked
+separately).
 }
 \details{
-Analysts should use the information provided by this function to inform their
-decisions about which hospitals/time periods to include in their analyses,
-depending on the variables of interest. For example, if analyses rely on lab
-data (e.g., \code{mlaps}), users should carefully inspect lab data coverage.
-Importantly, for time periods with high data coverage, individual
-\code{genc_ids} may still have missing entries in the lab table (e.g., because
-testing was not indicated). Users should carefully consider how to handle
-these missing values, and whether or not they can be imputed.
+This function provides analysts with a tool to inform their decisions
+about which hospitals/time periods to include in their analyses,
+depending on the data tables of interest. For example, if a project relies on
+lab data (e.g., \code{mlaps} variable), users should carefully inspect lab data
+coverage (see \code{plot_coverage} below). If lab data coverage is high (e.g.,95\% of genc_ids have an entry in the lab table), individual genc_idsmay still not exist in the lab table (e.g., because lab testing was notindicated) and individual lab columns might still have missing values.Users should carefully consider how to handle these cases depending on thecontext of their analyses.
 }
 \section{Warning!}{
 
@@ -110,8 +122,7 @@ dataset, prior to applying any additional cohort inclusions/exclusions.}
 \item{If you are an HPC4Health user and your datacut has been pre-filtered
 based on certain inclusion/exclusion criteria (e.g., diagnosis codes),
 please keep in mind that the coverage plots (see \code{plot_coverage}) may be
-skewed in smaller/pre-filtered samples. Please review the list of known
-data coverage issues printed by this function, and reach out to the GEMINI
+skewed in smaller/pre-filtered samples. Please reach out to the GEMINI
 team if you need additional support.}
 \item{Data coverage checks are particularly relevant for clinical data
 tables (e.g., lab, pharmacy, radiology, transfusions, vitals, clinical
@@ -134,16 +145,17 @@ dbcon <- DBI::dbConnect(drv,
 )
 
 ## run function with default flags to create all plots
-coverage <- data_coverage(db, cohort, table = c("lab", "radiology"))
+# Note: This might take a while to run...
+coverage <- data_coverage(db, cohort, table = c("admdad", "radiology"))
 
-# get flag per encounter
-coverage_flag_enc <- coverage[[1]]
+# get flags per encounter based on encounter's discharge date
+enc_flag <- coverage[["data"]][1] # coverage[["data"]]$coverage_flag_enc
 
 # get data timeline (min-max dates)
-data_timeline <- coverage[[2]]
+data_timeline <- coverage[["data"]][2] # coverage[["data"]]$timeline_data
 
 # get \% encounters with entry in each table by discharge month & hospital
-prct_coverage <- coverage[[3]]
+prct_coverage <- coverage[["data"]][3] # coverage[["data"]]$coverage_data
 }
 
 }
