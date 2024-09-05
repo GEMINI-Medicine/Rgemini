@@ -108,11 +108,16 @@ missing values in individual columns are not considered and should be checked
 separately).
 }
 \details{
-This function provides analysts with a tool to inform their decisions
+\code{data_coverage} provides analysts with a tool to inform their decisions
 about which hospitals/time periods to include in their analyses,
 depending on the data tables of interest. For example, if a project relies on
 lab data (e.g., \code{mlaps} variable), users should carefully inspect lab data
-coverage (see \code{plot_coverage} below). If lab data coverage is high (e.g.,95\% of genc_ids have an entry in the lab table), individual genc_idsmay still not exist in the lab table (e.g., because lab testing was notindicated) and individual lab columns might still have missing values.Users should carefully consider how to handle these cases depending on thecontext of their analyses.
+coverage (see \code{plot_coverage} below). If lab data coverage is high (e.g.,
+\>95\% of \code{genc_ids} have an entry in the lab table), individual \code{genc_ids}
+may still not exist in the lab table (e.g., because lab testing was not
+indicated) and individual lab columns might still have missing values.
+Users should carefully consider how to handle these cases depending on the
+context of their analyses.
 }
 \section{Warning!}{
 
@@ -159,6 +164,17 @@ data_timeline <- coverage[["data"]][2] # coverage[["data"]]$timeline_data
 
 # get \% encounters with entry in each table by discharge month & hospital
 prct_coverage <- coverage[["data"]][3] # coverage[["data"]]$coverage_data
+
+
+## run function without any plots
+# (will only return data.table with encounter-level flag)
+coverage <- data_coverage(
+    dbcon,
+    cohort,
+    table = c("admdad", "radiology"),
+    plot_timeline = FALSE,
+    plot_coverage = FALSE
+)
 }
 
 ## run function without any plots

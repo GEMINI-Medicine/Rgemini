@@ -13,12 +13,12 @@
 #' separately).
 #'
 #' @details
-#' This function provides analysts with a tool to inform their decisions
+#' `data_coverage` provides analysts with a tool to inform their decisions
 #' about which hospitals/time periods to include in their analyses,
 #' depending on the data tables of interest. For example, if a project relies on
 #' lab data (e.g., `mlaps` variable), users should carefully inspect lab data
 #' coverage (see `plot_coverage` below). If lab data coverage is high (e.g.,
-#' > 95% of `genc_ids` have an entry in the lab table), individual `genc_ids`
+#' \>95% of `genc_ids` have an entry in the lab table), individual `genc_ids`
 #' may still not exist in the lab table (e.g., because lab testing was not
 #' indicated) and individual lab columns might still have missing values.
 #' Users should carefully consider how to handle these cases depending on the
@@ -149,7 +149,7 @@
 #'
 #' # get % encounters with entry in each table by discharge month & hospital
 #' prct_coverage <- coverage[["data"]][3] # coverage[["data"]]$coverage_data
-#' }
+#'
 #'
 #' ## run function without any plots
 #' # (will only return data.table with encounter-level flag)
@@ -160,6 +160,7 @@
 #'     plot_timeline = FALSE,
 #'     plot_coverage = FALSE
 #' )
+#' }
 #'
 #' @export
 #'
