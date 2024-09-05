@@ -177,14 +177,4 @@ coverage <- data_coverage(
 )
 }
 
-## run function without any plots
-# (will only return data.table with encounter-level flag)
-coverage <- data_coverage(
-    dbcon,
-    cohort,
-    table = c("admdad", "radiology"),
-    plot_timeline = FALSE,
-    plot_coverage = FALSE
-)
-
 }
