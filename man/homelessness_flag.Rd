@@ -2,7 +2,7 @@
 % Please edit documentation in R/homelessness_flag.R
 \name{homelessness_flag}
 \alias{homelessness_flag}
-\title{homelessness_flag}
+\title{Homelessness Flag}
 \usage{
 homelessness_flag(cohort, ipdiag, erdiag = NULL)
 }
