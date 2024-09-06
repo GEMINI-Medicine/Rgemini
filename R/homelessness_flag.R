@@ -7,6 +7,13 @@
 #'
 #' Returns a table with a flag identifying encounters with an ICD-10-CA diagnosis code Z59.0 or Z59.1.
 #'
+#' For data since 2018, previous studies have shown that
+#' ICD-10-CA codes have a sensitivity of 60-70% for
+#' detecting whether a patient has experienced homelessness at the
+#' time of hospitalization (Richard et al, 2024). Due to this,
+#' we recommend to only use ICD-10-CA codes to identify
+#' homelessness after 2018.
+#'
 #' Homelessness (Z59.0) is coded when an individual
 #' is determined to be homeless. Effective of the year 2018-2019, CIHI
 #' mandated that Z59.0 is to be coded when a "patient's record
@@ -24,7 +31,8 @@
 #' if the home isn't safely inhabitable due to repairs in progress.
 #'
 #' @details
-#' Below are the current ICD-10-CA codes related to homelessness.
+#' Below are the current ICD-10-CA codes related to homelessness, which
+#' are coded regardless of the diagnosis.
 #' For more information, please refer to the references in this page.
 #'
 #' \itemize{
@@ -38,13 +46,6 @@
 #' The accuracy of this function relies on hospitals maintaining codings
 #' Z59.0 for homelessness and Z59.1 for inadequate housing. These flags
 #' are validated, adapted flags of ICES validated homelessness indicators.
-#'
-#' For data since 2018, previous studies have
-#' shown that "ICD-10-CA codes have a sensitivity of 60-70% for
-#' detecting whether a patient has experienced homelessness at the
-#' time of hospitalization" (Richard et al, 2024). Due to this,
-#' we recommend to only use ICD-10-CA codes to identify
-#' homelessness after 2018.
 #'
 #' @param cohort (`data.frame` or `data.table`)
 #' Cohort table with all relevant encounters of interest, where each row
@@ -106,6 +107,10 @@ homelessness_flag <- function(
     cat("\n*** Based on the input you provided, only in-patient diagnoses (ipdiag) will be included in the derived homelessness flag.
         If you want to include ER diagnoses, please provide the correspondig table as an input to `erdiag`. ***\n")
   }
+
+  cat("\n*** We recommend to only use ICD-10-CA codes to identify homelessness due to a coding mandate introduced in 2018, 
+      which increased sensitivity for detecting if a patient is experiencing homelessness. It is suggested that prior to the mandate,
+      ICD-10-CA codes underestimated the prevalence of homelessness among patients. ***\n")
 
   ## check that cohort contains genc_ids
   check_input(cohort, c("data.table", "data.frame"), colnames = c("genc_id"))
