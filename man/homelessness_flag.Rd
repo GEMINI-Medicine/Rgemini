@@ -40,6 +40,13 @@ encounter does not have a diagnosis code in the diagnosis table input.
 
 Returns a table with a flag identifying encounters with an ICD-10-CA diagnosis code Z59.0 or Z59.1.
 
+For data since 2018, previous studies have shown that
+ICD-10-CA codes have a sensitivity of 60-70\% for
+detecting whether a patient has experienced homelessness at the
+time of hospitalization (Richard et al, 2024). Due to this,
+we recommend to only use ICD-10-CA codes to identify
+homelessness after 2018.
+
 Homelessness (Z59.0) is coded when an individual
 is determined to be homeless. Effective of the year 2018-2019, CIHI
 mandated that Z59.0 is to be coded when a "patient's record
@@ -55,7 +62,8 @@ conditions, safety issues such as a lack of heating, and
 if the home isn't safely inhabitable due to repairs in progress.
 }
 \details{
-Below are the current ICD-10-CA codes related to homelessness.
+Below are the current ICD-10-CA codes related to homelessness, which
+are coded regardless of the diagnosis.
 For more information, please refer to the references in this page.
 
 \itemize{
@@ -70,22 +78,15 @@ of housing assign Z59.1.}
 The accuracy of this function relies on hospitals maintaining codings
 Z59.0 for homelessness and Z59.1 for inadequate housing. These flags
 are validated, adapted flags of ICES validated homelessness indicators.
-
-For data since 2018, previous studies have
-shown that "ICD-10-CA codes have a sensitivity of 60-70\% for
-detecting whether a patient has experienced homelessness at the
-time of hospitalization" (Richard et al, 2024). Due to this,
-we recommend to only use ICD-10-CA codes to identify
-homelessness after 2018.
 }
 
 \examples{
 \dontrun{
 drv <- dbDriver("PostgreSQL")
 dbcon <- DBI::dbConnect(drv,
-  dbname = "report_db_v3",
-  host = "prime.smh.gemini-hpc.ca",
-  port = 5432,
+  dbname = "db",
+  host = "domain_name.ca",
+  port = 1234,
   user = getPass("Enter user:"),
   password = getPass("password")
 )
