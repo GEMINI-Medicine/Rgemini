@@ -94,7 +94,7 @@
 #'
 #' @references
 #' \itemize{
-#'    \item{[ALC Diagnosis List](https://www.cihi.ca/sites/default/files/document/alternate-level-care-diagnosis-list-job-aid-en.pdf)}
+#'    \item{[ICD-10-CA codes for identifying homelessness.](https://www.cihi.ca/en/better-quality-hospital-data-for-identifying-patients-experiencing-homelessness)}
 #'    \item{Identification of homelessness using health administrative data in Ontario: Richard Lucie, et al. J. Clin. Epidimiol., 2024. https://doi.org/10.1016/j.jclinepi.2024.111430}
 #' }
 #'@export
@@ -108,7 +108,7 @@ homelessness_flag <- function(
         If you want to include ER diagnoses, please provide the correspondig table as an input to `erdiag`. ***\n")
   }
 
-  cat("\n*** We recommend to only use ICD-10-CA codes to identify homelessness due to a coding mandate introduced in 2018, 
+  cat("\n*** We recommend to only use ICD-10-CA codes to identify homelessness in patients who were discharged after the 2018 coding mandate,
       which increased sensitivity for detecting if a patient is experiencing homelessness. It is suggested that prior to the mandate,
       ICD-10-CA codes underestimated the prevalence of homelessness among patients. ***\n")
 
