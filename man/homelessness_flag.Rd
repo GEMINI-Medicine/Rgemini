@@ -38,9 +38,7 @@ encounter does not have a diagnosis code in the diagnosis table input.
 \code{homelessness_flag} returns homelessness status for each
 \code{genc_id} based on ICD-10-CA diagnosis codes.
 
-Returns a table with a flag identifying encounters with
-confirmed homelessness status using ICD-10-CA codes
-Z59.0 and Z59.1.
+Returns a table with a flag identifying encounters with an ICD-10-CA diagnosis code Z59.0 or Z59.1.
 
 Homelessness (Z59.0) is coded when an individual
 is determined to be homeless. Effective of the year 2018-2019, CIHI
