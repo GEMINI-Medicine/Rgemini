@@ -12,7 +12,8 @@
 #' mandated that Z59.0 is to be coded when a "patient's record
 #' shows that they are homeless upon admission". After the mandate,
 #' prevalence of the flag increased by 84% compared to the previous year,
-#' indicating that homelessness has been underestimated. (For details, see
+#' suggesting that ICD-10-CA diagnosis codes underestimate true homelessness rates 
+#` prior to the reporting mandate. (For details, see
 #' [2018 CIHI mandate to code homelessness](https://www.cihi.ca/en/better-quality-hospital-data-for-identifying-patients-experiencing-homelessness))
 
 #' Inadequate housing (Z59.1) is coded when an individual is
