@@ -101,7 +101,7 @@ homeless <- homeless \%>\% filter(homeless$homelessness_icd_flag == TRUE)
 }
 \references{
 \itemize{
-\item{\href{https://www.cihi.ca/sites/default/files/document/alternate-level-care-diagnosis-list-job-aid-en.pdf}{ALC Diagnosis List}}
+\item{\href{https://www.cihi.ca/en/better-quality-hospital-data-for-identifying-patients-experiencing-homelessness}{ICD-10-CA codes for identifying homelessness.}}
 \item{Identification of homelessness using health administrative data in Ontario: Richard Lucie, et al. J. Clin. Epidimiol., 2024. https://doi.org/10.1016/j.jclinepi.2024.111430}
 }
 }
