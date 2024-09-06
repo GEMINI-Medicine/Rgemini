@@ -1,5 +1,5 @@
 #' @title
-#' homelessness_flag
+#' Homelessness Flag
 #'
 #' @description
 #' `homelessness_flag` returns homelessness status for each
