@@ -4,7 +4,7 @@
 \alias{homelessness_flag}
 \title{Homelessness Flag}
 \usage{
-homelessness_flag(cohort, ipdiag, erdiag = NULL)
+homelessness_flag(cohort, ipdiag, erdiag)
 }
 \arguments{
 \item{cohort}{(\code{data.frame} or \code{data.table})
