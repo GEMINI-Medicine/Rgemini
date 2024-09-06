@@ -78,9 +78,9 @@
 #' \dontrun{
 #' drv <- dbDriver("PostgreSQL")
 #' dbcon <- DBI::dbConnect(drv,
-#'   dbname = "report_db_v3",
-#'   host = "prime.smh.gemini-hpc.ca",
-#'   port = 5432,
+#'   dbname = "db",
+#'   host = "domain_name.ca",
+#'   port = 1234,
 #'   user = getPass("Enter user:"),
 #'   password = getPass("password")
 #' )
