@@ -36,34 +36,21 @@ encounter does not have a diagnosis code in the diagnosis table input.
 }
 \description{
 \code{homelessness_flag} returns homelessness status for each
-\code{genc_id} based on ICD-10-CA diagnosis codes.
+\code{genc_id} based on ICD-10-CA diagnosis codes Z59.0 or Z59.1.
 
-Returns a table with a flag identifying encounters with an ICD-10-CA diagnosis code Z59.0 or Z59.1.
+Coding of homelessness became mandatory in 2018. We therefore
+recommend that users only only apply this function to encounters
+discharged since 2018 (see below for details).
 
 For data since 2018, previous studies have shown that
-ICD-10-CA codes have a sensitivity of 60-70\% for
-detecting whether a patient has experienced homelessness at the
-time of hospitalization (Richard et al, 2024). Due to this,
-we recommend to only use ICD-10-CA codes to identify
-homelessness after 2018.
-
-Homelessness (Z59.0) is coded when an individual
-is determined to be homeless. Effective of the year 2018-2019, CIHI
-mandated that Z59.0 is to be coded when a "patient's record
-shows that they are homeless upon admission". After the mandate,
-prevalence of the flag increased by 84\% compared to the previous year,
-suggesting that ICD-10-CA diagnosis codes underestimate true homelessness rates
-\href{https://www.cihi.ca/en/better-quality-hospital-data-for-identifying-patients-experiencing-homelessness}{2018 CIHI mandate to code homelessness})
-Inadequate housing (Z59.1) is coded when an individual is
-determined to be experiencing poor housing conditions, their
-usual housing is uninhabitable, or if they are experiencing
-a lack of utilities. Some examples include unsafe living
-conditions, safety issues such as a lack of heating, and
-if the home isn't safely inhabitable due to repairs in progress.
+ICD-10-CA codes have a sensitivity of 60-70\% for detecting
+whether a patient has experienced homelessness at the
+time of hospitalization
+(\href{https://doi.org/10.1016/j.jclinepi.2024.111430}{Richard et al, 2024}).
 }
 \details{
 Below are the current ICD-10-CA codes related to homelessness, which
-are coded regardless of the diagnosis.
+are coded regardless of the diagnosis type.
 For more information, please refer to the references in this page.
 
 \itemize{
@@ -72,14 +59,23 @@ For more information, please refer to the references in this page.
 to safety or accessibility, but not necessarily a complete lack
 of housing assign Z59.1.}
 }
-}
-\section{Notes}{
 
-The accuracy of this function relies on hospitals maintaining codings
-Z59.0 for homelessness and Z59.1 for inadequate housing. These flags
-are validated, adapted flags of ICES validated homelessness indicators.
-}
+Homelessness (Z59.0) is coded when an individual
+is determined to be homeless. Effective of the year 2018-2019, CIHI
+mandated that Z59.0 is to be coded when a "patient's record
+shows that they are homeless upon admission". After the mandate,
+prevalence of the flag increased by 84\% compared to the previous year,
+suggesting that ICD-10-CA diagnosis codes underestimate true homelessness
+rates prior to the reporting mandate. (For details, see
+\href{https://www.cihi.ca/en/better-quality-hospital-data-for-identifying-patients-experiencing-homelessness}{2018 CIHI mandate to code homelessness})
 
+Inadequate housing (Z59.1) is coded when an individual is
+determined to be experiencing poor housing conditions, their
+usual housing is uninhabitable, or if they are experiencing
+a lack of utilities. Some examples include unsafe living
+conditions, safety issues such as a lack of heating, and
+if the home isn't safely inhabitable due to repairs in progress.
+}
 \examples{
 \dontrun{
 drv <- dbDriver("PostgreSQL")
@@ -93,7 +89,7 @@ dbcon <- DBI::dbConnect(drv,
 ipadm <- dbGetQuery(dbcon, "select * from admdad") \%>\% data.table()
 ipdiagnosis <- dbGetQuery(dbcon, "select * from ipdiagnosis") \%>\% data.table()
 erdiagnosis <- dbGetQuery(dbcon, "select * from erdiagnosis") \%>\% data.table()
-homeless <- homelessness_flag(cohort = ipadm, ipdiag = ipdiagnosis)
+homeless <- homelessness_flag(cohort = ipadm, ipdiag = ipdiagnosis, erdiag = erdiagnosis)
 # view only genc_id's with homelessness flag
 homeless <- homeless \%>\% filter(homeless$homelessness_icd_flag == TRUE)
 }
