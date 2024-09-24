@@ -140,12 +140,6 @@ render_cell_suppression.default <- function(
 
   } else if (is.numeric(x)) {
 
-    if (!is.null(args$continuous_fn) && args$continuous_fn == "median") {
-      render.continuous <- render_median.continuous
-    } else {
-      render.continuous <- render_mean.continuous
-    }
-
     r <- do.call(render.continuous, list(x = x, ...))
 
   } else {
@@ -453,21 +447,26 @@ render_median.continuous <- function(x, ...) {
 #'
 render_cell_suppression.continuous <- function(x, ...) {
   args <- list(...)
-  if (is.null(args$continuous_fn)) args$continuous_fn <- "mean"
+  
+  if (is.null(args$continuous_fn)) {args$continuous_fn <- "mean"}
 
   if (length(x) < 6) {
-    if (args$continuous_fn == "median") {
-      c("", `Median [Q1, Q3]` = "&lt; 6 obs. (suppressed)")
+      mea <- c("", `Mean (SD)` = "&lt; 6 obs. (suppressed)")
+      med <- c("", `Median [Q1, Q3]` = "&lt; 6 obs. (suppressed)")
     } else {
-      c("", `Mean (SD)` = "&lt; 6 obs. (suppressed)")
+      mea <- render_mean.continuous(x, ...)
+      med <- render_median.continuous(x, ...)
     }
+  
+  if (all(args$continuous_fn=="mean")) {
+    res <- mea
+  } else if (all(args$continuous_fn=="median")) {
+    res <- med
   } else {
-    if (args$continuous_fn == "median") {
-      render_median.continuous(x, ...)
-    } else {
-      render_mean.continuous(x, ...)
-    }
+    res <- c(mea, med)
   }
+  
+  return(res)
 }
 
 
