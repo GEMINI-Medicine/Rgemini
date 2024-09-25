@@ -449,7 +449,7 @@ render_median.continuous <- function(x, ...) {
 #' y <- 1:2
 #' render_cell_suppression.continuous(y)
 #' 
-#' Use in `table1`:
+#' # Use in `table1`:
 #' dat <- expand.grid(id=1:10, treat=c("Treated", "Placebo"))
 #' dat$age <- runif(nrow(dat), 10, 50)
 #' label(dat$age) <- "Age"
