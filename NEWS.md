@@ -1,5 +1,6 @@
 # Rgemini `develop`
 * New function `homelessness_flag` which creates a table indicating homelessness status of genc_ids
+* Enhanced `cell_suppression` renderers for `table1` to support simultaneous display of both mean and median.
 
 # Rgemini `0.5.1`
 * Improved query efficiency in `mlaps` and other functions for clinical derived variables
