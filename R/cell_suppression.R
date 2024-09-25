@@ -429,13 +429,11 @@ render_median.continuous <- function(x, ...) {
 #'
 #' @param x (`numeric`)\cr
 #' A continuous variable to summarize.
-#' 
-#' @param continuous_fn (`character`)\cr
-#' A character string specifying the summary statistics to display. 
-#' Accepts "mean", "median", or c("mean", "median") to display both. Defaults to "mean".
 #'
 #' @param ... \cr
-#' Further arguments, passed to `table1:::stats.apply.rounding()`.
+#' Further arguments, such as `continuous_fn`, and those passed to `table1:::stats.apply.rounding()`.
+#' Use `continuous_fn` to specify the summary statistics to display, 
+#' which accepts character string: "mean", "median", or c("mean", "median") to display both. Defaults to "mean".
 #'
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
