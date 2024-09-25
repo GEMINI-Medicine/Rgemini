@@ -32,15 +32,4 @@ render_cell_suppression.continuous(x)
 y <- 1:2
 render_cell_suppression.continuous(y)
 
-# Use in `table1`:
-dat <- expand.grid(id=1:10, treat=c("Treated", "Placebo"))
-dat$age <- runif(nrow(dat), 10, 50)
-label(dat$age) <- "Age"
-
-table1(~ age | treat, data=dat,
-       render.continuous = render_cell_suppression.continuous,
-       continuous_fn = c("mean", "median"), # to display mean and median simultaneously
-       digits=2)
-
-
 }
