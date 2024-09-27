@@ -2,6 +2,7 @@
 * Improved query efficiency in `mlaps` and other functions for clinical derived variables
 * Removed duplicated code in `icu_entry()`
 
+<<<<<<< HEAD
 # Rgemini `0.5.0`
 
 * **New functions:**
@@ -25,6 +26,18 @@
 	* `Rgemini:::check_input()`: Return error for `odbc` connections 
 
 * **Small documentation updates & clean-up of pkdgown reference file**
+=======
+* Added `neighborhood_ses()` to document concepts, claen up, and merge commonly used socioeconomic variables
+* Updated unit tests & small bug fix in `daily_census` 
+* Enable `prettyNum` formatting in table 1 render functions
+* Updated unit tests & small bug fix in `daily_census`
+* Ordered package names in pkgdown reference file
+<<<<<<< issue_111
+* Update mlaps hospital query
+=======
+* New option to derive ICU entries as a clinical outcome with customizable time windows in `icu_entry()`
+* Small bug fix in `disability()`
+>>>>>>> 5e02560 (update SES function documentation)
 
 
 # Rgemini 0.4.2

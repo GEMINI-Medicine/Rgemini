@@ -32,6 +32,7 @@ reference:
   - readmission
   - season
   - stat_holidays_ON
+  - neighborhood_ses
 - title: Data Transformation
   desc: These functions aid in querying the data, either by applying filters or mapping values.
 - contents:
