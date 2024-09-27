@@ -44,6 +44,7 @@ export(n_missing)
 export(n_rbc_transfusions)
 export(n_routine_bloodwork)
 <<<<<<< HEAD
+<<<<<<< HEAD
 export(plot_color_palettes)
 export(plot_over_time)
 export(plot_summary)
@@ -51,6 +52,9 @@ export(plot_theme)
 =======
 export(nbhd_ses_variables)
 >>>>>>> 46ca8a1 (Update documentation)
+=======
+export(neighborhood_ses)
+>>>>>>> 44c39f1 (Update documentation)
 export(readmission)
 export(render_cell_suppression.categorical)
 export(render_cell_suppression.continuous)
