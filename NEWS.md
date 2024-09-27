@@ -1,5 +1,6 @@
 # Rgemini `develop`
 
+* Added `neighborhood_ses()` to document concepts, claen up, and merge commonly used socioeconomic variables
 * Updated unit tests & small bug fix in `daily_census` 
 * Enable `prettyNum` formatting in table 1 render functions
 * Updated unit tests & small bug fix in `daily_census`
