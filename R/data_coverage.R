@@ -49,7 +49,7 @@
 #' Cohort table with all relevant encounters of interest, where each row
 #' corresponds to a single encounter. Must contain the following columns:
 #' - `genc_id`: GEMINI Encounter ID
-#' - `hospital_num` | `hosital_id`: Hospital identifier
+#' - `hospital_num` | `hospital_id`: Hospital identifier
 #' - `discharge_date_time`
 #'
 #' @param table (`character`)
