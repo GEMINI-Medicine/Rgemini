@@ -537,9 +537,10 @@ data_coverage <- function(dbcon,
     if (length(table) == 1) {
       coverage_data <- coverage[[1]]$data
     } else {
-      coverage_data <- do.call(
-        merge, sapply(coverage, function(x) x[["data"]], simplify = FALSE)
-      )
+      # extract coverage data from list and merge all tables into 1
+      coverage_data <- do.call(function(...) {
+        Reduce(function(x, y) merge(x, y, by = intersect(names(x), names(y))), list(...))
+      }, sapply(coverage, function(x) x[["data"]], simplify = FALSE))
     }
     # combine all coverage plots into single list
     coverage_plot <- sapply(coverage, function(x) x[["plot"]], simplify = FALSE)
