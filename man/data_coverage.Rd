@@ -23,7 +23,7 @@ Cohort table with all relevant encounters of interest, where each row
 corresponds to a single encounter. Must contain the following columns:
 \itemize{
 \item \code{genc_id}: GEMINI Encounter ID
-\item \code{hospital_num} | \code{hosital_id}: Hospital identifier
+\item \code{hospital_num} | \code{hospital_id}: Hospital identifier
 \item \code{discharge_date_time}
 }}
 
