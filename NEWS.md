@@ -1,3 +1,9 @@
+# Rgemini `develop`
+
+* **New functions:**
+	* `cohort_creation()` to generate cohort and show numbers at each inclusion/exclusion step
+
+
 # Rgemini `0.5.0`
 
 * **New functions:**

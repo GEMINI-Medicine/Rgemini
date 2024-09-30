@@ -1,9 +1,11 @@
 #' @title
-#' Cohort creation
+#' Create cohort based on inclusion/exclusion steps
 #'
 #' @description
-#' This function creates a table showing the cohort size (e.g., number of
-#' encounters) that were included/excluded at each step of the cohort creation.
+#' This function creates a cohort table containing all entries that meet the
+#' user-specified inclusion criteria. It also returns a table showing the cohort
+#' size (e.g., number of encounters/rows) that were included/excluded at each
+#' step of the cohort creation.
 #'
 #' @param cohort (`list`)
 #' A list of cohort tables at each step of the cohort inclusions/exclusions.
