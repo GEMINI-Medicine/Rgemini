@@ -30,7 +30,7 @@ testthat::test_that("Encounters not qualify for frailty assessment are excluded 
   ipdiag_dum <- dummy_diag(nid=3, nrow=10, ipdiagnosis=T, pattern ="C20$|R460$") # frailty conditions
   erdiag_dum <- dummy_diag(nid=3, nrow=3, ipdiagnosis=F, pattern ="C20$|E209$") # frailty conditions
 
-  testthat::expect_warning(res <- frailty_score(cohort_dum, ipdiag_dum, erdiag_dum, component_wise = F))
+  suppressWarnings(testthat::expect_warning(res <- frailty_score(cohort_dum, ipdiag_dum, erdiag_dum, component_wise = F)))
   testthat::expect_equal(res$frailty_score_derived, c(2, 3))
   testthat::expect_equal(res$genc_id, c(1, 3))
 })

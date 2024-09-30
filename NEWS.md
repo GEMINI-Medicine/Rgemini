@@ -1,5 +1,10 @@
 # Rgemini `develop`
-* New function `homelessness_flag` which creates a table indicating homelessness status of genc_ids
+
+* **New functions:**
+	* `data_coverage()` function to facilitate data coverage checks
+	* `homelessness_flag()` to derive encounter-level homelessness status based on ICD-10-CA diagnosis codes
+	* Utility function `quiet()` to run any functions without warning/error/print messages
+
 
 # Rgemini `0.5.1`
 * Improved query efficiency in `mlaps` and other functions for clinical derived variables
