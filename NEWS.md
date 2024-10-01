@@ -1,7 +1,12 @@
 # Rgemini `develop`
 
 * **New functions:**
-	* `cohort_creation()` to generate cohort and show numbers at each inclusion/exclusion step
+	* `cohort_creation()` to generate cohort and show number (%) of entries at each inclusion/exclusion step
+	* `homelessness_flag()` to derive encounter-level homelessness status based on ICD-10-CA diagnosis codes
+
+# Rgemini `0.5.1`
+* Improved query efficiency in `mlaps` and other functions for clinical derived variables
+* Removed duplicated code in `icu_entry()`
 
 
 # Rgemini `0.5.0`
