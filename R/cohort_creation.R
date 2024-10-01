@@ -76,7 +76,7 @@
 #' cohort_data <- my_cohort[[1]]
 #'
 #' # print table with N (%) at each inclusion/exclusion step
-#' print(cohort[[2]])
+#' print(my_cohort[[2]])
 #'
 #' @export
 cohort_creation <- function(
