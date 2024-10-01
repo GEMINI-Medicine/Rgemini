@@ -15,9 +15,12 @@ cohort_creation(
 }
 \arguments{
 \item{cohort}{(\code{list})
-A list of cohort tables at each step of the cohort inclusion/exclusion steps.
-The function will count the number of rows in each list item to determine the
-cohort size at each step.}
+A list of cohort tables at each step of the cohort inclusions/exclusions.
+The function will apply the inclusion/exclusion steps in a sequential manner,
+and will then count the number of entries that remain at each step. For
+example, for \code{cohort = list(data[gender == "F"], data[age > 65])}, the
+function will return a table with 2 rows listing the number of encounters
+that are 1) female, and 2) female \strong{AND} older than 65 years.}
 
 \item{labels}{(\code{character})
 Vector containing a description for each inclusion/exclusion step (needs to
@@ -25,19 +28,21 @@ be in the same order as corresponding list items in \code{cohort} input).}
 
 \item{exclusion_flag}{(\code{logical})
 A vector indicating whether a given cohort creation step should be
-shown as an exclusion. If \code{TRUE} the number and percentage of rows that
-were removed (rather than included) will be shown.
+interpreted as an exclusion (rather than an inclusion). If \code{TRUE} the
+corresponding entries will be removed and the number (\%) of rows that were
+removed (rather than included) will be shown.
 
 By default, all cohort steps will be interpreted as inclusion steps.}
 
 \item{show_prct}{(\code{logical})
 Flag indicating whether to show percentage values. If \code{FALSE}, only raw
-counts will be shown.}
+counts will be shown. Note that the percentages always reflect the \% change
+relative to the N in the \emph{previous} inclusion/exclusion step.}
 
 \item{group_var}{(\code{character})
-Name of a grouping variable. If provided, cohort numbers will be stratified
-by each level of the grouping variable (in addition to overall cohort
-numbers).}
+Optional: Name of a grouping variable. If provided, cohort numbers will be
+stratified by each level of the grouping variable (in addition to overall
+cohort numbers).}
 
 \item{...}{Additional parameters that will be passed to \code{prettyNum} for additional
 formatting of numbers (e.g., \code{big.mark = ","}).}
@@ -47,27 +52,36 @@ A data.table showing the cohort numbers as a count (and percentage) at each
 step of the cohort creation.
 }
 \description{
-This function creates a table showing the cohort size (e.g., number of
-encounters) that were included/excluded at each step of the cohort creation.
+This function creates a cohort data table based on user-specified inclusion/
+exclusion criteria. It also returns a table showing the cohort size (e.g.,
+number of encounters) that were included/excluded at each
+step of the cohort creation.
 }
 \examples{
 my_data <- Rgemini::dummy_ipadmdad(10000, n_hospitals = 5) \%>\% data.table()
 
-cohort_table <- cohort_creation(
+my_cohort <- cohort_creation(
   cohort = list(
     my_data,
     my_data[gender == "F"],
-    my_data[gender == "F" & age >= 65],
-    my_data[gender == "F" & age >= 65 & !grepl("^7", discharge_disposition)]
+    my_data[age > 65],
+    my_data[grepl("^7", discharge_disposition)]
   ),
   labels = c(
     "All GEMINI encounters",
     "Gender = Female",
-    "Age >= 80",
+    "Age > 65",
     "In-hospital death"
   ),
   exclusion_flag = c(FALSE, FALSE, FALSE, TRUE),
   group_var = "hospital_num"
 )
+
+# get data table containing all entries in final cohort
+cohort_data <- my_cohort[[1]]
+
+# print table with N (\%) at each inclusion/exclusion step
+my_cohort[[2]] \%>\% knitr::kable(format = "html") \%>\%
+  kable_styling("hover")
 
 }
