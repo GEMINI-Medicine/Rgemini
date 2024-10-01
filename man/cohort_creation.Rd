@@ -15,12 +15,16 @@ cohort_creation(
 }
 \arguments{
 \item{cohort}{(\code{list})
-A list of cohort tables at each step of the cohort inclusions/exclusions.
-The function will apply the inclusion/exclusion steps in a sequential manner,
-and will then count the number of entries that remain at each step. For
-example, for \code{cohort = list(data[gender == "F"], data[age > 65])}, the
-function will return a table with 2 rows listing the number of encounters
-that are 1) female, and 2) female \strong{AND} older than 65 years.}
+A list where each item corresponds to the cohort definition at a single step
+of the cohort inclusions/exclusions.
+The function will automatically combine the inclusion/exclusion steps in a
+sequential manner, and will then count the number of entries that remain
+after each criterion.
+For example, for \code{cohort = list(data[gender == "F"], data[age > 65])}, the
+function will return a cohort of all encounters that are female and older
+than 65 years. The cohort inclusion/exclusion table will contain 2 rows
+listing the number of encounters that are 1) female, and 2) female \strong{AND}
+older than 65 years.}
 
 \item{labels}{(\code{character})
 Vector containing a description for each inclusion/exclusion step (needs to
@@ -40,16 +44,21 @@ counts will be shown. Note that the percentages always reflect the \% change
 relative to the N in the \emph{previous} inclusion/exclusion step.}
 
 \item{group_var}{(\code{character})
-Optional: Name of a grouping variable. If provided, cohort numbers will be
-stratified by each level of the grouping variable (in addition to overall
-cohort numbers).}
+Optional: Name of a grouping variable (e.g., hospital). If provided, cohort
+numbers will be stratified by each level of the grouping variable (in
+addition to overall cohort numbers).}
 
 \item{...}{Additional parameters that will be passed to \code{prettyNum} for additional
 formatting of numbers (e.g., \code{big.mark = ","}).}
 }
 \value{
-A data.table showing the cohort numbers as a count (and percentage) at each
-step of the cohort creation.
+A list with 2 items:
+\enumerate{
+\item \code{cohort_data}: \code{data.table} containing all entries in the final cohort
+(after applying all inclusions/exclusions)
+\item \code{cohort_steps}: \code{data.table} showing the number (and \%) of entries
+that were included/excluded at each step of the cohort creation.
+}
 }
 \description{
 This function creates a cohort data table based on user-specified inclusion/
@@ -74,14 +83,13 @@ my_cohort <- cohort_creation(
     "In-hospital death"
   ),
   exclusion_flag = c(FALSE, FALSE, FALSE, TRUE),
-  group_var = "hospital_num"
+  group_var = "hospital_num" # optional: stratify by hospital
 )
 
 # get data table containing all entries in final cohort
 cohort_data <- my_cohort[[1]]
 
 # print table with N (\%) at each inclusion/exclusion step
-my_cohort[[2]] \%>\% knitr::kable(format = "html") \%>\%
-  kable_styling("hover")
+print(cohort[[2]])
 
 }
