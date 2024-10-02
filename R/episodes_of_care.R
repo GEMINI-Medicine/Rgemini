@@ -105,7 +105,7 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
 
   ############ Load whole admdad table (default) ############
   ## find relevant table name corresponding to admdad
-  admdad_name <- find_db_tablename(dbcon, "admdad", verbose = FALSE)
+  admdad_name <- Rgemini:::find_db_tablename(dbcon, "admdad", verbose = FALSE)
   if (!is.null(restricted_cohort)) {
     restricted_cohort <- coerce_to_datatable(restricted_cohort)
     if (!"genc_id" %in% names(restricted_cohort)) {
@@ -153,8 +153,18 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
   data$AT_in_coded <- FALSE
   data$AT_out_coded <- FALSE
 
-  data[institution_from_type == "AT" | acute_transfer_in == "AT", AT_in_coded := TRUE]
-  data[institution_to_type == "AT" | acute_transfer_out == "AT", AT_out_coded := TRUE]
+  ## identify acute-care transfers ("AT") based on
+  # 1) raw institution_from/to_type in admdad and 
+  # 2) mapped AT transfers according to lookup_transfer (relevant column names depend on DB version of lookup_transfer table)
+  if ("acute_transfer_in" %in% colnames(lookup_transfer)) {
+    # For DB versions <= report/drm DB v2 [H4H_template v3]: filter lookup_transfer for acute_transfer_in/out = "AT"
+    data[institution_from_type == "AT" | acute_transfer_in == "AT", AT_in_coded := TRUE]
+    data[institution_to_type == "AT" | acute_transfer_out == "AT", AT_out_coded := TRUE]
+  } else {
+    # For DB versions > report/drm DB v2 [H4H_template v3]: filter lookup_transfer for institution_from/to_type_mns = "AT"
+    data[institution_from_type == "AT" | institution_from_type_mns == "AT", AT_in_coded := TRUE]
+    data[institution_to_type == "AT" | institution_to_type_mns == "AT", AT_out_coded := TRUE]
+  }
 
   ############  Compute `time_to_next_admission`, `time_since_last_admission`  ############
   ## Defined as time difference between admission date-time of (n+1)th encounter minus

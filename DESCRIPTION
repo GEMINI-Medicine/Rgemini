@@ -47,5 +47,5 @@ RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr
 Depends: 
-    R (>= 2.10)
+    R (>= 3.5.0)
 URL: https://gemini-medicine.github.io/Rgemini/
