@@ -1,7 +1,12 @@
 # Rgemini `develop`
 
-* New function `homelessness_flag` which creates a table indicating homelessness status of genc_ids
-* Small fix in `episodes_of_care` for compatibility with future DB versions due to change in `lookup_transfer` table (> `drm_db_v2`/`H4H_template_v3`)
+* **New functions:**
+	* `cohort_creation()` to generate cohort and show number (%) of entries at each inclusion/exclusion step
+	* `homelessness_flag()` to derive encounter-level homelessness status based on ICD-10-CA diagnosis codes
+
+* **Minor changes:**
+  * Small fix in `episodes_of_care` for compatibility with future DB versions due to change in `lookup_transfer` table (> `drm_db_v2`/`H4H_template_v3`)
+
 
 # Rgemini `0.5.1`
 
