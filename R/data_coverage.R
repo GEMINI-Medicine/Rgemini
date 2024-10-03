@@ -241,10 +241,8 @@ data_coverage <- function(dbcon,
       paste(table[!grepl("admdad", table)], collapse = "`/`"),
       "` table because 1) data coverage may still be low (see `plot_coverage`)",
       " and 2) for some tables, we would not expect all `genc_ids` to have an ",
-      "entry in a table even if data coverage is high. As an example, not all ",
-      "encounters receive an imaging test so we don't expect all `genc_ids` to",
-      " have an entry in the radiology table (even if the availability table ",
-      "says `radiology = TRUE`). Additionally, if the data coverage flag is ",
+      "entry even if data coverage is generally high (e.g., not all encounters receive an imaging test so not all `genc_ids`",
+      " have an entry in the radiology table even if `radiology = TRUE` in the returned output). Additionally, even if the data coverage flag is ",
       "`TRUE`, it does not mean that all data are available throughout the ",
       "whole length of stay of a given encounter, nor that all individual ",
       "columns are fully available/of high quality. Users are advised to ",
@@ -254,14 +252,16 @@ data_coverage <- function(dbcon,
 
     # check N of genc_ids with coverage for all entries in "table" input
     # (ignoring admdad)
+    n_enc_coverage <- sum(
+      rowSums(coverage_flag_enc %>%
+        select(all_of(table[!grepl("admdad", table)]))) ==
+        length(table[!grepl("admdad", table)])
+    )
+    p_enc_coverage <- round(100 * n_enc_coverage / lunique(cohort$genc_id), 1)
     cat(paste0(
       "In the user-provided `cohort` table, there are ",
-      prettyNum(sum(
-        rowSums(coverage_flag_enc %>%
-                  select(all_of(table[!grepl("admdad", table)]))) ==
-          length(table[!grepl("admdad", table)])
-      ), big.mark = ","),
-      " `genc_ids` that were discharged during time periods with coverage for ",
+      prettyNum(n_enc_coverage, big.mark = ","),
+      " `genc_ids` (", p_enc_coverage, "%) that were discharged during time periods with coverage for ",
       ifelse(length(table[!grepl("admdad", table)]) == 1,
              paste0("the `", table[!grepl("admdad", table)], "` table"),
              ifelse(length(table[!grepl("admdad", table)]) == 2,
@@ -271,14 +271,10 @@ data_coverage <- function(dbcon,
                            " tables `", paste(table[!grepl("admdad", table)],
                                               collapse = "`, and `"))
              )
-      ),
-      " (out of a total N = ", prettyNum(lunique(cohort$genc_id), big.mark = ","),
-      " encounters). "
+      )
     ))
 
-    # check N of genc_ids where at least 1 table doesn't have any coverage
-    # (ignoring admdad)
-    cat(paste0(
+    cat(paste0("The remaining ",
       prettyNum(sum(rowSums(coverage_flag_enc %>%
                               select(all_of(table[!grepl("admdad", table)]))) <
                       length(table[!grepl("admdad", table)])), big.mark = ","),
@@ -548,11 +544,10 @@ data_coverage <- function(dbcon,
 
     cat("\n")
     warning(paste0(
-      "The coverage plots show data coverage by *discharge* month (because ",
-      "all GEMINI data are pulled based on encounters's `discharge_date_time`). ",
+      "The coverage plots show data coverage by *discharge* month. ",
       "For clinical variables, users are advised to also plot coverage by the ",
       "respective clinical date-time variables (e.g., `collection_date_time` ",
-      "for lab data or `issue_date_time` for `transfusion` data).\n\n"
+      "for lab data).\n\n"
     ), immediate. = TRUE)
   }
 
