@@ -10,28 +10,29 @@ neighborhood_ses(dbcon, cohort, census_year)
 \item{dbcon}{(\code{DBIConnection})\cr
 A database connection to any GEMINI database.}
 
+\item{cohort}{(\code{data.table} | \code{data.frame})\cr
+Table with all relevant encounters of interest, where each row corresponds to
+a single encounter. Must contain GEMINI Encounter ID (\code{genc_id}).}
+
 \item{census_year}{(\code{numeric} | \code{character})\cr
 Version of census_year chosen. Only 2016 or 2021 are valid inputs.}
-
-\item{cohort\cr}{Table with all relevant encounters of interest, where each row corresponds to
-a single encounter. Must contain GEMINI Encounter ID (\code{genc_id}).}
 }
 \value{
 (\code{data.frame} | \code{data.table})\cr
 This function returns a data.table where each row corresponds to a genc_id from the user-provided cohort input, together with the following columns:
 \itemize{
 \item DA (dissemination area) ID from the corresponding census year: da16uid or da21uid. DA is \href{https://www150.statcan.gc.ca/n1/en/catalogue/92-169-X}{'a small area composed of one or more neighbouring dissemination blocks and is the smallest standard geographic area for which all census data are disseminated.'}
-\item \href{https://www12.statcan.gc.ca/census-recensement/2016/ref/dict/pop127-eng.cfm}{Visible minority}: c16_vismin_pct or c21_vismin_pct
-\item \href{https://www.cihi.ca/sites/default/files/document/toolkit-area-level-measurement-pccf-en.pdf}{Neighbourhood-level income}: qnatippe, qnbtippe, qaatippe, qabtippe, atippe, btippe. While qnatippe and qnbtippe are quintiles calculated based on national income distribution, while qaatippe and qabtippe are quintiles constructed separately for each census metropolitan area (CMA), census agglomeration (CA) or residual area within each province.
-\item \href{https://www12.statcan.gc.ca/census-recensement/2021/dp-pd/prof/details/page.cfm?LANG=E&GENDERlist=1,2,3&STATISTIClist=4&HEADERlist=23&SearchText=Canada&DGUIDlist=2021A000011124}{Immigration status}: c16_immsta_pct or c21_immsta_pct.
-\item \href{https://www150.statcan.gc.ca/n1/pub/81-004-x/2010001/def/posteducation-educpost-eng.htm}{Post-secondary education (>15)}: c16_ed_15over_postsec_pct or c21_ed_15over_postsec_pct.
-\item Post-secondary education (25-64): c16_ed_25to64_postsec_pct or c21_ed_25to64_postsec_pct
+\item Neighbourhood-level income: qnatippe, qnbtippe, qaatippe, qabtippe, atippe, btippe. While qnatippe and qnbtippe are quintiles calculated based on national income distribution, qaatippe and qabtippe are quintiles constructed separately for each census metropolitan area (CMA), census agglomeration (CA) or residual area within each province. atippe, btippe are continuous.
+\item \href{https://www12.statcan.gc.ca/census-recensement/2016/ref/dict/pop127-eng.cfm}{Visible minority}: vismin_pct
+\item \href{https://www12.statcan.gc.ca/census-recensement/2021/dp-pd/prof/details/page.cfm?LANG=E&GENDERlist=1,2,3&STATISTIClist=4&HEADERlist=23&SearchText=Canada&DGUIDlist=2021A000011124}{Immigration status}: immsta_pct
+\item \href{https://www150.statcan.gc.ca/n1/pub/81-004-x/2010001/def/posteducation-educpost-eng.htm}{Post-secondary education (>15)}: ed_15over_postsec_pct
+\item Post-secondary education (25-64): ed_25to64_postsec_pct
 \item Ontario Marginalization Index (numeric): (instability_da16, deprivation_da16, dependency_da16, ethniccon_da16) or (households_dwellings_DA21, material_resources_DA21, age_labourforce_DA21, racialized_NC_pop_DA21)
 \item Ontario Marginalization Index (quintile): (instability_q_da16, deprivation_q_da16, dependency_q_da16, ethniccon_q_da16) or (households_dwellings_q_DA21, material_resources_q_DA21, age_labourforce_q_DA21, racialized_NC_pop_q_DA21)
 }
 }
 \description{
-The \code{neighborhood_ses()} function merges SES variables based on dissemination area ID. Function descriptions contains the necessary understanding of variable concepts and corresponding application recommendations.
+The \code{neighborhood_ses()} function derives neighborhood-level SES variables based on the dissemination area a given encounter resides in.
 }
 \examples{
 \dontrun{
@@ -51,4 +52,6 @@ neighborhood_ses_table <- neighborhood_ses(dbcon, cohort, 2016)
 \references{
 \href{https://www.publichealthontario.ca/-/media/documents/U/2018/userguide-on-marg.pdf}{ON-Marg guide 2016}
 \href{https://www.publichealthontario.ca/-/media/Event-Presentations/2023/09/ontario-marginalization-index-updates-products.pdf?rev=07baae2569164c17abaa18464075aa20&sc_lang=en}{ON-Marg guide 2021}
+\href{https://www12.statcan.gc.ca/census-recensement/2021/ref/98-304/2021001/chap1-eng.cfm}{Statistics Canada Census.}
+\href{https://www.cihi.ca/sites/default/files/document/toolkit-area-level-measurement-pccf-en.pdf}{Measuring Health Inequalities: A Toolkit Area-Level Equity Stratifiers Using PCCF and PCCF+}
 }
