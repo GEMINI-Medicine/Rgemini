@@ -1,7 +1,9 @@
 # Rgemini `develop`
 
 * New function `homelessness_flag` which creates a table indicating homelessness status of genc_ids
+* Enhanced `cell_suppression` renderers for `table1` to support simultaneous display of both mean and median.
 * Small fix in `episodes_of_care` for compatibility with future DB versions due to change in `lookup_transfer` table (> `drm_db_v2`/`H4H_template_v3`)
+
 
 # Rgemini `0.5.1`
 
