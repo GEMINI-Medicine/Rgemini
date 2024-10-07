@@ -1,7 +1,7 @@
 # Rgemini `1.0.0`
 
 * New function `homelessness()` to derive encounter-level homelessness flag based on ICD-10-CA diagnosis codes
-* Enhanced `cell_suppression()` renderers for `table1` to support simultaneous display of both mean and median
+* Enhanced `cell_suppression.R` renderers for `table1` to support simultaneous display of both mean and median
 * Small fix in `episodes_of_care()` for compatibility with future DB versions due to change in `lookup_transfer` table
 * Tested on GEMINI Data Repository v3
 
