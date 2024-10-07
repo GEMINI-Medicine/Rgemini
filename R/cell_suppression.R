@@ -140,12 +140,6 @@ render_cell_suppression.default <- function(
 
   } else if (is.numeric(x)) {
 
-    if (!is.null(args$continuous_fn) && args$continuous_fn == "median") {
-      render.continuous <- render_median.continuous
-    } else {
-      render.continuous <- render_mean.continuous
-    }
-
     r <- do.call(render.continuous, list(x = x, ...))
 
   } else {
@@ -437,7 +431,9 @@ render_median.continuous <- function(x, ...) {
 #' A continuous variable to summarize.
 #'
 #' @param ... \cr
-#' Further arguments, passed to `table1:::stats.apply.rounding()`.
+#' Further arguments, such as `continuous_fn`, or those passed to `table1:::stats.apply.rounding()`.
+#' Use `continuous_fn` to specify the summary statistics to display, 
+#' which accepts character string: "mean", "median", or c("mean", "median") to display both. Defaults to "mean".
 #'
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
@@ -450,24 +446,44 @@ render_median.continuous <- function(x, ...) {
 #'
 #' y <- 1:2
 #' render_cell_suppression.continuous(y)
+#' 
+#' ## Use in `table1`:
+#' \dontrun{
+#' library(table1)
+#' dat <- expand.grid(id=1:10, treat=c("Treated", "Placebo"))
+#' dat$age <- runif(nrow(dat), 10, 50)
+#' label(dat$age) <- "Age"
+#' 
+#' table1(~ age | treat, data=dat,
+#'        render.continuous = render_cell_suppression.continuous,
+#'        continuous_fn = c("mean", "median"), # to display mean and median simultaneously
+#'        digits=2)
+#' }
+#' 
 #'
+
 render_cell_suppression.continuous <- function(x, ...) {
   args <- list(...)
-  if (is.null(args$continuous_fn)) args$continuous_fn <- "mean"
+  
+  if (is.null(args$continuous_fn)) {args$continuous_fn <- "mean"}
 
   if (length(x) < 6) {
-    if (args$continuous_fn == "median") {
-      c("", `Median [Q1, Q3]` = "&lt; 6 obs. (suppressed)")
+      mea <- c("", `Mean (SD)` = "&lt; 6 obs. (suppressed)")
+      med <- c("", `Median [Q1, Q3]` = "&lt; 6 obs. (suppressed)")
     } else {
-      c("", `Mean (SD)` = "&lt; 6 obs. (suppressed)")
+      mea <- render_mean.continuous(x, ...)
+      med <- render_median.continuous(x, ...)
     }
+  
+  if (all(args$continuous_fn=="mean")) {
+    res <- mea
+  } else if (all(args$continuous_fn=="median")) {
+    res <- med
   } else {
-    if (args$continuous_fn == "median") {
-      render_median.continuous(x, ...)
-    } else {
-      render_mean.continuous(x, ...)
-    }
+    res <- c(mea, med)
   }
+  
+  return(res)
 }
 
 
