@@ -32,7 +32,7 @@ This function returns a data.table where each row corresponds to a genc_id from 
 }
 }
 \description{
-The \code{neighborhood_ses()} function derives neighborhood-level SES variables based on the dissemination area a given encounter resides in.
+The \code{neighborhood_ses()} function derives neighborhood-level SES variables based on the dissemination area a given encounter resides in, using the Postal CodeOM Conversion File Plus (PCCF+) program.
 }
 \examples{
 \dontrun{
