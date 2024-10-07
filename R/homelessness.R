@@ -98,6 +98,7 @@ homelessness <- function(
     cohort,
     ipdiag,
     erdiag) {
+
   ############# CHECK & PREPARE DATA #############
   if (is.null(erdiag)) {
     cat("\n*** Based on the input you provided, only in-patient diagnoses (ipdiag) will be included in the derived homelessness flag.
