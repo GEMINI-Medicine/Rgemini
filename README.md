@@ -96,7 +96,7 @@ Different versions of `Rgemini` are released with X.Y.Z. increments following th
 
 * `Z`: Patch version, bug fixes, documentation, tests, changing argument defaults, optimizing the internals of a function without affecting the external interface (argument names etc).
 * `Y`: Minor version, new function added, some large changes to existing functions (including even changes to the type and number of arguments).
-* `X`: Major version, change to the underlying DB the code was written for (table and variable names).
+* `X`: Major version, change to the underlying DB the code was written for (e.g., table and variable names).
 
 Usually we accumulate a series of changes on develop and release them all at once on master with a version increment.
 
