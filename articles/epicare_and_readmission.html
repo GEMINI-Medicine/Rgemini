@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -137,12 +137,12 @@ cohort.</li>
 <blockquote>
 <p>The flowchart below shows how epicares are built:</p>
 </blockquote>
-<p><img src="figures/epicare_flow_2.png" width="90%" style="display: block; margin: auto;"></p>
+<p><img src="figures%2Fepicare_flow_2.png" width="90%" style="display: block; margin: auto;"></p>
 <blockquote>
 <p>Example output of <code>episodes_of_care(db)</code> (mock data for
 illustration purposes, not real data):</p>
 </blockquote>
-<p><img src="figures/epicare_out_2.png" width="100%" style="display: block; margin: auto;"></p>
+<p><img src="figures%2Fepicare_out_2.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="readmission">
@@ -175,7 +175,7 @@ readmission on a user specified cohort.</p>
 illustration purposes, not real data. patient_id added to facilitate
 interpretation):</p>
 </blockquote>
-<p><img src="figures/readmission_out_2.png" width="70%" style="display: block; margin: auto;"></p>
+<p><img src="figures%2Freadmission_out_2.png" width="70%" style="display: block; margin: auto;"></p>
 <div class="section level4">
 <h4 id="general-readmission-rate-calculation">General readmission rate calculation<a class="anchor" aria-label="anchor" href="#general-readmission-rate-calculation"></a>
 </h4>
@@ -266,7 +266,7 @@ than errors.</li>
 colored entries in genc_id 103 vs 301, and genc_id 105 vs 201, and see
 how readmit7 is affected):</p>
 </blockquote>
-<p><img src="figures/attribution_2.png" width="100%" style="display: block; margin: auto;"><br></p>
+<p><img src="figures%2Fattribution_2.png" width="100%" style="display: block; margin: auto;"><br></p>
 <p><strong>2. Buffer period based on each hospital’s data
 availability</strong> {#sectionBuffer}</p>
 <ul>
@@ -307,7 +307,7 @@ recognize that complete elimination may not be feasible.</li>
 <p>Hypothetical example of how buffer period affects 7-day readmission
 of a patient:</p>
 </blockquote>
-<p><img src="figures/buffer_2.png" width="100%" style="display: block; margin: auto;"></p>
+<p><img src="figures%2Fbuffer_2.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level4">
 <h4 id="customizable-features">Customizable features<a class="anchor" aria-label="anchor" href="#customizable-features"></a>
@@ -401,7 +401,7 @@ from numerator and/or denominator as illustrated in the flow chart
 below. Note that some flags (mental &amp; palliative) result in the
 removal from both numerator and denominator:</p>
 </blockquote>
-<p><img src="figures/flags_diagram_2.png" width="100%" style="display: block; margin: auto;"></p>
+<p><img src="figures%2Fflags_diagram_2.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="flag-details">Flag details<a class="anchor" aria-label="anchor" href="#flag-details"></a>
@@ -419,7 +419,7 @@ tables) below are mock final outputs of <code>readmission.R</code></p>
 <li>An episode with elective admissions is removed from the
 numerator</li>
 </ul>
-<p><img src="figures/elective_2.png" width="65%" style="display: block; margin: auto;"></p>
+<p><img src="figures%2Felective_2.png" width="65%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level4">
 <h4 id="death-flag">Death flag<a class="anchor" aria-label="anchor" href="#death-flag"></a>
@@ -431,7 +431,7 @@ numerator</li>
 readmission. Therefore, episodes of care with death are excluded from
 the denominator (reamitX=NA)</li>
 </ul>
-<p><img src="figures/death_2.png" width="65%" style="display: block; margin: auto;"></p>
+<p><img src="figures%2Fdeath_2.png" width="65%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level4">
 <h4 id="maid-flag">MAID flag<a class="anchor" aria-label="anchor" href="#maid-flag"></a>
@@ -454,7 +454,7 @@ is additionally removed from the denominator. If death = F, the epicare
 with MAID is kept in the denominator. The general recommendation is to
 set death to T if MAID is T.</li>
 </ul>
-<p><img src="figures/maid_2.png" width="65%" style="display: block; margin: auto;"></p>
+<p><img src="figures%2Fmaid_2.png" width="65%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level4">
 <h4 id="self-sign-out-lama-flag">self sign-out / LAMA flag<a class="anchor" aria-label="anchor" href="#self-sign-out-lama-flag"></a>
@@ -472,7 +472,7 @@ regarding self sign-out (eg. Amol never codes self sign-out since he
 believes it’s patients’ right to leave on their own), or self sign-out
 information only recorded on paper.</li>
 </ul>
-<p><img src="figures/sign-out_2.png" width="65%" style="display: block; margin: auto;"></p>
+<p><img src="figures%2Fsign-out_2.png" width="65%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level4">
 <h4 id="palliative-flag">palliative flag<a class="anchor" aria-label="anchor" href="#palliative-flag"></a>
@@ -543,7 +543,7 @@ customized CIHI flags (<a href="#sectioncustomCIHI"><em>Section
 readmission cohort (<a href="#sectionrecohort"><em>Section
 3.4</em></a>):</p>
 </blockquote>
-<p><img src="figures/customReadm_fig3.png" width="100%" style="display: block; margin: auto;"></p>
+<p><img src="figures%2FcustomReadm_fig3.png" width="100%" style="display: block; margin: auto;"></p>
 <div class="section level3">
 <h3 id="sectionderived">Using derived variables in DB<a class="anchor" aria-label="anchor" href="#sectionderived"></a>
 </h3>
@@ -884,7 +884,7 @@ considerations first before applying any additional inclusion steps.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer>

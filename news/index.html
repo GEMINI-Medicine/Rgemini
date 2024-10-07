@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,9 +41,17 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.0" id="rgemini-100">Rgemini <code>1.0.0</code>
+<a class="anchor" aria-label="anchor" href="#rgemini-100"></a></h2>
+<ul><li>New function <code><a href="../reference/homelessness.html">homelessness()</a></code> to derive encounter-level homelessness flag based on ICD-10-CA diagnosis codes</li>
+<li>Enhanced <code>cell_suppression.R</code> renderers for <code>table1</code> to support simultaneous display of both mean and median</li>
+<li>Small fix in <code><a href="../reference/episodes_of_care.html">episodes_of_care()</a></code> for compatibility with future DB versions due to change in <code>lookup_transfer</code> table</li>
+<li>Tested on GEMINI Data Repository v3</li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.5.1" id="rgemini-051">Rgemini <code>0.5.1</code>
 <a class="anchor" aria-label="anchor" href="#rgemini-051"></a></h2>
-<ul><li>Improved query efficiency in <code>mlaps</code> and other functions for clinical derived variables</li>
+<ul><li>Improved query efficiency in <code><a href="../reference/mlaps.html">mlaps()</a></code> and other functions for clinical derived variables</li>
 <li>Removed duplicated code in <code><a href="../reference/icu_entry.html">icu_entry()</a></code>
 </li>
 </ul></div>
@@ -51,7 +59,7 @@
 <h2 class="pkg-version" data-toc-text="0.5.0" id="rgemini-050">Rgemini <code>0.5.0</code>
 <a class="anchor" aria-label="anchor" href="#rgemini-050"></a></h2>
 <ul><li>
-<strong>New functions:</strong>
+<p><strong>New functions:</strong></p>
 <ul><li>Plotting functions &amp; vignette for data exploration: <code><a href="../reference/plot_summary.html">plot_summary()</a></code> and <code><a href="../reference/plot_over_time.html">plot_over_time()</a></code>
 </li>
 <li>Plotting functions &amp; vignette for plot aesthetics: <code><a href="../reference/plot_theme.html">plot_theme()</a></code> and <code><a href="../reference/gemini_colors.html">gemini_colors()</a></code>
@@ -62,9 +70,9 @@
 <code><a href="../reference/convert_dt.html">convert_dt()</a></code> to handle date-time variables and show missing/invalid entries</li>
 </ul></li>
 <li>
-<strong>Function enhancements:</strong>
+<p><strong>Function enhancements:</strong></p>
 <ul><li>
-<code>n_imaging</code>, <code>n_routine_bloodwork</code> and <code>n_rbc_transfusion</code> refactored and updated to be able to exclude clinical records in ED</li>
+<code>n_imaging</code>, <code><a href="../reference/n_routine_bloodwork.html">n_routine_bloodwork()</a></code> and <code>n_rbc_transfusion()</code> refactored and updated to be able to exclude clinical records in ED</li>
 <li>Inclusion of all routine blood tests (regardless of result value) in <code><a href="../reference/n_routine_bloodwork.html">n_routine_bloodwork()</a></code>
 </li>
 <li>Option to derive ICU entries as a clinical outcome with customizable time windows in <code><a href="../reference/icu_entry.html">icu_entry()</a></code>
@@ -73,7 +81,7 @@
 <li>Improved efficiency in <code><a href="../reference/mlaps.html">mlaps()</a></code> hospital query</li>
 </ul></li>
 <li>
-<strong>Minor bug fixes &amp; updated unit tests:</strong>
+<p><strong>Minor bug fixes &amp; updated unit tests:</strong></p>
 <ul><li>
 <code><a href="../reference/frailty_score.html">frailty_score()</a></code>: Return frailty score 0</li>
 <li>
@@ -84,50 +92,53 @@
 <li>
 <code>Rgemini:::check_input()</code>: Return error for <code>odbc</code> connections</li>
 </ul></li>
-<li><strong>Small documentation updates &amp; clean-up of pkdgown reference file</strong></li>
+<li><p><strong>Small documentation updates &amp; clean-up of pkdgown reference file</strong></p></li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.2" id="rgemini-042">Rgemini 0.4.2<a class="anchor" aria-label="anchor" href="#rgemini-042"></a></h2>
-<ul><li>Small bug fix in <code>Rgemini:::find_db_tablename</code>
+<ul><li>Small bug fix in <code>Rgemini:::find_db_tablename()</code>
 </li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.1" id="rgemini-041">Rgemini 0.4.1<a class="anchor" aria-label="anchor" href="#rgemini-041"></a></h2>
-<ul><li>Small bug fix in <code>Rgemini:::check_input</code>
+<ul><li>Small bug fix in <code>Rgemini:::check_input()</code>
 </li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.0" id="rgemini-040">Rgemini 0.4.0<a class="anchor" aria-label="anchor" href="#rgemini-040"></a></h2>
-<ul><li>Adds <code><a href="../reference/n_missing.html">n_missing()</a></code> function to check number of missingness.</li>
-<li>Switch function <code><a href="../reference/frailty_score.html">frailty_score()</a></code> to calculate the CIHI Hospital Frailty Risk Score for each encounter.</li>
-<li>Deprecates function <code><a href="../reference/frailty_score.html">frailty_score()</a></code> that calculates the UK Hospital Frailty Risk Score.</li>
+<ul><li>Adds <code><a href="../reference/n_missing.html">n_missing()</a></code> function to check number of missingness</li>
+<li>Switch function <code><a href="../reference/frailty_score.html">frailty_score()</a></code> to calculate the CIHI Hospital Frailty Risk Score for each encounter</li>
+<li>Deprecates function <code><a href="../reference/frailty_score.html">frailty_score()</a></code> that calculates the UK Hospital Frailty Risk Score</li>
 <li>New utility function checking user inputs</li>
-<li>Adds core <code><a href="../reference/mlaps.html">mlaps()</a></code> function and wrapper function to run over multiple sites and years.</li>
-<li>Adds <code><a href="../reference/er_los.html">er_los()</a></code> function to calculate emergency room length-of-stay.</li>
+<li>Adds core <code><a href="../reference/mlaps.html">mlaps()</a></code> function and wrapper function to run over multiple sites and years</li>
+<li>Adds <code><a href="../reference/er_los.html">er_los()</a></code> function to calculate emergency room length-of-stay</li>
 <li>New function <code><a href="../reference/dummy_ipadmdad.html">dummy_ipadmdad()</a></code> to simulate “ipadmdad” data with random hospital-level intercepts</li>
 <li>Enhanced <code><a href="../reference/daily_census.html">daily_census()</a></code> function to allow exclusion of days with 0 counts</li>
 <li>Additional input argument in <code><a href="../reference/covid_flag.html">covid_flag()</a></code> for inclusion of ER diagnoses</li>
-<li>New function <code><a href="../reference/disability.html">disability()</a></code> that derives disability flag for each encounter.</li>
-<li>Adds function to calculate Elixhauser comorbidity scores <code><a href="../reference/elixhauser_comorbidity_index.html">elixhauser_comorbidity_index()</a></code>.</li>
-<li>Adds utility function to generate warning about mapped values.</li>
-<li>Standardizes citation format in function references section.</li>
+<li>New function <code><a href="../reference/disability.html">disability()</a></code> that derives disability flag for each encounter</li>
+<li>Adds function to calculate Elixhauser comorbidity scores <code><a href="../reference/elixhauser_comorbidity_index.html">elixhauser_comorbidity_index()</a></code>
+</li>
+<li>Adds utility function to generate warning about mapped values</li>
+<li>Standardizes citation format in function references section</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.1" id="rgemini-031">Rgemini 0.3.1<a class="anchor" aria-label="anchor" href="#rgemini-031"></a></h2>
-<ul><li>Allows the user to specify the number of digits to round percentages to in cell suppression of categorical variables, without forcing rounding to integer.</li>
-<li>Allows user to render only one level for binary variables in <code>table1</code>.</li>
-<li>Fixes singularity due to missing levels in <code>table1</code>.</li>
-<li>Fixes <code>find_db_tablename</code> and <code>readmission</code> for DBs with foreign data wrappers.</li>
+<ul><li>Allows the user to specify the number of digits to round percentages to in cell suppression of categorical variables, without forcing rounding to integer</li>
+<li>Allows user to render only one level for binary variables in <code>table1</code>
+</li>
+<li>Fixes singularity due to missing levels in <code>table1</code>
+</li>
+<li>Fixes <code><a href="../reference/find_db_tablename.html">find_db_tablename()</a></code> and <code><a href="../reference/readmission.html">readmission()</a></code> for DBs with foreign data wrappers</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.0" id="rgemini-030">Rgemini 0.3.0<a class="anchor" aria-label="anchor" href="#rgemini-030"></a></h2>
-<ul><li>Exports <code>n_rbc_transfusion</code> function.</li>
-<li>Adds installation instructions for GEMINI HPC.</li>
+<ul><li>Exports <code>n_rbc_transfusion()</code> function</li>
+<li>Adds installation instructions for GEMINI HPC</li>
 <li>Tested on GEMINI Data Repository v2.1.2</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.0" id="rgemini-020">Rgemini 0.2.0<a class="anchor" aria-label="anchor" href="#rgemini-020"></a></h2>
-<ul><li>Small bug fixes in <code>n_imaging</code> and <code>n_rbc_transfusion</code>
+<ul><li>Small bug fixes in <code><a href="../reference/n_imaging.html">n_imaging()</a></code> and <code>n_rbc_transfusion()</code>
 </li>
 <li>Standardized argument names for DB and cohort inputs</li>
 <li>Standardized function names for count functions</li>
@@ -135,7 +146,7 @@
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="rgemini-010">Rgemini 0.1.0<a class="anchor" aria-label="anchor" href="#rgemini-010"></a></h2>
-<ul><li>This is the initial release of <code>Rgemini</code>, which includes variety of functions to do data analysis with the <a href="https://www.geminimedicine.ca/" class="external-link">GEMINI</a> dataset.</li>
+<ul><li>This is the initial release of <code>Rgemini</code>, which includes variety of functions to do data analysis with the <a href="https://www.geminimedicine.ca/" class="external-link">GEMINI</a> dataset</li>
 </ul></div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
@@ -146,7 +157,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer></div>
