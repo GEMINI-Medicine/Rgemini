@@ -1,13 +1,13 @@
 # Rgemini `1.0.0`
 
-* New function `homelessness_flag()` to derive encounter-level homelessness status based on ICD-10-CA diagnosis codes
+* New function `homelessness()` to derive encounter-level homelessness flag based on ICD-10-CA diagnosis codes
 * Enhanced `cell_suppression()` renderers for `table1` to support simultaneous display of both mean and median
 * Small fix in `episodes_of_care()` for compatibility with future DB versions due to change in `lookup_transfer` table
 * Tested on GEMINI Data Repository v3
 
 # Rgemini `0.5.1`
 
-* Improved query efficiency in `mlaps` and other functions for clinical derived variables
+* Improved query efficiency in `mlaps()` and other functions for clinical derived variables
 * Removed duplicated code in `icu_entry()`
 
 
@@ -21,7 +21,7 @@
   * `convert_dt()` to handle date-time variables and show missing/invalid entries
 
 * **Function enhancements:**
-  * `n_imaging`, `n_routine_bloodwork` and `n_rbc_transfusion` refactored and updated to be able to exclude clinical records in ED
+  * `n_imaging`, `n_routine_bloodwork()` and `n_rbc_transfusion()` refactored and updated to be able to exclude clinical records in ED
   * Inclusion of all routine blood tests (regardless of result value) in `n_routine_bloodwork()`
   * Option to derive ICU entries as a clinical outcome with customizable time windows in `icu_entry()`
   * For functions with date-time inputs: Allow for character and POSIXct inputs
@@ -38,11 +38,11 @@
 
 # Rgemini 0.4.2
 
-* Small bug fix in `Rgemini:::find_db_tablename`
+* Small bug fix in `Rgemini:::find_db_tablename()`
 
 # Rgemini 0.4.1
 
-* Small bug fix in `Rgemini:::check_input`
+* Small bug fix in `Rgemini:::check_input()`
 
 # Rgemini 0.4.0
 
@@ -65,17 +65,17 @@
 * Allows the user to specify the number of digits to round percentages to in cell suppression of categorical variables, without forcing rounding to integer
 * Allows user to render only one level for binary variables in `table1`
 * Fixes singularity due to missing levels in `table1`
-* Fixes `find_db_tablename` and `readmission` for DBs with foreign data wrappers
+* Fixes `find_db_tablename()` and `readmission()` for DBs with foreign data wrappers
 
 # Rgemini 0.3.0
 
-* Exports `n_rbc_transfusion` function
+* Exports `n_rbc_transfusion()` function
 * Adds installation instructions for GEMINI HPC
 * Tested on GEMINI Data Repository v2.1.2
 
 # Rgemini 0.2.0
 
-* Small bug fixes in `n_imaging` and `n_rbc_transfusion`
+* Small bug fixes in `n_imaging()` and `n_rbc_transfusion()`
 * Standardized argument names for DB and cohort inputs
 * Standardized function names for count functions
 * Improved documentation
