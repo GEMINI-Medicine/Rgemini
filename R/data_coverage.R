@@ -271,7 +271,7 @@ data_coverage <- function(dbcon,
                            " tables `", paste(table[!grepl("admdad", table)],
                                               collapse = "`, and `"))
              )
-      )
+      ), ". "
     ))
 
     cat(paste0("The remaining ",
@@ -402,10 +402,10 @@ data_coverage <- function(dbcon,
     # advising users to also plot coverage
     if (plot_coverage == FALSE) {
       warning(paste(
-        "The \"Data Timeline\" plot only provides a rough overview of time ",
-        "periods with available data. Please carefully inspect data coverage ",
-        "by running `data_coverage(..., plot_coverage = TRUE)` and check the ",
-        "% of encounters with available data per month and hospital to gain ",
+        "The \"Data Timeline\" plot only provides a rough overview of time",
+        "periods with available data. Please carefully inspect data coverage",
+        "by running `data_coverage(..., plot_coverage = TRUE)` and check the",
+        "% of encounters with available data per month and hospital to gain",
         "more detailed insights into data coverage and potential gaps/drops.\n\n"
       ), immediate. = TRUE)
     }
