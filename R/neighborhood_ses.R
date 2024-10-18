@@ -2,17 +2,16 @@
 #' Obtain commonly used neighbourhood-level socioeconomic (SES) variables
 #'
 #' @description
-#' The `neighborhood_ses()` function derives neighborhood-level SES variables based on the dissemination area a given encounter resides in, using the Postal CodeOM Conversion File Plus (PCCF+) program.
+#' The `neighborhood_ses()` function derives neighborhood-level SES variables based on the dissemination area a given encounter resides in, using the Postal Code OM Conversion File Plus (PCCF+) program.
 #'
 #' @section Statistics Canada Census of Population
 #' All SES variables are sourced from Statistics Canada Census. The Census of Population is collected every 5 years by Statistics Canada, aiming to create a comprehensive portrait of Canada.
 #'
-#' The census data was collected via short-form (75% households) and long-form
-#' (25% households) questionnaire, linked to administrative data.
+#' The census data was collected via short-form (75% households) and long-form (25% households) questionnaire, linked to administrative data.
 #'
 #' - Income was sourced from Canadian Revenue Agency.
-#' - Education and visible minority information was collected from long-form questionnaire.
-#' - Immigration information was collected from long-form questionnaire in 2016, while it was obtained from Immigration, Refugees and Citizenship Canada in 2021.
+#' - Education and visible minority were collected from long-form questionnaire.
+#' – Immigration status was previously collected from long-form questionnaire in 2016. Starting in 2021, this information was sourced from Immigration, Refugees and Citizenship Canada in 2021.
 #'
 #' @section Ontario Marginalization Index (On-Marg)
 #' On-Marg is a neighborhood-level index showing marginalization differences between areas. It’s created using a portion of Statistics Canada Census variables.
@@ -37,7 +36,7 @@
 #'
 #'
 #' @section Missing data
-#' This function reports encounters with missing data and report both the reason and percentage of missingness.
+#' This function reports both the reason and percentage of missingness.
 #'
 #' @param dbcon (`DBIConnection`)\cr
 #' A database connection to any GEMINI database.
@@ -53,7 +52,7 @@
 #' This function returns a data.table where each row corresponds to a genc_id from the user-provided cohort input, together with the following columns:
 #' - DA (dissemination area) ID from the corresponding census year: da16uid or da21uid. DA is ['a small area composed of one or more neighbouring dissemination blocks and is the smallest standard geographic area for which all census data are disseminated.'](https://www150.statcan.gc.ca/n1/en/catalogue/92-169-X)
 #'
-#' - Neighbourhood-level income: qnatippe, qnbtippe, qaatippe, qabtippe, atippe, btippe. While qnatippe and qnbtippe are quintiles calculated based on national income distribution, qaatippe and qabtippe are quintiles constructed separately for each census metropolitan area (CMA), census agglomeration (CA) or residual area within each province. atippe, btippe are continuous.
+#' - Neighbourhood-level income: qnatippe, qnbtippe, qaatippe, qabtippe, atippe, btippe. While qnatippe and qnbtippe are quintiles calculated based on national income distribution, qaatippe and qabtippe are quintiles constructed separately for each census metropolitan area (CMA), census agglomeration (CA) or residual area within each province. Atippe, btippe are numeric.
 #' - [Visible minority](https://www12.statcan.gc.ca/census-recensement/2016/ref/dict/pop127-eng.cfm): vismin_pct
 #' - [Immigration status](https://www12.statcan.gc.ca/census-recensement/2021/dp-pd/prof/details/page.cfm?LANG=E&GENDERlist=1,2,3&STATISTIClist=4&HEADERlist=23&SearchText=Canada&DGUIDlist=2021A000011124): immsta_pct
 #' - [Post-secondary education (>15)](https://www150.statcan.gc.ca/n1/pub/81-004-x/2010001/def/posteducation-educpost-eng.htm): ed_15over_postsec_pct
@@ -105,8 +104,9 @@ neighborhood_ses <- function(dbcon, cohort, census_year) {
   tnl <- grepl("lookup_statcan_v", tn) %>%
     unique() %>%
     length()
-  if (census_year == 2016 & tnl > 1) {
-    var_tbl <- DBI::dbGetQuery(dbcon, "select tmp.genc_id, l.da16uid, s.c16_vismin, s.c16_vismin_not, s.qnatippe, s.qnbtippe, s.qaatippe, s.qabtippe, s.atippe, s.btippe, s.c16_immsta, s.c16_immsta_imm, s.c16_ed_15over_postsec, s.c16_ed_15over, s.c16_ed_25to64_postsec, s.c16_ed_25to64, s.instability_da16, s.deprivation_da16, s.dependency_da16, s.ethniccon_da16, s.instability_q_da16, s.deprivation_q_da16, s.dependency_q_da16, s.ethniccon_q_da16
+  if (census_year == 2016) {
+    if (tnl == 2) {
+      var_tbl <- DBI::dbGetQuery(dbcon, "select tmp.genc_id, l.da16uid, s.c16_vismin, s.c16_vismin_not, s.qnatippe, s.qnbtippe, s.qaatippe, s.qabtippe, s.atippe, s.btippe, s.c16_immsta, s.c16_immsta_imm, s.c16_ed_15over_postsec, s.c16_ed_15over, s.c16_ed_25to64_postsec, s.c16_ed_25to64, s.instability_da16, s.deprivation_da16, s.dependency_da16, s.ethniccon_da16, s.instability_q_da16, s.deprivation_q_da16, s.dependency_q_da16, s.ethniccon_q_da16
 
                                           from temp_data tmp
 
@@ -114,18 +114,10 @@ neighborhood_ses <- function(dbcon, cohort, census_year) {
                                             on l.genc_id = tmp.genc_id
                                           left join lookup_statcan_v2016 s
                                             on l.da16uid = s.da16uid; ") %>% as.data.table()
+    }
 
-    # clean income NA
-    var_tbl[qnatippe == 9, qnatippe := NA]
-    var_tbl[qnbtippe == 9, qnbtippe := NA]
-    var_tbl[qaatippe == 9, qaatippe := NA]
-    var_tbl[qabtippe == 9, qabtippe := NA]
-    var_tbl[atippe == 99999999, atippe := NA]
-    var_tbl[btippe == 99999999, btippe := NA]
-  }
-
-  if (census_year == 2016 & tnl == 1) {
-    var_tbl <- DBI::dbGetQuery(dbcon, "select tmp.genc_id, l.da16uid, s.c16_vismin, s.c16_vismin_not, s.qnatippe, s.qnbtippe, s.qaatippe, s.qabtippe, s.atippe, s.btippe, s.c16_immsta, s.c16_immsta_imm, s.c16_ed_15over_postsec, s.c16_ed_15over, s.c16_ed_25to64_postsec, s.c16_ed_25to64, s.instability_da16, s.deprivation_da16, s.dependency_da16, s.ethniccon_da16, s.instability_q_da16, s.deprivation_q_da16, s.dependency_q_da16, s.ethniccon_q_da16
+    if (tnl == 1) {
+      var_tbl <- DBI::dbGetQuery(dbcon, "select tmp.genc_id, l.da16uid, s.c16_vismin, s.c16_vismin_not, s.qnatippe, s.qnbtippe, s.qaatippe, s.qabtippe, s.atippe, s.btippe, s.c16_immsta, s.c16_immsta_imm, s.c16_ed_15over_postsec, s.c16_ed_15over, s.c16_ed_25to64_postsec, s.c16_ed_25to64, s.instability_da16, s.deprivation_da16, s.dependency_da16, s.ethniccon_da16, s.instability_q_da16, s.deprivation_q_da16, s.dependency_q_da16, s.ethniccon_q_da16
 
                                           from temp_data tmp
 
@@ -133,17 +125,14 @@ neighborhood_ses <- function(dbcon, cohort, census_year) {
                                             on l.genc_id = tmp.genc_id
                                           left join lookup_statcan s
                                             on l.da16uid = s.da16uid; ") %>% as.data.table()
-    # clean income NA
-    var_tbl[qnatippe == 9, qnatippe := NA]
-    var_tbl[qnbtippe == 9, qnbtippe := NA]
-    var_tbl[qaatippe == 9, qaatippe := NA]
-    var_tbl[qabtippe == 9, qabtippe := NA]
-    var_tbl[atippe == 99999999, atippe := NA]
-    var_tbl[btippe == 99999999, btippe := NA]
+    }
   }
 
-  if (census_year == 2021 & tnl > 1) {
-    var_tbl <- DBI::dbGetQuery(dbcon, 'select tmp.genc_id, l.da21uid, s.c21_vismin, s.c21_vismin_not, s.qnatippe, s.qnbtippe, s.qaatippe, s.qabtippe, s.atippe, s.btippe, s.c21_immsta, s.c21_immsta_imm, s.c21_ed_15over_postsec, s.c21_ed_15over, s.c21_ed_25to64_postsec, s.c21_ed_25to64, "households_dwellings_DA21", "material_resources_DA21", "age_labourforce_DA21", "racialized_NC_pop_DA21", "households_dwellings_q_DA21", "material_resources_q_DA21", "age_labourforce_q_DA21", "racialized_NC_pop_q_DA21"
+  if (census_year == 2021) {
+    if (tnl == 1) {
+      warning("Your DB version only contains 2016 census data, please change your input to `census_year = 2016`")
+    } else {
+      var_tbl <- DBI::dbGetQuery(dbcon, 'select tmp.genc_id, l.da21uid, s.c21_vismin, s.c21_vismin_not, s.qnatippe, s.qnbtippe, s.qaatippe, s.qabtippe, s.atippe, s.btippe, s.c21_immsta, s.c21_immsta_imm, s.c21_ed_15over_postsec, s.c21_ed_15over, s.c21_ed_25to64_postsec, s.c21_ed_25to64, "households_dwellings_DA21", "material_resources_DA21", "age_labourforce_DA21", "racialized_NC_pop_DA21", "households_dwellings_q_DA21", "material_resources_q_DA21", "age_labourforce_q_DA21", "racialized_NC_pop_q_DA21"
 
                                           from temp_data tmp
 
@@ -151,21 +140,14 @@ neighborhood_ses <- function(dbcon, cohort, census_year) {
                                             on l.genc_id = tmp.genc_id
                                           left join lookup_statcan_v2021 s
                                             on l.da21uid = s.da21uid; ') %>% as.data.table()
-
-    # clean income NA
-    var_tbl[qnatippe == 999, qnatippe := NA]
-    var_tbl[qnbtippe == 999, qnbtippe := NA]
-    var_tbl[qaatippe == 999, qaatippe := NA]
-    var_tbl[qabtippe == 999, qabtippe := NA]
-    var_tbl[atippe == 999999, atippe := NA]
-    var_tbl[btippe == 999999, btippe := NA]
+    }
   }
 
-  if (census_year != 2016 & tnl == 1) {
-    warning("Your DB version only contains 2016 census data, please change your input to `census_year = 2016`")
-  }
+  # change all invalid income values to NA
+  cols_to_modify <- c("qnatippe", "qnbtippe", "qaatippe", "qabtippe", "atippe", "btippe")
 
-
+  # Replace 9s with NA in the specified columns
+  var_tbl[, (cols_to_modify) := lapply(.SD, function(x) fifelse(x %in% c(9, 99999999, 999, 999999), NA, x)), .SDcols = cols_to_modify]
   ## cal %
   yr <- substring(census_year, 3, 4)
 
@@ -181,12 +163,27 @@ neighborhood_ses <- function(dbcon, cohort, census_year) {
   # cal % post-secondary education (25-64)
   var_tbl[, ed25 := round(get(paste0("c", yr, "_ed_25to64_postsec")) / (get(paste0("c", yr, "_ed_25to64"))) * 100, 2)]
 
+
+  var_tbl[, dalast := substrRight(get(paste0("da", yr, "uid")), 4)]
+
+  da_miss <- var_tbl[is.na(get(paste0("da", yr, "uid"))) | dalast == 9999]
+
+  da_exist <- var_tbl[!is.na(get(paste0("da", yr, "uid")))]
+  nar <- rowSums(is.na(da_exist))
+
+  p1 <- nrow(da_miss) / nrow(var_tbl) * 100
+  p2 <- length(nar[nar > 0]) / nrow(da_exist) * 100
+
+  message(paste0(round(p1, 2), "% encounters can't be linked due to missing/invalid postal code information"))
+  message(paste0("Among encounters with valid DA, ", round(p2, 2), "% encounters have at least 1 missing SES variable due to no census or On-Marg data. Please carefully check the % of NA for the variables of interest"))
+
   ## clean up colns
   coln_exclude <- c(
     paste0("c", yr, "_vismin"), paste0("c", yr, "_vismin_not"),
     paste0("c", yr, "_immsta_imm"), paste0("c", yr, "_immsta"),
     paste0("c", yr, "_ed_15over_postsec"), paste0("c", yr, "_ed_15over"),
-    paste0("c", yr, "_ed_25to64_postsec"), paste0("c", yr, "_ed_25to64")
+    paste0("c", yr, "_ed_25to64_postsec"), paste0("c", yr, "_ed_25to64"),
+    "dalast"
   )
 
   coln_keep <- setdiff(names(var_tbl), coln_exclude)
@@ -200,20 +197,6 @@ neighborhood_ses <- function(dbcon, cohort, census_year) {
   setnames(rec, "ed15", "ed_15over_postsec_pct")
   setnames(rec, "ed25", "ed_25to64_postsec_pct")
 
-  if (census_year != 2016 & tnl != 1) {
-    rec[, dalast := substrRight(get(paste0("da", yr, "uid")), 4)]
-
-    da_miss <- rec[is.na(get(paste0("da", yr, "uid"))) | dalast == 9999]
-
-    da_exist <- rec[!is.na(get(paste0("da", yr, "uid")))]
-    nar <- rowSums(is.na(da_exist))
-
-    p1 <- nrow(da_miss) / nrow(rec) * 100
-    p2 <- length(nar[nar > 0]) / nrow(da_exist) * 100
-
-    message(paste0(round(p1, 2), "% encounters can't be linked due to missing/invalid postal code information"))
-    message(paste0("Among encounters with valid DA, ", round(p2, 2), "% encounters have at least 1 missing SES variable due to no census or On-Marg data. Please carefully check the % of NA for the variables of interest"))
-  }
 
   return(rec)
 }
