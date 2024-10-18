@@ -22,7 +22,7 @@ Version of census_year chosen. Only 2016 or 2021 are valid inputs.}
 This function returns a data.table where each row corresponds to a genc_id from the user-provided cohort input, together with the following columns:
 \itemize{
 \item DA (dissemination area) ID from the corresponding census year: da16uid or da21uid. DA is \href{https://www150.statcan.gc.ca/n1/en/catalogue/92-169-X}{'a small area composed of one or more neighbouring dissemination blocks and is the smallest standard geographic area for which all census data are disseminated.'}
-\item Neighbourhood-level income: qnatippe, qnbtippe, qaatippe, qabtippe, atippe, btippe. While qnatippe and qnbtippe are quintiles calculated based on national income distribution, qaatippe and qabtippe are quintiles constructed separately for each census metropolitan area (CMA), census agglomeration (CA) or residual area within each province. atippe, btippe are continuous.
+\item Neighbourhood-level income: qnatippe, qnbtippe, qaatippe, qabtippe, atippe, btippe. While qnatippe and qnbtippe are quintiles calculated based on national income distribution, qaatippe and qabtippe are quintiles constructed separately for each census metropolitan area (CMA), census agglomeration (CA) or residual area within each province. Atippe, btippe are numeric.
 \item \href{https://www12.statcan.gc.ca/census-recensement/2016/ref/dict/pop127-eng.cfm}{Visible minority}: vismin_pct
 \item \href{https://www12.statcan.gc.ca/census-recensement/2021/dp-pd/prof/details/page.cfm?LANG=E&GENDERlist=1,2,3&STATISTIClist=4&HEADERlist=23&SearchText=Canada&DGUIDlist=2021A000011124}{Immigration status}: immsta_pct
 \item \href{https://www150.statcan.gc.ca/n1/pub/81-004-x/2010001/def/posteducation-educpost-eng.htm}{Post-secondary education (>15)}: ed_15over_postsec_pct
@@ -32,7 +32,7 @@ This function returns a data.table where each row corresponds to a genc_id from 
 }
 }
 \description{
-The \code{neighborhood_ses()} function derives neighborhood-level SES variables based on the dissemination area a given encounter resides in, using the Postal CodeOM Conversion File Plus (PCCF+) program.
+The \code{neighborhood_ses()} function derives neighborhood-level SES variables based on the dissemination area a given encounter resides in, using the Postal Code OM Conversion File Plus (PCCF+) program.
 }
 \examples{
 \dontrun{
