@@ -2,41 +2,35 @@
 #' Obtain commonly used neighbourhood-level socioeconomic (SES) variables
 #'
 #' @description
-#' The `neighborhood_ses()` function derives neighborhood-level SES variables based on the dissemination area a given encounter resides in, using the Postal Code OM Conversion File Plus (PCCF+) program.
+#' The `neighborhood_ses()` function derives neighborhood-level SES variables based on the dissemination area a given encounter resides in.
 #'
 #' @section Statistics Canada Census of Population
-#' All SES variables are sourced from Statistics Canada Census. The Census of Population is collected every 5 years by Statistics Canada, aiming to create a comprehensive portrait of Canada.
-#'
-#' The census data was collected via short-form (75% households) and long-form (25% households) questionnaire, linked to administrative data.
-#'
-#' - Income was sourced from Canadian Revenue Agency.
-#' - Education and visible minority were collected from long-form questionnaire.
-#' – Immigration status was previously collected from long-form questionnaire in 2016. Starting in 2021, this information was sourced from Immigration, Refugees and Citizenship Canada in 2021.
-#'
+#' All SES variables are sourced from Statistics Canada Census. The Census of Population is collected every 5 years by Statistics Canada, aiming to create a comprehensive portrait of Canada. 
+#' 
 #' @section Ontario Marginalization Index (On-Marg)
 #' On-Marg is a neighborhood-level index showing marginalization differences between areas. It’s created using a portion of Statistics Canada Census variables.
-#'
-#' Based on theoretical framework, 42 Census variables are selected. After principal component factor analysis, those variables are reduced to 18 indicators used to create 4 ON-Marg dimensions. Each dimension is available in quintiles (Q) – Q1 represents the least marginalization, while Q5 represents the most marginalization.
-#'
-#' For On-Marg 2016, 4 dimensions are: residential instability, material deprivation, dependency, ethnic concentration.
+#' 
+#' Based on theoretical framework, 42 Census variables are selected. After principal component factor analysis, 18 Census variables are used to create 4 ON-Marg dimensions. Each dimension is available in quintiles (Q) – Q1 represents the least marginalization, while Q5 represents the most marginalization.
+#' 
+#' For On-Marg 2016, 4 dimensions are: residential instability, material deprivation, dependency, ethnic concentration. 
 #' - residential instability captures family structure and housing densities
 #' - material deprivation refers to inability to fulfill basic material needs
 #' - dependency entails people without employment income
 #' - ethnic concentration refers to recent immigrants or visible minorities
-#'
+#' 
 #' For On-Marg 2021, 4 dimensions are: households and dwellings, material resources, age and labour force, racialized and newcomer populations.
 #' - households and dwellings measures cohesiveness of family and community.
 #' - material resources refers to access barriers to basic materials
 #' - age and labour force records impacts of unemployment and disability
-#' - racialized and newcomer populations refers to people who are newcomers, non-white, or non-Indigenous
-#'
+#' - racialized and newcomer populations refers to people who are newcomers, non-white, or non-Indigenous 
+#' 
 #' There was a name change in 2021 to avoid deficit-based language and better reflect the census measures associated with each dimension
-#'
+#' 
 #' Summary score can be used if all dimensions are in the same direction.
 #'
 #'
 #' @section Missing data
-#' This function reports both the reason and percentage of missingness.
+#' This function reports encounters with missing data and report both the reason and percentage of missingness.
 #'
 #' @param dbcon (`DBIConnection`)\cr
 #' A database connection to any GEMINI database.
@@ -45,14 +39,15 @@
 #' Version of census_year chosen. Only 2016 or 2021 are valid inputs.
 #'
 #' @param cohort (`data.table` | `data.frame`)\cr
+#' @param cohort (`data.table` | `data.frame`)\cr
 #' Table with all relevant encounters of interest, where each row corresponds to
 #' a single encounter. Must contain GEMINI Encounter ID (`genc_id`).
 #'
 #' @return (`data.frame` | `data.table`)\cr
 #' This function returns a data.table where each row corresponds to a genc_id from the user-provided cohort input, together with the following columns:
 #' - DA (dissemination area) ID from the corresponding census year: da16uid or da21uid. DA is ['a small area composed of one or more neighbouring dissemination blocks and is the smallest standard geographic area for which all census data are disseminated.'](https://www150.statcan.gc.ca/n1/en/catalogue/92-169-X)
-#'
-#' - Neighbourhood-level income: qnatippe, qnbtippe, qaatippe, qabtippe, atippe, btippe. While qnatippe and qnbtippe are quintiles calculated based on national income distribution, qaatippe and qabtippe are quintiles constructed separately for each census metropolitan area (CMA), census agglomeration (CA) or residual area within each province. Atippe, btippe are numeric.
+#' 
+#' - Neighbourhood-level income: qnatippe, qnbtippe, qaatippe, qabtippe, atippe, btippe. While qnatippe and qnbtippe are quintiles calculated based on national income distribution, qaatippe and qabtippe are quintiles constructed separately for each census metropolitan area (CMA), census agglomeration (CA) or residual area within each province. atippe, btippe are continuous. 
 #' - [Visible minority](https://www12.statcan.gc.ca/census-recensement/2016/ref/dict/pop127-eng.cfm): vismin_pct
 #' - [Immigration status](https://www12.statcan.gc.ca/census-recensement/2021/dp-pd/prof/details/page.cfm?LANG=E&GENDERlist=1,2,3&STATISTIClist=4&HEADERlist=23&SearchText=Canada&DGUIDlist=2021A000011124): immsta_pct
 #' - [Post-secondary education (>15)](https://www150.statcan.gc.ca/n1/pub/81-004-x/2010001/def/posteducation-educpost-eng.htm): ed_15over_postsec_pct
@@ -65,7 +60,7 @@
 #' [ON-Marg guide 2021](https://www.publichealthontario.ca/-/media/Event-Presentations/2023/09/ontario-marginalization-index-updates-products.pdf?rev=07baae2569164c17abaa18464075aa20&sc_lang=en)
 #' [Statistics Canada Census.](https://www12.statcan.gc.ca/census-recensement/2021/ref/98-304/2021001/chap1-eng.cfm)
 #' [Measuring Health Inequalities: A Toolkit Area-Level Equity Stratifiers Using PCCF and PCCF+](https://www.cihi.ca/sites/default/files/document/toolkit-area-level-measurement-pccf-en.pdf)
-#'
+#' 
 #' @export
 #'
 #' @examples
@@ -83,6 +78,9 @@
 #' }
 #'
 neighborhood_ses <- function(dbcon, cohort, census_year) {
+  check_input(cohort, c("data.table", "data.frame"), colnames = "genc_id")
+  cohort <- coerce_to_datatable(cohort)
+
   check_input(cohort, c("data.table", "data.frame"), colnames = "genc_id")
   cohort <- coerce_to_datatable(cohort)
 
@@ -140,7 +138,10 @@ neighborhood_ses <- function(dbcon, cohort, census_year) {
                                             on l.genc_id = tmp.genc_id
                                           left join lookup_statcan_v2021 s
                                             on l.da21uid = s.da21uid; ') %>% as.data.table()
-    }
+  }
+
+  if (census_year != 2016 & tnl == 1) {
+    warning("Your DB version only contains 2016 census data, please change your input to `census_year = 2016`")
   }
 
   # change all invalid income values to NA
@@ -197,6 +198,21 @@ neighborhood_ses <- function(dbcon, cohort, census_year) {
   setnames(rec, "ed15", "ed_15over_postsec_pct")
   setnames(rec, "ed25", "ed_25to64_postsec_pct")
 
+  if (census_year == 2016) {
+    da_miss <- rec[is.na(get(paste0("da", yr, "uid"))) | qnatippe == 9]
+  }
+
+  if (census_year == 2021) {
+    da_miss <- rec[is.na(get(paste0("da", yr, "uid")))]
+  }
+    da_exist <- rec[!is.na(get(paste0("da", yr, "uid")))]
+    nar <- rowSums(is.na(da_exist))
+
+    p1 <- nrow(da_miss) / nrow(rec) * 100
+    p2 <- length(nar[nar > 0]) / nrow(da_exist) * 100
+
+    message(paste0(round(p1, 2), "% encounters can't be linked due to missing/invalid postal code information"))
+    message(paste0("Among encounters with valid DA, ", round(p2, 2), "% encounters have at least 1 missing SES variable due to no census or On-Marg data. Please carefully check the % of NA for the variables of interest"))
 
   return(rec)
 }
