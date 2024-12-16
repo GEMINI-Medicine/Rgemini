@@ -101,11 +101,12 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
   }
 
   ############ Load lookup_transfer ############
-  lookup_transfer <- DBI::dbGetQuery(dbcon, "select * from lookup_transfer") %>% as.data.table()
+  lookup_transfer_name<-find_db_tablename(dbcon, "lookup_transfer", verbose = FALSE)
+  lookup_transfer <- DBI::dbGetQuery(dbcon, paste0("select * from ", lookup_transfer_name, ";"))%>% as.data.table()
 
   ############ Load whole admdad table (default) ############
   ## find relevant table name corresponding to admdad
-  admdad_name <- Rgemini:::find_db_tablename(dbcon, "admdad", verbose = FALSE)
+  admdad_name <- find_db_tablename(dbcon, "admdad", verbose = FALSE)
   if (!is.null(restricted_cohort)) {
     restricted_cohort <- coerce_to_datatable(restricted_cohort)
     if (!"genc_id" %in% names(restricted_cohort)) {
@@ -169,8 +170,9 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
   ############  Compute `time_to_next_admission`, `time_since_last_admission`  ############
   ## Defined as time difference between admission date-time of (n+1)th encounter minus
   ## discharge date-time of (n)th encounter
+  
   data[, time_to_next_admission := as.numeric(difftime(
-    shift(admission_date_time, type = "lead"), # (n+1)th encounter
+    data.table::shift(admission_date_time, type = "lead"), # (n+1)th encounter
     discharge_date_time, # (n)th encounter
     units = "hours"
   ))]
@@ -181,7 +183,7 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
 
   ## Defined as time difference between admission date-time of nth encounter - discharge date-time of (n-1)th encounter
   data[, time_since_last_admission := as.numeric(difftime(admission_date_time, # nth encounter
-    shift(discharge_date_time, type = "lag"), # (n-1)th discharge
+    data.table::shift(discharge_date_time, type = "lag"), # (n-1)th discharge
     units = "hours"
   ))]
 

@@ -83,7 +83,18 @@ coerce_to_datatable <- function(data) {
 
 
 #' @title
-#' Find DB table name using regex search.
+#' Find DB table\view name using regex search.
+#' Users that have datacut created including and after gemini_h4h_template_v4_0_0 only have access to materiaized views and not table.
+#' User just needs to set schema right after they make a DB connection for it to work.
+#' 
+#' db <- DBI::dbConnect(drv,
+#'    dbname = "gemini_h4h_template_v4_0_0",
+#'    host = "X",
+#'    port = 5432,
+#'    user = "user",
+#'    password = getPass("Enter Password:"))
+#' 
+# 'dbSendQuery(db,"Set schema 'test_datacut'");
 #'
 #' @description
 #' Some `Rgemini` functions internally query DB tables. The table names cannot
@@ -109,10 +120,6 @@ coerce_to_datatable <- function(data) {
 #' A database connection to any GEMINI database.
 #'
 #' 
-#' @param schema_name (`DBIConnection`)\cr
-#' In h4h template later than and including v4_0_0, materialized views are now created instead of individual databases for datacuts.
-#' Input the datacut_name here under schema_name. Default schema name is public
-#' 
 #' @param drm_table (`character`)\cr
 #' Table name to be searched, based on the DRM. Currently only accepts the
 #' following inputs (which have been verified to work across different
@@ -124,6 +131,7 @@ coerce_to_datatable <- function(data) {
 #' - `"transfusion"`
 #' - `"lab"`
 #' - `"radiology"`
+#' - "lookup_transfer"
 #'
 #' Users need to specify the full DRM table name (e.g., `"admdad"` instead of
 #' `"adm"`) to avoid potential confusion with other tables.
@@ -153,19 +161,19 @@ coerce_to_datatable <- function(data) {
 #' admdad <- dbGetQuery(dbcon, paste0("select * from ", admdad_name, ";"))
 #' }
 #'
-find_db_tablename <- function(dbcon, drm_table,schema_name='public', verbose = TRUE) {
+find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
   ## Check if table input is supported
   check_input(drm_table, "character",
     categories = c(
       "admdad", "ipdiagnosis", "ipintervention", "ipcmg",
-      "lab", "transfusion", "radiology"
+      "lab", "transfusion", "radiology","lookup_transfer"
     )
   )
 
   ## Define search criteria for different tables
   search_fn <- function(table_names, table = drm_table) {
 
-    if (drm_table %in% c("lab", "transfusion", "admdad", "radiology")) {
+    if (drm_table %in% c("lab", "transfusion", "admdad", "radiology","lookup_transfer")) {
       # for admdad/lab/transfusion/radiology table:
       # check for specific table names lab/lab_subset and transfusion/transfusion_subset
       # (otherwise, lab/transfusion_mapping or other tables might be returned)
@@ -177,6 +185,10 @@ find_db_tablename <- function(dbcon, drm_table,schema_name='public', verbose = T
 
     return(res)
   }
+
+  # Check current schema_name from SQL
+
+  schema_name <- dbGetQuery(dbcon,"SELECT current_schema();")
 
   # if there is schema_name is public that means no materailized view
 
