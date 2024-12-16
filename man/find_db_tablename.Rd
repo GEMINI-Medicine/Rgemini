@@ -4,7 +4,7 @@
 \alias{find_db_tablename}
 \title{Find DB table name using regex search.}
 \usage{
-find_db_tablename(dbcon, drm_table, verbose = TRUE)
+find_db_tablename(dbcon, drm_table, schema_name = "public", verbose = TRUE)
 }
 \arguments{
 \item{dbcon}{(\code{DBIConnection})\cr
@@ -26,6 +26,10 @@ DBs/datacuts):
 
 Users need to specify the full DRM table name (e.g., \code{"admdad"} instead of
 \code{"adm"}) to avoid potential confusion with other tables.}
+
+\item{schema_name}{(\code{DBIConnection})\cr
+In h4h template later than and including v4_0_0, materialized views are now created instead of individual databases for datacuts.
+Input the datacut_name here under schema_name. Default schema name is public}
 
 \item{verbose}{(\code{logical})\cr
 Whether or not to show a message indicating which DB table was found.}
