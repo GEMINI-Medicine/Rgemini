@@ -108,6 +108,11 @@ coerce_to_datatable <- function(data) {
 #' @param dbcon (`DBIConnection`)\cr
 #' A database connection to any GEMINI database.
 #'
+#' 
+#' @param schema_name (`DBIConnection`)\cr
+#' In h4h template later than and including v4_0_0, materialized views are now created instead of individual databases for datacuts.
+#' Input the datacut_name here under schema_name. Default schema name is public
+#' 
 #' @param drm_table (`character`)\cr
 #' Table name to be searched, based on the DRM. Currently only accepts the
 #' following inputs (which have been verified to work across different
@@ -148,7 +153,7 @@ coerce_to_datatable <- function(data) {
 #' admdad <- dbGetQuery(dbcon, paste0("select * from ", admdad_name, ";"))
 #' }
 #'
-find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
+find_db_tablename <- function(dbcon, drm_table,schema_name='public', verbose = TRUE) {
   ## Check if table input is supported
   check_input(drm_table, "character",
     categories = c(
@@ -173,53 +178,67 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
     return(res)
   }
 
+  # if there is schema_name is public that means no materailized view
 
-  ## Find all table names and run search as defined above
-  tables <- dbListTables(dbcon)
-  table_name <- search_fn(tables)
+  if (schema_name == "public") {
+    ## Find all table names and run search as defined above
+    tables <- dbListTables(dbcon)
+    table_name <- search_fn(tables)
 
-  ## If none found, might be due to DB versions with foreign data wrappers
-  #  In that case try this:
-  if (length(table_name) == 0) {
+    ## If none found, might be due to DB versions with foreign data wrappers
+    #  In that case try this:
+    if (length(table_name) == 0) {
+      tables <- dbGetQuery(
+        dbcon,
+        "SELECT table_name from information_schema.tables
+      WHERE table_type='FOREIGN' and table_schema='public';"
+      )$table_name
+      table_name <- search_fn(tables)
+    }
+
+    ## Get unique value (some DBs have duplicate table names)
+    table_name <- unique(table_name)
+  }
+  else{ #This is when there are materlized views under a given schema
+
+  dbSendQuery(dbcon, paste0("Set schema '", schema_name, "';")) # Set the right schema
+
     tables <- dbGetQuery(
       dbcon,
-      "SELECT table_name from information_schema.tables
-      WHERE table_type='FOREIGN' and table_schema='public';"
+      "SELECT matviewname AS table_name,
+       schemaname AS schema_name
+    FROM pg_matviews;"
     )$table_name
     table_name <- search_fn(tables)
   }
 
-  ## Get unique value (some DBs have duplicate table names)
-  table_name <- unique(table_name)
-
-  ## Check returned value
   # get DB name
   db_name <- dbGetQuery(dbcon, "SELECT current_database()")$current_database
 
   # error if no table found
   if (length(table_name) == 0) {
     stop(paste0(
-      "No table corresponding to '", drm_table,
+      "No table corresponding to '", drm_table," under schema '",schema_name,
       "' identified in database '", db_name, "'.
-      Please make sure your database contains the relevant table."
+      Please make sure your database contains the relevant table/view."
     ))
   }
 
   # error if more than 1 table found
   if (length(table_name) > 1) {
     stop(paste0(
-      "Multiple tables corresponding to '", drm_table,
+      "Multiple tables/views corresponding to '", drm_table, "'' under schema '", schema_name,
       "' identified in database '", db_name, ": ",
       paste0(table_name, collapse = ", "), ".
-      Please ensure that the searched table name results in a unique match."
+      Please ensure that the searched table/view name results in a unique match."
     ))
   }
 
   ## show identified table
   if (verbose) {
     cat(paste0(
-      "\nThe following table in '", db_name,
-      "' was found to match the DRM table name '",
+      "\nThe following table/view in '", db_name,"'' under schema '", schema_name,
+      "' was found to match the DRM table name/view '",
       drm_table, "': '", table_name, "'\n "
     ))
   }
