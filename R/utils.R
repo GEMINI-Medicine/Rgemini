@@ -275,7 +275,13 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 return_hospital_field <- function(db) {
 
   admdad <- find_db_tablename(db, "admdad", verbose = FALSE)
-  fields <- dbGetQuery(db, paste0("SELECT column_name FROM information_schema.columns WHERE table_name = '", admdad,"';"))$column_name
+  
+  # find variable name corresponding to hospital identifier (hospital_id/hospital_num)
+  # to do minimial changes to querying one row to get all the column names instead
+
+  admdad_cols <- dbGetQuery(db, paste0("SELECT * from ",admdad," limit 1;")) %>% data.table()
+
+  fields<-colnames(admdad_cols)
 
   if ("hospital_id" %in% fields) {
     return("hospital_id")

@@ -189,7 +189,7 @@ readmission <- function(dbcon,
 
   # find variable name corresponding to hospital identifier (hospital_id/hospital_num)
  # to do minimial changes to querying one row to get all the column names instead
-  admdad_cols <- dbGetQuery(db, paste0("SELECT * from ",admdad_name," limit 1;")) %>% data.table()
+  admdad_cols <- dbGetQuery(dbcon, paste0("SELECT * from ",admdad_name," limit 1;")) %>% data.table()
 
   admdad_cols<-data.table(column_name=colnames(admdad_cols))
 
