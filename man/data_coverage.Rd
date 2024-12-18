@@ -169,11 +169,11 @@ prct_coverage <- coverage[["data"]][3] # coverage[["data"]]$coverage_data
 ## run function without any plots
 # (will only return data.table with encounter-level flag)
 coverage <- data_coverage(
-    dbcon,
-    cohort,
-    table = c("admdad", "radiology"),
-    plot_timeline = FALSE,
-    plot_coverage = FALSE
+  dbcon,
+  cohort,
+  table = c("admdad", "radiology"),
+  plot_timeline = FALSE,
+  plot_coverage = FALSE
 )
 }
 

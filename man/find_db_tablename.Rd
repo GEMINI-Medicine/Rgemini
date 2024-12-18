@@ -22,6 +22,7 @@ DBs/datacuts):
 \item \code{"transfusion"}
 \item \code{"lab"}
 \item \code{"radiology"}
+\item \code{"lookup_data_coverage"}
 }
 
 Users need to specify the full DRM table name (e.g., \code{"admdad"} instead of
