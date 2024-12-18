@@ -119,6 +119,7 @@ coerce_to_datatable <- function(data) {
 #' - `"transfusion"`
 #' - `"lab"`
 #' - `"radiology"`
+#' - `"lookup_data_coverage"`
 #'
 #' Users need to specify the full DRM table name (e.g., `"admdad"` instead of
 #' `"adm"`) to avoid potential confusion with other tables.
@@ -153,7 +154,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
   check_input(drm_table, "character",
     categories = c(
       "admdad", "ipdiagnosis", "ipintervention", "ipcmg",
-      "lab", "transfusion", "radiology"
+      "lab", "transfusion", "radiology", "lookup_data_coverage"
     )
   )
 
