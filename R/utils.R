@@ -83,18 +83,7 @@ coerce_to_datatable <- function(data) {
 
 
 #' @title
-#' Find DB table\view name using regex search.
-#' Users that have datacut created including and after gemini_h4h_template_v4_0_0 only have access to materiaized views and not table.
-#' User just needs to set schema right after they make a DB connection for it to work.
-#' 
-#' db <- DBI::dbConnect(drv,
-#'    dbname = "gemini_h4h_template_v4_0_0",
-#'    host = "X",
-#'    port = 5432,
-#'    user = "user",
-#'    password = getPass("Enter Password:"))
-#' 
-# 'dbSendQuery(db,"Set schema 'test_datacut'");
+#' Find DB table/view name using regex search.
 #'
 #' @description
 #' Some `Rgemini` functions internally query DB tables. The table names cannot
@@ -116,9 +105,23 @@ coerce_to_datatable <- function(data) {
 #' (i.e., "admdad/lab/transfusion") or the corresponding table name with a
 #' "_subset" suffix (for HPC datacuts).
 #'
+#' @section HPC datacuts with materialized views
+#' For HPC datacuts created from `gemini_h4h_template_v4_0_0` (or newer),
+#' users only have access to materiaized views and not tables. For these
+#' datacuts, users need to set the schema right after establishing a DB
+#' connection as follows:
+#'
+#' db <- DBI::dbConnect(drv,
+#'    dbname = "db",
+#'    host = "domain_name.ca",
+#'    port = 1234,
+#'    user = "user",
+#'    password = getPass("Enter Password:"))
+#'
+#' dbSendQuery(db, "Set schema 'test_datacut'");
+#'
 #' @param dbcon (`DBIConnection`)\cr
 #' A database connection to any GEMINI database.
-#'
 #' 
 #' @param drm_table (`character`)\cr
 #' Table name to be searched, based on the DRM. Currently only accepts the
@@ -131,7 +134,7 @@ coerce_to_datatable <- function(data) {
 #' - `"transfusion"`
 #' - `"lab"`
 #' - `"radiology"`
-#' - "lookup_transfer"
+#' - `"lookup_transfer"`
 #'
 #' Users need to specify the full DRM table name (e.g., `"admdad"` instead of
 #' `"adm"`) to avoid potential confusion with other tables.
@@ -166,14 +169,14 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
   check_input(drm_table, "character",
     categories = c(
       "admdad", "ipdiagnosis", "ipintervention", "ipcmg",
-      "lab", "transfusion", "radiology","lookup_transfer"
+      "lab", "transfusion", "radiology", "lookup_transfer"
     )
   )
 
   ## Define search criteria for different tables
   search_fn <- function(table_names, table = drm_table) {
 
-    if (drm_table %in% c("lab", "transfusion", "admdad", "radiology","lookup_transfer")) {
+    if (drm_table %in% c("lab", "transfusion", "admdad", "radiology", "lookup_transfer")) {
       # for admdad/lab/transfusion/radiology table:
       # check for specific table names lab/lab_subset and transfusion/transfusion_subset
       # (otherwise, lab/transfusion_mapping or other tables might be returned)
@@ -230,7 +233,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
   # error if no table found
   if (length(table_name) == 0) {
     stop(paste0(
-      "No table corresponding to '", drm_table," under schema '",schema_name,
+      "No table corresponding to '", drm_table," under schema '", schema_name,
       "' identified in database '", db_name, "'.
       Please make sure your database contains the relevant table/view."
     ))
@@ -239,7 +242,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
   # error if more than 1 table found
   if (length(table_name) > 1) {
     stop(paste0(
-      "Multiple tables/views corresponding to '", drm_table, "'' under schema '", schema_name,
+      "Multiple tables/views corresponding to '", drm_table, "' under schema '", schema_name,
       "' identified in database '", db_name, ": ",
       paste0(table_name, collapse = ", "), ".
       Please ensure that the searched table/view name results in a unique match."
@@ -249,7 +252,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
   ## show identified table
   if (verbose) {
     cat(paste0(
-      "\nThe following table/view in '", db_name,"'' under schema '", schema_name,
+      "\nThe following table/view in '", db_name, "' under schema '", schema_name,
       "' was found to match the DRM table name/view '",
       drm_table, "': '", table_name, "'\n "
     ))
