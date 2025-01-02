@@ -1,3 +1,7 @@
+# Rgemini `1.0.1`
+
+* Enhanced `find_db_tablename()` to work with materialized views (H4H >= v4)
+
 # Rgemini `1.0.0`
 
 * New function `homelessness()` to derive encounter-level homelessness flag based on ICD-10-CA diagnosis codes
@@ -10,7 +14,6 @@
 * Improved query efficiency in `mlaps()` and other functions for clinical derived variables
 * Removed duplicated code in `icu_entry()`
 
-
 # Rgemini `0.5.0`
 
 * **New functions:**
@@ -19,21 +22,20 @@
   * Plotting functions & vignette for plot aesthetics: `plot_theme()` and `gemini_colors()`
   * `hospitalizations_last_n_days()` to calculate the number of previous hospitalizations in a given window
   * `convert_dt()` to handle date-time variables and show missing/invalid entries
-
 * **Function enhancements:**
+
   * `n_imaging`, `n_routine_bloodwork()` and `n_rbc_transfusion()` refactored and updated to be able to exclude clinical records in ED
   * Inclusion of all routine blood tests (regardless of result value) in `n_routine_bloodwork()`
   * Option to derive ICU entries as a clinical outcome with customizable time windows in `icu_entry()`
   * For functions with date-time inputs: Allow for character and POSIXct inputs
   * Improved efficiency in `mlaps()` hospital query
-
 * **Minor bug fixes & updated unit tests:**
+
   * `frailty_score()`: Return frailty score 0
   * `daily_census()`: Limit time period by discharge date
   * `disability()`: Only return encounters in cohort input
   * Table 1 render functions: Enable `prettyNum` formatting
   * `Rgemini:::check_input()`: Return error for `odbc` connections
-
 * **Small documentation updates & clean-up of pkdgown reference file**
 
 # Rgemini 0.4.2
