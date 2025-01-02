@@ -2,16 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{find_db_tablename}
 \alias{find_db_tablename}
-\title{Find DB table\view name using regex search.
-Users that have datacut created including and after gemini_h4h_template_v4_0_0 only have access to materiaized views and not table.
-User just needs to set schema right after they make a DB connection for it to work.
-
-db <- DBI::dbConnect(drv,
-dbname = "gemini_h4h_template_v4_0_0",
-host = "X",
-port = 5432,
-user = "user",
-password = getPass("Enter Password:"))}
+\title{Find DB table/view name using regex search.}
 \usage{
 find_db_tablename(dbcon, drm_table, verbose = TRUE)
 }
@@ -31,7 +22,7 @@ DBs/datacuts):
 \item \code{"transfusion"}
 \item \code{"lab"}
 \item \code{"radiology"}
-\item "lookup_transfer"
+\item \code{"lookup_transfer"}
 }
 
 Users need to specify the full DRM table name (e.g., \code{"admdad"} instead of
