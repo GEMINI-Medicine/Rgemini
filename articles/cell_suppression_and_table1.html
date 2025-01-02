@@ -8,8 +8,8 @@
 <title>Cell Suppression and Table 1 • Rgemini</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Cell Suppression and Table 1">
 </head>
 <body>
@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -253,9 +253,11 @@ to protect these patients’ privacy.</p>
 <em>Rgemini</em> exports
 <code><a href="../reference/render_cell_suppression.default.html">render_cell_suppression.default()</a></code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://gemini-medicine.github.io/Rgemini/">Rgemini</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://gemini-medicine.github.io/Rgemini/">Rgemini</a></span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Error in get(paste0(generic, ".", class), envir = get_method_env()) : </span></span>
+<span><span class="co">##   object 'type_sum.accel' not found</span></span></code></pre>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">data</span>, </span>
 <span>  render <span class="op">=</span> <span class="va">render_cell_suppression.default</span></span>
@@ -391,7 +393,7 @@ the most conservative with respect to patient privacy.</p>
 </h3>
 <p>We can specify whether to use a median or mean for continuous
 variables by specifying a <code>continuous_fn</code>.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">data</span>, </span>
@@ -503,7 +505,7 @@ variables by specifying a <code>continuous_fn</code>.</p>
 <p> </p>
 <p>Note however that we can render medians without enabling cell
 suppression, if desired.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">data</span>, </span>
@@ -607,7 +609,7 @@ suppression, if desired.</p>
 <p> </p>
 <p>We can also specify a render function only for a particular variable
 type:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">data</span>, </span>
@@ -730,7 +732,7 @@ data types by supplying these custom renderer functions.</p>
 <div class="section level4">
 <h4 id="suppress-categorical-variables-only">Suppress categorical variables only<a class="anchor" aria-label="anchor" href="#suppress-categorical-variables-only"></a>
 </h4>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">data</span>, </span>
@@ -842,7 +844,7 @@ data types by supplying these custom renderer functions.</p>
 <p>We may also want to only display a single level for binary variables
 (such as with <code>gender</code>). We can do this through the optional
 <code>single_level_binary</code> variable.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">data</span>, </span>
@@ -951,7 +953,7 @@ data types by supplying these custom renderer functions.</p>
 <p>Although the default option shows the desired behaviour,
 <em>Rgemini</em> can export a function that will simply suppress those
 cells with counts fewer than six as needed.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">data</span>, </span>
@@ -1066,7 +1068,7 @@ cells with counts fewer than six as needed.</p>
 </h4>
 <p>Note that to suppress missing values, we use the
 <code><a href="../reference/render_cell_suppression.missing.html">render_cell_suppression.missing()</a></code> function:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">data</span>, </span>
@@ -1190,7 +1192,7 @@ calculated). One approach to deal with this is to actually code the
 missing gender values as a new category for that variable, and apply the
 more conservative
 <code><a href="../reference/render_cell_suppression.categorical.html">render_cell_suppression.categorical()</a></code>.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">gender</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"M"</span>, <span class="st">"F"</span>, <span class="st">"Not Available"</span><span class="op">)</span></span>
 <span><span class="va">data</span><span class="op">$</span><span class="va">gender</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">gender</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"Not Available"</span></span>
 <span></span>
@@ -1315,7 +1317,7 @@ the example below.</p>
 <div class="section level5">
 <h5 id="set-up">Set up<a class="anchor" aria-label="anchor" href="#set-up"></a>
 </h5>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">continuous_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
@@ -1378,7 +1380,7 @@ the example below.</p>
 </h5>
 <p>We use <code>render_cell_suppression.continuous</code> to suppress
 any summary statistics for groups with a size smaller than six.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">laps</span> <span class="op">|</span> <span class="va">nobel</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">continuous_data</span>, </span>
@@ -1426,7 +1428,7 @@ the strata as well using <code>render_cell_suppression.strat</code>.</p>
 <div class="section level5">
 <h5 id="suppress-counts-in-the-strata">Suppress counts in the strata<a class="anchor" aria-label="anchor" href="#suppress-counts-in-the-strata"></a>
 </h5>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">laps</span> <span class="op">|</span> <span class="va">nobel</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">continuous_data</span>, </span>
@@ -1475,7 +1477,7 @@ the strata as well using <code>render_cell_suppression.strat</code>.</p>
 <p>We encounter a similar issue where we can reverse calculate the
 strata total using the overall count. Therefore in this scenario we
 could consider removing the “Overall” count:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">laps</span> <span class="op">|</span> <span class="va">nobel</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">continuous_data</span>, </span>
@@ -1531,7 +1533,7 @@ and remove the “Overall” column as shown above.</p>
 percentages to using the <code>digits</code> argument. Note that
 <code>table1</code> exposes this by default through the
 <code>digits</code> argument.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">data</span>,</span>
@@ -1648,7 +1650,7 @@ decimal place</em> to the value of <code>digits</code>. What this means,
 is that if combining default <code>table1</code> render functions with
 <code>Rgemini</code> render functions, there will be a mismatch in the
 way that rounding is handled (by default).</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">data</span>,</span>
@@ -1769,7 +1771,7 @@ synchronize the behaviour of the two render functions by supplying the
 argument <code>rounding.fn = round_pad</code>, which will tell the
 <code>table1</code> render functions to use <code>digits</code> digits
 <em>after the decimal place</em>.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">data</span>,</span>
@@ -1897,7 +1899,7 @@ SMD.</p>
 <p>It can be supplied to <code>table1</code> through the
 <code>extra.col</code> argument, which takes a named list of extra
 columns to append to the table. Usage is as follows:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span><span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, data <span class="op">=</span> <span class="va">data</span>, extra.col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Maximum Standardized Mean Difference"</span> <span class="op">=</span> <span class="va">max_pairwise_smd</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
@@ -2032,7 +2034,7 @@ here.</p>
 </h4>
 <p>We change both row labels below. In order to do this, we need to use
 the default (i.e. “non-formula”) interface to <code>table1</code>:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">labels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  variables<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>age<span class="op">=</span><span class="st">"Age (years)"</span>, gender<span class="op">=</span><span class="st">"Sex"</span>, condition<span class="op">=</span><span class="st">"MRDx"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
@@ -2135,7 +2137,7 @@ the default (i.e. “non-formula”) interface to <code>table1</code>:</p>
 <p>Next we change the strata labels. To change strata labels we change
 the names of the levels of the factor variable corresponding to the
 strata</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">exposure</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"During Pandemic"</span>, <span class="st">"After Pandemic"</span>, <span class="st">"Before Pandemic"</span><span class="op">)</span></span>
 <span><span class="va">strata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html" class="external-link">split</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">data</span><span class="op">$</span><span class="va">exposure</span><span class="op">)</span></span>
 <span></span>
@@ -2238,7 +2240,7 @@ names in the <code>labels</code> list, as well as a
 <code>groupspan</code> which is used span a label over multiple groups
 in the <code>table1</code> call. We also add standardized mean
 differences using <code>extra.col</code> to put it all together.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">labels</span><span class="op">$</span><span class="va">groups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"After COVID"</span>, <span class="st">""</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">extra_col</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -2363,7 +2365,7 @@ differences using <code>extra.col</code> to put it all together.</p>
 </h2>
 <p>Now we perform custom labeling, cell suppression, and adding a column
 of standardized mean differences as follows:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
 <span>  <span class="va">strata</span>, </span>
 <span>  labels <span class="op">=</span> <span class="va">labels</span>,</span>
@@ -2493,18 +2495,18 @@ argument corresponding to a vector (<code>numeric</code> or
 <code>factor</code>), and output a named <code>character</code> vector,
 where the first element is unnamed and always <code>""</code>. See the
 examples below for how the output should be formatted:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">mtcars</span><span class="op">$</span><span class="va">am</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/render_cell_suppression.categorical.html">render_cell_suppression.categorical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">$</span><span class="va">am</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##                         0            1 </span></span>
 <span><span class="co">##           "" "19 (59.4%)" "13 (40.6%)"</span></span></code></pre>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/render_cell_suppression.continuous.html">render_cell_suppression.continuous</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##                                           Mean (SD) </span></span>
 <span><span class="co">##                        "" "10.500 (&amp;plusmn; 5.916)"</span></span></code></pre>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/render_cell_suppression.missing.html">render_cell_suppression.missing</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">19</span>, <span class="cn">NA</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##                                               Missing </span></span>
 <span><span class="co">##                         "" "&amp;lt; 6 obs. (suppressed)"</span></span></code></pre>
@@ -2516,7 +2518,7 @@ examples below for how the output should be formatted:</p>
 named list as the first argument, and ellipses (<code>...</code>) as the
 last. The named list corresponds to a variable in the data split by the
 stratifying variable, such as in the example below:</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html" class="external-link">split</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">$</span><span class="va">disp</span>, <span class="va">mtcars</span><span class="op">$</span><span class="va">am</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">my_max_col</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
@@ -2526,7 +2528,7 @@ stratifying variable, such as in the example below:</p>
 <span><span class="fu">my_max_col</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 472</span></span></code></pre>
 <p>Now this newly defined function can be added as an extra column.</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span><span class="op">~</span> <span class="va">disp</span> <span class="op">|</span> <span class="va">am</span>, data <span class="op">=</span> <span class="va">mtcars</span>, extra.col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"My Max"</span> <span class="op">=</span> <span class="va">my_max_col</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
