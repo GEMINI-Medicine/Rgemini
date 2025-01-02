@@ -100,8 +100,8 @@
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://gemini-medicine.github.io/Rgemini/">Rgemini</a></span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># establish DB connection</span></span>
 <span><span class="va">drv</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDriver.html" class="external-link">dbDriver</a></span><span class="op">(</span><span class="st">"PostgreSQL"</span><span class="op">)</span></span>
-<span></span>
 <span><span class="va">db</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span></span>
 <span>  <span class="va">drv</span>,</span>
 <span>  dbname <span class="op">=</span> <span class="st">"db_name"</span>,</span>
@@ -111,23 +111,19 @@
 <span>  password <span class="op">=</span> <span class="fu">getPass</span><span class="fu">::</span><span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter Password"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># for newer HPC4Health datacuts (H4H &gt;= v4.0.0):</span></span>
+<span><span class="co"># set the schema according to the datacut name</span></span>
+<span><span class="fu">dbSendQuery</span><span class="op">(</span><span class="va">db</span>, <span class="st">"Set schema 'datacut_name'"</span><span class="op">)</span>;</span>
+<span></span>
+<span><span class="co"># query data</span></span>
 <span><span class="va">admdad</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbGetQuery.html" class="external-link">dbGetQuery</a></span><span class="op">(</span></span>
 <span>  <span class="va">db</span>,</span>
-<span>  <span class="st">"SELECT * FROM public.admdad LIMIT 200;"</span></span>
+<span>  <span class="st">"SELECT * FROM admdad LIMIT 200;"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># run Rgemini function</span></span>
 <span><span class="va">readm</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/readmission.html">readmission</a></span><span class="op">(</span></span>
-<span>  db <span class="op">=</span> <span class="va">db</span>,</span>
-<span>  elective_admit <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  death <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  MAID <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  palliative <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  chemo <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  mental <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  obstetric <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  signout <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  restricted_cohort <span class="op">=</span> <span class="va">admdad</span>,</span>
-<span>  readm_win <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">30</span>, <span class="fl">60</span>, <span class="fl">90</span>, <span class="fl">150</span><span class="op">)</span></span>
+<span>  db <span class="op">=</span> <span class="va">db</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Please review the extensive <a href="https://gemini-medicine.github.io/Rgemini/">package documentation</a> and vignettes for detailed examples and sample code.</p>
 </div>
