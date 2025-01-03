@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{find_db_tablename}
 \alias{find_db_tablename}
-\title{Find DB table name using regex search.}
+\title{Find DB table/view name using regex search.}
 \usage{
 find_db_tablename(dbcon, drm_table, verbose = TRUE)
 }
@@ -22,6 +22,7 @@ DBs/datacuts):
 \item \code{"transfusion"}
 \item \code{"lab"}
 \item \code{"radiology"}
+\item \code{"lookup_transfer"}
 }
 
 Users need to specify the full DRM table name (e.g., \code{"admdad"} instead of

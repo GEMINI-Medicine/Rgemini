@@ -16,7 +16,7 @@ reference:
   - episodes_of_care
   - er_los
   - frailty_score
-  - homelessness_flag
+  - homelessness
   - hospital_fiscal_year
   - hospitalizations_last_n_days
   - icu_entry

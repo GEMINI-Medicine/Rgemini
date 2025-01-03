@@ -1,8 +1,8 @@
 #' @title
-#' Homelessness Flag
+#' Homelessness flag
 #'
 #' @description
-#' `homelessness_flag` returns homelessness status for each
+#' `homelessness()` returns homelessness status for each
 #' `genc_id` based on ICD-10-CA diagnosis codes Z59.0 or Z59.1.
 #'
 #' Coding of homelessness became mandatory in 2018. We therefore
@@ -83,7 +83,7 @@
 #' ipadm <- dbGetQuery(dbcon, "select * from admdad") %>% data.table()
 #' ipdiagnosis <- dbGetQuery(dbcon, "select * from ipdiagnosis") %>% data.table()
 #' erdiagnosis <- dbGetQuery(dbcon, "select * from erdiagnosis") %>% data.table()
-#' homeless <- homelessness_flag(cohort = ipadm, ipdiag = ipdiagnosis, erdiag = erdiagnosis)
+#' homeless <- homelessness(cohort = ipadm, ipdiag = ipdiagnosis, erdiag = erdiagnosis)
 #' # view only genc_id's with homelessness flag
 #' homeless <- homeless %>% filter(homeless$homelessness_icd_flag == TRUE)
 #' }
@@ -94,10 +94,11 @@
 #'    \item{Identification of homelessness using health administrative data in Ontario: Richard Lucie, et al. J. Clin. Epidimiol., 2024. https://doi.org/10.1016/j.jclinepi.2024.111430}
 #' }
 #' @export
-homelessness_flag <- function(
+homelessness <- function(
     cohort,
     ipdiag,
     erdiag) {
+
   ############# CHECK & PREPARE DATA #############
   if (is.null(erdiag)) {
     cat("\n*** Based on the input you provided, only in-patient diagnoses (ipdiag) will be included in the derived homelessness flag.
