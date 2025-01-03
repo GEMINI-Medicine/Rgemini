@@ -2,9 +2,9 @@
 % Please edit documentation in R/utils.R
 \name{find_db_tablename}
 \alias{find_db_tablename}
-\title{Find DB table name using regex search.}
+\title{Find DB table/view name using regex search.}
 \usage{
-find_db_tablename(dbcon, drm_table, verbose = TRUE)
+find_db_tablename(dbcon, drm_table, verbose = FALSE)
 }
 \arguments{
 \item{dbcon}{(\code{DBIConnection})\cr
@@ -22,6 +22,7 @@ DBs/datacuts):
 \item \code{"transfusion"}
 \item \code{"lab"}
 \item \code{"radiology"}
+\item \code{"lookup_transfer"}
 \item \code{"lookup_data_coverage"}
 }
 
@@ -45,10 +46,10 @@ name of interest.
 
 Currently, the function only supports a subset of table names (see below) and
 expects the relevant tables in all databases to only differ based on their
-suffix (e.g., "ipintervention" vs. "ipintervention_subset"). For some tables,
-the function uses \code{grepl("^tablename", drm_table)} to look for table
-names that \emph{start with} the same name as specified in DRM (e.g., any that
-start with "ipintervention").
+suffix (e.g., "ipintervention" vs. "ipintervention_subset").
+For some tables, the function uses \code{grepl("^tablename", drm_table)} to look
+for table names that \emph{start with} the same name as specified in DRM
+(e.g., any that start with "ipintervention").
 For other tables, the function uses a stricter search to avoid finding
 multiple matches: Specifically, for "admdad", "lab", "transfusion", and
 "radiology" the function tries to identify tables with the exact same name
@@ -66,7 +67,7 @@ dbcon <- DBI::dbConnect(drv,
   password = getPass("password")
 )
 
-admdad_name <- find_db_tablename(dbcon, "admdad")
+admdad_name <- find_db_tablename(dbcon, "admdad", verbose = TRUE)
 
 # query identified table
 admdad <- dbGetQuery(dbcon, paste0("select * from ", admdad_name, ";"))
