@@ -119,10 +119,10 @@ coerce_to_datatable <- function(data) {
 #'    password = getPass("Enter Password:"))
 #'
 #' dbSendQuery(db, "Set schema 'test_datacut'");
-#' 
+#'
 #' @param dbcon (`DBIConnection`)\cr
 #' A database connection to any GEMINI database.
-#'
+#' 
 #' @param drm_table (`character`)\cr
 #' Table name to be searched, based on the DRM. Currently only accepts the
 #' following inputs (which have been verified to work across different
@@ -214,8 +214,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
     table_name <- unique(table_name)
   }
   else{ # This is when there are materialized views under a given schema
-
-  dbSendQuery(dbcon, paste0("Set schema '", schema_name, "';")) # Set the right schema
+    dbSendQuery(dbcon, paste0("Set schema '", schema_name, "';")) # Set the right schema
 
     tables <- dbGetQuery(
       dbcon,
@@ -278,7 +277,13 @@ find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
 return_hospital_field <- function(db) {
 
   admdad <- find_db_tablename(db, "admdad", verbose = FALSE)
-  fields <- dbGetQuery(db, paste0("SELECT column_name FROM information_schema.columns WHERE table_name = '", admdad,"';"))$column_name
+  
+  # find variable name corresponding to hospital identifier (hospital_id/hospital_num)
+  # to do minimial changes to querying one row to get all the column names instead
+
+  admdad_cols <- dbGetQuery(db, paste0("SELECT * from ",admdad," limit 1;")) %>% data.table()
+
+  fields<-colnames(admdad_cols)
 
   if ("hospital_id" %in% fields) {
     return("hospital_id")
