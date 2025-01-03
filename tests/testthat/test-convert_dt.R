@@ -6,7 +6,7 @@ test_that(
 
     # this should return warnings due to missing/invalid entries
     # warnings: 3 missing, 2 invalid, 1 invalid due to date-only
-    expect_warning(res <- convert_dt(date_time))
+    suppressWarnings(expect_warning(res <- convert_dt(date_time)))
 
     # check outputs
     expect_equal(class(res), c("POSIXct", "POSIXt"))
@@ -62,7 +62,7 @@ test_that(
     expect_equal(class(res), c("POSIXct", "POSIXt"))
     expect_equal(as.POSIXct(date_time, tz = "UTC"), res)
     # should result in warning when expecting timestamp information
-    expect_warning(convert_dt(date_time, orders = c("ymd HM", "ymd HMS")))
+    suppressWarnings(expect_warning(convert_dt(date_time, orders = c("ymd HM", "ymd HMS"))))
 
     ## dates pre-processed with as.Date input
     date_time <- as.Date(c("2020-01-01 00:22", "2020-01-01 04:23", "2020-01-01 00:87:12", "2020-01-01", "2021-02-05"))
@@ -70,7 +70,7 @@ test_that(
     expect_equal(class(res), c("POSIXct", "POSIXt"))
     expect_equal(as.POSIXct(date_time, tz = "UTC"), res)
     # should result in warning when expecting timestamp information
-    expect_warning(convert_dt(date_time, orders = "ymd HM"))
+    suppressWarnings(expect_warning(convert_dt(date_time, orders = "ymd HM")))
     # ... unless truncation is applied
     expect_no_warning(convert_dt(date_time, orders = "ymd HM", truncated = 2))
 
@@ -80,27 +80,27 @@ test_that(
 test_that(
   "warnings for 00:00 timestamps are returned correctly", {
 
-    expect_warning(
+    suppressWarnings(expect_warning(
       convert_dt("2020-01-01 00:00", orders = c("ymd HM", "ymd HMS"), check_ts_zeros = TRUE)
-    )
-    expect_warning(
+    ))
+    suppressWarnings(expect_warning(
       convert_dt("2020-01-01 00:00:00", orders = c("ymd HM", "ymd HMS"), check_ts_zeros = TRUE)
-    )
+    ))
 
     # check should still be performed even if not all date-times are expected to have
     # timestamp / if truncation is applied
-    expect_warning(
+    suppressWarnings(expect_warning(
       convert_dt("2020-01-01 00:00", orders = c("ymd"), check_ts_zeros = TRUE)
-    )
-    expect_warning(
+    ))
+    suppressWarnings(expect_warning(
       convert_dt("2020-01-01 00:00:00", orders = c("ymd HM", "ymd HMS"), check_ts_zeros = TRUE, truncated = 3)
-    )
+    ))
 
     # make sure this check runs if variable has NAs/""
     #convert_dt("", orders = c("ymd HM", "ymd HMS"), check_ts_zeros = TRUE)
-    expect_warning(
+    suppressWarnings(expect_warning(
       convert_dt(c("2021-04-05 00:00","", NA), orders = c("ymd HM", "ymd HMS"), check_ts_zeros = TRUE)
-    )
+    ))
   }
 )
 

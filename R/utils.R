@@ -95,19 +95,19 @@ coerce_to_datatable <- function(data) {
 #'
 #' Currently, the function only supports a subset of table names (see below) and
 #' expects the relevant tables in all databases to only differ based on their
-#' suffix (e.g., "ipintervention" vs. "ipintervention_subset"). For some tables,
-#' the function uses `grepl("^tablename", drm_table)` to look for table
-#' names that *start with* the same name as specified in DRM (e.g., any that
-#' start with "ipintervention").
+#' suffix (e.g., "ipintervention" vs. "ipintervention_subset").
+#' For some tables, the function uses `grepl("^tablename", drm_table)` to look
+#' for table names that *start with* the same name as specified in DRM
+#' (e.g., any that start with "ipintervention").
 #' For other tables, the function uses a stricter search to avoid finding
 #' multiple matches: Specifically, for "admdad", "lab", "transfusion", and
 #' "radiology" the function tries to identify tables with the exact same name
 #' (i.e., "admdad/lab/transfusion") or the corresponding table name with a
 #' "_subset" suffix (for HPC datacuts).
-#'
+#' 
 #' @section HPC datacuts with materialized views
 #' For HPC datacuts created from `gemini_h4h_template_v4_0_0` (or newer),
-#' users only have access to materiaized views and not tables. For these
+#' users only have access to materialized views and not tables. For these
 #' datacuts, users need to set the schema right after establishing a DB
 #' connection as follows:
 #'
@@ -135,6 +135,7 @@ coerce_to_datatable <- function(data) {
 #' - `"lab"`
 #' - `"radiology"`
 #' - `"lookup_transfer"`
+#' - `"lookup_data_coverage"`
 #'
 #' Users need to specify the full DRM table name (e.g., `"admdad"` instead of
 #' `"adm"`) to avoid potential confusion with other tables.
@@ -158,18 +159,18 @@ coerce_to_datatable <- function(data) {
 #'   password = getPass("password")
 #' )
 #'
-#' admdad_name <- find_db_tablename(dbcon, "admdad")
+#' admdad_name <- find_db_tablename(dbcon, "admdad", verbose = TRUE)
 #'
 #' # query identified table
 #' admdad <- dbGetQuery(dbcon, paste0("select * from ", admdad_name, ";"))
 #' }
 #'
-find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
+find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
   ## Check if table input is supported
   check_input(drm_table, "character",
     categories = c(
       "admdad", "ipdiagnosis", "ipintervention", "ipcmg",
-      "lab", "transfusion", "radiology", "lookup_transfer"
+      "lab", "transfusion", "radiology", "lookup_transfer", "lookup_data_coverage"
     )
   )
 
@@ -190,11 +191,9 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
   }
 
   # Check current schema_name from SQL
+  schema_name <- dbGetQuery(dbcon, "SELECT current_schema();")
 
-  schema_name <- dbGetQuery(dbcon,"SELECT current_schema();")
-
-  # if there is schema_name is public that means no materailized view
-
+  # if there is schema_name is public that means no materialized view
   if (schema_name == "public") {
     ## Find all table names and run search as defined above
     tables <- dbListTables(dbcon)
@@ -214,9 +213,8 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
     ## Get unique value (some DBs have duplicate table names)
     table_name <- unique(table_name)
   }
-  else{ #This is when there are materlized views under a given schema
-
-  dbSendQuery(dbcon, paste0("Set schema '", schema_name, "';")) # Set the right schema
+  else{ # This is when there are materialized views under a given schema
+    dbSendQuery(dbcon, paste0("Set schema '", schema_name, "';")) # Set the right schema
 
     tables <- dbGetQuery(
       dbcon,
@@ -227,6 +225,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
     table_name <- search_fn(tables)
   }
 
+  ## Check returned value
   # get DB name
   db_name <- dbGetQuery(dbcon, "SELECT current_database()")$current_database
 
@@ -940,4 +939,20 @@ convert_dt <- function(dt_var,
 #'
 fix_var_str <- function(str) {
   str <- tools::toTitleCase(gsub("[_.]", " ", str))
+}
+
+
+#' @title Suppress messages/warnings
+#'
+#' @description
+#' Run function without showing any errors/warnings/printed messages
+#'
+#' @param func
+#' Function to be run quietly
+#'
+#' @export
+quiet <- function (func) {
+  sink(tempfile(), type = "out")
+  on.exit(sink())
+  invisible(force(suppressMessages(suppressWarnings(func))))
 }
