@@ -181,7 +181,7 @@ data_coverage <- function(dbcon,
 
   ## get data coverage table (depending on DB version)
   lookup_table_name <- tryCatch({
-      # DB versions since drm_cleandb/report_db *V3* (H4H template v4)
+      # DB versions since drm_cleandb/report_db v3 (H4H template v4)
        find_db_tablename(dbcon, "lookup_data_coverage")},
     error = function(e) {
       # for older DB versions
