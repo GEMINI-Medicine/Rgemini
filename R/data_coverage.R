@@ -128,7 +128,7 @@
 #' 
 #' For coverage plots only (inputs are passed to `plot_over_time()`):
 #' - `time_int`: Time interval used to aggregate data (e.g., by `"month"`
-#' [default], `"quarter"`, or `"year"`)
+#' = default, `"quarter"`, or `"year"`)
 #' - `ylimits`: Limits of y-axis (e.g., `c(0, 50)`)
 #' - `scales`: Passed to facet wrap to control if y-scales are `"fixed"` (default)
 #' or `"free"` (only works if no `ylimits` specified)
