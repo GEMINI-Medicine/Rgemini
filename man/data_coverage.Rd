@@ -102,7 +102,7 @@ applied to different table names by default)
 For coverage plots only (inputs are passed to \code{plot_over_time()}):
 \itemize{
 \item \code{time_int}: Time interval used to aggregate data (e.g., by \code{"month"}
-\link{default}, \code{"quarter"}, or \code{"year"})
+= default, \code{"quarter"}, or \code{"year"})
 \item \code{ylimits}: Limits of y-axis (e.g., \code{c(0, 50)})
 \item \code{scales}: Passed to facet wrap to control if y-scales are \code{"fixed"} (default)
 or \code{"free"} (only works if no \code{ylimits} specified)
