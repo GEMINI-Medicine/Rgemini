@@ -10,7 +10,9 @@ data_coverage(
   table,
   plot_timeline = TRUE,
   plot_coverage = TRUE,
+  hospital_label = NULL,
   as_plotly = FALSE,
+  custom_dates = NULL,
   ...
 )
 }
@@ -56,17 +58,54 @@ the function will plot the number of encounters by discharge month to show
 overall data volume (note: by definition, 100\% of \code{genc_ids} in GEMINI data
 have an entry in \code{admdad}).}
 
+\item{hospital_label}{(\code{character})
+Optional: Name of variable in \code{cohort} table that corresponds to custom
+label for hospitals (e.g., letters A-E instead of hospital_num 101-105).
+Will be used for plotting purposes.}
+
 \item{as_plotly}{(\code{logical})
 Will return any figures as interactive plots using \code{plotly}. Note that this
 may affect plot aesthetics.
 The flag will be ignored if the \code{plotly} package is not installed.}
 
-\item{...}{When \code{plot_coverage = TRUE}: Additional inputs that can be passed to
-\code{Rgemini::plot_over_time()} to control plot aesthetics, e.g.:
+\item{custom_dates}{(\code{data.frame}|\code{data.table})
+Optional input allowing users to specify a customized timeline to be
+included for a given hospital*table combination. The user-provided input
+overwrites the corresponding row(s) in the \code{lookup_data_coverage} table.
+This can be used to exclude time periods (e.g., due to data quality
+issues) and generate customized timeline plots.
+For example, let's say you identified a data quality issue in the
+transfusion table at hospital 104 for discharge dates < 2019-01-01.
+To only include transfusion data for encounters discharged after this
+time period, specify:
+\code{custom_dates <- data.frame( data = "transfusion", hospital_num = 104, min_date = "2019-01-01", max_date = "2022-06-30" )}
+
+This will overwrite the \code{min_date}/\code{max_date} values for site 104
+transfusion data in the \code{lookup_data_coverage} table (data for all
+other hospital*table combinations will remain the same). Additionally, the
+coverage flags by \code{genc_id} (in returned \code{coverage_flag_enc}) and timeline plot
+(see \code{plot_timeline}) will be adjusted according to the user-provided dates.
+The coverage plot (see \code{plot_coverage}) is not affected by the user-specified
+the \code{custom_dates} input.}
+
+\item{...}{Additional inputs that can be passed to control plot aesthetics in
+\code{plot_timeline} or \code{plot_coverage} plots, such as:
 \itemize{
-\item \code{colors}
-\item \code{ylimits}
-\item \code{base_size}
+\item \code{base_size}: Font size (default = 12)
+\item \code{colors}: Plot color(s) (default = gemini_colors(1))
+\item \code{color_group}: Name of variable in cohort specifying color grouping of
+hospitals (e.g., Teaching/Non-teaching); for the timeline plot, this is
+only applied when plotting a single table (otherwise, color grouping is
+applied to different table names by default)
+}
+
+For coverage plots only (inputs are passed to \code{plot_over_time()}):
+\itemize{
+\item \code{time_int}: Time interval used to aggregate data (e.g., by \code{"month"}
+\link{default}, \code{"quarter"}, or \code{"year"})
+\item \code{ylimits}: Limits of y-axis (e.g., \code{c(0, 50)})
+\item \code{scales}: Passed to facet wrap to control if y-scales are \code{"fixed"} (default)
+or \code{"free"} (only works if no \code{ylimits} specified)
 }}
 }
 \value{
