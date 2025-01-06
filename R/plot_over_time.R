@@ -217,7 +217,7 @@ plot_over_time <- function(
 
   ##### Plot colors #####
   ## If single color is specified, will be used across all group levels
-  if (length(colors) == 1 && length(unique(data[[color_group]])) > 1) {
+  if (!is.null(color_group) && length(colors) == 1 && length(unique(data[[color_group]])) > 1) {
     colors <- rep(colors, length(unique(data[[color_group]])))
   }
   ## If not enough color values specified for all grouping levels, duplicate values
