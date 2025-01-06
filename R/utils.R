@@ -83,27 +83,20 @@ coerce_to_datatable <- function(data) {
 
 
 #' @title
-#' Find DB table/view name using regex search.
+#' Find DB table/view name in database.
 #'
 #' @description
 #' Some `Rgemini` functions internally query DB tables. The table names cannot
-#' be hard-coded in those functions since HPC datacuts sometimes have slightly
-#' different table names (e.g., `admdad` is called `admdad_subset` in some
-#' datacuts). This function uses a simple regex search to identify the full
-#' table name in a given DB that matches the DRM (Data Reference Model) table
-#' name of interest.
+#' be hard-coded in those functions since some tables in HPC datacuts have a
+#' `_subset` suffix.
+#' This function searches table names in the user-specified database that match
+#' the DRM (Data Reference Model) table of interest.
 #'
-#' Currently, the function only supports a subset of table names (see below) and
-#' expects the relevant tables in all databases to only differ based on their
-#' suffix (e.g., "ipintervention" vs. "ipintervention_subset").
-#' For some tables, the function uses `grepl("^tablename", drm_table)` to look
-#' for table names that *start with* the same name as specified in DRM
-#' (e.g., any that start with "ipintervention").
-#' For other tables, the function uses a stricter search to avoid finding
-#' multiple matches: Specifically, for "admdad", "lab", "transfusion", and
-#' "radiology" the function tries to identify tables with the exact same name
-#' (i.e., "admdad/lab/transfusion") or the corresponding table name with a
-#' "_subset" suffix (for HPC datacuts).
+#' Currently, the function expects the relevant tables in all databases to only
+#' differ based on their suffix (e.g., "ipintervention" vs.
+#' "ipintervention_subset"). This strict search (as opposed to a more flexible
+#' regex search) is used to allow for a broad range of table names to be
+#' searched while avoiding false positive matches.
 #' 
 #' @section HPC datacuts with materialized views
 #' For HPC datacuts created from `gemini_h4h_template_v4_0_0` (or newer),
@@ -124,18 +117,8 @@ coerce_to_datatable <- function(data) {
 #' A database connection to any GEMINI database.
 #' 
 #' @param drm_table (`character`)\cr
-#' Table name to be searched, based on the DRM. Currently only accepts the
-#' following inputs (which have been verified to work across different
-#' DBs/datacuts):
-#' - `"admdad"`
-#' - `"ipdiagnosis"`
-#' - `"ipintervention"`
-#' - `"ipcmg"`
-#' - `"transfusion"`
-#' - `"lab"`
-#' - `"radiology"`
-#' - `"lookup_transfer"`
-#' - `"lookup_data_coverage"`
+#' Table name to be searched, based on the DRM (e.g., `"admdad"`, `"lab"`,
+#' `"physicians"`, `"lookup_transfer"` etc.).
 #'
 #' Users need to specify the full DRM table name (e.g., `"admdad"` instead of
 #' `"adm"`) to avoid potential confusion with other tables.
@@ -167,25 +150,16 @@ coerce_to_datatable <- function(data) {
 #'
 find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
   ## Check if table input is supported
-  check_input(drm_table, "character",
-    categories = c(
-      "admdad", "ipdiagnosis", "ipintervention", "ipcmg",
-      "lab", "transfusion", "radiology", "lookup_transfer", "lookup_data_coverage"
-    )
-  )
+  check_input(drm_table, "character")
 
   ## Define search criteria for different tables
   search_fn <- function(table_names, table = drm_table) {
 
-    if (drm_table %in% c("lab", "transfusion", "admdad", "radiology", "lookup_transfer")) {
-      # for admdad/lab/transfusion/radiology table:
-      # check for specific table names lab/lab_subset and transfusion/transfusion_subset
-      # (otherwise, lab/transfusion_mapping or other tables might be returned)
-      res <- table_names[table_names %in% c(table, paste0(table, "_subset"))]
-    } else {
-      # for all other tables, simply search for names starting with search term
-      res <- table_names[grepl(paste0("^", drm_table), table_names)]
-    }
+    # check for DRM direct match with table name or table + _subset suffix 
+    # note: a previous version of this function used a more flexible regex
+    # search, however, the table names are fairly fixed so we can use this
+    # instead to avoid flase matches
+    res <- table_names[table_names %in% c(table, paste0(table, "_subset"))]
 
     return(res)
   }
