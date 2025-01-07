@@ -42,7 +42,7 @@ library(Rgemini, lib.loc = "$HOME/R/x86_64-pc-linux-gnu-library/4.1")
  
 ## Example
 
-Most functions require access to the GEMINI database. With access, the functions can be used as follows:
+Some functions require access to the GEMINI database. With access, the functions can be used as follows:
 
 ``` r
 library(Rgemini)
@@ -58,8 +58,7 @@ db <- DBI::dbConnect(
   password = getPass::getPass("Enter Password")
 )
 
-# for newer HPC4Health datacuts (H4H >= v4.0.0):
-# set the schema according to the datacut name
+# For HPC4Health users: For newer datacuts (H4H >= v4.0.0) set the schema according to the datacut name
 dbSendQuery(db, "Set schema 'datacut_name'");
 
 # query data
