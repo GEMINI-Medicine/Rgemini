@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{quiet}
 \alias{quiet}
-\title{Suppress messages/warnings}
+\title{Suppress errors/messages/warnings}
 \usage{
 quiet(func)
 }
@@ -10,5 +10,7 @@ quiet(func)
 \item{func}{Function to be run quietly}
 }
 \description{
-Run function without showing any errors/warnings/printed messages
+Run function without showing any errors/warnings/printed messages.
+
+Note that certain messages (e.g., from RPostgreSQL) cannot be suppressed.
 }

@@ -11,6 +11,7 @@ data_coverage(
   plot_timeline = TRUE,
   plot_coverage = TRUE,
   hospital_label = NULL,
+  hospital_group = NULL,
   as_plotly = FALSE,
   custom_dates = NULL,
   ...
@@ -63,6 +64,11 @@ Optional: Name of variable in \code{cohort} table that corresponds to custom
 label for hospitals (e.g., letters A-E instead of hospital_num 101-105).
 Will be used for plotting purposes.}
 
+\item{hospital_group}{(\code{character})
+Optional: Name of variable in \code{cohort} table that corresponds to grouping
+of hospitals (e.g., Teaching vs. Non-teaching). Hospitals will be grouped
+accordingly in all plots/output tables.}
+
 \item{as_plotly}{(\code{logical})
 Will return any figures as interactive plots using \code{plotly}. Note that this
 may affect plot aesthetics.
@@ -93,7 +99,7 @@ the \code{custom_dates} input.}
 \itemize{
 \item \code{base_size}: Font size (default = 12)
 \item \code{colors}: Plot color(s) (default = gemini_colors(1))
-\item \code{color_group}: Name of variable in cohort specifying color grouping of
+\item \code{hospital_group}: Name of variable in cohort specifying color grouping of
 hospitals (e.g., Teaching/Non-teaching); for the timeline plot, this is
 only applied when plotting a single table (otherwise, color grouping is
 applied to different table names by default)
