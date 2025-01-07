@@ -96,7 +96,7 @@
 <div class="section level2">
 <h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h2>
-<p>Most functions require access to the GEMINI database. With access, the functions can be used as follows:</p>
+<p>Some functions require access to the GEMINI database. With access, the functions can be used as follows:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://gemini-medicine.github.io/Rgemini/">Rgemini</a></span><span class="op">)</span></span>
 <span></span>
@@ -111,8 +111,7 @@
 <span>  password <span class="op">=</span> <span class="fu">getPass</span><span class="fu">::</span><span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter Password"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># for newer HPC4Health datacuts (H4H &gt;= v4.0.0):</span></span>
-<span><span class="co"># set the schema according to the datacut name</span></span>
+<span><span class="co"># For HPC4Health users: For newer datacuts (H4H &gt;= v4.0.0) set the schema according to the datacut name</span></span>
 <span><span class="fu">dbSendQuery</span><span class="op">(</span><span class="va">db</span>, <span class="st">"Set schema 'datacut_name'"</span><span class="op">)</span>;</span>
 <span></span>
 <span><span class="co"># query data</span></span>
