@@ -489,7 +489,6 @@ data_coverage <- function(dbcon,
       -as.numeric(idx) - (as.numeric(data) - 1) * (2 * 0.25) / n_tables + (n_tables - 1) * 0.25 / n_tables
     )]
 
-    # plot overall coverage period
     # remove rows that are completely outside date range in cohort
     timeline_data <- timeline_data[is.na(min_date) |
       (max_date >= min(as.Date(cohort$discharge_date_time)) &
@@ -520,50 +519,88 @@ data_coverage <- function(dbcon,
     ]
 
     # create plot
-    timeline_plot <-
-      ggplot(timeline_data, aes(
-        xmin = min_date, xmax = max_date_plot, ymin = y - 0.25 / n_tables,
-        ymax = y + 0.25 / n_tables,
-        fill = if (length(table) == 1 & !is.null(hospital_group)) get(hospital_group) else data,
-        label = hospital,
-        label2 = min_date, label3 = max_date # for ggplotly labels
-      )) +
-      geom_rect(show.legend = length(table) > 1 | !is.null(hospital_group)) +
-      scale_y_continuous(
-        name = "Hospital", breaks = -unique(as.numeric(timeline_data$hospital)),
-        labels = unique(timeline_data$hospital),
-        expand = c(0.01, 0.01)
-      ) +
-      scale_x_date(
-        name = "Discharge Date",
-        date_labels = "%b %Y",
-        breaks = ifelse(n_months <= 12, "1 month",
-          ifelse(n_months > 12 & n_months <= 48, "3 months",
-            ifelse(n_months > 24 & n_months <= 96, "6 months",
-              "1 year"
+    create_timeline_plot <- function(hosp_group = NULL) {
+      if (missing(hosp_group)) {
+        timeline_data_subset <- timeline_data
+      } else {
+        timeline_data_subset <- timeline_data[(get(hospital_group)) == hosp_group]
+      }
+      timeline_plot <-
+        ggplot(timeline_data_subset, aes(
+          xmin = min_date, xmax = max_date_plot, ymin = y - 0.25 / n_tables,
+          ymax = y + 0.25 / n_tables,
+          fill = if (length(table) == 1 & !is.null(hospital_group)) get(hospital_group) else data,
+          label = hospital,
+          label2 = min_date, label3 = max_date # for ggplotly labels
+        )) +
+        geom_rect(show.legend = length(table) > 1 | !is.null(hospital_group)) +
+        scale_y_continuous(
+          name = "Hospital", breaks = seq(-1, -length(unique(as.numeric(timeline_data_subset$hospital))), -1),
+          labels = unique(timeline_data_subset$hospital),
+          expand = c(0.01, 0.01)
+        ) +
+        scale_x_date(
+          name = "Discharge Date",
+          date_labels = "%b %Y",
+          breaks = ifelse(n_months <= 12, "1 month",
+            ifelse(n_months > 12 & n_months <= 48, "3 months",
+              ifelse(n_months > 24 & n_months <= 96, "6 months",
+                "1 year"
+              )
             )
-          )
-        ),
-        expand = c(0, 0)
-      ) +
-      scale_fill_manual(values = if ("colors" %in% names(args)) args$colors else gemini_colors()) +
-      labs(
-        title = "Data Timeline by Hospital & Table",
-        fill = if (length(table) == 1 & !is.null(hospital_group)) fix_var_str(hospital_group) else if (length(table) > 1) "Table"
-      ) +
-      plot_theme(base_size = ifelse("base_size" %in% names(args), args$base_size, 12)) +
-      theme(
-        axis.text.x = element_text(angle = 60, hjust = 1),
-        legend.key.height = unit(0.02, "npc")
-      )
+          ),
+          expand = c(0, 0)
+        ) +
+        scale_fill_manual(values = if ("colors" %in% names(args)) args$colors else gemini_colors()) +
+        labs(
+          title = "Data Timeline by Hospital & Table\n",
+          fill = if (length(table) == 1 & !is.null(hospital_group)) fix_var_str(hospital_group) else if (length(table) > 1) "Table"
+        ) +
+        plot_theme(base_size = ifelse("base_size" %in% names(args), args$base_size, 12)) +
+        theme(plot.margin = margin(t = 20, 5, 5, 5),
+          axis.text.x = element_text(angle = 60, hjust = 1),
+          legend.key.height = unit(0.02, "npc"),
+          plot.title = element_text(vjust = 0.5)
+        )
+    
+    }
 
-    # apply facet wrap if multiple tables AND grouping of hospitals
-    if (length(table) > 1 & !is.null(hospital_group)) {
-      timeline_plot <- timeline_plot + facet_wrap(~ get(hospital_group), ncol = 1)
+    # create multiple subplots per hospital_group
+    # (only if plotting multiple tables, if not, just color-code by hospital)    
+    if (!is.null(hospital_group) && n_tables > 1) {
+      group_levels <- unique(timeline_data[, get(hospital_group)])
+      # get number of hospitals per grouping level to adjust height
+      # of subplots accordingly
+      n_hosp <- timeline_data %>%
+        group_by(hospital, get(hospital_group)) %>%
+        slice(1) %>%
+        group_by(get(hospital_group)) %>%
+        summarize(N = as.numeric(n())) %>%
+        data.table()
+      # correct spacing issue: # first plot always appears to be a bit bigger...
+      n_hosp[1, N := N / 1.2] 
+            
+      sub_figs <- lapply(group_levels, create_timeline_plot)
+      timeline_plot <- suppressWarnings(ggpubr::ggarrange(
+        plotlist = sub_figs[!sapply(sub_figs, is.null)],
+        ncol = 1,
+        labels = unique(timeline_data[, get(hospital_group)]),
+        heights = n_hosp$N
+      ))
+    } else {
+      timeline_plot <- create_timeline_plot()
     }
 
     # show figure as plotly?
     if (as_plotly == TRUE && system.file(package = "plotly") != "") {
+      if (!is.null(hospital_group) && n_tables > 1) {
+        stop(paste(
+          "Please set `as_plotly` to false when providing",
+          "a `hospital_group` input and multiple entries for `table`. The",
+          "resulting plot contains multiple subplots, which is currently not",
+          "supported by `plotly`."
+        ))
+      }
       print(plotly::ggplotly(timeline_plot))
     } else {
       if (as_plotly == TRUE && system.file(package = "plotly") == "") {
