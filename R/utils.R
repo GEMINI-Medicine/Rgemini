@@ -183,9 +183,6 @@ find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
       )$table_name
       table_name <- search_fn(tables)
     }
-
-    ## Get unique value (some DBs have duplicate table names)
-    table_name <- unique(table_name)
   }
   else{ # This is when there are materialized views under a given schema
     dbSendQuery(dbcon, paste0("Set schema '", schema_name, "';")) # Set the right schema
@@ -199,6 +196,9 @@ find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
     table_name <- search_fn(tables)
   }
 
+  ## Get unique value (some DBs have duplicate table names)
+  table_name <- unique(table_name)
+  
   ## Check returned value
   # get DB name
   db_name <- dbGetQuery(dbcon, "SELECT current_database()")$current_database
