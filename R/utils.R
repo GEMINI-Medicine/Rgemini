@@ -81,7 +81,6 @@ coerce_to_datatable <- function(data) {
   return(data)
 }
 
-
 #' @title
 #' Find DB table/view name in database.
 #'
@@ -98,6 +97,7 @@ coerce_to_datatable <- function(data) {
 #' regex search) is used to allow for a broad range of table names to be
 #' searched while avoiding false positive matches.
 #' 
+#'
 #' @section HPC datacuts with materialized views
 #' For HPC datacuts created from `gemini_h4h_template_v4_0_0` (or newer),
 #' users only have access to materialized views and not tables. For these
@@ -115,7 +115,7 @@ coerce_to_datatable <- function(data) {
 #'
 #' @param dbcon (`DBIConnection`)\cr
 #' A database connection to any GEMINI database.
-#' 
+#'
 #' @param drm_table (`character`)\cr
 #' Table name to be searched, based on the DRM (e.g., `"admdad"`, `"lab"`,
 #' `"physicians"`, `"lookup_transfer"` etc.).
@@ -155,7 +155,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
   ## Define search criteria for different tables
   search_fn <- function(table_names, table = drm_table) {
 
-    # check for DRM direct match with table name or table + _subset suffix 
+    # check for DRM direct match with table name or table + _subset suffix
     # note: a previous version of this function used a more flexible regex
     # search, however, the table names are fairly fixed so we can use this
     # instead to avoid flase matches
@@ -198,7 +198,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
 
   ## Get unique value (some DBs have duplicate table names)
   table_name <- unique(table_name)
-  
+
   ## Check returned value
   # get DB name
   db_name <- dbGetQuery(dbcon, "SELECT current_database()")$current_database
@@ -251,7 +251,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
 return_hospital_field <- function(db) {
 
   admdad <- find_db_tablename(db, "admdad", verbose = FALSE)
-  
+
   # find variable name corresponding to hospital identifier (hospital_id/hospital_num)
   # to do minimial changes to querying one row to get all the column names instead
 
