@@ -81,33 +81,25 @@ coerce_to_datatable <- function(data) {
   return(data)
 }
 
-
 #' @title
-#' Find DB table/view name using regex search.
+#' Find DB table/view name in database.
 #'
 #' @description
 #' Some `Rgemini` functions internally query DB tables. The table names cannot
-#' be hard-coded in those functions since HPC datacuts sometimes have slightly
-#' different table names (e.g., `admdad` is called `admdad_subset` in some
-#' datacuts). This function uses a simple regex search to identify the full
-#' table name in a given DB that matches the DRM (Data Reference Model) table
-#' name of interest.
+#' be hard-coded in those functions since some tables in HPC datacuts have a
+#' `_subset` suffix.
+#' This function searches table names in the user-specified database that match
+#' the DRM (Data Reference Model) table of interest.
 #'
-#' Currently, the function only supports a subset of table names (see below) and
-#' expects the relevant tables in all databases to only differ based on their
-#' suffix (e.g., "ipintervention" vs. "ipintervention_subset"). For some tables,
-#' the function uses `grepl("^tablename", drm_table)` to look for table
-#' names that *start with* the same name as specified in DRM (e.g., any that
-#' start with "ipintervention").
-#' For other tables, the function uses a stricter search to avoid finding
-#' multiple matches: Specifically, for "admdad", "lab", "transfusion", and
-#' "radiology" the function tries to identify tables with the exact same name
-#' (i.e., "admdad/lab/transfusion") or the corresponding table name with a
-#' "_subset" suffix (for HPC datacuts).
+#' Currently, the function expects the relevant tables in all databases to only
+#' differ based on their suffix (e.g., "ipintervention" vs.
+#' "ipintervention_subset"). This strict search (as opposed to a more flexible
+#' regex search) is used to allow for a broad range of table names to be
+#' searched while avoiding false positive matches.
 #'
 #' @section HPC datacuts with materialized views
 #' For HPC datacuts created from `gemini_h4h_template_v4_0_0` (or newer),
-#' users only have access to materiaized views and not tables. For these
+#' users only have access to materialized views and not tables. For these
 #' datacuts, users need to set the schema right after establishing a DB
 #' connection as follows:
 #'
@@ -122,19 +114,10 @@ coerce_to_datatable <- function(data) {
 #'
 #' @param dbcon (`DBIConnection`)\cr
 #' A database connection to any GEMINI database.
-#' 
+#'
 #' @param drm_table (`character`)\cr
-#' Table name to be searched, based on the DRM. Currently only accepts the
-#' following inputs (which have been verified to work across different
-#' DBs/datacuts):
-#' - `"admdad"`
-#' - `"ipdiagnosis"`
-#' - `"ipintervention"`
-#' - `"ipcmg"`
-#' - `"transfusion"`
-#' - `"lab"`
-#' - `"radiology"`
-#' - `"lookup_transfer"`
+#' Table name to be searched, based on the DRM (e.g., `"admdad"`, `"lab"`,
+#' `"physicians"`, `"lookup_transfer"` etc.).
 #'
 #' Users need to specify the full DRM table name (e.g., `"admdad"` instead of
 #' `"adm"`) to avoid potential confusion with other tables.
@@ -158,43 +141,32 @@ coerce_to_datatable <- function(data) {
 #'   password = getPass("password")
 #' )
 #'
-#' admdad_name <- find_db_tablename(dbcon, "admdad")
+#' admdad_name <- find_db_tablename(dbcon, "admdad", verbose = TRUE)
 #'
 #' # query identified table
 #' admdad <- dbGetQuery(dbcon, paste0("select * from ", admdad_name, ";"))
 #' }
 #'
-find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
+find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
   ## Check if table input is supported
-  check_input(drm_table, "character",
-    categories = c(
-      "admdad", "ipdiagnosis", "ipintervention", "ipcmg",
-      "lab", "transfusion", "radiology", "lookup_transfer"
-    )
-  )
+  check_input(drm_table, "character")
 
   ## Define search criteria for different tables
   search_fn <- function(table_names, table = drm_table) {
 
-    if (drm_table %in% c("lab", "transfusion", "admdad", "radiology", "lookup_transfer")) {
-      # for admdad/lab/transfusion/radiology table:
-      # check for specific table names lab/lab_subset and transfusion/transfusion_subset
-      # (otherwise, lab/transfusion_mapping or other tables might be returned)
-      res <- table_names[table_names %in% c(table, paste0(table, "_subset"))]
-    } else {
-      # for all other tables, simply search for names starting with search term
-      res <- table_names[grepl(paste0("^", drm_table), table_names)]
-    }
+    # check for DRM direct match with table name or table + _subset suffix
+    # note: a previous version of this function used a more flexible regex
+    # search, however, the table names are fairly fixed so we can use this
+    # instead to avoid flase matches
+    res <- table_names[table_names %in% c(table, paste0(table, "_subset"))]
 
     return(res)
   }
 
   # Check current schema_name from SQL
+  schema_name <- dbGetQuery(dbcon, "SELECT current_schema();")
 
-  schema_name <- dbGetQuery(dbcon,"SELECT current_schema();")
-
-  # if there is schema_name is public that means no materailized view
-
+  # if there is schema_name is public that means no materialized view
   if (schema_name == "public") {
     ## Find all table names and run search as defined above
     tables <- dbListTables(dbcon)
@@ -210,13 +182,9 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
       )$table_name
       table_name <- search_fn(tables)
     }
-
-    ## Get unique value (some DBs have duplicate table names)
-    table_name <- unique(table_name)
   }
-  else{ #This is when there are materlized views under a given schema
-
-  dbSendQuery(dbcon, paste0("Set schema '", schema_name, "';")) # Set the right schema
+  else{ # This is when there are materialized views under a given schema
+    dbSendQuery(dbcon, paste0("Set schema '", schema_name, "';")) # Set the right schema
 
     tables <- dbGetQuery(
       dbcon,
@@ -227,6 +195,10 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
     table_name <- search_fn(tables)
   }
 
+  ## Get unique value (some DBs have duplicate table names)
+  table_name <- unique(table_name)
+
+  ## Check returned value
   # get DB name
   db_name <- dbGetQuery(dbcon, "SELECT current_database()")$current_database
 
@@ -278,7 +250,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = TRUE) {
 return_hospital_field <- function(db) {
 
   admdad <- find_db_tablename(db, "admdad", verbose = FALSE)
-  
+
   # find variable name corresponding to hospital identifier (hospital_id/hospital_num)
   # to do minimial changes to querying one row to get all the column names instead
 

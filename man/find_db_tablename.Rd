@@ -2,28 +2,17 @@
 % Please edit documentation in R/utils.R
 \name{find_db_tablename}
 \alias{find_db_tablename}
-\title{Find DB table/view name using regex search.}
+\title{Find DB table/view name in database.}
 \usage{
-find_db_tablename(dbcon, drm_table, verbose = TRUE)
+find_db_tablename(dbcon, drm_table, verbose = FALSE)
 }
 \arguments{
 \item{dbcon}{(\code{DBIConnection})\cr
 A database connection to any GEMINI database.}
 
 \item{drm_table}{(\code{character})\cr
-Table name to be searched, based on the DRM. Currently only accepts the
-following inputs (which have been verified to work across different
-DBs/datacuts):
-\itemize{
-\item \code{"admdad"}
-\item \code{"ipdiagnosis"}
-\item \code{"ipintervention"}
-\item \code{"ipcmg"}
-\item \code{"transfusion"}
-\item \code{"lab"}
-\item \code{"radiology"}
-\item \code{"lookup_transfer"}
-}
+Table name to be searched, based on the DRM (e.g., \code{"admdad"}, \code{"lab"},
+\code{"physicians"}, \code{"lookup_transfer"} etc.).
 
 Users need to specify the full DRM table name (e.g., \code{"admdad"} instead of
 \code{"adm"}) to avoid potential confusion with other tables.}
@@ -37,23 +26,16 @@ Returns the full name of the relevant DB table as a character.
 }
 \description{
 Some \code{Rgemini} functions internally query DB tables. The table names cannot
-be hard-coded in those functions since HPC datacuts sometimes have slightly
-different table names (e.g., \code{admdad} is called \code{admdad_subset} in some
-datacuts). This function uses a simple regex search to identify the full
-table name in a given DB that matches the DRM (Data Reference Model) table
-name of interest.
+be hard-coded in those functions since some tables in HPC datacuts have a
+\verb{_subset} suffix.
+This function searches table names in the user-specified database that match
+the DRM (Data Reference Model) table of interest.
 
-Currently, the function only supports a subset of table names (see below) and
-expects the relevant tables in all databases to only differ based on their
-suffix (e.g., "ipintervention" vs. "ipintervention_subset"). For some tables,
-the function uses \code{grepl("^tablename", drm_table)} to look for table
-names that \emph{start with} the same name as specified in DRM (e.g., any that
-start with "ipintervention").
-For other tables, the function uses a stricter search to avoid finding
-multiple matches: Specifically, for "admdad", "lab", "transfusion", and
-"radiology" the function tries to identify tables with the exact same name
-(i.e., "admdad/lab/transfusion") or the corresponding table name with a
-"_subset" suffix (for HPC datacuts).
+Currently, the function expects the relevant tables in all databases to only
+differ based on their suffix (e.g., "ipintervention" vs.
+"ipintervention_subset"). This strict search (as opposed to a more flexible
+regex search) is used to allow for a broad range of table names to be
+searched while avoiding false positive matches.
 }
 \examples{
 \dontrun{
@@ -66,7 +48,7 @@ dbcon <- DBI::dbConnect(drv,
   password = getPass("password")
 )
 
-admdad_name <- find_db_tablename(dbcon, "admdad")
+admdad_name <- find_db_tablename(dbcon, "admdad", verbose = TRUE)
 
 # query identified table
 admdad <- dbGetQuery(dbcon, paste0("select * from ", admdad_name, ";"))
