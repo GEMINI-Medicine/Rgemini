@@ -916,16 +916,18 @@ fix_var_str <- function(str) {
 }
 
 
-#' @title Suppress messages/warnings
+#' @title Suppress errors/messages/warnings
 #'
 #' @description
-#' Run function without showing any errors/warnings/printed messages
+#' Run function without showing any errors/warnings/printed messages.
+#' 
+#' Note that certain messages (e.g., from RPostgreSQL) cannot be suppressed.
 #'
 #' @param func
 #' Function to be run quietly
 #'
 #' @export
-quiet <- function (func) {
+quiet <- function(func) {
   sink(tempfile(), type = "out")
   on.exit(sink())
   invisible(force(suppressMessages(suppressWarnings(func))))
