@@ -224,8 +224,29 @@ data_coverage <- function(dbcon,
   hosp_var <- return_hospital_field(dbcon)
   check_input(cohort,
     argtype = c("data.table", "data.frame"),
-    colnames = c("genc_id", hosp_var, "discharge_date_time", hospital_label)
+    colnames = c(
+      "genc_id", hosp_var, "discharge_date_time",
+      hospital_label, hospital_group
+    )
   )
+
+  # make sure hospital_group (if any) has 1-1 relationship
+  # with hospital ID/num
+  if (!is.null(hospital_group)) {
+    if (
+      # when grouping by hospital & group, should result in same
+      # nrows as grouping by hospital ID alone
+      nrow(cohort %>%
+          dplyr::select(all_of(c(hosp_var, hospital_group))) %>%
+          distinct()) != length(unique(cohort[, get(hosp_var)]))
+      ) {
+        stop(paste(
+          "Please make sure the `hospital_group` variable is a hospital",
+          "grouping variable that has a 1:1 relationship with the",
+          "hospital identifier (e.g., hospital_num)."
+          ))
+      }
+  }
 
   # check that custom_dates has correct format
   if (!is.null(custom_dates)) {
