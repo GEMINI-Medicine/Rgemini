@@ -1,0 +1,317 @@
+---
+title: "Data Coverage"
+output:
+  html_vignette:
+    number_sections: true
+    toc: true
+    dfprint: kable
+
+vignette: >
+  %\VignetteIndexEntry{Data Coverage}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+
+---
+
+
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(data.table)
+library(dplyr)
+library(lemon)
+library(ggplot2)
+library(Rgemini)
+library(lubridate)
+```
+
+*  *  *  *
+
+# Introduction
+
+The `data_coverage()` function facilitates commonly performed data coverage checks and is meant as a **starting point** for data coverage exploration.
+
+Although GEMINI aims to achieve high coverage of all data elements, some tables could not be successfully extracted from certain hospitals/time periods. This is especially true for clinical variables, such as lab, transfusion, radiology, or pharmacy data.
+
+Therefore, one of the first steps of any data analysis should be to carefully check data coverage for all relevant tables. Depending on the research question, this may inform cohort creation, decisions about imputation of missing values, and/or modelling choices. 
+
+<details>
+<summary>**Expand this section for an example**</summary>
+
+If the goal of a project is to compare patients who received an RBC transfusion vs. those who did not, researchers first need to check data coverage for the transfusion table. In this scenario, users cannot simply check whether a given `genc_id` has an RBC entry in the transfusion table because there may be 2 different reasons for why a `genc_id` does not exist in the transfusion table:
+
+1. ***Clinical reason:*** A transfusion may not have been indicated (i.e., the patient did indeed not receive a transfusion).
+2. ***Data coverage issue:*** A `genc_id` may have received an RBC transfusion, but due to data coverage issues, the encounter does not exist in the GEMINI transfusion table (e.g., due to a data extraction issue).
+
+We need to be able to differentiate between these 2 scenarios to distinguish:
+
+1. ***True negatives:*** I.e., patient did indeed not receive an RBC transfusion, so we can set `rbc_transfusion` to `FALSE`.
+2. ***Transfusion status unknown:*** I.e., we do not have any data to know whether the patient received an RBC transfusion, so we should set `rbc_transfusion` to `NA` (or exclude patients without transfusion coverage from the cohort).
+
+Additionally, if the goal is to analyze differences in transfusion practices across hospitals, we also need to check whether there are differences in data coverage timelines across sites. For example, if some hospitals only have transfusion data *before* 2020, whereas other hospitals only have transfusion data *after* 2020, any between-hospital differences we observe may in fact be driven by changes in transfusion practices over time (rather than reflecting true differences between hospitals). We therefore need to carefully consider which hospitals & time periods to include in our analyses, and how to account for differences in data coverage periods in our analyses.
+
+</details>
+<br></br>
+
+This vignette focuses on data coverage checks at the level of **tables** - not individual columns within a given table. This is because table-level data coverage is typically more challenging to analyze and requires a thorough inspection and understanding of the GEMINI cohort. By contrast, column-level missingness within a single table can easily be checked using `Rgemini::n_missing()` (which should typically follow the table-level coverage checks discussed here). 
+
+
+# Data coverage lookup table
+ 
+The `data_coverage()` function queries the `lookup_data_coverage` table (previously `mapping_files.availability_table`), which provides coverage information for each data table in relation to the discharge dates from the admdad table. It lists the discharge periods that have some data coverage by table and hospital (also see Data Availability plot in the Data Dictionary).
+
+```{r eval = FALSE}
+lookup_data_coverage <- dbGetQuery(
+  db, "SELECT * from lookup_data_coverage;"
+) %>% data.table()
+```
+
+> This is an example (dummy version) of the `lookup_data_coverage` table showing the min-max data coverage dates for different hospital*data combinations:
+
+```{r echo = FALSE, results = 'asis'}
+lookup_data_coverage <- data.table(
+  data = c("admdad", "pharmacy", "lab", "radiology", "transfusion", "ipscu", "ipdiagnosis", "er", "physicians"),
+  hospital_num = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
+  hospital_id = c("GRH", "LHSCU", "LHSCV", "HHCO", "HHSH", "HHSJ", "HRH", "KGH", "MKHR"), # just adding this to ensure consistency with plots created below (based on hospital_id)
+  min_date = c("2018-02-01", "2018-10-01", "2019-07-01", "2017-01-01", "2015-04-01", "", "2015-04-01", "", "2016-04-01"),
+  max_date = c("2023-03-31", "2023-06-30", "2023-03-31", "2023-06-30", "2022-05-31", "", "2023-06-30", "", "2023-03-31"),
+  additional_info = c("Hospital opened in February 2018.", "", "", "", "", "Hospital does not have a special care unit.", "", "Hospital provides specialized care and\ndoes not have an ER.", "")
+)
+lookup_data_coverage[, min_date := as.Date(min_date)]
+lookup_data_coverage[, max_date := as.Date(max_date)]
+
+cat("<div style='font-size: 10px;'>")
+lookup_data_coverage[, -c("hospital_id")] %>%
+  knitr::kable(format = "html", escape = TRUE, align = c("c", "c", "c", "c", "c"))
+cat("</div>")
+```
+
+
+**Note:**
+
+- The min/max dates in each row correspond to the start/end date of a single data coverage period.
+- Gaps in data coverage are defined as a period of > 28 days without any data.
+- Encounters with a discharge date within the listed min-max periods are assumed to have (at least some) data coverage for that table.
+- For hospitals with gaps in data timelines, multiple data coverage periods are shown in long format
+- The `additional_info` column contains information that may be helpful when interpreting the data timeline/coverage plots (see below)
+
+<strong style="color:red;">WARNING: </strong>
+**Our threshold for data coverage is currently extremely low!** We assume that there is some data coverage if there is at least 1 genc_id with an entry in a given table during a 28-day period. This does not tell us exactly how good data coverage really is (e.g., was there only 1 genc_id or 1,000 genc_id with an entry in a given table?). Instead, by filtering by the min/max dates, we simply exclude time periods without ANY data. Users are adviced to check the % of data coverage (see section below on plot_coverage).
+
+# How to use `data_coverage()`
+
+## Get encounter-level coverage flag (without plots)
+
+The `data_coverage()` function converts the `lookup_data_coverage` table to an encounter-level table. Let’s say we want to check which encounters in our cohort of interest were discharged during time periods with `lab`, `transfusion`, and `radiology` data coverage:
+
+```{r eval = FALSE}
+# Get encounter-level coverage flags
+coverage <- data_coverage(
+  db, cohort, table = c("lab", "transfusion", "radiology"),
+  plot_timeline = FALSE, plot_coverage = FALSE
+)
+```
+
+> This is an example (dummy version) of the ouput table returned by `data_coverage()`:
+
+```{r echo = FALSE, results = 'asis'}
+coverage <- data.table(
+  genc_id = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
+  hospital = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
+  discharge_date = c("2019-08-12", "2020-12-05", "2017-05-25", "2018-03-30", "2019-07-15", "2022-09-27", "2016-04-03", "2021-11-07", "2023-01-28"),
+  lab = c(TRUE, TRUE, FALSE, TRUE, TRUE, TRUE, FALSE, TRUE, TRUE),
+  transfusion = c(FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, TRUE),
+  radiology = c(TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, TRUE, TRUE, TRUE)
+)
+
+cat("<div style='font-size: 10px;'>")
+coverage %>%
+  knitr::kable(format = "html", escape = TRUE, align = c("c", "c", "c", "c", "c"))
+cat("</div>")
+```
+
+The table contains a flag for each `genc_id` indicating whether that `genc_id` was discharged from a hospital & during a time period where ANY lab/transfusion/radiology data were available (based on the min-max dates in the lookup table). 
+
+**Note:** This does *not* mean that all `genc_ids` where the flag is `TRUE` have an entry in the lab/transfusion/radiology table (e.g., not all encounters receive a transfusion). It simply means that for `genc_ids` where the flag is `TRUE`, we can now perform additional analyses of the lab/transfusion/radiology table (e.g., to derive whether or not the encounter received a transfusion). By contrast, for `genc_ids` where the flag is `FALSE`, we do not have sufficient data coverage to infer whether the encounter received a lab/imaging test or transfusion. Therefore, these `genc_ids` should be excluded (or set to `NA`) for any analyses relying on lab/transfusion/radiology data.
+
+## Plot data timelines by table & Hospital
+
+To plot the data timelines by hospital & table, you can set the `plot_timeline` input to `TRUE`, which will result in a plot similar to the “Data Availability” plot in the data dictionary.
+
+However, the plot returned by this function is customized to the input cohort (e.g., time periods/hospitals of interest) and specific tables that are relevant for your analyses.
+
+For example, here our cohort only contains encounters discharged since April 2017 and we are interested in the data timelines for the `admdad`, `lab`, and `ipscu` table:
+
+```{r include = FALSE, eval = FALSE}
+library(DBI)
+library(RPostgreSQL)
+library(getPass)
+library(lubridate)
+library(ggplot2)
+
+# create plot and save image for vignette
+drv <- dbDriver("PostgreSQL")
+dbcon <- DBI::dbConnect(drv,
+  dbname = "drm_cleandb_v3_1_0", # "drm_cleandb_v2_1_3", "drm_cleandb_v3_1_0", "report_db_v3",
+  host = "prime.smh.gemini-hpc.ca",
+  port = 5432,
+  user = "lofflera",
+  password = getPass("Enter Password:")
+)
+cohort <- dbGetQuery(dbcon, "SELECT genc_id, discharge_date_time, hospital_id FROM admdad WHERE discharge_date_time >= '2017-04-01 00:00';") %>% data.table()
+
+# assign hosp num from 1-X
+cohort[, hosp := lookup_data_coverage[.SD, hospital_num, on = "hospital_id"]]
+cohort[, hosp := factor(hosp, levels = unique(sort(cohort$hosp)))]
+cohort <- cohort[as.numeric(hosp) <= 9]
+# cohort[, .(hospital_id, hosp)] %>% distinct()
+
+# append additional rows to ensure consistency with dummy lookup coverage above & internally valid (e.g., lab coverage can't be longer than admdad etc.)
+custom_dates <- data.table(
+  data = c("lab", "ipscu", "admdad", "ipscu", "lab", "admdad", "ipscu", "lab"),
+  hospital_num = c(1, 1, 8, 8, 8, 9, 9, 9),
+  hospital_id = c("GRH", "GRH", "KGH", "KGH", "KGH", "MKHR", "MKHR", "MKHR"),
+  min_date = c("2018-02-01", "2018-02-01", "2015-04-01", "2015-04-01", "2017-09-01", "2015-04-01", "2015-04-01", "2020-04-01"),
+  max_date = c("2023-03-31", "2023-03-31", "2023-03-31", "2023-03-31", "2023-03-31", "2023-03-31", "2023-03-31", "2023-03-31")
+)
+custom_dates[, min_date := as.Date(min_date)]
+custom_dates[, max_date := as.Date(max_date)]
+
+custom_dates <- rbind(lookup_data_coverage, custom_dates, fill = TRUE)
+
+# adjust path according to your Rgemini folder
+source("~/GitHub/Rgemini/R/data_coverage.R") 
+source("~/GitHub/Rgemini/R/utils.R")
+source("~/GitHub/Rgemini/R/plot_over_time.R")
+
+##############################
+## for timeline_plot example
+coverage <- data_coverage(
+  dbcon, cohort, c("admdad", "ipscu", "lab"),
+  plot_timeline = TRUE, plot_coverage = FALSE,
+  custom_dates = custom_dates,
+  hospital_label = "hosp"
+)
+
+# rename columns for output shown below
+coverage$timeline_data$hospital_num <- NULL
+setnames(coverage$timeline_data, "hospital", "hospital_num")
+coverage$timeline_data <- coverage$timeline_data[order(hospital_num)]
+
+coverage$coverage_flag_enc$hospital_id <- NULL
+setnames(coverage$coverage_flag_enc, "hosp", "hospital_num")
+coverage$coverage_flag_enc <- coverage$coverage_flag_enc[seq_len(nrow(coverage$coverage_flag_enc)) < 20 & admdad == TRUE]
+coverage$coverage_flag_enc[, genc_id := 1:length(unique(genc_id))]
+
+save(coverage, file = "~/GitHub/Rgemini/data/data_coverage.rda")
+
+##############################
+## for coverage_plot example
+cohort <- cohort[hospital_id != "GRH" | (hospital_id == "GRH" & discharge_date_time > "2018-02-01")]
+coverage <- data_coverage(
+  dbcon, cohort,
+  table = c("transfusion"),
+  plot_timeline = FALSE,
+  plot_coverage = TRUE,
+  custom_dates = custom_dates,
+  hospital_label = "hosp"
+)
+coverage[[2]]$hospital_id <- NULL
+setnames(coverage[[2]], "hosp", "hospital_num")
+coverage[[2]] <- coverage[[2]][1:20]
+coverage[[2]] <- coverage[[2]][order(discharge_month, hospital_num)]
+
+save(coverage, file = "~/GitHub/Rgemini/data/data_coverage2.rda")
+```
+```{r eval = FALSE}
+# Plot data timelines
+coverage <- data_coverage(
+  db, cohort, table = c("admdad", "lab", "ipscu"),
+  plot_timeline = TRUE, plot_coverage = FALSE
+)
+```
+
+```{r echo = FALSE, fig.cap="Timeline plot", out.width = '80%', warning = FALSE}
+load("~/GitHub/Rgemini/data/data_coverage.rda")
+print(coverage$timeline_plot)
+```
+
+In addition to the plot, the function also returns a list object with several entries:
+
+- The 1st list item (`coverage_flag_enc`) contains the table with encounter-level flags based on `lookup_data_coverage` (also see section above):
+
+```{r eval = FALSE}
+coverage[[1]] # = coverage$coverage_flag_enc
+```
+
+```{r echo = FALSE, results = 'asis'}
+cat("<div style='font-size: 10px;'>")
+coverage[[1]][1:10] %>%
+  knitr::kable(format = "html", escape = TRUE)
+cat("</div>")
+```
+
+- The 2nd list item (`timeline_data`) is the DB availability table with min-max dates per site & table (i.e., what’s shown in the data timeline plot)
+
+```{r eval = FALSE}
+coverage[[2]] # = coverage$timeline_data
+```
+
+```{r echo = FALSE, results = 'asis'}
+cat("<div style='font-size: 10px;'>")
+coverage[[2]][1:10] %>%
+  knitr::kable(format = "html", escape = TRUE)
+cat("</div>")
+```
+
+- The 3rd list item (`timeline_plot`) is a ggplot object containing the timeline plot, which can be further customized/exported in the desired format. 
+
+For example, you could customize the title of the plot and move the legend position:
+
+```{r}
+coverage[[3]] + # = coverage$timeline_plot
+  ggtitle("Data coverage exploration\n\n", subtitle = "GEMINI project XYZ") +
+  theme(legend.position = "top")
+```
+
+# Plot % data coverage
+
+Finally, users can use the `plot_coverage` flag to plot the % of encounters with an entry in a given table, by hospital & discharge month. This provides more detailed insights into data coverage beyond the current threshold of 1 `genc_id` per 28 day period.
+
+<strong style="color:red;">WARNING: </strong>
+When plotting data coverage, your cohort input should only be pre-filtered for the hospitals and overall timelines of interest. You **should not** apply any other cohort inclusion/exclusion criteria (e.g., diagnosis codes etc.). This is to ensure that the coverage plots are representative of the overall GEMINI data holdings, and are not skewed by any project-specific cohort inclusion/exclusion steps.
+
+Users should carefully inspect these plots for unexpected patterns (e.g., sudden drops) and further inspect a) what’s driving these patterns, and b) how to handle time periods with low data coverage in their analyses. 
+
+```{r eval = FALSE}
+# Plot coverage (% genc_ids with entry in table)
+coverage <- data_coverage(
+  db, cohort, table = c("transfusion"),
+  plot_timeline = FALSE, plot_coverage = TRUE
+)
+```
+
+
+In addition to the plot, this will also return a list object similar to the one above:
+
+1. `coverage_flag_enc`: Encounter-level data coverage flag
+2. `coverage_data`: Table showing the % of encounters with a table entry by hospital & discharge month
+3. `coverage_plot`: ggplot object containing coverage plot
+
+Here is an example of the `coverage_data` table, which can be used to detect (and exclude) hospitals/months with low coverage. It also shows the number of encounters (`n_encounters`) that are in the denominator for each hospital * month combination based on the user-provided cohort input.
+
+```{r eval = FALSE}
+coverage[[2]] # = coverage$coverage_data
+```
+
+```{r echo = FALSE, results = 'asis'}
+load("~/GitHub/Rgemini/data/data_coverage2.rda")
+
+cat("<div style='font-size: 10px;'>")
+coverage[[2]][1:10] %>%
+  knitr::kable(format = "html", escape = TRUE)
+cat("</div>")
+```

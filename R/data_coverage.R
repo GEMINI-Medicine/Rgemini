@@ -274,7 +274,12 @@ data_coverage <- function(dbcon,
   data_coverage_lookup <- tryCatch(
     {
       dbGetQuery(
-        dbcon, paste0("SELECT * FROM ", lookup_table_name)
+        dbcon, paste0(
+          "SELECT * FROM ", lookup_table_name,
+          " WHERE data in ('", paste(table, collapse = "', '"), "')",
+          " AND ", hosp_var, " in ('", paste(unique(cohort[, get(hosp_var)]), collapse = "', '"),
+          "');"
+        )
       ) %>% data.table()
     },
     warning = function(e) {
@@ -293,12 +298,16 @@ data_coverage <- function(dbcon,
   # overwrite entries with user-specified time periods (if any)
   if (!is.null(custom_dates)) {
     custom_dates <- setDT(custom_dates)
+    custom_dates <- custom_dates[
+      data %in% table & get(hosp_var) %in% unique(cohort[, get(hosp_var)])
+    ]
     custom_dates[, min_date := as.Date(min_date)]
     custom_dates[, max_date := as.Date(max_date)]
 
     # save additional_info column to merge back in later
     addtl_info <- data_coverage_lookup[
-      data %in% table & get(hosp_var) %in% unique(cohort[[hosp_var]]) & !is.na(additional_info) & additional_info != ""
+      data %in% table & get(hosp_var) %in% unique(cohort[[hosp_var]]) &
+        !is.na(additional_info) & additional_info != ""
     ] %>%
       dplyr::select(all_of(c(hosp_var, "data", "additional_info"))) %>%
       distinct()
@@ -452,7 +461,7 @@ data_coverage <- function(dbcon,
   if (plot_timeline == TRUE) {
     # prepare data for plotting
     n_tables <- length(unique(table))
-    timeline_data <- copy(data_coverage_lookup[data %in% table, ])
+    timeline_data <- data_coverage_lookup
 
     # For any table * hosp combos that don't exist, merge and fill with NA so
     # they correctly show up as empty on graph
@@ -546,6 +555,10 @@ data_coverage <- function(dbcon,
       } else {
         timeline_data_subset <- timeline_data[(get(hospital_group)) == hosp_group]
       }
+      timeline_data_subset <- timeline_data_subset %>%
+        arrange(hospital) %>%
+        data.table()
+      
       timeline_plot <-
         ggplot(timeline_data_subset, aes(
           xmin = min_date, xmax = max_date_plot, ymin = y - 0.25 / n_tables,
@@ -578,10 +591,10 @@ data_coverage <- function(dbcon,
           fill = if (length(table) == 1 & !is.null(hospital_group)) fix_var_str(hospital_group) else if (length(table) > 1) "Table"
         ) +
         plot_theme(base_size = ifelse("base_size" %in% names(args), args$base_size, 12)) +
-        theme(plot.margin = margin(t = 20, 5, 5, 5),
+        theme(plot.margin = if (length(table) == 1 & !is.null(hospital_group)) margin(t = 20, 5, 5, 5) else (margin(5, 5, 5, 5)),
           axis.text.x = element_text(angle = 60, hjust = 1),
           legend.key.height = unit(0.02, "npc"),
-          plot.title = element_text(vjust = 0.5)
+          plot.title = element_text(vjust = if (length(table) == 1 & !is.null(hospital_group)) 0.5 else 1)
         )
     
     }
@@ -823,10 +836,8 @@ data_coverage <- function(dbcon,
     output[["coverage_flag_enc"]] <- coverage_flag_enc
     # output[["data"]]$coverage_flag_enc <- coverage_flag_enc
     if (plot_timeline == TRUE) {
-      output[["timeline_data"]] <- timeline_data[, -c("y", "max_date_plot")]
+      output[["timeline_data"]] <- timeline_data[, -c("y", "max_date_plot", "idx")]
       output[["timeline_plot"]] <- timeline_plot
-      # output[["data"]]$timeline_data <- timeline_data[, -("y")]
-      # output[["plots"]]$timeline_plot <- timeline_plot
     }
     if (plot_coverage == TRUE) {
       output[["coverage_data"]] <- coverage_data
