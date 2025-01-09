@@ -38,35 +38,35 @@ library(lubridate)
 
 The `data_coverage()` function facilitates commonly performed data coverage checks and is meant as a **starting point** for data coverage exploration.
 
-Although GEMINI aims to achieve high coverage of all data elements, some tables could not be successfully extracted from certain hospitals/time periods. This is especially true for clinical variables, such as lab, transfusion, radiology, or pharmacy data.
+Although GEMINI aims to achieve high coverage of all data elements, it's possible that some tables could not be fully extracted from certain hospitals/time periods. This is especially true for clinical variables, such as lab, transfusion, radiology, or pharmacy data.
 
-Therefore, one of the first steps of any data analysis should be to carefully check data coverage for all relevant tables. Depending on the research question, this may inform cohort creation, decisions about imputation of missing values, and/or modelling choices. 
+Therefore, one of the first steps of any analysis with GEMINI data should be to carefully check data coverage for all relevant tables. Depending on the research question, this may inform study feasibility, cohort creation, decisions about imputation of missing values, and/or modelling choices. 
 
 <details>
 <summary>**Expand this section for an example**</summary>
 
-If the goal of a project is to compare patients who received an RBC transfusion vs. those who did not, researchers first need to check data coverage for the transfusion table. In this scenario, users cannot simply check whether a given `genc_id` has an RBC entry in the transfusion table because there may be 2 different reasons for why a `genc_id` does not exist in the transfusion table:
+If the goal of a project is to compare patients who received a blood transfusion vs. those who did not, researchers first need to check data coverage for the transfusion table. In this scenario, users cannot simply check whether a given `genc_id` has an entry in the transfusion table because there are 2 possible reasons for why a `genc_id` might not exist in the transfusion table:
 
 1. ***Clinical reason:*** A transfusion may not have been indicated (i.e., the patient did indeed not receive a transfusion).
-2. ***Data coverage issue:*** A `genc_id` may have received an RBC transfusion, but due to data coverage issues, the encounter does not exist in the GEMINI transfusion table (e.g., due to a data extraction issue).
+2. ***Data coverage issue:*** The patient did receive a blood transfusion, but the GEMINI transfusion table does not contain the corresponding `genc_id` due to data coverage issues (e.g., data extraction issue).
 
 We need to be able to differentiate between these 2 scenarios to distinguish:
 
-1. ***True negatives:*** I.e., patient did indeed not receive an RBC transfusion, so we can set `rbc_transfusion` to `FALSE`.
-2. ***Transfusion status unknown:*** I.e., we do not have any data to know whether the patient received an RBC transfusion, so we should set `rbc_transfusion` to `NA` (or exclude patients without transfusion coverage from the cohort).
+1. ***True negatives:*** I.e., patient did indeed not receive an RBC transfusion, so we can set `transfused` to `FALSE`.
+2. ***Transfusion status unknown:*** I.e., we do not have any data to know whether the patient received a transfusion, so we should set `transfused` to `NA` (or exclude patients without transfusion coverage from the cohort).
 
 Additionally, if the goal is to analyze differences in transfusion practices across hospitals, we also need to check whether there are differences in data coverage timelines across sites. For example, if some hospitals only have transfusion data *before* 2020, whereas other hospitals only have transfusion data *after* 2020, any between-hospital differences we observe may in fact be driven by changes in transfusion practices over time (rather than reflecting true differences between hospitals). We therefore need to carefully consider which hospitals & time periods to include in our analyses, and how to account for differences in data coverage periods in our analyses.
 
 </details>
 <br></br>
 
-This vignette focuses on data coverage checks at the level of **tables** - not individual columns within a given table. This is because table-level data coverage is typically more challenging to analyze and requires a thorough inspection and understanding of the GEMINI cohort. By contrast, column-level missingness within a single table can easily be checked using `Rgemini::n_missing()` (which should typically follow the table-level coverage checks discussed here). 
+This vignette focuses on data coverage checks at the level of **tables** - not individual columns within a given table. This is because table-level data coverage is typically more challenging to analyze and requires a thorough inspection and understanding of the GEMINI cohort. By contrast, column-level missingness within a single table can easily be checked using [`Rgemini::n_missing()`](https://gemini-medicine.github.io/Rgemini/reference/n_missing.html). Column-level missingness should typically follow the table-level coverage checks discussed here. 
 
 <br></br><br></br>
 
 # Data coverage lookup table
  
-The `data_coverage()` function queries the `lookup_data_coverage` table (previously `mapping_files.availability_table`), which provides coverage information for each data table in relation to the discharge dates from the admdad table. It lists the discharge periods that have some data coverage by table and hospital (also see Data Availability plot in the Data Dictionary).
+The `data_coverage()` function queries the `lookup_data_coverage` table, which lists the time periods with  coverage for each data table and hospital (also see Data Availability plot in the [Data Dictionary](https://geminimedicine.ca/the-gemini-database/)). The min/max dates refer to the range of **discharge dates** (from `admdad`) with data coverage:
 
 ```{r eval = FALSE}
 lookup_data_coverage <- dbGetQuery(
@@ -74,7 +74,7 @@ lookup_data_coverage <- dbGetQuery(
 ) %>% data.table()
 ```
 
-> This is an example (dummy version) of the `lookup_data_coverage` table showing the min-max data coverage dates for different hospital*data combinations:
+> This is an example (dummy version) of the `lookup_data_coverage` table showing the min-max coverage dates for different hospital*data combinations:
 
 ```{r echo = FALSE, results = 'asis'}
 lookup_data_coverage <- data.table(
@@ -98,16 +98,16 @@ cat("</div>")
 
 **Note:**
 
-- The min/max dates in each row correspond to the start/end date of a single data coverage period.
+- The min/max dates in each row correspond to the start/end date of a single data coverage period by hospital*table.
 - Gaps in data coverage are defined as a period of > 28 days without any data.
-- Encounters with a discharge date within the listed min-max periods are assumed to have (at least some) data coverage for that table.
-- For hospitals with gaps in data timelines, multiple data coverage periods are shown in long format
-- The `additional_info` column contains information that may be helpful when interpreting the data timeline/coverage plots (see below)
+- Encounters with a discharge date within the listed min-max periods are assumed to have ***at least some*** data coverage for that table.
+- The `additional_info` column contains information that may be helpful when interpreting the output of the `data_coverage` function.
 
 <br></br>
 
 <strong style="color:red;">WARNING: </strong>
-**Our threshold for data coverage is currently extremely low!** We assume that there is some data coverage if there is at least 1 genc_id with an entry in a given table during a 28-day period. This does not tell us exactly how good data coverage really is (e.g., was there only 1 genc_id or 1,000 genc_id with an entry in a given table?). Instead, by filtering by the min/max dates, we simply exclude time periods without ANY data. Users are adviced to check the % of data coverage (see section below on plot_coverage).
+**Our threshold for data coverage is currently extremely low!** We assume that there is **some** data coverage if there is **at least 1 `genc_id`** with an entry in a given table during a 28-day period. It does not tell us how high data coverage actually is (e.g., was there only 1 `genc_id` or 1,000 `genc_ids` with an entry in a given table?). Hence, when filtering by the min/max dates in the `lookup_data_coverage` table, we are simply excluding time periods without ANY data at all. Therefore, users should only use this lookup table as a starting point for data coverage exploration. For a more detailed discussion on how to check the % data coverage, please review the section on [*`plot_coverage`*](#plot_coverage) below. 
+
 
 <br></br><br></br>
 
@@ -131,7 +131,7 @@ coverage <- data_coverage(
 coverage <- data.table(
   genc_id = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
   hospital = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
-  discharge_date = c("2019-08-12", "2020-12-05", "2017-05-25", "2018-03-30", "2019-07-15", "2022-09-27", "2016-04-03", "2021-11-07", "2023-01-28"),
+  discharge_date = c("2022-08-12", "2020-12-05", "2019-04-25", "2018-03-30", "2019-07-15", "2021-09-27", "2016-04-03", "2021-11-07", "2023-01-28"),
   lab = c(TRUE, TRUE, FALSE, TRUE, TRUE, TRUE, FALSE, TRUE, TRUE),
   transfusion = c(FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, TRUE),
   radiology = c(TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, TRUE, TRUE, TRUE)
@@ -331,7 +331,7 @@ coverage[[3]] + # = coverage$timeline_plot
 
 <br></br><br></br>
 
-## Plot % data coverage
+## Plot % data coverage {#plot_coverage}
 
 Finally, users can use the `plot_coverage` flag to plot the % of encounters with an entry in a given table, by hospital & discharge month. This provides more detailed insights into data coverage beyond the current threshold of 1 `genc_id` per 28 day period.
 
