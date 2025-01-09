@@ -29,6 +29,7 @@ library(lemon)
 library(ggplot2)
 library(Rgemini)
 library(lubridate)
+#setwd("~/GitHub/Rgemini/vignettes/")
 ```
 
 *  *  *  *
@@ -219,7 +220,7 @@ setnames(coverage$coverage_flag_enc, "hosp", "hospital_num")
 coverage$coverage_flag_enc <- coverage$coverage_flag_enc[seq_len(nrow(coverage$coverage_flag_enc)) < 20 & admdad == TRUE]
 coverage$coverage_flag_enc[, genc_id := 1:length(unique(genc_id))]
 
-save(coverage, file = "~/GitHub/Rgemini/data/data_coverage.rda")
+save(coverage, file = "data/data_coverage.rda")
 
 ##############################
 ## for coverage_plot example
@@ -252,7 +253,7 @@ setnames(coverage[[2]], "hosp", "hospital_num")
 coverage[[2]] <- coverage[[2]][1:20]
 coverage[[2]] <- coverage[[2]][order(discharge_month, hospital_num)]
 
-save(coverage, file = "~/GitHub/Rgemini/data/data_coverage2.rda")
+save(coverage, file = "data/data_coverage2.rda")
 ```
 ```{r eval = FALSE}
 # Get encounters dischared since Apr 2017
@@ -269,9 +270,20 @@ coverage <- data_coverage(
 ```
 
 ```{r echo = FALSE, warning = FALSE}
-load("../data/data_coverage.rda")
+load("data/data_coverage.rda")
 print(coverage$timeline_plot)
 ```
+
+**Let's take a look at this plot. What do you notice?**
+
+<details>
+<summary>**Expand this section for some tips**</summary>
+
+Here are some things
+</details>
+
+
+<br></br>
 
 <br></br>
 
@@ -342,7 +354,7 @@ coverage <- data_coverage(
 ```
 
 ```{r echo = FALSE}
-load("../data/data_coverage2.rda")
+load("data/data_coverage2.rda")
 print(coverage$coverage_plot$transfusion)
 ```
 
