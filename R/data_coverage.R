@@ -752,17 +752,13 @@ data_coverage <- function(dbcon,
             show_overall = FALSE,
             ...
           ) +
-            # apply some expansion to y-axis in case all values are the same
-            # to avoid confusion...
             scale_y_continuous(
               limits = if ("ylimits" %in% names(args)) args$ylimits,
-              expand = expansion(
-                ifelse(lunique(na.omit(coverage_data$prct_data_entry_TRUE)) == 1, 0.01, 0)
-              )
+              expand = expansion(0.025)
             ) +
             labs(
               title = paste0("Data coverage - ", table),
-              y = paste0("% genc_ids with entry in ", table, " table")
+              y = paste0("% genc_ids in ", table, " table")
             ) +
             theme(strip.text.y = element_text(margin = margin(b = 10, t = 10)))
         )
