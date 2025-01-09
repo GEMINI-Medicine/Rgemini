@@ -373,8 +373,6 @@ coverage[[2]] # = coverage$coverage_data
 ```
 
 ```{r echo = FALSE, results = 'asis'}
-load("~/GitHub/Rgemini/data/data_coverage2.rda")
-
 cat("<div style='font-size: 10px;'>")
 coverage[[2]][1:10] %>%
   knitr::kable(format = "html", escape = TRUE)
