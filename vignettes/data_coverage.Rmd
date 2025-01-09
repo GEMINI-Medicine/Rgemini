@@ -13,9 +13,7 @@ vignette: >
 
 ---
 
-
-
-```{r include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   warning = FALSE,
@@ -271,7 +269,7 @@ coverage <- data_coverage(
 ```
 
 ```{r echo = FALSE, warning = FALSE}
-load("~/GitHub/Rgemini/data/data_coverage.rda")
+load("../data/data_coverage.rda")
 print(coverage$timeline_plot)
 ```
 
@@ -344,7 +342,7 @@ coverage <- data_coverage(
 ```
 
 ```{r echo = FALSE}
-load("~/GitHub/Rgemini/data/data_coverage2.rda")
+load("../data/data_coverage2.rda")
 print(coverage$coverage_plot$transfusion)
 ```
 
