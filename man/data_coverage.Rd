@@ -12,8 +12,8 @@ data_coverage(
   plot_coverage = TRUE,
   hospital_label = NULL,
   hospital_group = NULL,
-  as_plotly = FALSE,
   custom_dates = NULL,
+  as_plotly = FALSE,
   ...
 )
 }
@@ -69,11 +69,6 @@ Optional: Name of variable in \code{cohort} table that corresponds to grouping
 of hospitals (e.g., Teaching vs. Non-teaching). Hospitals will be grouped
 accordingly in all plots/output tables.}
 
-\item{as_plotly}{(\code{logical})
-Will return any figures as interactive plots using \code{plotly}. Note that this
-may affect plot aesthetics.
-The flag will be ignored if the \code{plotly} package is not installed.}
-
 \item{custom_dates}{(\code{data.frame}|\code{data.table})
 Optional input allowing users to specify a customized timeline to be
 included for a given hospital*table combination. The user-provided input
@@ -93,6 +88,11 @@ coverage flags by \code{genc_id} (in returned \code{coverage_flag_enc}) and time
 (see \code{plot_timeline}) will be adjusted according to the user-provided dates.
 The coverage plot (see \code{plot_coverage}) is not affected by the user-specified
 the \code{custom_dates} input.}
+
+\item{as_plotly}{(\code{logical})
+Will return any figures as interactive plots using \code{plotly}. Note that this
+may affect plot aesthetics.
+The flag will be ignored if the \code{plotly} package is not installed.}
 
 \item{...}{Additional inputs that can be passed to control plot aesthetics in
 \code{plot_timeline} or \code{plot_coverage} plots, such as:
