@@ -213,8 +213,8 @@ data_coverage <- function(dbcon,
                           plot_coverage = TRUE,
                           hospital_label = NULL,
                           hospital_group = NULL,
-                          as_plotly = FALSE,
                           custom_dates = NULL,
+                          as_plotly = FALSE,
                           ...) {
   #########  CHECK INPUTS  #########
   # check input type and column name

@@ -66,7 +66,7 @@ This vignette focuses on data coverage checks at the level of **tables** - not i
 
 # Data coverage lookup table
  
-The `data_coverage()` function queries the `lookup_data_coverage` table, which lists the time periods with  coverage for each data table and hospital (also see Data Availability plot in the [Data Dictionary](https://geminimedicine.ca/the-gemini-database/)). The min/max dates refer to the range of **discharge dates** (from `admdad`) with data coverage:
+The `data_coverage()` function queries the `lookup_data_coverage` table, which lists the time periods with coverage for each data table and hospital (also see Data Availability plot in the [Data Dictionary](https://geminimedicine.ca/the-gemini-database/)). The min/max dates refer to the range of **discharge dates** (from `admdad`) with data coverage:
 
 ```{r eval = FALSE}
 lookup_data_coverage <- dbGetQuery(
@@ -80,7 +80,7 @@ lookup_data_coverage <- dbGetQuery(
 lookup_data_coverage <- data.table(
   data = c("admdad", "pharmacy", "lab", "radiology", "transfusion", "ipscu", "ipdiagnosis", "er", "physicians"),
   hospital_num = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
-  hospital_id = c("GRH", "LHSCU", "LHSCV", "HHCO", "HHSH", "HHSJ", "HRH", "KGH", "MKHR"), # just adding this to ensure consistency with plots created below (based on hospital_id)
+  hospital_id = c("GRH", "LHSCU", "LHSCV", "HHCO", "HHSH", "HHSJ", "HRH", "PMH", "MKHR"), # just adding this to ensure consistency with plots created below (based on hospital_id)
   min_date = c("2018-02-01", "2018-10-01", "2019-07-01", "2017-01-01", "2015-04-01", "", "2015-04-01", "", "2016-04-01"),
   max_date = c("2023-03-31", "2023-06-30", "2023-03-31", "2023-06-30", "2022-05-31", "", "2023-06-30", "", "2023-03-31"),
   additional_info = c("Hospital opened in February 2018.", "", "", "", "", "Hospital does not have a special care unit.", "", "Hospital provides specialized care and\ndoes not have an ER.", "")
@@ -106,7 +106,7 @@ cat("</div>")
 <br></br>
 
 <strong style="color:red;">WARNING: </strong>
-**Our threshold for data coverage is currently extremely low!** We assume that there is **some** data coverage if there is **at least 1 `genc_id`** with an entry in a given table during a 28-day period. It does not tell us how high data coverage actually is (e.g., was there only 1 `genc_id` or 1,000 `genc_ids` with an entry in a given table?). Hence, when filtering by the min/max dates in the `lookup_data_coverage` table, we are simply excluding time periods without ANY data at all. Therefore, users should only use this lookup table as a starting point for data coverage exploration. For a more detailed discussion on how to check the % data coverage, please review the section on [*`plot_coverage`*](#plot_coverage) below. 
+**Our threshold for data coverage is currently extremely low!** We assume that there is **some** data coverage if there is **at least 1 `genc_id`** with an entry in a given table during a 28-day period. It does not tell us how high data coverage actually is (e.g., was there only 1 `genc_id` or 1,000 `genc_ids` with an entry in a given table?). Hence, when filtering by the min/max dates in the `lookup_data_coverage` table, we are simply excluding time periods without ANY data at all. Therefore, users should only use this lookup table as a starting point for data coverage exploration. For a more detailed discussion on how to check the % data coverage, please review the section on [`plot_coverage`](#plot_coverage) below. 
 
 
 <br></br><br></br>
@@ -149,7 +149,7 @@ The table contains a flag for each `genc_id` indicating whether that `genc_id` w
 
 **Note:** This does *not* mean that all `genc_ids` where the flag is `TRUE` have an entry in the lab/transfusion/radiology table (e.g., not all encounters receive a transfusion). It simply means that for `genc_ids` where the flag is `TRUE`, we can now perform additional analyses of the lab/transfusion/radiology table (e.g., to derive whether or not the encounter received a transfusion). By contrast, for `genc_ids` where the flag is `FALSE`, we do not have sufficient data coverage to infer whether the encounter received a lab/imaging test or transfusion. Therefore, these `genc_ids` should be excluded (or set to `NA`) for any analyses relying on lab/transfusion/radiology data.
 
-<br></br><br></br>
+<br></br>
 
 ## Plot data timelines by table & hospital
 
@@ -187,7 +187,7 @@ cohort <- cohort[as.numeric(hosp) <= 9]
 custom_dates <- data.table(
   data = c("lab", "ipscu", "admdad", "ipscu", "lab", "admdad", "ipscu", "lab"),
   hospital_num = c(1, 1, 8, 8, 8, 9, 9, 9),
-  hospital_id = c("GRH", "GRH", "KGH", "KGH", "KGH", "MKHR", "MKHR", "MKHR"),
+  hospital_id = c("GRH", "GRH", "PMH", "PMH", "PMH", "MKHR", "MKHR", "MKHR"),
   min_date = c("2018-02-01", "2018-02-01", "2015-04-01", "2015-04-01", "2017-09-01", "2015-04-01", "2015-04-01", "2020-04-01"),
   max_date = c("2023-03-31", "2023-03-31", "2023-03-31", "2023-03-31", "2023-03-31", "2023-03-31", "2023-03-31", "2023-03-31")
 )
@@ -235,9 +235,9 @@ cohort[, excl := hospital_id == "HRH" & genc_id %in% transf$genc_id &
 cohort <- cohort[excl == FALSE, ]
 
 # remove some genc_ids with transfusions from site 8 to imitate drift
-transf <- dbGetQuery(dbcon, "SELECT genc_id FROM transfusion WHERE hospital_id = 'KGH';") %>%
+transf <- dbGetQuery(dbcon, "SELECT genc_id FROM transfusion WHERE hospital_id = 'PMH';") %>%
   data.table()
-cohort[, excl := hospital_id == "KGH" & genc_id %in% transf$genc_id & year(discharge_date_time) >= 2020 & as.numeric(substr(cohort$discharge_date_time, 9, 10) > 22)]
+cohort[, excl := hospital_id == "PMH" & genc_id %in% transf$genc_id & year(discharge_date_time) >= 2020 & as.numeric(substr(cohort$discharge_date_time, 9, 10) > 22)]
 cohort <- cohort[excl == FALSE, ]
 
 coverage <- data_coverage(
@@ -279,13 +279,18 @@ print(coverage$timeline_plot)
 <details>
 <summary>**Expand this section for some tips**</summary>
 
-Here are some things
++ **Between-hospital differences in data timelines**
+  + Looking at the timelines for `admdad`, you’ll notice that some hospitals generally have later start dates (e.g., hospital 1) and/or earlier end dates (e.g., hospitals 5 & 6) compared to others. The `additional_info` column in the `lookup_data_coverage` table may provide an explanation for some of these between-hospital differences in data timelines (e.g., see above, for hospital 1: “Hospital opened in February 2018.”). Depending on your research question, you may need to restrict your analyses to time periods that overlap across all sites / exclude sites with limited data timelines.
++ **Within-hospital differences in data timelines**
+  + Even within the same hospital, data timelines can vary between tables. For example at sites 3 and 9, lab data have a shorter coverage period compared to `admdad`/`lab` data. This is typically due to challenges associated with extracting clinical (as opposed to administrative) data. If lab data are crucial for your research question, keep in mind that the effective data timeline for your analyses is determined by lab data coverage (rather than `admdad` coverage).
++ **Interrupted data timelines**
+  + For some hospitals/tables, data timelines may be interrupted. For example, at site 8, lab data are not covered continuously. The `additional_info` column may contain some information that’s helpful for interpretation (e.g., “Hospital provides specialized care”). For example, it’s possible that lab testing is not performed on a routine basis at specialized hospitals and that the % of encounters with lab tests is generally very low even for time periods that are shown as “covered” in the timeline plot (remember that data coverage here is defined as at least 1 `genc_id` with an entry in the lab table in a 28-day period). In other words, the gaps in the data timeline might not necessarily reflect a data extraction issue, but rather could be an indicator of specialized clinical practice at this site. Therefore, it is important to inspect overall data volume for sites with interrupted data timelines and plot the % data coverage (see [plot_coverage](#plot_coverage) below). If lab data are crucial for your research question, you may consider exlcuding specialized hospitals with low lab data coverage/volume.
++ **Empty rows**
+  + Some tables may not appear in the timeline plot at all for certain hospitals. For example, for site 6, the `ipscu` row is empty. According to the `additional_info` column in the `lookup_data_coverag`e table, this hospital does not have an ICU. This information can help us determine how to deal with this site in our analyses. For example, if we are simply looking at the ipscu table to determine if a `genc_id` was admitted to an ICU during their hospitalization, we can still include site 6 in our analyses and set `icu_entry` to `FALSE` for all encounters at site 6 (we know for a fact that patients were not admitted to an ICU while being hospitalized at site 6). By contrast, if we are planning to perform more in-depth analyses of `ipscu` data (e.g., analyses of lab tests performed in the ICU), site 6 would need to be excluded since it would not contribute any data to those analyses.
 </details>
 
 
-<br></br>
-
-<br></br>
+<br></br><br></br>
 
 In addition to the plot, the function also returns a list object with several entries:
 
@@ -358,6 +363,7 @@ load("data/data_coverage2.rda")
 print(coverage$coverage_plot$transfusion)
 ```
 
+<br></br>
 
 Users should carefully inspect these plots for unexpected patterns (e.g., sudden drops) and further inspect a) what’s driving these patterns, and b) how to handle time periods with low data coverage in their analyses. 
 
@@ -366,6 +372,22 @@ Users should carefully inspect these plots for unexpected patterns (e.g., sudden
 <details>
 <summary>**Expand this section to learn more**</summary>
 
++ **Hospitals/time periods with no data coverage**
+  + Some hospitals don’t have any transfusion data at all (e.g., sites 5 & 6) or don’t have any transfusion coverage during certain time periods (e.g., hospital 1/8/9).\* Note that time periods with 0% coverage could also be inferred from the timeline plot, which would have empty rows for any tables without any data coverage (see [`plot_timeline`](#plot_timeline)). However, the coverage plots provide more granular insights into coverage - beyond 0 vs. non-0 - allowing users to compare coverage between hospitals and over time on a continuous scale.
++ **Differences between hospitals**
+  + For hospitals with transfusion data, we may see large differences in the % of encounters with an entry in the transfusion table (e.g., >15% at site 3 vs. <5% at site 8). This may not necessarily reflect differences in data coverage, but could be due to differences in clinical practice or medical subservices provided at different sites. As discussed above, we already know that site 8 provides specialized care. To check whether this might explain low transfusion rates, users could inspect the medical subservices provided at this site (e.g., `mrp_service` field in `admdad`) and could also check for potential differences in patient populations (e.g., most responsible diagnosis groups) at different sites. If transfusion data are crucial for the research question of interest, it may make sense to exclude hospitals with low transfusion data volume.
++ **Sudden drops in data coverage**
+  + At hospital 7, we can see a large drop in the % transfusion coverage in the first quarter of 2019. Sudden, temporary drops like this typically reflect a data coverage issue (e.g., due to data extraction challenges, EHR transition etc.). Occassionally, these drops could also be due to temporary changes in clinical practice (e.g., COVID-19 waves, blood product shortages etc.) - although we would typically expect these changes to be more gradual and affect all hospitals. Depending on your research question, you may need to remove hospitals/time periods with low data coverage from your analyses, especially if you suspect a data coverage issue.
++ **Gradual changes in coverage over time**
+  + At site 2, we can observe a gradual decrease in the % of encounters with a transfusion. This could be due to several different reasons:
+    1) There may have been a change in clinical practice over time (e.g., new transfusion guidelines specific to this site)
+    2) Changes in the patient cohort/medical subspecialties: It’s worth inspecting if patient characteristics remained constant over time, or whether there are reasons you’d expect transfusion rates to decrease over time (e.g., larger proportion of patients with no medical indication for a transfusion?)
+    3) It’s possible that gradual changes in coverage are driven by data extraction issues. For example, later time periods may be missing transfusion entries for a certain subset of the GEMINI cohort (e.g., ICU patients). Hence, it could be worth plotting coverage for different patient cohorts separately (see cohort flags like `gim` or `all_med` in the `derived_variables` table).
+    4) Finally, note that we are plotting data coverage by discharge month here (rather than transfusion month). This can potentially mask issues related to the extraction of transfusion products that were transfused during certain time periods. We therefore recommend plotting coverage by the relevant clinical date-time variable (i.e., issue_date_time for transfusions) in addition to the plots by discharge_date_time. Note that this is currently not supported by data_coverage() but can easily be achieved using Rgemini::plot_over_time() (e.g., time_var would be issue_date_time in the case of transfusions). This may show a more abrupt drop in data coverage and could indicate issues with data storage in the hospital’s EHR (e.g., system outage) rather than data extraction issues (which are typically related to discharge_date_time since GEMINI data are pulled by discharge date).
+
+<br></br>
+
+*\*As a side note: 0 in the coverage plot indicates that there were some encounters in the cohort during these time periods (i.e., `admdad` data are available), but none of the encounters had an entry in the `transfusion` table. By contrast, time periods that are not covered in the cohort/admdad table are shown as `NA` in these plots. For example, at site 1, we can see that the cohort only starts in February 2018 in line with the `additional_information` column stating that this hospital only opened in February 2018. between Feb 2018 - Jan 2020, GEMINI did not receive any transfusion data for the encounters from this site (% coverage = 0). Since January 2020, GEMINI has started receiving transfusion data with ~15-20% of encounters having an entry in the transfusion table at this site.
 </details>
 
 
