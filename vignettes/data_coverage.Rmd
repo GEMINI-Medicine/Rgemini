@@ -238,7 +238,7 @@ transf <- dbGetQuery(dbcon, "SELECT genc_id FROM transfusion WHERE hospital_id =
   data.table()
 set.seed(99)
 transf <- transf[sample(nrow(transf), 0.9 * nrow(transf))]
-cohort[, excl := genc_id %in% transf$genc_id | (hospital_id == "PMH" & discharge_date_time >= "2020-04-01 00:00" & discharge_date_time < "2020-06-15 00:00")]
+cohort[, excl := genc_id %in% transf$genc_id | (hospital_id == "PMH" & discharge_date_time >= "2020-04-01 00:00" & discharge_date_time < "2020-08-15 00:00")]
 cohort <- cohort[excl == FALSE, ]
 # append encounters on both sites to mimic overall data availabilty of admdad
 append <- seq(
@@ -259,10 +259,10 @@ cohort <- rbind(cohort, data.table(
 transf <- dbGetQuery(dbcon, "SELECT genc_id FROM transfusion WHERE hospital_id = 'LHSCU';") %>%
   data.table()
 cohort[, excl := hospital_id == "LHSCU" & genc_id %in% transf$genc_id & as.numeric(substr(cohort$discharge_date_time, 9, 10)) < (month(discharge_date_time) + (year(discharge_date_time) - 2019) * 12) / 4]
-cohort_new <- cohort[excl == FALSE, ]
+cohort <- cohort[excl == FALSE, ]
 
 coverage2 <- data_coverage(
-  dbcon, cohort_new,
+  dbcon, cohort,
   table = c("transfusion"),
   plot_timeline = FALSE,
   plot_coverage = TRUE,
@@ -279,10 +279,50 @@ coverage2[[2]] <- coverage2[[2]][order(discharge_month, hospital_num)]
 ## customization
 
 # add hospital_label
-# add hospital_group
+set(cohort, j = "hosp_label", value = factor(cohort$hosp, levels = unique(sort(cohort$hosp)), labels = LETTERS[1:length(unique(sort(cohort$hosp)))]))
 
-save(coverage, coverage2, file = "~GitHub/Rgemini/data/data_coverage.rda")
+cohort[, .(hosp, hosp_label)] %>% distinct()
 
+# assign (random) hospital grouping variable
+set.seed(2)
+cohort[, hospital_type := sample(
+  c("Academic", "Community"),
+  prob = c(.4, .6), 1, replace = TRUE
+), by = hospital_id]
+
+coverage_cust1 <- data_coverage(
+  dbcon, cohort,
+  table = c("admdad"),
+  plot_timeline = TRUE,
+  plot_coverage = FALSE,
+  custom_dates = custom_dates,
+  hospital_label = "hosp_label",
+  hospital_group = "hospital_type",
+  colors = gemini_colors(3)
+)$timeline_plot
+
+##### Custom dates
+custom_dates2 <- data.table(
+  data = c("lab"),
+  hospital_num = c(4),
+  hospital_id = c("HHCO"),
+  min_date = as.Date("2019-04-01"),
+  max_date = as.Date("2023-06-30")
+)
+
+custom_dates <- rbind(custom_dates, custom_dates2, fill = TRUE)
+
+coverage_cust2 <- data_coverage(
+  dbcon, cohort,
+  table = c("lab"),
+  plot_timeline = TRUE,
+  plot_coverage = FALSE,
+  custom_dates = custom_dates,
+  hospital_label = "hosp"
+)$timeline_plot
+
+# save to data folder
+save(coverage, coverage2, coverage_cust1, coverage_cust2, file = "~/GitHub/Rgemini/data/dummy_data_coverage.rda")
 ```
 ```{r eval = FALSE}
 # Get encounters dischared since Apr 2017
@@ -299,7 +339,7 @@ coverage <- data_coverage(
 ```
 
 ```{r echo = FALSE, warning = FALSE}
-load("../data/data_coverage.rda")
+load("../data/dummy_data_coverage.rda")
 print(coverage$timeline_plot)
 ```
 
@@ -447,6 +487,15 @@ cat("</div>")
 
 ## `hospital_label` & `hospital_group`
 
+```{r echo = FALSE}
+print(coverage_cust1)
+```
+
 ## `custom_dates`
+
+```{r echo = FALSE}
+print(coverage_cust2 + ggtitle("Dta timeline for 'lab' table with customized dates for site 4\n"))
+```
+
 
 ## `as_plotly`
