@@ -83,7 +83,7 @@ lookup_data_coverage <- data.table(
   hospital_id = c("GRH", "LHSCU", "LHSCV", "HHCO", "HHSH", "HHSJ", "HRH", "PMH", "MKHR"), # just adding this to ensure consistency with plots created below (based on hospital_id)
   min_date = c("2018-02-01", "2018-10-01", "2019-07-01", "2017-01-01", "2015-04-01", "", "2015-04-01", "", "2016-04-01"),
   max_date = c("2023-03-31", "2023-06-30", "2023-03-31", "2023-06-30", "2022-05-31", "", "2023-06-30", "", "2023-03-31"),
-  additional_info = c("Hospital opened in February 2018.", "", "", "", "", "Hospital does not have a special care unit.", "", "Hospital provides specialized care and\ndoes not have an ER.", "")
+  additional_info = c("Hospital opened in February 2018.", "", "", "", "", "Hospital does not have an ICU.", "", "Hospital provides specialized care and does not have an ICU.", "")
 )
 lookup_data_coverage[, min_date := as.Date(min_date)]
 lookup_data_coverage[, max_date := as.Date(max_date)]
@@ -185,11 +185,11 @@ cohort <- cohort[as.numeric(hosp) <= 9]
 
 # append additional rows to ensure consistency with dummy lookup coverage above & internally valid (e.g., lab coverage can't be longer than admdad etc.)
 custom_dates <- data.table(
-  data = c("lab", "ipscu", "admdad", "ipscu", "lab", "admdad", "ipscu", "lab"),
-  hospital_num = c(1, 1, 8, 8, 8, 9, 9, 9),
-  hospital_id = c("GRH", "GRH", "PMH", "PMH", "PMH", "MKHR", "MKHR", "MKHR"),
-  min_date = c("2018-02-01", "2018-02-01", "2015-04-01", "2015-04-01", "2017-09-01", "2015-04-01", "2015-04-01", "2020-04-01"),
-  max_date = c("2023-03-31", "2023-03-31", "2023-03-31", "2023-03-31", "2023-03-31", "2023-03-31", "2023-03-31", "2023-03-31")
+  data = c("lab", "ipscu", "admdad", "ipscu", "lab", "lab", "lab", "admdad", "ipscu", "lab"),
+  hospital_num = c(1, 1, 8, 8, 8, 8, 8, 9, 9, 9),
+  hospital_id = c("GRH", "GRH", "PMH", "PMH", "PMH", "PMH", "PMH", "MKHR", "MKHR", "MKHR"),
+  min_date = c("2018-02-01", "2018-02-01", "2015-04-01", "", "2017-09-01", "2018-06-01", "2022-04-01", "2015-04-01", "2015-04-01", "2020-04-01"),
+  max_date = c("2023-03-31", "2023-03-31", "2023-03-31", "", "2018-03-31", "2021-10-15", "2023-01-31", "2023-03-31", "2023-03-31", "2023-03-31")
 )
 custom_dates[, min_date := as.Date(min_date)]
 custom_dates[, max_date := as.Date(max_date)]
@@ -220,7 +220,6 @@ setnames(coverage$coverage_flag_enc, "hosp", "hospital_num")
 coverage$coverage_flag_enc <- coverage$coverage_flag_enc[seq_len(nrow(coverage$coverage_flag_enc)) < 20 & admdad == TRUE]
 coverage$coverage_flag_enc[, genc_id := 1:length(unique(genc_id))]
 
-save(coverage, file = "data/data_coverage.rda")
 
 ##############################
 ## for coverage_plot example
@@ -234,26 +233,56 @@ cohort[, excl := hospital_id == "HRH" & genc_id %in% transf$genc_id &
 (discharge_date_time > "2019-03-20" & discharge_date_time < "2019-04-05"))]
 cohort <- cohort[excl == FALSE, ]
 
-# remove some genc_ids with transfusions from site 8 to imitate drift
+# remove some genc_ids with transfusions from site 8 to imitate overall low coverage
 transf <- dbGetQuery(dbcon, "SELECT genc_id FROM transfusion WHERE hospital_id = 'PMH';") %>%
   data.table()
-cohort[, excl := hospital_id == "PMH" & genc_id %in% transf$genc_id & year(discharge_date_time) >= 2020 & as.numeric(substr(cohort$discharge_date_time, 9, 10) > 22)]
+set.seed(99)
+transf <- transf[sample(nrow(transf), 0.9 * nrow(transf))]
+cohort[, excl := genc_id %in% transf$genc_id | (hospital_id == "PMH" & discharge_date_time >= "2020-04-01 00:00" & discharge_date_time < "2020-06-15 00:00")]
 cohort <- cohort[excl == FALSE, ]
+# append encounters on both sites to mimic overall data availabilty of admdad
+append <- seq(
+  from = as.Date("2017-04-01 00:00"),
+  to = as.Date("2023-03-01 00:00"),
+  by = "month"
+)
 
-coverage <- data_coverage(
-  dbcon, cohort,
+cohort <- rbind(cohort, data.table(
+  discharge_date_time = as.character(append),
+  genc_id = 1:length(append),
+  hosp = rep(8, length(append)),
+  hospital_id = rep("PMH", length(append)),
+  excl = rep(FALSE, length(append))
+), fill = TRUE)
+
+# remove some genc_ids with transfusions from site 2 to imitate drift
+transf <- dbGetQuery(dbcon, "SELECT genc_id FROM transfusion WHERE hospital_id = 'LHSCU';") %>%
+  data.table()
+cohort[, excl := hospital_id == "LHSCU" & genc_id %in% transf$genc_id & as.numeric(substr(cohort$discharge_date_time, 9, 10)) < (month(discharge_date_time) + (year(discharge_date_time) - 2019) * 12) / 4]
+cohort_new <- cohort[excl == FALSE, ]
+
+coverage2 <- data_coverage(
+  dbcon, cohort_new,
   table = c("transfusion"),
   plot_timeline = FALSE,
   plot_coverage = TRUE,
   custom_dates = custom_dates,
   hospital_label = "hosp"
 )
-coverage[[2]]$hospital_id <- NULL
-setnames(coverage[[2]], "hosp", "hospital_num")
-coverage[[2]] <- coverage[[2]][1:20]
-coverage[[2]] <- coverage[[2]][order(discharge_month, hospital_num)]
+coverage2[[2]]$hospital_id <- NULL
+setnames(coverage2[[2]], "hosp", "hospital_num")
+coverage2[[2]] <- coverage2[[2]][1:20]
+coverage2[[2]] <- coverage2[[2]][order(discharge_month, hospital_num)]
 
-save(coverage, file = "data/data_coverage2.rda")
+
+##################################################
+## customization
+
+# add hospital_label
+# add hospital_group
+
+save(coverage, coverage2, file = "~GitHub/Rgemini/data/data_coverage.rda")
+
 ```
 ```{r eval = FALSE}
 # Get encounters dischared since Apr 2017
@@ -270,7 +299,7 @@ coverage <- data_coverage(
 ```
 
 ```{r echo = FALSE, warning = FALSE}
-load("data/data_coverage.rda")
+load("../data/data_coverage.rda")
 print(coverage$timeline_plot)
 ```
 
@@ -359,8 +388,7 @@ coverage <- data_coverage(
 ```
 
 ```{r echo = FALSE}
-load("data/data_coverage2.rda")
-print(coverage$coverage_plot$transfusion)
+print(coverage2$coverage_plot$transfusion)
 ```
 
 <br></br>
@@ -408,7 +436,7 @@ coverage[[2]] # = coverage$coverage_data
 
 ```{r echo = FALSE, results = 'asis'}
 cat("<div style='font-size: 10px;'>")
-coverage[[2]][1:10] %>%
+coverage2[[2]][1:10] %>%
   knitr::kable(format = "html", escape = TRUE)
 cat("</div>")
 ```
@@ -418,3 +446,7 @@ cat("</div>")
 # Further customization
 
 ## `hospital_label` & `hospital_group`
+
+## `custom_dates`
+
+## `as_plotly`
