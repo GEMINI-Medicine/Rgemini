@@ -153,9 +153,7 @@ The table contains a flag for each `genc_id` indicating whether that `genc_id` w
 
 ## Plot data timelines by table & hospital
 
-To plot the data timelines by hospital & table, you can set the `plot_timeline` input to `TRUE`, which will result in a plot similar to the “Data Availability” plot in the data dictionary.
-
-However, the plot returned by this function is customized to the input cohort (e.g., time periods/hospitals of interest) and specific tables that are relevant for your analyses.
+To plot the data timelines by hospital & table, you can set the `plot_timeline` input to `TRUE`, which will result in a plot similar to the “Data Availability” plot in the data dictionary. However, the plot returned by this function is customized to the input cohort (e.g., time periods/hospitals of interest) and specific tables that are relevant for your analyses.
 
 For example, let's say we are interested in the data timelines for the `admdad`, `lab`, and `ipscu` table for encounters discharged since April 2017:
 
@@ -343,7 +341,7 @@ load("../data/dummy_data_coverage.rda")
 print(coverage$timeline_plot)
 ```
 
-**Let's take a look at this plot. What do you notice?**
+**Let's inspect this plot. What should you look out for?**
 
 <details>
 <summary>**Expand this section for some tips**</summary>
@@ -412,9 +410,9 @@ Finally, users can use the `plot_coverage` flag to plot the % of encounters with
 <strong style="color:red;">WARNING: </strong>
 When plotting data coverage, your cohort input should only be pre-filtered for the hospitals and overall timelines of interest. You **should not** apply any other cohort inclusion/exclusion criteria (e.g., diagnosis codes etc.). This is to ensure that the coverage plots are representative of the overall GEMINI data holdings, and are not skewed by any project-specific cohort inclusion/exclusion steps.
 
-Let's plot coverage for the transfusion table for our cohort discharged since April 2017: 
-
 <br></br>
+
+Let's plot coverage for the transfusion table for our cohort discharged since April 2017: 
 
 ```{r eval = FALSE}
 # Plot coverage (% genc_ids with entry in table)
@@ -433,12 +431,13 @@ print(coverage2$coverage_plot$transfusion)
 
 <br></br>
 
-Users should carefully inspect these plots for unexpected patterns (e.g., sudden drops) and further inspect a) what’s driving these patterns, and b) how to handle time periods with low data coverage in their analyses. 
 
-**Let's take a look at this plot. What do you notice?**
+**Let's inspect this plot. What should you look out for?**
 
 <details>
 <summary>**Expand this section to learn more**</summary>
+
+Users should carefully inspect these plots for unexpected patterns (e.g., sudden drops) and further inspect a) what’s driving these patterns, and b) how to handle time periods with low data coverage in their analyses. Here are a few specific examples of what to look out for:
 
 + **Hospitals/time periods with no data coverage**
   + Some hospitals don’t have any transfusion data at all (e.g., sites 5 & 6) or don’t have any transfusion coverage during certain time periods (e.g., hospital 1/8/9).\* Note that time periods with 0% coverage could also be inferred from the timeline plot, which would have empty rows for any tables without any data coverage (see [`plot_timeline`](#plot_timeline)). However, the coverage plots provide more granular insights into coverage - beyond 0 vs. non-0 - allowing users to compare coverage between hospitals and over time on a continuous scale.
@@ -489,24 +488,7 @@ cat("</div>")
 
 Users can further customize the timeline & coverage plots by providing `hospital_label` (e.g., letters A-E instead of `hospital_num` 101-105) and/or `hospital_group` (e.g., "Teaching" vs. "Non-teaching hospital") inputs.
 
-For example, let's add a `hosp_label` and  `hosp_type` variable to our `admdad_subset` table:
-
-```{r echo = FALSE}
-# add hospital_label
-set(admdad_subset,
-  j = "hosp_label",
-  value = factor(admdad_subset$hospital_num, levels = unique(sort(admdad_subset$hospital_num)),
-  labels = LETTERS[1:length(unique(sort(admdad_subset$hospital_num)))])
-)
-
-# assign (random) hospital grouping variable
-admdad_subset[, hospital_type := sample(
-  c("Teaching", "Non-teaching"),
-  prob = c(.4, .6), 1, replace = TRUE
-), by = hospital_id]
-```
-
-We can now run `data_coverage` and provide these newly created variables as input to `hospital_label` and `hospital_group`. Note that different levels of `"hospital_type"` will be color-coded, and we can customize the color scheme by providing a `colors` input:
+For example, let's say our `admdad_subset` table contains a user-created label (`hosp_label`) and hospital grouping variable (`hosp_type`). We can now provide these variable names as inputs to `data_coverage`: `hospital_label` will change the labels of hospitals on the y-axis of the timeline plot whereas `hospital_group` will color code hospitals according to their category. We can also customize the color scheme by providing a `colors` input:
 
 ```{r eval = FALSE}
 coverage <- data_coverage(
