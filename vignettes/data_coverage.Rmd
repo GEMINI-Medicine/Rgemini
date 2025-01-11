@@ -286,7 +286,7 @@ cohort[, .(hosp, hosp_label)] %>% distinct()
 # assign (random) hospital grouping variable
 set.seed(2)
 cohort[, hospital_type := sample(
-  c("Academic", "Community"),
+  c("Teaching", "Non-teaching"),
   prob = c(.4, .6), 1, replace = TRUE
 ), by = hospital_id]
 
@@ -487,15 +487,77 @@ cat("</div>")
 
 ## `hospital_label` & `hospital_group`
 
+Users can further customize the timeline & coverage plots by providing `hospital_label` (e.g., letters A-E instead of `hospital_num` 101-105) and/or `hospital_group` (e.g., "Teaching" vs. "Non-teaching hospital") inputs.
+
+For example, let's add a `hosp_label` and  `hosp_type` variable to our `admdad_subset` table:
+
+```{r echo = FALSE}
+# add hospital_label
+set(admdad_subset,
+  j = "hosp_label",
+  value = factor(admdad_subset$hospital_num, levels = unique(sort(admdad_subset$hospital_num)),
+  labels = LETTERS[1:length(unique(sort(admdad_subset$hospital_num)))])
+)
+
+# assign (random) hospital grouping variable
+admdad_subset[, hospital_type := sample(
+  c("Teaching", "Non-teaching"),
+  prob = c(.4, .6), 1, replace = TRUE
+), by = hospital_id]
+```
+
+We can now run `data_coverage` and provide these newly created variables as input to `hospital_label` and `hospital_group`. Note that different levels of `"hospital_type"` will be color-coded, and we can customize the color scheme by providing a `colors` input:
+
+```{r eval = FALSE}
+coverage <- data_coverage(
+  dbcon = db,
+  cohort = admdad_subset,
+  table = c("admdad"),
+  plot_timeline = TRUE,
+  plot_coverage = FALSE,
+  hospital_label = "hosp_label",
+  hospital_group = "hosp_type",
+  colors = gemini_colors(3)
+)
+```
+
 ```{r echo = FALSE}
 print(coverage_cust1)
 ```
 
+<br></br>
+
 ## `custom_dates`
 
-```{r echo = FALSE}
-print(coverage_cust2 + ggtitle("Dta timeline for 'lab' table with customized dates for site 4\n"))
+```{r eval = FALSE}
+##### Custom dates
+custom_dates2 <- data.table(
+  data = c("lab"),
+  hospital_num = c(4),
+  hospital_id = c("HHCO"),
+  min_date = as.Date("2019-04-01"),
+  max_date = as.Date("2023-06-30")
+)
+
+custom_dates <- rbind(custom_dates, custom_dates2, fill = TRUE)
+
+coverage_cust2 <- data_coverage(
+  dbcon, cohort,
+  table = c("lab"),
+  plot_timeline = TRUE,
+  plot_coverage = FALSE,
+  custom_dates = custom_dates,
+  hospital_label = "hosp"
+)$timeline_plot
 ```
 
 
+```{r echo = FALSE}
+print(coverage_cust2 + ggtitle("Data timeline for 'lab' table with customized dates for site 4\n"))
+```
+
+<br></br>
+
 ## `as_plotly`
+
+Finally, users can set `as_plotly` to `TRUE`. This will return any figures created by `data_coverage()` as `ggplotly` objects, which facilitates interactive exploration of the timeline/coverage plots. Note that this is currently not supported on HPC4Health due to vulnerabilities associated with the `plotly` package.  
