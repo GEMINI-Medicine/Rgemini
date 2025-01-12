@@ -208,16 +208,20 @@ coverage <- data_coverage(
   hospital_label = "hosp"
 )
 
+# save timeline plot as png
+ggsave("~/GitHub/Rgemini/vignettes/figures/coverage_timeline_plot.png")
+coverage$timeline_plot <- data.frame()
+
 # rename columns for output shown below
 coverage$timeline_data$hospital_num <- NULL
 setnames(coverage$timeline_data, "hospital", "hospital_num")
-coverage$timeline_data <- coverage$timeline_data[order(hospital_num)]
+coverage$timeline_data <- coverage$timeline_data[order(hospital_num)][1:10]
 
 coverage$coverage_flag_enc$hospital_id <- NULL
 setnames(coverage$coverage_flag_enc, "hosp", "hospital_num")
 coverage$coverage_flag_enc <- coverage$coverage_flag_enc[seq_len(nrow(coverage$coverage_flag_enc)) < 20 & admdad == TRUE]
 coverage$coverage_flag_enc[, genc_id := 1:length(unique(genc_id))]
-
+coverage$coverage_flag_enc <- coverage$coverage_flag_enc[1:10]
 
 ##############################
 ## for coverage_plot example
@@ -267,10 +271,16 @@ coverage2 <- data_coverage(
   custom_dates = custom_dates,
   hospital_label = "hosp"
 )
+
+# save timeline plot as png
+ggsave("~/GitHub/Rgemini/vignettes/figures/coverage_plot.png")
+coverage2$coverage_plot <- data.frame()
+
 coverage2[[2]]$hospital_id <- NULL
 setnames(coverage2[[2]], "hosp", "hospital_num")
-coverage2[[2]] <- coverage2[[2]][1:20]
+coverage2[[2]] <- coverage2[[2]][1:10]
 coverage2[[2]] <- coverage2[[2]][order(discharge_month, hospital_num)]
+coverage2[[1]] <- data.table()
 
 
 ##################################################
@@ -298,6 +308,8 @@ coverage_cust1 <- data_coverage(
   hospital_group = "hospital_type",
   colors = gemini_colors(3)
 )$timeline_plot
+ggsave("~/GitHub/Rgemini/vignettes/figures/coverage_custom_plot1.png")
+
 
 ##### Custom dates
 custom_dates2 <- data.table(
@@ -317,10 +329,13 @@ coverage_cust2 <- data_coverage(
   plot_coverage = FALSE,
   custom_dates = custom_dates,
   hospital_label = "hosp"
-)$timeline_plot
+)$timeline_plot +
+  ggtitle("Data timeline for 'lab' table with customized dates for site 4\n")
 
-# save to data folder
-save(coverage, coverage2, coverage_cust1, coverage_cust2, file = "~/GitHub/Rgemini/data/dummy_data_coverage.rda")
+ggsave("~/GitHub/Rgemini/vignettes/figures/coverage_custom_plot2.png")
+
+# save data to data folder
+save(coverage, coverage2, file = "~/GitHub/Rgemini/data/dummy_data_coverage.rda")
 ```
 ```{r eval = FALSE}
 # Get encounters dischared since Apr 2017
@@ -337,9 +352,10 @@ coverage <- data_coverage(
 ```
 
 ```{r echo = FALSE, warning = FALSE}
-load("../data/dummy_data_coverage.rda")
-print(coverage$timeline_plot)
+knitr::include_graphics("figures/coverage_timeline_plot.png")
 ```
+
+<br></br>
 
 **Let's inspect this plot. What should you look out for?**
 
@@ -368,8 +384,9 @@ coverage[[1]] # = coverage$coverage_flag_enc
 ```
 
 ```{r echo = FALSE, results = 'asis'}
+load("../data/dummy_data_coverage.rda")
 cat("<div style='font-size: 10px;'>")
-coverage[[1]][1:10] %>%
+coverage[[1]] %>%
   knitr::kable(format = "html", escape = TRUE)
 cat("</div>")
 ```
@@ -384,7 +401,7 @@ coverage[[2]] # = coverage$timeline_data
 
 ```{r echo = FALSE, results = 'asis'}
 cat("<div style='font-size: 10px;'>")
-coverage[[2]][1:10] %>%
+coverage[[2]] %>%
   knitr::kable(format = "html", escape = TRUE)
 cat("</div>")
 ```
@@ -395,7 +412,7 @@ cat("</div>")
 
   For example, you could customize the title of the plot and move the legend position:
 
-```{r}
+```{r eval = FALSE}
 coverage[[3]] + # = coverage$timeline_plot
   ggtitle("Data coverage exploration\n\n", subtitle = "GEMINI project XYZ") +
   theme(legend.position = "top")
@@ -426,11 +443,10 @@ coverage <- data_coverage(
 ```
 
 ```{r echo = FALSE}
-print(coverage2$coverage_plot$transfusion)
+knitr::include_graphics("figures/coverage_plot.png")
 ```
 
 <br></br>
-
 
 **Let's inspect this plot. What should you look out for?**
 
@@ -475,7 +491,7 @@ coverage[[2]] # = coverage$coverage_data
 
 ```{r echo = FALSE, results = 'asis'}
 cat("<div style='font-size: 10px;'>")
-coverage2[[2]][1:10] %>%
+coverage2[[2]] %>%
   knitr::kable(format = "html", escape = TRUE)
 cat("</div>")
 ```
@@ -504,39 +520,38 @@ coverage <- data_coverage(
 ```
 
 ```{r echo = FALSE}
-print(coverage_cust1)
+knitr::include_graphics("figures/coverage_custom_plot1.png")
 ```
 
 <br></br>
 
 ## `custom_dates`
 
+In some cases, users may want to provide customized timelines for a given hospital\*table combination to apply further inclusions/exclusions (e.g., due to data quality issues, column-level missingness, etc.). For example, let's say you identified a data quality issue with lab data at hospital 4 for discharge dates prior to April 2019 and now only want to include encounters that were discharged after that date. This can be achieved by providing a `custom_dates` input to `data_coverage()`, which will overwrite the rows for the corresponding hospital\*table combinations in the `lookup_data_coverage` table. As a result, the encounter-level flags and timeline plot will be adjusted according to the user-specified dates. Note that the coverage plot (see [above](#coverage_plot)) is not affected by the `custom_dates` input.
+
 ```{r eval = FALSE}
-##### Custom dates
-custom_dates2 <- data.table(
+# define customized dates
+custom_dates <- data.table(
   data = c("lab"),
   hospital_num = c(4),
-  hospital_id = c("HHCO"),
   min_date = as.Date("2019-04-01"),
   max_date = as.Date("2023-06-30")
 )
 
-custom_dates <- rbind(custom_dates, custom_dates2, fill = TRUE)
-
-coverage_cust2 <- data_coverage(
-  dbcon, cohort,
+coverage <- data_coverage(
+  db = dbcon,
+  cohort = admdad_subset,
   table = c("lab"),
   plot_timeline = TRUE,
   plot_coverage = FALSE,
-  custom_dates = custom_dates,
-  hospital_label = "hosp"
-)$timeline_plot
+  custom_dates = custom_dates
+)
 ```
-
 
 ```{r echo = FALSE}
-print(coverage_cust2 + ggtitle("Data timeline for 'lab' table with customized dates for site 4\n"))
+knitr::include_graphics("figures/coverage_custom_plot2.png")
 ```
+
 
 <br></br>
 
