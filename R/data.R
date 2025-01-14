@@ -31,3 +31,10 @@ NULL
 #' @name mapping_disability
 #' @docType data
 NULL
+
+
+#' Dummy data for `data_coverage` function
+#'
+#' @name dummy_data_coverage
+#' @docType data
+NULL
