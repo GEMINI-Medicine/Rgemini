@@ -98,14 +98,15 @@ cat("</div>")
 
 - The min/max dates in each row correspond to the start/end date of a single data coverage period by hospital\*table.
 - Hospital\*table combinations with interrupted timelines are shown across multiple rows (e.g., 3 rows for lab data at site 8).
-- Gaps in data coverage are defined as a period of > 28 days without any data.
+- Gaps in data coverage are defined as a period of >28 days without any data.
+- Rows where the dates are `NA` indicate hospital\*table combinations for which GEMINI does not have any data at all. This could either mean that the data are not relevant to a given site (e.g., hospital 6 does not have an ICU) or that the data could not be successfully extracted.
 - Encounters with a discharge date within the listed min-max periods are assumed to have ***at least some*** data coverage for that table, although coverage may still be low (see [plot_coverage](#plot_coverage) below).
 - The `additional_info` column contains information that may be helpful when interpreting the output of the `data_coverage()` function.
 
 <br></br>
 
 <strong style="color:red;">WARNING: </strong>
-**Our threshold for data coverage is currently extremely low!** We assume that there is **some** data coverage if there is **at least 1 `genc_id`** with an entry in a given table. This does not tell us how high data coverage actually is (e.g., was there only 1 `genc_id` or 1,000 `genc_ids` with an entry in a given table?). Additionally, the definition only considers gaps > 28 days, and does not exclude time periods with shorter gaps. Therefore, users should only use this lookup table (and the accompanying `data_coverage()` function) as a starting point - to exclude time periods where GEMINI did not receive any data at all. We highly recommend performing additional coverage checks, in combination with data quality assessments.
+**Our threshold for data coverage is currently extremely low!** We assume that there is **some** data coverage if there is **at least 1 `genc_id`** with an entry in a given table. This does not tell us how high data coverage actually is (e.g., was there only 1 `genc_id` or 1,000 `genc_ids` with an entry in a given table?). Additionally, the definition only considers gaps >28 days, and does not exclude time periods with shorter gaps. Therefore, users should only use this lookup table (and the accompanying `data_coverage()` function) as a starting point - to exclude time periods where GEMINI did not receive any data at all. We highly recommend performing additional coverage checks, in combination with data quality assessments.
 
 <br></br><br></br>
 
