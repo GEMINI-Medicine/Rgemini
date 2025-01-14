@@ -395,7 +395,7 @@ data_coverage <- function(dbcon,
       "given encounter was discharged during a time period where *some* `",
       paste(table[!grepl("admdad", table)], collapse = "`/`"),
       "` data were available. This DOES NOT necessarily mean that each ",
-      "individual genc_id where the flag is TRUE has an entry in the `",
+      "individual `genc_id` where the flag is TRUE has an entry in the `",
       paste(table[!grepl("admdad", table)], collapse = "`/`"),
       "` table because 1) data coverage may still be low (see `plot_coverage`)",
       " and 2) for some tables, we would not expect all `genc_ids` to have an ",
@@ -687,7 +687,7 @@ data_coverage <- function(dbcon,
     if (as_plotly == TRUE && system.file(package = "plotly") != "") {
       if (!is.null(hospital_group) && n_tables > 1) {
         stop(paste(
-          "Please set `as_plotly` to false when providing",
+          "Please set `as_plotly` to `FALSE` when providing",
           "a `hospital_group` input and multiple entries for `table`. The",
           "resulting plot contains multiple subplots, which is currently not",
           "supported by `plotly`."
