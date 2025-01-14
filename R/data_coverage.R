@@ -237,15 +237,15 @@ data_coverage <- function(dbcon,
       # when grouping by hospital & group, should result in same
       # nrows as grouping by hospital ID alone
       nrow(cohort %>%
-          dplyr::select(all_of(c(hosp_var, hospital_group))) %>%
-          distinct()) != length(unique(cohort[, get(hosp_var)]))
-      ) {
-        stop(paste(
-          "Please make sure the `hospital_group` variable is a hospital",
-          "grouping variable that has a 1:1 relationship with the",
-          "hospital identifier (e.g., hospital_num)."
-          ))
-      }
+        dplyr::select(all_of(c(hosp_var, hospital_group))) %>%
+        distinct()) != length(unique(cohort[, get(hosp_var)]))
+    ) {
+      stop(paste(
+        "Please make sure the `hospital_group` variable is a hospital",
+        "grouping variable that has a 1:1 relationship with the",
+        "hospital identifier (e.g., hospital_num)."
+      ))
+    }
   }
 
   # check that custom_dates has correct format
@@ -276,8 +276,7 @@ data_coverage <- function(dbcon,
       dbGetQuery(
         dbcon, paste0(
           "SELECT * FROM ", lookup_table_name,
-          " WHERE data in ('", paste(table, collapse = "', '"), "')",
-          " AND ", hosp_var, " in ('", paste(unique(cohort[, get(hosp_var)]), collapse = "', '"),
+          " WHERE ", hosp_var, " in ('", paste(unique(cohort[, get(hosp_var)]), collapse = "', '"),
           "');"
         )
       ) %>% data.table()
@@ -286,6 +285,7 @@ data_coverage <- function(dbcon,
       stop("The version of the database you are working with does not contain a data coverage table. Please reach out to the GEMINI team for further support.")
     }
   )
+
 
   ## Preprocess lookup table
   data_coverage_lookup[, min_date := as.Date(min_date)]
@@ -339,6 +339,7 @@ data_coverage <- function(dbcon,
     table,
     argtype = "character", categories = unique(data_coverage_lookup$data)
   )
+  data_coverage_lookup <- data_coverage_lookup[data %in% table, ]
 
   # prepare encounter-level output table
   coverage_flag_enc <- cohort %>%
@@ -520,9 +521,11 @@ data_coverage <- function(dbcon,
     )]
 
     # remove rows that are completely outside date range in cohort
-    timeline_data <- timeline_data[is.na(min_date) |
-      (max_date >= min(as.Date(cohort$discharge_date_time)) &
-        min_date <= max(as.Date(cohort$discharge_date_time)))]
+    timeline_data[
+      (max_date <= min(as.Date(cohort$discharge_date_time)) |
+        min_date >= max(as.Date(cohort$discharge_date_time))),
+      `:=`(min_date = NA, max_date = NA)
+    ]
 
     # cap min/max dates in remaining rows according to min/max discharge dates
     timeline_data[
@@ -730,6 +733,7 @@ data_coverage <- function(dbcon,
             func = "n",
             show_overall = FALSE,
             min_n = 1,
+            color_group = hospital_group,
             ...
           ) +
             labs(
@@ -750,6 +754,7 @@ data_coverage <- function(dbcon,
             line_group = hosp_var,
             plot_var = "data_entry",
             show_overall = FALSE,
+            color_group = hospital_group,
             ...
           ) +
             scale_y_continuous(
@@ -819,7 +824,7 @@ data_coverage <- function(dbcon,
     arrange(get(hosp_var))
 
   if (nrow(addtl_info) > 0) {
-    cat("The following hospital-level information may be helpful when checking data coverage:")
+    cat("The following hospital-level information may be helpful when checking data coverage:\n")
     print(addtl_info)
   }
 
