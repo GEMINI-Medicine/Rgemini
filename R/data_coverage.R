@@ -114,10 +114,10 @@
 #'  )`
 #'
 #' This will overwrite the `min_date`/`max_date` values for site 104
-#' transfusion data in the `lookup_data_coverage` table (data for all
-#' other hospital*table combinations will remain the same). Additionally, the
-#' coverage flags by `genc_id` (in returned `coverage_flag_enc`) and timeline plot
-#' (see `plot_timeline`) will be adjusted according to the user-provided dates.
+#' transfusion data in the `lookup_data_coverage` table (data for all other
+#' hospital*table combinations will remain the same). Additionally, the coverage
+#' flags by `genc_id` (in returned `coverage_flag_enc`) and timeline plot (see
+#' `plot_timeline`) will be adjusted according to the user-provided dates.
 #' The coverage plot (see `plot_coverage`) is not affected by the user-specified
 #' the `custom_dates` input.
 #'
@@ -135,8 +135,8 @@
 #' - `time_int`: Time interval used to aggregate data (e.g., by `"month"`
 #' = default, `"quarter"`, or `"year"`)
 #' - `ylimits`: Limits of y-axis (e.g., `c(0, 50)`)
-#' - `scales`: Passed to facet wrap to control if y-scales are `"fixed"` (default)
-#' or `"free"` (only works if no `ylimits` specified)
+#' - `scales`: Passed to facet wrap to control if y-scales are `"fixed"`
+#' (default) or `"free"` (only works if no `ylimits` specified)
 #'
 #' @import RPostgreSQL ggplot2
 #'
@@ -276,13 +276,18 @@ data_coverage <- function(dbcon,
       dbGetQuery(
         dbcon, paste0(
           "SELECT * FROM ", lookup_table_name,
-          " WHERE ", hosp_var, " in ('", paste(unique(cohort[, get(hosp_var)]), collapse = "', '"),
+          " WHERE ", hosp_var, " in ('",
+          paste(unique(cohort[, get(hosp_var)]), collapse = "', '"),
           "');"
         )
       ) %>% data.table()
     },
     warning = function(e) {
-      stop("The version of the database you are working with does not contain a data coverage table. Please reach out to the GEMINI team for further support.")
+      stop(paste(
+        "The version of the database you are working with does not contain",
+        "a data coverage table. Please reach out to the GEMINI team for",
+        "further support."
+      ))
     }
   )
 
@@ -325,7 +330,10 @@ data_coverage <- function(dbcon,
     ) %>% distinct()
 
     # add addtl info (if any) for overwritten entries
-    data_coverage_lookup[, additional_info := addtl_info[.SD, additional_info, on = c(hosp_var, "data")]]
+    data_coverage_lookup[, additional_info := addtl_info[
+      .SD, additional_info,
+      on = c(hosp_var, "data")
+    ]]
   }
 
   # add _subset suffix if relevant (for HPC users)
@@ -391,8 +399,10 @@ data_coverage <- function(dbcon,
       paste(table[!grepl("admdad", table)], collapse = "`/`"),
       "` table because 1) data coverage may still be low (see `plot_coverage`)",
       " and 2) for some tables, we would not expect all `genc_ids` to have an ",
-      "entry even if data coverage is generally high (e.g., not all encounters receive an imaging test so not all `genc_ids`",
-      " have an entry in the radiology table even if `radiology = TRUE` in the returned output). Additionally, even if the data coverage flag is ",
+      "entry even if data coverage is generally high (e.g., not all encounters ",
+      "receive an imaging test so not all `genc_ids` have an entry in the ",
+      "radiology table even if `radiology = TRUE` in the returned output). ",
+      "Additionally, even if the data coverage flag is ",
       "`TRUE`, it does not mean that all data are available throughout the ",
       "whole length of stay of a given encounter, nor that all individual ",
       "columns are fully available/of high quality. Users are advised to ",
@@ -492,7 +502,11 @@ data_coverage <- function(dbcon,
 
     # merge in hospital label from cohort table to be used in plots (if any)
     if (!is.null(hospital_label)) {
-      timeline_data[cohort, on = c("hospital" = hosp_var), hospital_label := get(hospital_label)]
+      timeline_data[
+        cohort,
+        on = c("hospital" = hosp_var),
+        hospital_label := get(hospital_label)
+      ]
       timeline_data[, hospital := hospital_label]
       timeline_data$hospital_label <- NULL
     }
@@ -500,7 +514,10 @@ data_coverage <- function(dbcon,
     # make sure data & hospital are factors
     timeline_data[, data := factor(data, levels = unique(table))]
     if (!"factor" %in% class(timeline_data$hospital)) {
-      timeline_data[, hospital := factor(hospital, levels = sort(unique(hospital)))]
+      timeline_data[, hospital := factor(
+        hospital,
+        levels = sort(unique(hospital))
+      )]
     }
 
     # offset y based on number of hospitals & tables to be plotted
@@ -510,14 +527,17 @@ data_coverage <- function(dbcon,
       # therefore, we need to create a new index WITHIN each hospital group
       # to make sure hospitals are shown in subsequent rows within each subplot
       timeline_data[, idx := .GRP, by = c(hospital_group, "hospital")]
-      timeline_data[, idx := match(hospital, unique(hospital)), by = hospital_group]
+      timeline_data[, idx := match(
+        hospital, unique(hospital)
+      ), by = hospital_group]
     } else {
       # if no hospital grouping, simply arrange hospitals by hosp_var
       # i.e., each row/bar is a single hospital*table combination
       timeline_data[, idx := hospital]
     }
     timeline_data[, y := (
-      -as.numeric(idx) - (as.numeric(data) - 1) * (2 * 0.25) / n_tables + (n_tables - 1) * 0.25 / n_tables
+      -as.numeric(idx) - (as.numeric(data) - 1) * (2 * 0.25) /
+        n_tables + (n_tables - 1) * 0.25 / n_tables
     )]
 
     # remove rows that are completely outside date range in cohort
@@ -556,23 +576,34 @@ data_coverage <- function(dbcon,
       if (missing(hosp_group)) {
         timeline_data_subset <- timeline_data
       } else {
-        timeline_data_subset <- timeline_data[(get(hospital_group)) == hosp_group]
+        timeline_data_subset <- timeline_data[
+          (get(hospital_group)) == hosp_group
+        ]
       }
       timeline_data_subset <- timeline_data_subset %>%
         arrange(hospital) %>%
         data.table()
-      
+
       timeline_plot <-
         ggplot(timeline_data_subset, aes(
           xmin = min_date, xmax = max_date_plot, ymin = y - 0.25 / n_tables,
           ymax = y + 0.25 / n_tables,
-          fill = if (length(table) == 1 & !is.null(hospital_group)) get(hospital_group) else data,
+          fill = if (
+            length(table) == 1 & !is.null(hospital_group)
+          ) {
+            get(hospital_group)
+          } else {
+            data
+          },
           label = hospital,
           label2 = min_date, label3 = max_date # for ggplotly labels
         )) +
         geom_rect(show.legend = length(table) > 1 | !is.null(hospital_group)) +
         scale_y_continuous(
-          name = "Hospital", breaks = seq(-1, -length(unique(as.numeric(timeline_data_subset$hospital))), -1),
+          name = "Hospital",
+          breaks = seq(-1, -length(
+            unique(as.numeric(timeline_data_subset$hospital))
+          ), -1),
           labels = unique(timeline_data_subset$hospital),
           expand = c(0.01, 0.01)
         ) +
@@ -588,22 +619,46 @@ data_coverage <- function(dbcon,
           ),
           expand = c(0, 0)
         ) +
-        scale_fill_manual(values = if ("colors" %in% names(args)) args$colors else gemini_colors()) +
+        scale_fill_manual(values = if (
+          "colors" %in% names(args)
+        ) {
+          args$colors
+        } else {
+          gemini_colors()
+        }) +
         labs(
           title = "Data Timeline by Hospital & Table\n",
-          fill = if (length(table) == 1 & !is.null(hospital_group)) fix_var_str(hospital_group) else if (length(table) > 1) "Table"
+          fill = if (
+            length(table) == 1 & !is.null(hospital_group)
+          ) {
+            fix_var_str(hospital_group)
+          } else if (length(table) > 1) "Table"
         ) +
-        plot_theme(base_size = ifelse("base_size" %in% names(args), args$base_size, 12)) +
-        theme(plot.margin = if (length(table) == 1 & !is.null(hospital_group)) margin(t = 20, 5, 5, 5) else (margin(5, 5, 5, 5)),
+        plot_theme(
+          base_size = ifelse("base_size" %in% names(args), args$base_size, 12)
+        ) +
+        theme(
+          plot.margin = if (
+            length(table) == 1 & !is.null(hospital_group)
+          ) {
+            margin(t = 20, 5, 5, 5)
+          } else {
+            (margin(5, 5, 5, 5))
+          },
           axis.text.x = element_text(angle = 60, hjust = 1),
           legend.key.height = unit(0.02, "npc"),
-          plot.title = element_text(vjust = if (length(table) == 1 & !is.null(hospital_group)) 0.5 else 1)
+          plot.title = element_text(vjust = if (
+            length(table) == 1 & !is.null(hospital_group)
+          ) {
+            0.5
+          } else {
+            1
+          })
         )
-    
     }
 
     # create multiple subplots per hospital_group
-    # (only if plotting multiple tables, if not, just color-code by hospital)    
+    # (only if plotting multiple tables, if not, just color-code by hospital)
     if (!is.null(hospital_group) && n_tables > 1) {
       group_levels <- unique(timeline_data[, get(hospital_group)])
       # get number of hospitals per grouping level to adjust height
@@ -615,8 +670,8 @@ data_coverage <- function(dbcon,
         summarize(N = as.numeric(n())) %>%
         data.table()
       # correct spacing issue: # first plot always appears to be a bit bigger...
-      n_hosp[1, N := N / 1.2] 
-            
+      n_hosp[1, N := N / 1.2]
+
       sub_figs <- lapply(group_levels, create_timeline_plot)
       timeline_plot <- suppressWarnings(ggpubr::ggarrange(
         plotlist = sub_figs[!sapply(sub_figs, is.null)],
@@ -641,7 +696,9 @@ data_coverage <- function(dbcon,
       print(plotly::ggplotly(timeline_plot))
     } else {
       if (as_plotly == TRUE && system.file(package = "plotly") == "") {
-        warning("Package `plotly` not installed. Returning figures as ggplots instead.")
+        warning(
+          "Package `plotly` not installed. Returning figures as ggplots."
+        )
       }
       suppressWarnings(print(timeline_plot))
     }
@@ -650,10 +707,11 @@ data_coverage <- function(dbcon,
     if (plot_coverage == FALSE) {
       warning(paste(
         "The \"Data Timeline\" plot only provides a rough overview of time",
-        "periods with *some* available data. Please carefully inspect data coverage",
-        "by running `data_coverage(..., plot_coverage = TRUE)` and check the",
-        "% of encounters with data coverage per month and hospital to gain",
-        "more detailed insights into potential gaps/drops in data coverage.\n\n"
+        "periods with *some* available data. Please carefully inspect data",
+        "coverage by running `data_coverage(..., plot_coverage = TRUE)` and",
+        "check the % of encounters with data coverage per month and hospital",
+        "to gain more detailed insights into potential gaps/drops in data",
+        "coverage.\n\n"
       ), immediate. = TRUE)
     }
   }
@@ -771,11 +829,15 @@ data_coverage <- function(dbcon,
 
       # show figure as plotly?
       if (as_plotly == TRUE && system.file(package = "plotly") != "") {
-        print(plotly::ggplotly(coverage_plot, tooltip = c("get(time_int)", "outcome")) %>%
-          plotly::style(showlegend = FALSE))
+        print(
+          plotly::ggplotly(coverage_plot, tooltip = c("get(time_int)", "outcome")) %>%
+            plotly::style(showlegend = FALSE)
+        )
       } else {
         if (as_plotly == TRUE && system.file(package = "plotly") == "") {
-          warning("Package `plotly` not installed. Returning figures as ggplots instead.")
+          warning(
+            "Package `plotly` not installed. Returning figures as ggplots."
+          )
         }
         print(coverage_plot)
       }
@@ -796,7 +858,12 @@ data_coverage <- function(dbcon,
     } else {
       # extract coverage data from list and merge all tables into 1
       coverage_data <- do.call(function(...) {
-        Reduce(function(x, y) merge(x, y, by = intersect(names(x), names(y))), list(...))
+        Reduce(function(x, y) {
+          merge(
+            x, y,
+            by = intersect(names(x), names(y))
+          )
+        }, list(...))
       }, sapply(coverage, function(x) x[["data"]], simplify = FALSE))
     }
     # combine all coverage plots into single list
@@ -806,18 +873,20 @@ data_coverage <- function(dbcon,
     cat("\n")
 
     if (!all(grepl("admdad", table))) {
-      warning(paste0(
-        "The coverage plots show data coverage by *discharge* month. ",
-        "For clinical variables, users are advised to also plot coverage by the ",
-        "respective clinical date-time variables (e.g., `collection_date_time` ",
+      warning(paste(
+        "The coverage plots show data coverage by *discharge* month. For",
+        "clinical variables, users are advised to also plot coverage by the",
+        "respective clinical date-time variables (e.g., `collection_date_time`",
         "for lab data).\n\n"
       ), immediate. = TRUE)
     }
   }
 
-  # print additional information from lookup table (only for clean DB v3/H4H v4 and newer)
+  # print additional information from lookup table
+  # (only for clean DB v3/H4H v4 and newer)
   addtl_info <- data_coverage_lookup[
-    data %in% table & get(hosp_var) %in% unique(cohort[[hosp_var]]) & !is.na(additional_info) & additional_info != ""
+    data %in% table & get(hosp_var) %in% unique(cohort[[hosp_var]]) &
+      !is.na(additional_info) & additional_info != ""
   ] %>%
     dplyr::select(all_of(c(hosp_var, "additional_info"))) %>%
     distinct() %>%
@@ -835,7 +904,6 @@ data_coverage <- function(dbcon,
   } else {
     output <- list()
     output[["coverage_flag_enc"]] <- coverage_flag_enc
-    # output[["data"]]$coverage_flag_enc <- coverage_flag_enc
     if (plot_timeline == TRUE) {
       output[["timeline_data"]] <- timeline_data[, -c("y", "max_date_plot", "idx")]
       output[["timeline_plot"]] <- timeline_plot
@@ -843,8 +911,6 @@ data_coverage <- function(dbcon,
     if (plot_coverage == TRUE) {
       output[["coverage_data"]] <- coverage_data
       output[["coverage_plot"]] <- coverage_plot
-      # output[["data"]]$coverage_data <- coverage_data
-      # output[["plots"]]$coverage_plot <- coverage_plot
     }
     return(output)
   }
