@@ -897,7 +897,6 @@ data_coverage <- function(dbcon,
     print(addtl_info)
   }
 
-
   # return relevant tables/plots based on user-provided input
   if (plot_timeline == FALSE && plot_coverage == FALSE) {
     return(coverage_flag_enc)
