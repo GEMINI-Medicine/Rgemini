@@ -18,9 +18,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   warning = FALSE,
   message = FALSE,
-  fig.width = 8,
-  fig.height = 5,
-  out.width = "75%",
+  out.width = "60%",
   comment = "#>"
 )
 library(data.table)
@@ -29,7 +27,7 @@ library(lemon)
 library(ggplot2)
 library(Rgemini)
 library(lubridate)
-#setwd("~/GitHub/Rgemini/vignettes/")
+setwd("~/GitHub/Rgemini/vignettes/")
 ```
 
 *  *  *  *
@@ -52,10 +50,10 @@ If the goal of a project is to compare patients who received a blood transfusion
 
 We need to be able to differentiate between these 2 scenarios to distinguish:
 
-1. ***True negatives:*** I.e., patient did indeed not receive an RBC transfusion, so we can set `transfused` to `FALSE`.
-2. ***Transfusion status unknown:*** I.e., we do not have any data to know whether the patient received a transfusion, so we should set `transfused` to `NA` (or exclude patients without transfusion coverage from the cohort).
+1. ***True negatives:*** I.e., patient did indeed not receive a transfusion, so we can set `transfused` to `FALSE`.
+2. ***Transfusion status unknown:*** I.e., we do not have sufficient data coverage to know whether the patient received a transfusion, so we should set `transfused` to `NA` (or exclude patients without transfusion coverage from the cohort).
 
-Additionally, if the goal is to analyze differences in transfusion practices across hospitals, we also need to check whether there are differences in data coverage timelines across sites. For example, if some hospitals only have transfusion data *before* 2020, whereas other hospitals only have transfusion data *after* 2020, any between-hospital differences we observe may in fact be driven by changes in transfusion practices over time (rather than reflecting true differences between hospitals). We therefore need to carefully consider which hospitals & time periods to include in our analyses, and how to account for differences in data coverage periods in our analyses.
+Additionally, if the goal is to analyze differences in transfusion practices across hospitals, we also need to check whether there are differences in data coverage timelines across sites. For example, if some hospitals only have transfusion data *before* 2020, whereas other hospitals only have transfusion data *after* 2020, any between-hospital differences we observe may in fact be driven by changes in transfusion practices over time (rather than reflecting true differences between hospitals). We therefore need to carefully consider which hospitals & time periods to include in our analyses, and how to account for differences in data coverage periods.
 
 </details>
 <br></br>
@@ -64,9 +62,9 @@ This vignette focuses on data coverage checks at the level of **tables** - not i
 
 <br></br><br></br>
 
-# Data coverage lookup table
+# Data coverage lookup table {#lookup_coverage}
  
-The `data_coverage()` function queries the `lookup_data_coverage` table, which lists the time periods with coverage for each data table and hospital (also see Data Availability plot in the [Data Dictionary](https://geminimedicine.ca/the-gemini-database/)). The min/max dates refer to the range of **discharge dates** (from `admdad`) with data coverage:
+The `data_coverage()` function queries the `lookup_data_coverage` table, which lists the time periods with coverage for each data table and hospital (also see Data Availability plot in the [Data Dictionary](https://geminimedicine.ca/the-gemini-database/)). The min/max dates refer to the range of **discharge dates** (from `admdad`) during which there was **at least 1 `genc_id`** with an entry in a given table:
 
 ```{r eval = FALSE}
 lookup_data_coverage <- dbGetQuery(
@@ -78,12 +76,12 @@ lookup_data_coverage <- dbGetQuery(
 
 ```{r echo = FALSE, results = 'asis'}
 lookup_data_coverage <- data.table(
-  data = c("admdad", "pharmacy", "lab", "radiology", "transfusion", "ipscu", "ipdiagnosis", "er", "physicians"),
-  hospital_num = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
-  hospital_id = c("GRH", "LHSCU", "LHSCV", "HHCO", "HHSH", "HHSJ", "HRH", "PMH", "MKHR"), # just adding this to ensure consistency with plots created below (based on hospital_id)
-  min_date = c("2018-02-01", "2018-10-01", "2019-07-01", "2017-01-01", "2015-04-01", "", "2015-04-01", "", "2016-04-01"),
-  max_date = c("2023-03-31", "2023-06-30", "2023-03-31", "2023-06-30", "2022-05-31", "", "2023-06-30", "", "2023-03-31"),
-  additional_info = c("Hospital opened in February 2018.", "", "", "", "", "Hospital does not have an ICU.", "", "Hospital provides specialized care and does not have an ICU.", "")
+  data = c("admdad", "er", "pharmacy", "radiology", "transfusion", "ipscu", "ipdiagnosis", "lab", "lab", "lab", "physicians"),
+  hospital_num = c(1, 2, 3, 4, 5, 6, 7, 8, 8, 8, 9),
+  hospital_id = c("GRH", "LHSCU", "LHSCV", "HHCO", "HHSH", "HHSJ", "HRH", "PMH", "PMH", "PMH", "MKHR"), # just adding this to ensure consistency with plots created below (based on hospital_id)
+  min_date = c("2018-02-01", "2015-04-01", "2019-07-01", "2017-01-01", "2015-04-01", "", "2015-04-01", "2017-04-01", "2018-12-10", "2022-03-30", "2016-04-01"),
+  max_date = c("2023-03-31", "2023-06-30", "2023-03-31", "2023-06-30", "2022-05-31", "", "2023-06-30", "2018-04-07", "2021-10-15", "2023-03-20", "2023-03-31"),
+  additional_info = c("Hospital opened in February 2018.", "", "", "", "", "Hospital does not have an ICU.", "", "Hospital provides specialized care.", "Hospital provides specialized care.", "Hospital provides specialized care.", "")
 )
 lookup_data_coverage[, min_date := as.Date(min_date)]
 lookup_data_coverage[, max_date := as.Date(max_date)]
@@ -98,64 +96,20 @@ cat("</div>")
 
 **Note:**
 
-- The min/max dates in each row correspond to the start/end date of a single data coverage period by hospital*table.
+- The min/max dates in each row correspond to the start/end date of a single data coverage period by hospital\*table.
+- Hospital\*table combinations with interrupted timelines are shown across multiple rows (e.g., 3 rows for lab data at site 8).
 - Gaps in data coverage are defined as a period of > 28 days without any data.
-- Encounters with a discharge date within the listed min-max periods are assumed to have ***at least some*** data coverage for that table.
-- The `additional_info` column contains information that may be helpful when interpreting the output of the `data_coverage` function.
+- Encounters with a discharge date within the listed min-max periods are assumed to have ***at least some*** data coverage for that table, although coverage may still be low (see [plot_coverage](#plot_coverage) below).
+- The `additional_info` column contains information that may be helpful when interpreting the output of the `data_coverage()` function.
 
 <br></br>
 
 <strong style="color:red;">WARNING: </strong>
-**Our threshold for data coverage is currently extremely low!** We assume that there is **some** data coverage if there is **at least 1 `genc_id`** with an entry in a given table during a 28-day period. It does not tell us how high data coverage actually is (e.g., was there only 1 `genc_id` or 1,000 `genc_ids` with an entry in a given table?). Hence, when filtering by the min/max dates in the `lookup_data_coverage` table, we are simply excluding time periods without ANY data at all. Therefore, users should only use this lookup table as a starting point for data coverage exploration. For a more detailed discussion on how to check the % data coverage, please review the section on [`plot_coverage`](#plot_coverage) below. 
-
+**Our threshold for data coverage is currently extremely low!** We assume that there is **some** data coverage if there is **at least 1 `genc_id`** with an entry in a given table. This does not tell us how high data coverage actually is (e.g., was there only 1 `genc_id` or 1,000 `genc_ids` with an entry in a given table?). Additionally, the definition only considers gaps > 28 days, and does not exclude time periods with shorter gaps. Therefore, users should only use this lookup table (and the accompanying `data_coverage()` function) as a starting point - to exclude time periods where GEMINI did not receive any data at all. We highly recommend performing additional coverage checks, in combination with data quality assessments.
 
 <br></br><br></br>
 
 # How to use `data_coverage()`
-
-## Get encounter-level coverage flag (without plots)
-
-The `data_coverage()` function converts the `lookup_data_coverage` table to an encounter-level table. Let’s say we want to check which encounters in our cohort of interest were discharged during time periods with `lab`, `transfusion`, and `radiology` data coverage:
-
-```{r eval = FALSE}
-# Get encounter-level coverage flags
-coverage <- data_coverage(
-  db, cohort, table = c("lab", "transfusion", "radiology"),
-  plot_timeline = FALSE, plot_coverage = FALSE
-)
-```
-
-> This is an example (dummy version) of the ouput table returned by `data_coverage()`:
-
-```{r echo = FALSE, results = 'asis'}
-coverage <- data.table(
-  genc_id = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
-  hospital = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
-  discharge_date = c("2022-08-12", "2020-12-05", "2019-04-25", "2018-03-30", "2019-07-15", "2021-09-27", "2016-04-03", "2021-11-07", "2023-01-28"),
-  lab = c(TRUE, TRUE, FALSE, TRUE, TRUE, TRUE, FALSE, TRUE, TRUE),
-  transfusion = c(FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, TRUE),
-  radiology = c(TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, TRUE, TRUE, TRUE)
-)
-
-cat("<div style='font-size: 10px;'>")
-coverage %>%
-  knitr::kable(format = "html", escape = TRUE, align = c("c", "c", "c", "c", "c"))
-cat("</div>")
-```
-
-<br></br>
-
-The table contains a flag for each `genc_id` indicating whether that `genc_id` was discharged from a hospital & during a time period where ANY lab/transfusion/radiology data were available (based on the min-max dates in the lookup table). 
-
-**Note:** This does *not* mean that all `genc_ids` where the flag is `TRUE` have an entry in the lab/transfusion/radiology table (e.g., not all encounters receive a transfusion). It simply means that for `genc_ids` where the flag is `TRUE`, we can now perform additional analyses of the lab/transfusion/radiology table (e.g., to derive whether or not the encounter received a transfusion). By contrast, for `genc_ids` where the flag is `FALSE`, we do not have sufficient data coverage to infer whether the encounter received a lab/imaging test or transfusion. Therefore, these `genc_ids` should be excluded (or set to `NA`) for any analyses relying on lab/transfusion/radiology data.
-
-<br></br>
-
-## Plot data timelines by table & hospital
-
-To plot the data timelines by hospital & table, you can set the `plot_timeline` input to `TRUE`, which will result in a plot similar to the “Data Availability” plot in the data dictionary. However, the plot returned by this function is customized to the input cohort (e.g., time periods/hospitals of interest) and specific tables that are relevant for your analyses.
-
-For example, let's say we are interested in the data timelines for the `admdad`, `lab`, and `ipscu` table for encounters discharged since April 2017:
 
 ```{r include = FALSE, eval = FALSE}
 library(DBI)
@@ -176,18 +130,19 @@ dbcon <- DBI::dbConnect(drv,
 cohort <- dbGetQuery(dbcon, "SELECT genc_id, discharge_date_time, hospital_id FROM admdad WHERE discharge_date_time >= '2017-04-01 00:00';") %>% data.table()
 
 # assign hosp num from 1-X
-cohort[, hosp := lookup_data_coverage[.SD, hospital_num, on = "hospital_id"]]
+hosp_lookup <- lookup_data_coverage[, .(hospital_num, hospital_id)] %>% distinct()
+cohort[, hosp := hosp_lookup[.SD, hospital_num, on = "hospital_id"]]
 cohort[, hosp := factor(hosp, levels = unique(sort(cohort$hosp)))]
 cohort <- cohort[as.numeric(hosp) <= 9]
 # cohort[, .(hospital_id, hosp)] %>% distinct()
 
 # append additional rows to ensure consistency with dummy lookup coverage above & internally valid (e.g., lab coverage can't be longer than admdad etc.)
 custom_dates <- data.table(
-  data = c("lab", "ipscu", "admdad", "ipscu", "lab", "lab", "lab", "admdad", "ipscu", "lab"),
-  hospital_num = c(1, 1, 8, 8, 8, 8, 8, 9, 9, 9),
-  hospital_id = c("GRH", "GRH", "PMH", "PMH", "PMH", "PMH", "PMH", "MKHR", "MKHR", "MKHR"),
-  min_date = c("2018-02-01", "2018-02-01", "2015-04-01", "", "2017-09-01", "2018-06-01", "2022-04-01", "2015-04-01", "2015-04-01", "2020-04-01"),
-  max_date = c("2023-03-31", "2023-03-31", "2023-03-31", "", "2018-03-31", "2021-10-15", "2023-01-31", "2023-03-31", "2023-03-31", "2023-03-31")
+  data = c("lab", "ipscu", "lab", "admdad", "ipscu", "admdad", "ipscu", "lab"),
+  hospital_num = c(1, 1, 4, 8, 8, 9, 9, 9),
+  hospital_id = c("GRH", "GRH", "HHCO", "PMH", "PMH", "MKHR", "MKHR", "MKHR"),
+  min_date = c("2018-02-01", "2018-02-01", "2018-04-01", "2015-04-01", "", "2015-04-01", "2015-04-01", "2020-04-01"),
+  max_date = c("2023-03-31", "2023-03-31", "2023-06-30", "2023-03-31", "", "2023-03-31", "2023-03-31", "2023-03-31")
 )
 custom_dates[, min_date := as.Date(min_date)]
 custom_dates[, max_date := as.Date(max_date)]
@@ -200,28 +155,57 @@ source("~/GitHub/Rgemini/R/utils.R")
 source("~/GitHub/Rgemini/R/plot_over_time.R")
 
 ##############################
+## for encounter-level flag example
+coverage_enc <- data_coverage(
+  dbcon, cohort, c("lab", "transfusion", "radiology"),
+  plot_timeline = FALSE, plot_coverage = FALSE,
+  custom_dates = custom_dates,
+  hospital_label = "hosp"
+)
+set.seed(3)
+coverage_enc_new <- coverage_enc[lab == FALSE | transfusion == FALSE | radiology == FALSE] %>%
+  group_by(hosp) %>%
+  slice_sample(n = 1) %>%
+  ungroup() %>%
+  data.table()
+set.seed(1)
+coverage_enc_new2 <- coverage_enc[!hosp %in% coverage_enc_new$hosp] %>%
+  group_by(hosp) %>%
+  slice_sample(n = 1) %>%
+  ungroup() %>%
+  data.table()
+coverage_enc <- rbind(coverage_enc_new, coverage_enc_new2) %>%
+  arrange(hosp) %>%
+  data.table()
+
+coverage_enc[, genc_id := 1:length(unique(genc_id))]
+coverage_enc$hospital_id <- NULL
+setnames(coverage_enc, "hosp", "hospital_num")
+
+##############################
 ## for timeline_plot example
-coverage <- data_coverage(
+coverage_timeline <- data_coverage(
   dbcon, cohort, c("admdad", "ipscu", "lab"),
   plot_timeline = TRUE, plot_coverage = FALSE,
   custom_dates = custom_dates,
   hospital_label = "hosp"
 )
 
+
 # save timeline plot as png
-ggsave("~/GitHub/Rgemini/vignettes/figures/coverage_timeline_plot.png")
-coverage$timeline_plot <- data.frame()
+ggsave("~/GitHub/Rgemini/vignettes/figures/coverage_timeline_plot.png", width = 8, height = 5)
+coverage_timeline$timeline_plot <- data.frame()
 
 # rename columns for output shown below
-coverage$timeline_data$hospital_num <- NULL
-setnames(coverage$timeline_data, "hospital", "hospital_num")
-coverage$timeline_data <- coverage$timeline_data[order(hospital_num)][1:10]
+coverage_timeline$timeline_data$hospital_num <- NULL
+setnames(coverage_timeline$timeline_data, "hospital", "hospital_num")
+coverage_timeline$timeline_data <- coverage_timeline$timeline_data[order(hospital_num)][1:10]
 
-coverage$coverage_flag_enc$hospital_id <- NULL
-setnames(coverage$coverage_flag_enc, "hosp", "hospital_num")
-coverage$coverage_flag_enc <- coverage$coverage_flag_enc[seq_len(nrow(coverage$coverage_flag_enc)) < 20 & admdad == TRUE]
-coverage$coverage_flag_enc[, genc_id := 1:length(unique(genc_id))]
-coverage$coverage_flag_enc <- coverage$coverage_flag_enc[1:10]
+coverage_timeline$coverage_flag_enc$hospital_id <- NULL
+setnames(coverage_timeline$coverage_flag_enc, "hosp", "hospital_num")
+coverage_timeline$coverage_flag_enc <- coverage_timeline$coverage_flag_enc[seq_len(nrow(coverage_timeline$coverage_flag_enc)) < 20 & admdad == TRUE]
+coverage_timeline$coverage_flag_enc[, genc_id := 1:length(unique(genc_id))]
+coverage_timeline$coverage_flag_enc <- coverage_timeline$coverage_flag_enc[1:10]
 
 ##############################
 ## for coverage_plot example
@@ -233,6 +217,18 @@ cohort[, excl := hospital_id == "HRH" & genc_id %in% transf$genc_id &
 ((discharge_date_time > "2019-01-07" & discharge_date_time < "2019-02-10") |
 (discharge_date_time > "2019-02-20" & discharge_date_time < "2019-03-15") | 
 (discharge_date_time > "2019-03-20" & discharge_date_time < "2019-04-05"))]
+cohort <- cohort[excl == FALSE, ]
+
+# remove some genc_ids with transfusions from sites 4 & 9 to align transfusion & lab availability (more realistic)
+transf <- dbGetQuery(dbcon, "SELECT genc_id FROM transfusion WHERE hospital_id = 'HHCO';") %>%
+  data.table()
+cohort[, excl := hospital_id == "HHCO" & genc_id %in% transf$genc_id &
+  discharge_date_time < "2018-04-01"]
+cohort <- cohort[excl == FALSE, ]
+transf <- dbGetQuery(dbcon, "SELECT genc_id FROM transfusion WHERE hospital_id = 'MKHR';") %>%
+  data.table()
+cohort[, excl := hospital_id == "MKHR" & genc_id %in% transf$genc_id &
+  discharge_date_time < "2020-04-01"]
 cohort <- cohort[excl == FALSE, ]
 
 # remove some genc_ids with transfusions from site 8 to imitate overall low coverage
@@ -263,7 +259,7 @@ transf <- dbGetQuery(dbcon, "SELECT genc_id FROM transfusion WHERE hospital_id =
 cohort[, excl := hospital_id == "LHSCU" & genc_id %in% transf$genc_id & as.numeric(substr(cohort$discharge_date_time, 9, 10)) < (month(discharge_date_time) + (year(discharge_date_time) - 2019) * 12) / 4]
 cohort <- cohort[excl == FALSE, ]
 
-coverage2 <- data_coverage(
+coverage <- data_coverage(
   dbcon, cohort,
   table = c("transfusion"),
   plot_timeline = FALSE,
@@ -273,14 +269,14 @@ coverage2 <- data_coverage(
 )
 
 # save timeline plot as png
-ggsave("~/GitHub/Rgemini/vignettes/figures/coverage_plot.png")
-coverage2$coverage_plot <- data.frame()
+ggsave("~/GitHub/Rgemini/vignettes/figures/coverage_plot.png", width = 8, height = 5)
+coverage$coverage_plot <- data.frame()
 
-coverage2[[2]]$hospital_id <- NULL
-setnames(coverage2[[2]], "hosp", "hospital_num")
-coverage2[[2]] <- coverage2[[2]][1:10]
-coverage2[[2]] <- coverage2[[2]][order(discharge_month, hospital_num)]
-coverage2[[1]] <- data.table()
+coverage[[2]]$hospital_id <- NULL
+setnames(coverage[[2]], "hosp", "hospital_num")
+coverage[[2]] <- coverage[[2]][1:10]
+coverage[[2]] <- coverage[[2]][order(discharge_month, hospital_num)]
+coverage[[1]] <- data.table()
 
 
 ##################################################
@@ -308,7 +304,7 @@ coverage_cust1 <- data_coverage(
   hospital_group = "hospital_type",
   colors = gemini_colors(3)
 )$timeline_plot
-ggsave("~/GitHub/Rgemini/vignettes/figures/coverage_custom_plot1.png")
+ggsave("~/GitHub/Rgemini/vignettes/figures/coverage_custom_plot1.png", width = 8, height = 5)
 
 
 ##### Custom dates
@@ -332,14 +328,62 @@ coverage_cust2 <- data_coverage(
 )$timeline_plot +
   ggtitle("Data timeline for 'lab' table with customized dates for site 4\n")
 
-ggsave("~/GitHub/Rgemini/vignettes/figures/coverage_custom_plot2.png")
+ggsave("~/GitHub/Rgemini/vignettes/figures/coverage_custom_plot2.png", width = 8, height = 5)
 
 # save data to data folder
-save(coverage, coverage2, file = "~/GitHub/Rgemini/data/dummy_data_coverage.rda")
+save(coverage_enc, coverage_timeline, coverage, file = "~/GitHub/Rgemini/data/dummy_data_coverage.rda")
 ```
+
+```{r echo = FALSE}
+# load saved data for examples below
+load("../data/dummy_data_coverage.rda")
+```
+
+
+## Get encounter-level coverage flag (without plots)
+
+The `data_coverage()` function converts the `lookup_data_coverage` table to an encounter-level table. Let’s say we want to check which encounters in `admdad` were discharged during time periods with any `lab`, `transfusion`, and `radiology` data coverage:
+
 ```{r eval = FALSE}
-# Get encounters dischared since Apr 2017
-admdad_subset <- admdad[discharge_date_time > "2017-04-01 00:00", ]
+# Get encounter-level coverage flags
+coverage <- data_coverage(
+  dbcon = db,
+  cohort = admdad,
+  table = c("lab", "transfusion", "radiology"),
+  plot_timeline = FALSE,
+  plot_coverage = FALSE
+)
+```
+
+> This is an example (dummy version) of the ouput table returned by `data_coverage()`:
+
+```{r echo = FALSE, results = 'asis'}
+cat("<div style='font-size: 10px;'>")
+coverage_enc %>%
+  knitr::kable(format = "html", escape = TRUE, align = c("c", "c", "c", "c", "c"))
+cat("</div>")
+```
+
+<br></br>
+
+The table contains a flag for each `genc_id` indicating whether that `genc_id` was discharged from a hospital & during a time period where **some** lab/transfusion/radiology data were available (according to the min-max dates in the [`lookup_data_coverage`](#lookup_coverage) table).
+
++ **For `genc_ids` where the flag is `FALSE`**: Based on the definition of data coverage in the lookup table, these are encounters that were discharged from hospitals/during time periods where GEMINI did not receive ANY data all for a period of >28 days. In other words, we do not have sufficient data coverage to infer whether the encounter received a lab/imaging test or transfusion. Therefore, these `genc_ids` should be excluded (or set to `NA`) for any analyses relying on lab/transfusion/radiology data.
++ **For `genc_ids` where the flag is `TRUE`**: These are encounters that were discharged from hospitals/during time periods with **some** data coverage. This does *not* mean that all `genc_ids` where the flag is `TRUE` have an entry in the lab/transfusion/radiology table because:
+  a) Due to the low threshold for data coverage in the `lookup_data_coverage` table, actual data coverage may still be low during some time periods (see [`plot_coverage`](#plot_coverage) below).
+  b) For some tables, we would not expect all `genc_ids` to have an entry even if data coverage is generally high (e.g., not all patients receive a radiology test or blood transfusion).
+
+<br></br>
+
+## Plot data timelines by table & hospital
+
+To visualize the data timelines by hospital & table, you can set the `plot_timeline` input to `TRUE`, which will result in a plot similar to the “Data Availability” plot in the data dictionary. However, the plot returned by this function is customized to the input cohort (e.g., time periods/hospitals of interest) and specific tables that are relevant for your analyses.
+
+For example, let's say we are interested in the data timelines for the `admdad`, `lab`, and `ipscu` table for encounters discharged since April 2017:
+
+```{r eval = FALSE}
+# Get encounters discharged since Apr 2017
+admdad_subset <- admdad[discharge_date_time >= "2017-04-01 00:00", ]
 
 # Plot data timelines
 coverage <- data_coverage(
@@ -363,13 +407,13 @@ knitr::include_graphics("figures/coverage_timeline_plot.png")
 <summary>**Expand this section for some tips**</summary>
 
 + **Between-hospital differences in data timelines**
-  + Looking at the timelines for `admdad`, you’ll notice that some hospitals generally have later start dates (e.g., hospital 1) and/or earlier end dates (e.g., hospitals 5 & 6) compared to others. The `additional_info` column in the `lookup_data_coverage` table may provide an explanation for some of these between-hospital differences in data timelines (e.g., see above, for hospital 1: “Hospital opened in February 2018.”). Depending on your research question, you may need to restrict your analyses to time periods that overlap across all sites / exclude sites with limited data timelines.
+  + Looking at the timelines for `admdad`, you’ll notice that some hospitals generally have later start dates (e.g., hospital 1) and/or earlier end dates (e.g., hospitals 5 & 6) compared to others. The `additional_info` column in the `lookup_data_coverage` table may provide an explanation for some of these between-hospital differences in data timelines (e.g., see above, for hospital 1: “Hospital opened in February 2018.”). Depending on your research question, you may need to restrict your analyses to time periods that overlap across all sites and/or exclude sites with limited data timelines.
 + **Within-hospital differences in data timelines**
-  + Even within the same hospital, data timelines can vary between tables. For example at sites 3 and 9, lab data have a shorter coverage period compared to `admdad`/`lab` data. This is typically due to challenges associated with extracting clinical (as opposed to administrative) data. If lab data are crucial for your research question, keep in mind that the effective data timeline for your analyses is determined by lab data coverage (rather than `admdad` coverage).
+  + Even within the same hospital, data timelines can vary between tables. For example at sites 4 and 9, lab data have a shorter coverage period compared to `admdad`/`lab` data. This is typically due to challenges associated with extracting clinical (as opposed to administrative) data. If lab data are crucial for your research question, keep in mind that the effective data timeline for your analyses is determined by lab data coverage (rather than `admdad` coverage).
 + **Interrupted data timelines**
-  + For some hospitals/tables, data timelines may be interrupted. For example, at site 8, lab data are not covered continuously. The `additional_info` column may contain some information that’s helpful for interpretation (e.g., “Hospital provides specialized care”). For example, it’s possible that lab testing is not performed on a routine basis at specialized hospitals and that the % of encounters with lab tests is generally very low even for time periods that are shown as “covered” in the timeline plot (remember that data coverage here is defined as at least 1 `genc_id` with an entry in the lab table in a 28-day period). In other words, the gaps in the data timeline might not necessarily reflect a data extraction issue, but rather could be an indicator of specialized clinical practice at this site. Therefore, it is important to inspect overall data volume for sites with interrupted data timelines and plot the % data coverage (see [plot_coverage](#plot_coverage) below). If lab data are crucial for your research question, you may consider exlcuding specialized hospitals with low lab data coverage/volume.
+  + For some hospitals/tables, data timelines may be interrupted. For example, at site 8, lab data are not covered continuously. The `additional_info` column may contain some information that can help interpretation. For example, for site 8 lab data, the table states that this "Hospital provides specialized care”. It’s possible that lab testing is not performed on a routine basis at specialized hospitals and that the % of encounters with lab tests is generally very low even for time periods that are shown as “covered” in the timeline plot (remember that a single `genc_id` during a 28-day period is sufficient for data coverage to be shown as `TRUE` in this plot). In other words, the gaps in the data timeline might not necessarily reflect a data extraction issue, but rather could be an indicator of specialized clinical practice at this site. Therefore, it is important to inspect overall data volume for sites with interrupted data timelines and plot the % data coverage (see [plot_coverage](#plot_coverage) below). If lab data are crucial for your research question, you may consider exlcuding specialized hospitals with low lab data coverage/volume.
 + **Empty rows**
-  + Some tables may not appear in the timeline plot at all for certain hospitals. For example, for site 6, the `ipscu` row is empty. According to the `additional_info` column in the `lookup_data_coverag`e table, this hospital does not have an ICU. This information can help us determine how to deal with this site in our analyses. For example, if we are simply looking at the ipscu table to determine if a `genc_id` was admitted to an ICU during their hospitalization, we can still include site 6 in our analyses and set `icu_entry` to `FALSE` for all encounters at site 6 (we know for a fact that patients were not admitted to an ICU while being hospitalized at site 6). By contrast, if we are planning to perform more in-depth analyses of `ipscu` data (e.g., analyses of lab tests performed in the ICU), site 6 would need to be excluded since it would not contribute any data to those analyses.
+  + Some tables may not appear in the timeline plot at all for certain hospitals. For example, sites 6 & 8 have an empty `ipscu` row. According to the `additional_info` column in the `lookup_data_coverage` table, site 6 does not have an ICU. This information can help us determine how to deal with this site in our analyses. For example, if we are simply looking at the `ipscu` table to determine if a `genc_id` was admitted to an ICU during their hospitalization, we can still include site 6 in our analyses and set `icu_entry` to `FALSE` for all encounters at this site (we know for a fact that patients were not admitted to an ICU while being hospitalized at site 6). By contrast, if we are planning to perform more in-depth analyses of `ipscu` data (e.g., analyses of lab tests performed in the ICU), site 6 would need to be excluded since it would not contribute any data points to those analyses.
 </details>
 
 
@@ -386,7 +430,7 @@ coverage[[1]] # = coverage$coverage_flag_enc
 ```{r echo = FALSE, results = 'asis'}
 load("../data/dummy_data_coverage.rda")
 cat("<div style='font-size: 10px;'>")
-coverage[[1]] %>%
+coverage_timeline[[1]] %>%
   knitr::kable(format = "html", escape = TRUE)
 cat("</div>")
 ```
@@ -401,7 +445,7 @@ coverage[[2]] # = coverage$timeline_data
 
 ```{r echo = FALSE, results = 'asis'}
 cat("<div style='font-size: 10px;'>")
-coverage[[2]] %>%
+coverage_timeline[[2]] %>%
   knitr::kable(format = "html", escape = TRUE)
 cat("</div>")
 ```
@@ -422,14 +466,14 @@ coverage[[3]] + # = coverage$timeline_plot
 
 ## Plot % data coverage {#plot_coverage}
 
-Finally, users can use the `plot_coverage` flag to plot the % of encounters with an entry in a given table, by hospital & discharge month. This provides more detailed insights into data coverage beyond the current threshold of 1 `genc_id` per 28 day period.
+Finally, users can use the `plot_coverage` flag to plot the % of encounters with an entry in a given table, by hospital & discharge month. This provides more detailed insights into data coverage beyond the current coverage definition used in the `lookup_data_coverage` table (which lists all time periods with any data, even if just 1 `genc_id` had a table entry).
 
 <strong style="color:red;">WARNING: </strong>
 When plotting data coverage, your cohort input should only be pre-filtered for the hospitals and overall timelines of interest. You **should not** apply any other cohort inclusion/exclusion criteria (e.g., diagnosis codes etc.). This is to ensure that the coverage plots are representative of the overall GEMINI data holdings, and are not skewed by any project-specific cohort inclusion/exclusion steps.
 
 <br></br>
 
-Let's plot coverage for the transfusion table for our cohort discharged since April 2017: 
+Let's plot coverage for the transfusion table for patients discharged since April 2017: 
 
 ```{r eval = FALSE}
 # Plot coverage (% genc_ids with entry in table)
@@ -491,7 +535,7 @@ coverage[[2]] # = coverage$coverage_data
 
 ```{r echo = FALSE, results = 'asis'}
 cat("<div style='font-size: 10px;'>")
-coverage2[[2]] %>%
+coverage[[2]] %>%
   knitr::kable(format = "html", escape = TRUE)
 cat("</div>")
 ```
