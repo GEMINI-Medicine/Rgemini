@@ -82,10 +82,10 @@ time period, specify:
 \code{custom_dates <- data.frame( data = "transfusion", hospital_num = 104, min_date = "2019-01-01", max_date = "2022-06-30" )}
 
 This will overwrite the \code{min_date}/\code{max_date} values for site 104
-transfusion data in the \code{lookup_data_coverage} table (data for all
-other hospital*table combinations will remain the same). Additionally, the
-coverage flags by \code{genc_id} (in returned \code{coverage_flag_enc}) and timeline plot
-(see \code{plot_timeline}) will be adjusted according to the user-provided dates.
+transfusion data in the \code{lookup_data_coverage} table (data for all other
+hospital*table combinations will remain the same). Additionally, the coverage
+flags by \code{genc_id} (in returned \code{coverage_flag_enc}) and timeline plot (see
+\code{plot_timeline}) will be adjusted according to the user-provided dates.
 The coverage plot (see \code{plot_coverage}) is not affected by the user-specified
 the \code{custom_dates} input.}
 
@@ -110,8 +110,8 @@ For coverage plots only (inputs are passed to \code{plot_over_time()}):
 \item \code{time_int}: Time interval used to aggregate data (e.g., by \code{"month"}
 = default, \code{"quarter"}, or \code{"year"})
 \item \code{ylimits}: Limits of y-axis (e.g., \code{c(0, 50)})
-\item \code{scales}: Passed to facet wrap to control if y-scales are \code{"fixed"} (default)
-or \code{"free"} (only works if no \code{ylimits} specified)
+\item \code{scales}: Passed to facet wrap to control if y-scales are \code{"fixed"}
+(default) or \code{"free"} (only works if no \code{ylimits} specified)
 }}
 }
 \value{
