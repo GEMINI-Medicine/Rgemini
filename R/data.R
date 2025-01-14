@@ -34,7 +34,19 @@ NULL
 
 
 #' Dummy data for `data_coverage` function
-#'
-#' @name dummy_data_coverage
+#' Encounter-level flags
+#' @name coverage_enc
+#' @docType data
+NULL
+
+#' Dummy data for `data_coverage` function
+#' Timeline data
+#' @name coverage_timeline
+#' @docType data
+NULL
+
+#' Dummy data for `data_coverage` function
+#' Coverage data
+#' @name coverage
 #' @docType data
 NULL
