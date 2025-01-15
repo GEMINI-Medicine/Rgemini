@@ -259,7 +259,6 @@ data_coverage <- function(dbcon,
   ## get optional, implicit arguments (if any)
   args <- list(...)
 
-
   ## get data coverage table (depending on DB version)
   lookup_table_name <- tryCatch(
     {
