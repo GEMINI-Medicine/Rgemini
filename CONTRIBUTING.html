@@ -51,6 +51,7 @@
 <li><p>Create a new branch off <code>develop</code>. The branch name should contain the issue number.</p></li>
 <li><p>Commit all changes to this newly created branch and include the issue number in each commit message.</p></li>
 <li><p>Once you finish code development, add a new item at the top of <code>NEWS.md</code> concisely describing what’s changed.</p></li>
+<li><p>Run a styler and linter on any new code using <code>styler:::style_active_file()</code> and <code>lintr::lint("path/to/file.R")</code>. Make sure you are using <code>lintr</code> version 3.0.0 or newer for compatibility with the package <code>.lintr</code> file.</p></li>
 <li><p>If appropriate, add unit tests in the <code>tests/testthat/</code> directory. For bug fixes, it’s usually helpful to include a unit test for the identified bug.</p></li>
 <li><p>If adding new functions with new documentation, update the <code>_pkgdown.yml</code> file by adding the new function to the appropriate reference section. Note that the <code>Rgemini</code> repository currently has a CI/CD workflow to generate and commit documentation on any pushed commit, but <code>devtools::document()</code> can also be run during development to debug locally.</p></li>
 <li><p>Note that any new package data should be saved as a <code>.rda</code> file in the <code>data/</code> directory, and should be documented with <code>roxygen</code> in <code>data.R</code>.</p></li>
