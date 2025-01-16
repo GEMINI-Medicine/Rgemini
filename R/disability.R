@@ -143,8 +143,7 @@ disability <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
   }
 
   ## Read file with disability codes from data folder
-  mapping_disability <- Rgemini::mapping_disability # data(mapping_disability, package = "Rgemini")
-  disability_codes <- mapping_disability %>% data.table()
+  disability_codes <- Rgemini::mapping_disability %>% data.table()
 
   ## Get encounters with disability
   res_component <- diagnoses %>%

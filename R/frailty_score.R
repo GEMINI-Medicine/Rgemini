@@ -107,8 +107,9 @@
 frailty_score  <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
 
   # load CIHI HFRS-ICD mapping from package data folder
-  data("mapping_cihi_frailty", package = "Rgemini")
-  frailty_map <- mapping_cihi_frailty %>% mutate(diagnosis_code = gsub("\\.", "", icd10ca)) %>% data.table()
+  frailty_map <- Rgemini::mapping_cihi_frailty %>%
+    mutate(diagnosis_code = gsub("\\.", "", icd10ca)) %>%
+    data.table()
 
   # input checks
   check_input(cohort, c("data.table", "data.frame"), 
