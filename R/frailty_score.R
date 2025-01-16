@@ -13,15 +13,13 @@
 #' When none of the frailty conditions is present in an individual, a score of zero is assigned.
 #'
 #' The function closely adheres to the CIHI HFRS with the following adaptations:
-#' \itemize{
-#'  \item{No look-back period: }{Score is computed at encounter level. The 2-year look-back in the CIHI HFRS is not implemented. 
-#'  This adaptation systematically underestimates frailty but ensures comparable scores across time and hospitals considering variations in data availability}
-#'  \item{Score format: }{Integer scores are returned representing the sum of the number of frailty conditions.
+#'
+#' - No look-back period: Score is computed at encounter level. The 2-year look-back in the CIHI HFRS is not implemented. 
+#'  This adaptation systematically underestimates frailty but ensures comparable scores across time and hospitals considering variations in data availability
+#' - Score format: Integer scores are returned representing the sum of the number of frailty conditions.
 #'  These scores can be easily converted to the different formats (i.e. continuous fractions, 8 risk groups, binary) defined by CIHI HFRS.
 #'  For example, dividing the returned score by 36 (maximum number of conditions possible) gives the continuous CIHI HFRS.
 #'  Users interested in further categorizing the scores should refer to [Amuah et al, 2023](https://doi.org/10.1503/cmaj.220926).
-#'  }
-#' }
 #'
 #' @param cohort (`data.table`, `data.frame`)\cr
 #' Cohort table with encounters of interest and their corresponding age.
@@ -67,7 +65,7 @@
 #' Excluding diagnoses in NACRS was found to underestimate frailty levels (Amuah et al, 2023).
 #'
 #' @section Notes:
-#' The original development paper of CIHI HFRS maped 595 ICD-10-CA diagnosis codes to frailty conditions. 
+#' The original development paper of CIHI HFRS maped 595 ICD-10-CA diagnosis codes to frailty conditions.
 #' Three codes (Z96.62, U07.1 and U07.2) were added to this mapping in the CIHI methodology notes.
 #' This function uses the mapping of 598 ICD-10-CA diagnosis codes in the CIHI methodology notes to identify frailty conditions.
 #'
@@ -75,20 +73,30 @@
 #' Using a similar approach as the UK HFRS, the CIHI HFRS was developed and validated based on Canadian cohorts, making it particularly suited for GEMINI data.
 #' The UK version remains available in `Rgemini` version 0.3.1 and earlier but will not receive future maintenance.
 #' Users interested in the UK version should refer to the original publications for important differences in diagnostic coding practices and age threshold.
-#' 
+#'
 #' @references
 #' We recommend referencing both original articles (UK HFRS and CIHI HFRS) when using this function:
-#'\itemize{
-#'  \item{UK HFRS: Gilbert T, et al. Lancet, 2018. http://dx.doi.org/10.1016/S0140-6736(18)30668-8}
-#'  \item{CIHI HFRS: Amuah JE, et al. CMAJ, 2023. https://doi.org/10.1503/cmaj.220926}
-#'  \item{[CIHI methodology notes](https://www.cihi.ca/sites/default/files/document/cihi-hospital-frailty-risk-measure-meth-notes-en.pdf)}
-#' }
+#'
+#' - UK HFRS: Gilbert T, et al. Lancet, 2018. http://dx.doi.org/10.1016/S0140-6736(18)30668-8
+#' - CIHI HFRS: Amuah JE, et al. CMAJ, 2023. https://doi.org/10.1503/cmaj.220926
+#' - [CIHI methodology notes](https://www.cihi.ca/sites/default/files/document/cihi-hospital-frailty-risk-measure-meth-notes-en.pdf)
 #
 #' @examples
 #' \dontrun{
-#' cohort_dum <- data.table(genc_id=c(1, 2, 3), age=c(64, 65, 80))
-#' ipdiag_dum <- dummy_diag(nid=3, nrow=10, ipdiagnosis=TRUE, pattern = "C20$|R460$") # frailty conditions
-#' erdiag_dum <- dummy_diag(nid=3, nrow=5, ipdiagnosis=FALSE, pattern = "M121$") # not a frailty condition
+#' cohort_dum <- data.table(
+#'  genc_id = c(1, 2, 3), age = c(64, 65, 80)
+#' )
+#' ipdiag_dum <- dummy_diag(
+#'  nid = 3, nrow = 10,
+#'  ipdiagnosis = TRUE,
+#'  pattern = "C20$|R460$" # frailty conditions
+#' )
+#' erdiag_dum <- dummy_diag(
+#'  nid = 3, nrow = 5,
+#'  ipdiagnosis = FALSE,
+#'  pattern = "M121$" # not a frailty condition
+#' )
+#' # calculate frailty score
 #' frailty_score(cohort_dum, ipdiag_dum, erdiag_dum, component_wise = FALSE)
 #' }
 #'

@@ -42,15 +42,14 @@ each admission.
 
 Imaging table in the database should include field that classifies each test
 into below 7 categories.
-
 \itemize{
-\item{1 : }{X-Ray}
-\item{2 : }{CT}
-\item{3 : }{MRI}
-\item{4 : }{Ultrasound}
-\item{5 : }{Other}
-\item{6 : }{Interventional radiology procedures}
-\item{7 : }{Echo (Excluded)}
+\item 1: X-Ray
+\item 2: CT
+\item 3: MRI
+\item 4: Ultrasound
+\item 5: Other
+\item 6: Interventional radiology procedures
+\item 7: Echo (Excluded)
 }
 
 Therefore, this function should be run after some standardization efforts on

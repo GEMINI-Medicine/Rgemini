@@ -97,7 +97,7 @@ coerce_to_datatable <- function(data) {
 #' regex search) is used to allow for a broad range of table names to be
 #' searched while avoiding false positive matches.
 #'
-#' @section HPC datacuts with materialized views
+#' @section HPC datacuts with materialized views:
 #' For HPC datacuts created from `gemini_h4h_template_v4_0_0` (or newer),
 #' users only have access to materialized views and not tables. For these
 #' datacuts, users need to set the schema right after establishing a DB

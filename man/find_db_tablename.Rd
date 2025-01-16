@@ -37,6 +37,23 @@ differ based on their suffix (e.g., "ipintervention" vs.
 regex search) is used to allow for a broad range of table names to be
 searched while avoiding false positive matches.
 }
+\section{HPC datacuts with materialized views}{
+
+For HPC datacuts created from \code{gemini_h4h_template_v4_0_0} (or newer),
+users only have access to materialized views and not tables. For these
+datacuts, users need to set the schema right after establishing a DB
+connection as follows:
+
+db <- DBI::dbConnect(drv,
+dbname = "db",
+host = "domain_name.ca",
+port = 1234,
+user = "user",
+password = getPass("Enter Password:"))
+
+dbSendQuery(db, "Set schema 'test_datacut'");
+}
+
 \examples{
 \dontrun{
 drv <- dbDriver("PostgreSQL")

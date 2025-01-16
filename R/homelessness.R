@@ -18,22 +18,18 @@
 #' @details
 #' Below are the current ICD-10-CA codes related to homelessness, which
 #' are coded regardless of the diagnosis type.
-#' For more information, please refer to the references in this page.
 #'
-#' \itemize{
-#'  \item{Z59.0: }{For confirmed homelessness assign Z59.0.}
-#'  \item{Z59.1: }{For confirmed inadequate housing due to factors relating
-#'  to safety or accessibility, but not necessarily a complete lack
-#'  of housing assign Z59.1.}
-#' }
+#' - Z59.0 = homelessness
+#' - Z59.1 = inadequate housing due to factors relating to safety or
+#' accessibility, but not necessarily a complete lack of housing
 #'
-#' Homelessness (Z59.0) is coded when an individual
-#' is determined to be homeless. Effective of the year 2018-2019, CIHI
-#' mandated that Z59.0 is to be coded when a "patient's record
-#' shows that they are homeless upon admission". After the mandate,
-#' prevalence of the flag increased by 84% compared to the previous year,
-#' suggesting that ICD-10-CA diagnosis codes underestimate true homelessness
-#' rates prior to the reporting mandate. (For details, see
+#' Homelessness (Z59.0) is coded when an individual is determined to
+#' experience homelessness. Effective of the year 2018-2019, CIHI
+#' mandated that Z59.0 is to be coded when a "patient's record shows
+#' that they are homeless upon admission". After the mandate,
+#' prevalence of the flag increased by 84% compared to the previous
+#' year, suggesting that ICD-10-CA diagnosis codes underestimate true
+#' homelessness rates prior to the reporting mandate. (For details, see
 #' [2018 CIHI mandate to code homelessness](https://www.cihi.ca/en/better-quality-hospital-data-for-identifying-patients-experiencing-homelessness))
 #'
 #' Inadequate housing (Z59.1) is coded when an individual is
@@ -42,6 +38,8 @@
 #' a lack of utilities. Some examples include unsafe living
 #' conditions, safety issues such as a lack of heating, and
 #' if the home isn't safely inhabitable due to repairs in progress.
+#' 
+#' For more information, please refer to the references in this page.
 #'
 #' @param cohort (`data.frame` or `data.table`)
 #' Cohort table with all relevant encounters of interest, where each row
