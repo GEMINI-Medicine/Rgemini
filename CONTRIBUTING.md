@@ -14,23 +14,25 @@ To make changes to the `Rgemini` codebase/documentation, please follow these ste
 
 3. Commit all changes to this newly created branch and include the issue number in each commit message. 
 
-4. Once you finish code development, add a new item at the top of `NEWS.md` concisely describing what's changed. 
+4. Once you finish code development, add a new item at the top of `NEWS.md` concisely describing what's changed.
+  
+6. Run a styler and linter on any new code using `styler:::style_active_file()` and `lintr::lint("path/to/file.R")`. Make sure you are using `lintr` version 3.0.0 or newer for compatibility with the package `.lintr` file.
 
-5. If appropriate, add unit tests in the `tests/testthat/` directory. For bug fixes, it's usually helpful to include a unit test for the identified bug.
+7. If appropriate, add unit tests in the `tests/testthat/` directory. For bug fixes, it's usually helpful to include a unit test for the identified bug.
 
-6. If adding new functions with new documentation, update the `_pkgdown.yml` file by adding the new function to the appropriate reference section. Note that the `Rgemini` repository currently has a CI/CD workflow to generate and commit documentation on any pushed commit, but `devtools::document()` can also be run during development to debug locally. 
+8. If adding new functions with new documentation, update the `_pkgdown.yml` file by adding the new function to the appropriate reference section. Note that the `Rgemini` repository currently has a CI/CD workflow to generate and commit documentation on any pushed commit, but `devtools::document()` can also be run during development to debug locally. 
 
-7. Note that any new package data should be saved as a `.rda` file in the `data/` directory, and should be documented with `roxygen` in `data.R`.
+9. Note that any new package data should be saved as a `.rda` file in the `data/` directory, and should be documented with `roxygen` in `data.R`.
 
-8. Functions derived based on published articles (e.g. clinical scores) should include a `references` section in `roxygen`. The citation format is: `1st_author_last_name 1st_author_initial, et al. Journal Abbreviation, Year. https://doi.org/xxxx.`. URLs should be presented as-is without hyperlinking and DOI URLs should be used whenever possible. Note that commonly known online resources (e.g. links CIHI documentations, data dictionary) might not require a `references` section and can be included as hyperlinks in any `roxygen` section.
+10. Functions derived based on published articles (e.g. clinical scores) should include a `references` section in `roxygen`. The citation format is: `1st_author_last_name 1st_author_initial, et al. Journal Abbreviation, Year. https://doi.org/xxxx.`. URLs should be presented as-is without hyperlinking and DOI URLs should be used whenever possible. Note that commonly known online resources (e.g. links CIHI documentations, data dictionary) might not require a `references` section and can be included as hyperlinks in any `roxygen` section.
 
-9. Submit a [pull request (PR)](https://help.github.com/articles/using-pull-requests) into the `develop` branch.
+11. Submit a [pull request (PR)](https://help.github.com/articles/using-pull-requests) into the `develop` branch.
 
-10. Ask a team member to review the changes (see guidelines for reviewers below) and implement additional changes based on the reviewer's feedback.
+12. Ask a team member to review the changes (see guidelines for reviewers below) and implement additional changes based on the reviewer's feedback.
 
-11. Once the reviewer has approved the pull request, resolve any merge conflicts and CI/CD errors.
+13. Once the reviewer has approved the pull request, resolve any merge conflicts and CI/CD errors.
 
-12. Finally, squash all commits (confirm the PR # is referenced in the squash commit message) and merge the branch into `develop`, close the issue, and delete the branch you developed on.
+14. Finally, squash all commits (confirm the PR # is referenced in the squash commit message) and merge the branch into `develop`, close the issue, and delete the branch you developed on.
 
 
 ## Reviewing code
