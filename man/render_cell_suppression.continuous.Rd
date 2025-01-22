@@ -11,7 +11,9 @@ render_cell_suppression.continuous(x, ...)
 A continuous variable to summarize.}
 
 \item{...}{\cr
-Further arguments, passed to \code{table1:::stats.apply.rounding()}.}
+Further arguments, such as \code{continuous_fn}, or those passed to \code{table1:::stats.apply.rounding()}.
+Use \code{continuous_fn} to specify the summary statistics to display,
+which accepts character string: "mean", "median", or c("mean", "median") to display both. Defaults to "mean".}
 }
 \value{
 named (\code{character})\cr
@@ -27,5 +29,19 @@ render_cell_suppression.continuous(x)
 
 y <- 1:2
 render_cell_suppression.continuous(y)
+
+## Use in `table1`:
+\dontrun{
+library(table1)
+dat <- expand.grid(id=1:10, treat=c("Treated", "Placebo"))
+dat$age <- runif(nrow(dat), 10, 50)
+label(dat$age) <- "Age"
+
+table1(~ age | treat, data=dat,
+       render.continuous = render_cell_suppression.continuous,
+       continuous_fn = c("mean", "median"), # to display mean and median simultaneously
+       digits=2)
+}
+
 
 }
