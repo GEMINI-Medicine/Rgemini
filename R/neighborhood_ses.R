@@ -56,7 +56,7 @@
 #' a single encounter. Must contain GEMINI Encounter ID (`genc_id`).
 #'
 #' @return (`data.frame` | `data.table`)\cr
-#' This function returns a `data.table`` where each row corresponds to a `genc_id` from the user-provided cohort input, together with the following columns:
+#' This function returns a `data.table` where each row corresponds to a `genc_id` from the user-provided cohort input, together with the following columns:
 #' 
 #' - DA the encounter resides in: `dauid`
 #' - Neighbourhood-level income (continuous):
@@ -94,6 +94,8 @@
 #'   user = getPass("Enter user:"),
 #'   password = getPass("password")
 #' )
+#'  
+#' cohort <- dbGetQuery(dbcon, "SELECT genc_id from admdad LIMIT 100;")
 #'
 #' neighborhood_ses_table <- neighborhood_ses(dbcon, cohort, 2021)
 #' }
