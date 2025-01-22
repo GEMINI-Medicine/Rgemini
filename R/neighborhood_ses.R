@@ -2,20 +2,28 @@
 #' Obtain commonly used neighbourhood-level socioeconomic status (SES) variables
 #'
 #' @description
-#' The `neighborhood_ses()` function derives neighborhood-level SES variables for a given encounter based on the dissemination area they reside in. All variables returned by this function are based on Statistics Canada Census data and the Ontario Marginalization Index.
+#' The `neighborhood_ses()` function derives neighborhood-level SES variables for a given encounter based on the dissemination area they reside in. All variables returned by this function are based on Statistics Canada Census data and the Ontario Marginalization Index (ON-Marg).
 #' 
-#' Note that the function output differs based on the census year (2016 or 2021) provided by the user.
+#' For database versions since `drm_cleandb_v3` / `H4H_template_v4` users can choose between 2016 vs. 2021 census/ON-Marg data. Note that some of the function output returned by this function the function output differs based on the census year (2016 or 2021) provided by the user.
 #'
 #' @section Statistics Canada Census:
 #' All SES variables are sourced from the Statistics Canada Census. The census is collected every 5 years and provides a detailed statistical portrait of communities across Canada, including information about income, education, ethnicity, and immigrant status.
 #' 
-#' The following census variables are based on a long-form questionnaire, which is only administered to 25% of households:
-#' - Education
-#' - Visible minority status
+#' The function currently returns the following census variables:
 #' 
-#' In 2016, immigrant status was also based on the long-form questionnaire but since 2021 has been sourced from Immigration, Refugees and Citizenship Canada.
-#' 
-#' In both 2016 & 2021, information about household income was sourced from the Canadian Revenue Agency.
+#' - **Household income**:
+#'  - Sourced from the Canadian Revenue Agency
+#'  - Both continuous income and national/community quintiles are provided
+#' - **Education**:
+#'  - Based on the long-form census questionnaire, which is only administered to 25% of households
+#' - [**Visible minorities**](https://www12.statcan.gc.ca/census-recensement/2021/ref/98-500/006/98-500-x2021006-eng.cfm):
+#'  - Indicates whether a person identifies as a visible minority as defined by the Employment Equity Act:
+#' “persons, other than Aboriginal peoples, who are non-Caucasian in race or non-white in colour” (e.g.,
+#' Black, South Asian, Chinese, Latin American etc.)
+#'  - Based on the long-form census questionnaire, which is only administered to 25% of households
+#' - **Immigrant status**:
+#'  - In 2016 census: Based on the long-form questionnaire (25% of households)
+#'  - Since 2021: Sourced from Immigration, Refugees and Citizenship Canada
 #'
 #' All census data are collected by dissemination area (DA), which typically covers a population of 400-700 people. To enable linkage between GEMINI data and DA-level information, the DA of a given encounter was derived from their postal code using the [Postal Code Conversion File Plus (PCCF+)](https://www150.statcan.gc.ca/n1/en/catalogue/92-154-X) program.
 #' 
@@ -33,6 +41,10 @@
 #'
 #' All ON-Marg variables are available as continuous factor scores as well as quintiles, where higher values represent a higher degree of marginalization. 
 #'
+#' @section Missing values:
+#' Some encounters could not be linked to Statistics Canada data due to missing/invalid postal codes, or due to the fact that they reside in an area not covereded by the census. These encounters will be returned with `dauid = NA`
+#' Additionally, Statistics Canada suppresses results from certain DAs due to low response rates or data quality issues. The corresponding census/ON-Marg variables will be returned as `NA` for all `genc_ids` in that DA.
+#' 
 #' @param dbcon (`DBIConnection`)\cr
 #' A database connection to any GEMINI database.
 #'
@@ -44,16 +56,25 @@
 #' a single encounter. Must contain GEMINI Encounter ID (`genc_id`).
 #'
 #' @return (`data.frame` | `data.table`)\cr
-#' This function returns a data.table where each row corresponds to a `genc_id`` from the user-provided cohort input, together with the following columns:
+#' This function returns a `data.table`` where each row corresponds to a `genc_id` from the user-provided cohort input, together with the following columns:
 #' 
-#' - DA (dissemination area) the encounter resides in: da21uid (da16uid) for 2021 (2016) census year
-#' - Neighbourhood-level income: qnatippe, qnbtippe, qaatippe, qabtippe, atippe, btippe. While qnatippe and qnbtippe are quintiles calculated based on national income distribution, qaatippe and qabtippe are quintiles constructed separately for each census metropolitan area (CMA), census agglomeration (CA) or residual area within each province. Atippe, btippe are numeric.
-#' - [Visible minority](https://www12.statcan.gc.ca/census-recensement/2016/ref/dict/pop127-eng.cfm): vismin_pct
-#' - [Immigration status](https://www12.statcan.gc.ca/census-recensement/2021/dp-pd/prof/details/page.cfm?LANG=E&GENDERlist=1,2,3&STATISTIClist=4&HEADERlist=23&SearchText=Canada&DGUIDlist=2021A000011124): immsta_pct
-#' - [Post-secondary education (>15)](https://www150.statcan.gc.ca/n1/pub/81-004-x/2010001/def/posteducation-educpost-eng.htm): ed_15over_postsec_pct
-#' - Post-secondary education (25-64): ed_25to64_postsec_pct
-#' - Ontario Marginalization Index (numeric): (instability_da16, deprivation_da16, dependency_da16, ethniccon_da16) or (households_dwellings_DA21, material_resources_DA21, age_labourforce_DA21, racialized_NC_pop_DA21)
-#' - Ontario Marginalization Index (quintile): (instability_q_da16, deprivation_q_da16, dependency_q_da16, ethniccon_q_da16) or (households_dwellings_q_DA21, material_resources_q_DA21, age_labourforce_q_DA21, racialized_NC_pop_q_DA21)
+#' - DA the encounter resides in: `dauid`
+#' - Neighbourhood-level income (continuous):
+#'  - `atippe` (neighbourhood after tax income per single person equivalent)
+#'  - `btippe` (neighbourhood before tax income per single person equivalent)
+#' - Neighbourhood-level income (quintiles from PCCF+):
+#'  - `qnatippe` and `qnbtippe`: Quintiles of `atippe` and `btippe` calculated based on *national* income distribution
+#'  - `qaatippe` and `qabtippe`: Quintiles of `atippe` and `btippe` calculated based on distribution within a given community (based on census metropolitan area, census agglomeration, or residual area within each province).
+#' - % visible minorities: `vismin_pct`
+#' - % immigrants: `immsta_pct`
+#' - % with post-secondary education:
+#'  - Including all respondents > 15 years of age: `ed_15over_postsec_pct`
+#'  - Only including respondents between 25-64 years: `ed_25to64_postsec_pct`
+#' - Ontario Marginalization Index (continuous):
+#'  - If `census_year` = 2021: `households_dwellings`, `material_resources`, `age_labourforce`, `racialized_NC_pop`
+#'  - If `census_year` = 2016: `instability`, `deprivation`, `dependency`, `ethniccon`
+#' - Ontario Marginalization Index (quintiles):
+#'  - All ON-Marg variables are additionally returned as quintiles, as indicated by the suffix `_q` (e.g., `households_dwellings_q`)
 #'
 #' @references
 #' [Statistics Canada Census.](https://www12.statcan.gc.ca/census-recensement/2021/ref/98-304/2021001/chap1-eng.cfm)
