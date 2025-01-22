@@ -19,7 +19,7 @@ Statistics Canada census year. Only 2016 or 2021 are valid inputs.}
 }
 \value{
 (\code{data.frame} | \code{data.table})\cr
-This function returns a \verb{data.table`` where each row corresponds to a }genc_id` from the user-provided cohort input, together with the following columns:
+This function returns a \code{data.table} where each row corresponds to a \code{genc_id} from the user-provided cohort input, together with the following columns:
 \itemize{
 \item DA the encounter resides in: \code{dauid}
 \item Neighbourhood-level income (continuous):
@@ -102,6 +102,8 @@ dbcon <- DBI::dbConnect(drv,
   user = getPass("Enter user:"),
   password = getPass("password")
 )
+ 
+cohort <- dbGetQuery(dbcon, "SELECT genc_id from admdad LIMIT 100;")
 
 neighborhood_ses_table <- neighborhood_ses(dbcon, cohort, 2021)
 }
