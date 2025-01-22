@@ -19,7 +19,8 @@ Statistics Canada census year. Only 2016 or 2021 are valid inputs.}
 }
 \value{
 (\code{data.frame} | \code{data.table})\cr
-This function returns a \code{data.table} where each row corresponds to a \code{genc_id} from the user-provided cohort input, together with the following columns:
+This function returns a \code{data.table} where each row corresponds to a \code{genc_id} from
+the user-provided cohort input, together with the following columns:
 \itemize{
 \item DA the encounter resides in: \code{dauid}
 \item Neighbourhood-level income (continuous):
@@ -27,7 +28,9 @@ This function returns a \code{data.table} where each row corresponds to a \code{
 \item \code{btippe} (neighbourhood before tax income per single person equivalent)
 \item Neighbourhood-level income (quintiles from PCCF+):
 \item \code{qnatippe} and \code{qnbtippe}: Quintiles of \code{atippe} and \code{btippe} calculated based on \emph{national} income distribution
-\item \code{qaatippe} and \code{qabtippe}: Quintiles of \code{atippe} and \code{btippe} calculated based on distribution within a given community (based on census metropolitan area, census agglomeration, or residual area within each province).
+\item \code{qaatippe} and \code{qabtippe}: Quintiles of \code{atippe} and \code{btippe} calculated based on distribution within a
+given community (based on census metropolitan area, census agglomeration, or residual area within each
+province).
 \item \% visible minorities: \code{vismin_pct}
 \item \% immigrants: \code{immsta_pct}
 \item \% with post-secondary education:
@@ -37,17 +40,24 @@ This function returns a \code{data.table} where each row corresponds to a \code{
 \item If \code{census_year} = 2021: \code{households_dwellings}, \code{material_resources}, \code{age_labourforce}, \code{racialized_NC_pop}
 \item If \code{census_year} = 2016: \code{instability}, \code{deprivation}, \code{dependency}, \code{ethniccon}
 \item Ontario Marginalization Index (quintiles):
-\item All ON-Marg variables are additionally returned as quintiles, as indicated by the suffix \verb{_q} (e.g., \code{households_dwellings_q})
+\item All ON-Marg variables are additionally returned as quintiles, as indicated by the suffix \verb{_q} (e.g.,
+\code{households_dwellings_q})
 }
 }
 \description{
-The \code{neighborhood_ses()} function derives neighborhood-level SES variables for a given encounter based on the dissemination area they reside in. All variables returned by this function are based on Statistics Canada Census data and the Ontario Marginalization Index (ON-Marg).
+The \code{neighborhood_ses()} function derives neighborhood-level SES variables for a given encounter based on
+the dissemination area they reside in. All variables returned by this function are based on Statistics
+Canada Census data and the Ontario Marginalization Index (ON-Marg).
 
-For database versions since \code{drm_cleandb_v3} / \code{H4H_template_v4} users can choose between 2016 vs. 2021 census/ON-Marg data. Note that some of the function output returned by this function the function output differs based on the census year (2016 or 2021) provided by the user.
+For database versions since \code{drm_cleandb_v3} / \code{H4H_template_v4} users can choose between 2016 vs. 2021
+census/ON-Marg data. Note that some of the function output returned by this function the function output
+differs based on the census year (2016 or 2021) provided by the user.
 }
 \section{Statistics Canada Census}{
 
-All SES variables are sourced from the Statistics Canada Census. The census is collected every 5 years and provides a detailed statistical portrait of communities across Canada, including information about income, education, ethnicity, and immigrant status.
+All SES variables are sourced from the Statistics Canada Census. The census is collected every 5 years
+and provides a detailed statistical portrait of communities across Canada, including information about
+income, education, ethnicity, and immigrant status.
 
 The function currently returns the following census variables:
 \itemize{
@@ -66,30 +76,44 @@ Black, South Asian, Chinese, Latin American etc.)
 \item Since 2021: Sourced from Immigration, Refugees and Citizenship Canada
 }
 
-All census data are collected by dissemination area (DA), which typically covers a population of 400-700 people. To enable linkage between GEMINI data and DA-level information, the DA of a given encounter was derived from their postal code using the \href{https://www150.statcan.gc.ca/n1/en/catalogue/92-154-X}{Postal Code Conversion File Plus (PCCF+)} program.
+All census data are collected by dissemination area (DA), which typically covers a population of 400-700
+people. To enable linkage between GEMINI data and DA-level information, the DA of a given encounter was
+derived from their postal code using the
+\href{https://www150.statcan.gc.ca/n1/en/catalogue/92-154-X}{Postal Code Conversion File Plus (PCCF+)} program.
 }
 
 \section{Ontario Marginalization Index (On-Marg)}{
 
-On-Marg is a neighborhood-level index measuring marginalization differences between areas based on a subset of 42 variables from the Statistics Canada census.
+On-Marg is a neighborhood-level index measuring marginalization differences between areas based on a subset
+of 42 variables from the Statistics Canada census.
 
-The index was derived from a principal component factor analysis, which resulted in 18 indicators along the following 4 dimensions:
+The index was derived from a principal component factor analysis, which resulted in 18 indicators along the
+following 4 dimensions:
 \enumerate{
-\item Households and dwellings: Measures housing density and characteristics of family structure (e.g., living alone, \% dwellings not owned)
+\item Households and dwellings: Measures housing density and characteristics of family structure (e.g., living
+alone, \% dwellings not owned)
 \item Material resources: Measures access to basic material needs (e.g., employment rate)
-\item Age and labour force: Includes indicators such as the \% of seniors (65+), children, and those that are not part of the labour force
+\item Age and labour force: Includes indicators such as the \% of seniors (65+), children, and those that are
+not part of the labour force
 \item Racialized and newcomer populations: Measures the \% of people who are newcomers or identify as a visible minority
 }
 
-In the 2016 version of ON-Marg, the 4 dimensions were called "Residential instability", "Material deprivation", "Dependency", and "Ethnic concentration" respectively. The dimensions were renamed in 2021 to avoid deficit-based language and better reflect the census measures associated with each dimension.
+In the 2016 version of ON-Marg, the 4 dimensions were called "Residential instability", "Material
+deprivation", "Dependency", and "Ethnic concentration" respectively. The dimensions were renamed in 2021 to
+avoid deficit-based language and better reflect the census measures associated with each dimension.
 
-All ON-Marg variables are available as continuous factor scores as well as quintiles, where higher values represent a higher degree of marginalization.
+All ON-Marg variables are available as continuous factor scores as well as quintiles, where higher values
+represent a higher degree of marginalization.
 }
 
 \section{Missing values}{
 
-Some encounters could not be linked to Statistics Canada data due to missing/invalid postal codes, or due to the fact that they reside in an area not covereded by the census. These encounters will be returned with \code{dauid = NA}
-Additionally, Statistics Canada suppresses results from certain DAs due to low response rates or data quality issues. The corresponding census/ON-Marg variables will be returned as \code{NA} for all \code{genc_ids} in that DA.
+Some encounters could not be linked to Statistics Canada data due to missing/invalid postal codes, or due
+to the fact that they reside in an area not covereded by the census. These encounters will be returned with
+\code{dauid = NA}
+Additionally, Statistics Canada suppresses results from certain DAs due to low response rates or data
+quality issues. The corresponding census/ON-Marg variables will be returned as \code{NA} for all \code{genc_ids} in
+that DA.
 }
 
 \examples{
@@ -102,7 +126,7 @@ dbcon <- DBI::dbConnect(drv,
   user = getPass("Enter user:"),
   password = getPass("password")
 )
- 
+
 cohort <- dbGetQuery(dbcon, "SELECT genc_id from admdad LIMIT 100;")
 
 neighborhood_ses_table <- neighborhood_ses(dbcon, cohort, 2021)
