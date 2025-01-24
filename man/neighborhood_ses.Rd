@@ -22,7 +22,8 @@ Statistics Canada census year. Only 2016 or 2021 are valid inputs.}
 This function returns a \code{data.table} where each row corresponds to a \code{genc_id} from
 the user-provided cohort input, together with the following columns:
 \itemize{
-\item DA the encounter resides in (based on PCCF+): \code{da}
+\item GEMINI encounter ID: \code{genc_id}
+\item DA the encounter resides in (based on PCCF+): \code{da_uid}
 \item Neighbourhood-level income (continuous):
 \item \code{atippe} (neighbourhood after tax income per single person equivalent)
 \item \code{btippe} (neighbourhood before tax income per single person equivalent)
