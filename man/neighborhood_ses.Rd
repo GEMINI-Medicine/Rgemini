@@ -11,16 +11,17 @@ neighborhood_ses(dbcon, cohort, census_year)
 A database connection to any GEMINI database.}
 
 \item{cohort}{(\code{data.table} | \code{data.frame})\cr
-Table with all relevant encounters of interest, where each row corresponds to
-a single encounter. Must contain GEMINI Encounter ID (\code{genc_id}).}
+Table with all relevant encounters of interest, where each row corresponds
+to a single encounter. Must contain GEMINI Encounter ID (\code{genc_id}).}
 
 \item{census_year}{(\code{numeric} | \code{character})\cr
 Statistics Canada census year. Only 2016 or 2021 are valid inputs.}
 }
 \value{
 (\code{data.frame} | \code{data.table})\cr
-This function returns a \code{data.table} where each row corresponds to a \code{genc_id} from
-the user-provided cohort input, together with the following columns:
+This function returns a \code{data.table} where each row corresponds to a
+\code{genc_id} from the user-provided cohort input, together with the following
+columns:
 \itemize{
 \item GEMINI encounter ID: \code{genc_id}
 \item DA the encounter resides in (based on PCCF+): \code{da_uid}
@@ -28,93 +29,108 @@ the user-provided cohort input, together with the following columns:
 \item \code{atippe} (neighbourhood after tax income per single person equivalent)
 \item \code{btippe} (neighbourhood before tax income per single person equivalent)
 \item Neighbourhood-level income (quintiles from PCCF+):
-\item \code{qnatippe} and \code{qnbtippe}: Quintiles of \code{atippe} and \code{btippe} calculated based on \emph{national} income distribution
-\item \code{qaatippe} and \code{qabtippe}: Quintiles of \code{atippe} and \code{btippe} calculated based on distribution within a
-given community (based on census metropolitan area, census agglomeration, or residual area within each
-province).
+\item \code{qnatippe} and \code{qnbtippe}: Quintiles of \code{atippe} and \code{btippe} calculated
+based on \emph{national} income distribution
+\item \code{qaatippe} and \code{qabtippe}: Quintiles of \code{atippe} and \code{btippe} calculated
+based on distribution within a given community (based on census metropolitan
+area, census agglomeration, or residual area within each province).
 \item \% visible minorities: \code{vismin_pct}
 \item \% immigrants: \code{immsta_pct}
 \item \% with post-secondary education:
 \item Including all respondents > 15 years of age: \code{ed_15over_postsec_pct}
 \item Only including respondents between 25-64 years: \code{ed_25to64_postsec_pct}
 \item Ontario Marginalization Index (continuous):
-\item If \code{census_year} = 2021: \code{households_dwellings}, \code{material_resources}, \code{age_labourforce}, \code{racialized_NC_pop}
-\item If \code{census_year} = 2016: \code{instability}, \code{deprivation}, \code{dependency}, \code{ethniccon}
+\item If \code{census_year} = 2021: \code{households_dwellings}, \code{material_resources},
+\code{age_labourforce}, \code{racialized_NC_pop}
+\item If \code{census_year} = 2016: \code{instability}, \code{deprivation}, \code{dependency},
+\code{ethniccon}
 \item Ontario Marginalization Index (quintiles):
-\item All ON-Marg variables are additionally returned as quintiles, as indicated by the suffix \verb{_q} (e.g.,
-\code{households_dwellings_q})
+\item All ON-Marg variables are additionally returned as quintiles, as indicated
+by the suffix \verb{_q} (e.g., \code{households_dwellings_q})
 }
 }
 \description{
-The \code{neighborhood_ses()} function derives neighborhood-level SES variables for a given encounter based on
-the dissemination area they reside in. All variables returned by this function are based on Statistics
-Canada Census data and the Ontario Marginalization Index (ON-Marg).
+The \code{neighborhood_ses()} function derives neighborhood-level SES variables for
+a given encounter based on the dissemination area they reside in. All variables
+returned by this function are based on Statistics Canada Census data and the
+Ontario Marginalization Index (ON-Marg).
 
-For database versions since \code{drm_cleandb_v3} / \code{H4H_template_v4} users can choose between 2016 vs. 2021
-census/ON-Marg data. Note that some of the function output returned by this function the function output
-differs based on the census year (2016 or 2021) provided by the user.
+For database versions since \code{drm_cleandb_v3} / \code{H4H_template_v4} users can
+choose between 2016 vs. 2021 census/ON-Marg data. Note that the names of some
+output variables vary by census year.
 }
 \section{Statistics Canada Census}{
 
-All SES variables are sourced from the Statistics Canada Census. The census is collected every 5 years
-and provides a detailed statistical portrait of communities across Canada, including information about
-income, education, ethnicity, and immigrant status.
+All SES variables are sourced from the Statistics Canada Census. The census
+is collected every 5 years and provides a detailed statistical portrait of
+communities across Canada, including information about income, education,
+ethnicity, and immigrant status.
 
-The function currently returns the following census variables:
+Census data are collected by dissemination area (DA), which typically covers
+a population of 400-700 people. To enable linkage between GEMINI data and
+DA-level location, the DA of a given encounter was derived from their postal
+code using the \href{https://library.carleton.ca/sites/default/files/2023-03/PCCF\%2BUserguide-2021.pdf}{Postal Code Conversion File Plus (PCCF+)}
+program.
+
+The \code{neighborhood_ses()} function currently returns the following census
+variables:
 \itemize{
-\item \strong{Household income}:
-\item Sourced from the Canadian Revenue Agency
-\item Both continuous income and national/community quintiles are provided
-\item \strong{Education}:
-\item Based on the long-form census questionnaire, which is only administered to 25\% of households
+\item \href{https://www12.statcan.gc.ca/census-recensement/2021/ref/dict/az/definition-eng.cfm?ID=pop123}{\strong{Income}}:
+\item Statistics Canada sources information about household income from the Canadian Revenue Agency
+\item PCCF+ provides an income per person equivalent (IPPE) by adjusting household income by household size
+\item Both continuous income and national/community quintiles are returned
+\item \href{https://www12.statcan.gc.ca/census-recensement/2021/ref/dict/az/Definition-eng.cfm?ID=pop038}{\strong{Post-secondary education}}:
+\item Based on the long-form census questionnaire, which is only administered
+to 25\% of households
 \item \href{https://www12.statcan.gc.ca/census-recensement/2021/ref/98-500/006/98-500-x2021006-eng.cfm}{\strong{Visible minorities}}:
-\item Indicates whether a person identifies as a visible minority as defined by the Employment Equity Act:
-“persons, other than Aboriginal peoples, who are non-Caucasian in race or non-white in colour” (e.g.,
-Black, South Asian, Chinese, Latin American etc.)
-\item Based on the long-form census questionnaire, which is only administered to 25\% of households
-\item \strong{Immigrant status}:
+\item Indicates whether a person identifies as a visible minority as defined by
+the Employment Equity Act: “persons, other than Aboriginal peoples, who are
+non-Caucasian in race or non-white in colour” (e.g., Black, South Asian,
+Chinese, Latin American etc.)
+\item Based on the long-form census questionnaire, which is only administered
+to 25\% of households
+\item \href{https://www12.statcan.gc.ca/census-recensement/2021/ref/dict/az/Definition-eng.cfm?ID=pop148}{\strong{Immigrant status}}:
+\item In 2021 census: Sourced from Immigration, Refugees and Citizenship Canada
 \item In 2016 census: Based on the long-form questionnaire (25\% of households)
-\item Since 2021: Sourced from Immigration, Refugees and Citizenship Canada
 }
-
-All census data are collected by dissemination area (DA), which typically covers a population of 400-700
-people. To enable linkage between GEMINI data and DA-level information, the DA of a given encounter was
-derived from their postal code using the
-\href{https://www150.statcan.gc.ca/n1/en/catalogue/92-154-X}{Postal Code Conversion File Plus (PCCF+)} program.
 }
 
 \section{Ontario Marginalization Index (On-Marg)}{
 
-On-Marg is a neighborhood-level index measuring marginalization differences between areas based on a subset
-of 42 variables from the Statistics Canada census.
+On-Marg is a neighborhood-level index measuring marginalization differences
+between areas based on a subset of variables from the Statistics Canada census.
 
-The index was derived from a principal component factor analysis, which resulted in 18 indicators along the
-following 4 dimensions:
+The index was derived from a principal component factor analysis on 42
+variables, which resulted in 18 indicators along the following 4 dimensions:
 \enumerate{
-\item Households and dwellings: Measures housing density and characteristics of family structure (e.g., living
-alone, \% dwellings not owned)
-\item Material resources: Measures access to basic material needs (e.g., employment rate)
-\item Age and labour force: Includes indicators such as the \% of seniors (65+), children, and those that are
-not part of the labour force
-\item Racialized and newcomer populations: Measures the \% of people who are newcomers or identify as a visible minority
+\item Households and dwellings: Measures housing density and characteristics of
+family structure (e.g., living alone, \% dwellings not owned)
+\item Material resources: Measures access to basic material needs (e.g.,
+employment rate)
+\item Age and labour force: Includes indicators such as the \% of seniors (65+),
+children, and those that are not part of the labour force
+\item Racialized and newcomer populations: Measures the \% of people who are
+newcomers or identify as a visible minority
 }
 
-In the 2016 version of ON-Marg, the 4 dimensions were called "Residential instability", "Material
-deprivation", "Dependency", and "Ethnic concentration" respectively. The dimensions were renamed in 2021 to
-avoid deficit-based language and better reflect the census measures associated with each dimension.
+In the 2016 version of ON-Marg, the 4 dimensions were called "Residential
+instability", "Material deprivation", "Dependency", and "Ethnic concentration"
+respectively. The dimensions were renamed in 2021 to avoid deficit-based
+language and better reflect the census measures associated with each dimension.
 
-All ON-Marg variables are available as continuous factor scores as well as quintiles, where higher values
-represent a higher degree of marginalization.
+All ON-Marg variables are available as continuous factor scores as well as
+quintiles. Higher scores represent a higher degree of marginalization.
 }
 
 \section{Missing values}{
 
-Some encounters could not be linked to Statistics Canada data due to missing/invalid postal codes, or due
-to the fact that they reside in an area not covereded by the census. These encounters will be returned with
-\code{dauid = NA}
-Additionally, Statistics Canada suppresses results from certain DAs due to low response rates or data
-quality issues. The corresponding census/ON-Marg variables will be returned as \code{NA} for all \code{genc_ids} in
-that DA.
+Some encounters could not be linked to Statistics Canada data due to missing/
+invalid postal codes, or due to the fact that they reside in an area not
+covereded by the census. These encounters will be returned with \code{dauid = NA}.
+
+Additionally, Statistics Canada suppresses results from certain DAs due to
+low response rates or data quality issues. The corresponding census/ON-Marg
+variables will be returned as \code{NA} for all \code{genc_ids} in those DAs.
 }
 
 \examples{
@@ -135,8 +151,16 @@ neighborhood_ses_table <- neighborhood_ses(dbcon, cohort, 2021)
 
 }
 \references{
-\href{https://www12.statcan.gc.ca/census-recensement/2021/ref/98-304/2021001/chap1-eng.cfm}{Statistics Canada Census.}
-\href{https://www.publichealthontario.ca/-/media/Event-Presentations/2023/09/ontario-marginalization-index-updates-products.pdf?rev=07baae2569164c17abaa18464075aa20&sc_lang=en}{ON-Marg guide 2021}
-\href{https://www.publichealthontario.ca/-/media/documents/U/2018/userguide-on-marg.pdf}{ON-Marg guide 2016}
-\href{https://www.cihi.ca/sites/default/files/document/toolkit-area-level-measurement-pccf-en.pdf}{Measuring Health Inequalities: A Toolkit Area-Level Equity Stratifiers Using PCCF and PCCF+}
+\itemize{
+\item \strong{Statistics Canada Census}
+\item \href{https://www12.statcan.gc.ca/census-recensement/2021/ref/index-eng.cfm}{2021 Census}
+\item \href{https://www12.statcan.gc.ca/census-recensement/2016/ref/index-eng.cfm}{2016 Census}
+\item \strong{Ontario Maginalization Index}
+\item \href{https://www.publichealthontario.ca/-/media/documents/o/2017/on-marg-userguide.pdf}{ON-Marg 2021}
+\item \href{https://www.publichealthontario.ca/-/media/documents/U/2018/userguide-on-marg.pdf}{ON-Marg 2016}
+\item \href{https://www.publichealthontario.ca/-/media/Event-Presentations/2023/09/ontario-marginalization-index-updates-products.pdf?rev=07baae2569164c17abaa18464075aa20&sc_lang=en}{Additional information}
+\item \strong{PCCF+}
+\item \href{https://library.carleton.ca/sites/default/files/2023-03/PCCF\%2BUserguide-2021.pdf}{PCCF+ Reference Guide}
+\item \href{https://www.cihi.ca/sites/default/files/document/toolkit-area-level-measurement-pccf-en.pdf}{Measuring Health Inequalities: A Toolkit}
+}
 }
