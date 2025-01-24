@@ -79,7 +79,7 @@
 #' This function returns a `data.table` where each row corresponds to a `genc_id` from
 #' the user-provided cohort input, together with the following columns:
 #'
-#' - DA the encounter resides in: `dauid`
+#' - DA the encounter resides in (based on PCCF+): `da`
 #' - Neighbourhood-level income (continuous):
 #'  - `atippe` (neighbourhood after tax income per single person equivalent)
 #'  - `btippe` (neighbourhood before tax income per single person equivalent)
@@ -125,23 +125,19 @@
 #' }
 #'
 neighborhood_ses <- function(dbcon, cohort, census_year) {
+  ## check user inputs
   check_input(cohort, c("data.table", "data.frame"), colnames = "genc_id")
   cohort <- coerce_to_datatable(cohort)
-
   check_input(dbcon, argtype = "DBI")
+  # only 2016 & 2021 census are currently available
+  check_input(census_year, c("numeric", "character"), categories = c(2016, 2021))
+  
   ## write a temp table to improve querying efficiency
   DBI::dbSendQuery(dbcon, "Drop table if exists temp_data;")
   DBI::dbWriteTable(
     dbcon, c("pg_temp", "temp_data"), cohort[, .(genc_id)],
     row.names = FALSE, overwrite = TRUE
   )
-
-  ## only da=2016, 2021 are allowed values
-  check_input(census_year, c("numeric", "character"), categories = c(2016, 2021))
-
-  substrRight <- function(x, n) {
-    substr(x, nchar(x) - n + 1, nchar(x))
-  }
 
   ## query relevant DB table based on census year
   if (census_year == 2021) {
@@ -159,14 +155,15 @@ neighborhood_ses <- function(dbcon, cohort, census_year) {
     )
 
     # query relevant columns
+    # note: columns with capital letters need "" to maintain column name
     nbhd_data <- DBI::dbGetQuery(
       dbcon,
       "SELECT tmp.genc_id, l.da21uid, s.c21_vismin, s.c21_vismin_not, s.qnatippe, s.qnbtippe, s.qaatippe,
       s.qabtippe, s.atippe, s.btippe, s.c21_immsta, s.c21_immsta_imm, s.c21_ed_15over_postsec,
-      s.c21_ed_15over, s.c21_ed_25to64_postsec, s.c21_ed_25to64, 'households_dwellings_DA21',
-      'material_resources_DA21', 'age_labourforce_DA21', 'racialized_NC_pop_DA21',
-      'households_dwellings_q_DA21', 'material_resources_q_DA21', 'age_labourforce_q_DA21',
-      'racialized_NC_pop_q_DA21'
+      s.c21_ed_15over, s.c21_ed_25to64_postsec, s.c21_ed_25to64, \"households_dwellings_DA21\",
+      \"material_resources_DA21\", \"age_labourforce_DA21\", \"racialized_NC_pop_DA21\",
+      \"households_dwellings_q_DA21\", \"material_resources_q_DA21\", \"age_labourforce_q_DA21\",
+      \"racialized_NC_pop_q_DA21\"
       FROM temp_data tmp
       left join locality_variables l on l.genc_id = tmp.genc_id
       left join lookup_statcan_v2021 s on l.da21uid = s.da21uid;"
@@ -188,80 +185,87 @@ neighborhood_ses <- function(dbcon, cohort, census_year) {
 
     # query relevant columns
     nbhd_data <- DBI::dbGetQuery(
-      dbcon, paste("SELECT tmp.genc_id, l.da16uid, s.c16_vismin, s.c16_vismin_not, s.qnatippe, s.qnbtippe,
-      s.qaatippe, s.qabtippe, s.atippe, s.btippe, s.c16_immsta, s.c16_immsta_imm, s.c16_ed_15over_postsec,
-      s.c16_ed_15over, s.c16_ed_25to64_postsec, s.c16_ed_25to64, s.instability_da16, s.deprivation_da16,
-      s.dependency_da16, s.ethniccon_da16, s.instability_q_da16, s.deprivation_q_da16, s.dependency_q_da16,
-      s.ethniccon_q_da16
+      dbcon, paste("SELECT tmp.genc_id, l.da16uid, s.c16_vismin, s.c16_vismin_not, s.qnatippe,
+      s.qnbtippe, s.qaatippe, s.qabtippe, s.atippe, s.btippe, s.c16_immsta, s.c16_immsta_imm,
+      s.c16_ed_15over_postsec, s.c16_ed_15over, s.c16_ed_25to64_postsec, s.c16_ed_25to64,
+      s.instability_da16, s.deprivation_da16, s.dependency_da16, s.ethniccon_da16,
+      s.instability_q_da16, s.deprivation_q_da16, s.dependency_q_da16, s.ethniccon_q_da16
       FROM temp_data tmp
       left join locality_variables l on l.genc_id = tmp.genc_id
       left join ", table_name, " s on l.da16uid = s.da16uid; ")
     ) %>%
       as.data.table()
-
   }
+  nbhd_data[nbhd_data == ""] <- NA
 
-  ## Clean up output variables
-  # change all invalid income values to NA
-  # any values where the quintile starts with 9 are invalid
-  cols_to_modify <- c("qnatippe", "qnbtippe", "qaatippe", "qabtippe", "atippe", "btippe")
-
-  # Replace 9s with NA in the specified columns
-  nbhd_data[, (cols_to_modify) := lapply(.SD, function(x) fifelse(x %in% c(9, 99999999, 999, 999999), NA, x)), .SDcols = cols_to_modify]
-  
-  ## cal %
+  ## Standardize variable names
+  # remove year prefixes/suffixes from column names
   yr <- substring(census_year, 3, 4)
+  setnames(nbhd_data, gsub(paste0(
+    "c", yr, "_|", # e.g., c16_
+    yr, "uid|", # e.g., da16uid -> da
+    "_da", yr # e.g., instability_da16 -> instability
+  ), "", colnames(nbhd_data), ignore.case = TRUE))
+  colnames(nbhd_data)
 
-  # cal % visible minority
-  nbhd_data[, vm := round(get(paste0("c", yr, "_vismin")) / (get(paste0("c", yr, "_vismin")) + get(paste0("c", yr, "_vismin_not"))) * 100, 2)]
+  ## Income
+  # set all invalid income values to NA
+  # note: in 2016 invalid quintiles are 9, in 2021 invalid quintiles are 999
+  # -> set all income variables ("tippe") to NA if `qnatippe` starts with 9
+  # this also overwrites invalid raw income (e.g., atippe = 9999999) with NA
+  nbhd_data[
+    grepl("^9", qnatippe), (
+      grep("tippe", names(nbhd_data), value = TRUE)
+    ) := lapply(.SD, function(x) NA),
+    .SDcols = patterns("tippe")
+  ]
 
-  # cal % immigration status
-  nbhd_data[, im := round(get(paste0("c", yr, "_immsta_imm")) / (get(paste0("c", yr, "_immsta"))) * 100, 2)]
+  ## % visible minority
+  nbhd_data[, vismin_pct := round(100 * vismin / (vismin + vismin_not), 2)]
 
-  # cal % post-secondary education (>15)
-  nbhd_data[, ed15 := round(get(paste0("c", yr, "_ed_15over_postsec")) / (get(paste0("c", yr, "_ed_15over"))) * 100, 2)]
+  ## % immigration status
+  nbhd_data[, immsta_pct := round(100 * immsta_imm / immsta, 2)]
 
-  # cal % post-secondary education (25-64)
-  nbhd_data[, ed25 := round(get(paste0("c", yr, "_ed_25to64_postsec")) / (get(paste0("c", yr, "_ed_25to64"))) * 100, 2)]
+  ## % post-secondary education (>15)
+  nbhd_data[, ed_15over_postsec_pct := round(100 * ed_15over_postsec / ed_15over, 2)]
 
-  nbhd_data[, dalast := substrRight(get(paste0("da", yr, "uid")), 4)]
+  ## % post-secondary education (25-64)
+  nbhd_data[, ed_25to64_postsec_pct := round(100 * ed_25to64_postsec / ed_25to64, 2)]
 
-  da_miss <- nbhd_data[is.na(get(paste0("da", yr, "uid"))) | dalast == 9999]
-  da_exist <- nbhd_data[!is.na(get(paste0("da", yr, "uid")))]
-  nar <- rowSums(is.na(da_exist))
+  ## warning about % missing/invalid DA
+  # all valid DAs should be 8-digit numerical codes (2 province + 2 census subdivision + 2-3 DA)
+  # note: according to PCCF+ documentation, DAs ending with 9999 are invalid
+  # (census/ON-Marg variables should all be NA in those cases)
+  nbhd_data[, missing_n := rowSums(is.na(nbhd_data))]
+  check <- nbhd_data %>%
+    group_by(da, missing_n) %>%
+    summarize(N = n())
 
-  # warning about % missing DA
+  check <- nbhd_data[grepl("9999$", da), ] # , da := NA]
+  check <- nbhd_data[rowSums(is.na(nbhd_data)) == 22, ]
+  da_miss <- nbhd_data[grepl("9999^", da), da := NA]
   message(paste0(
     round(nrow(da_miss) / nrow(nbhd_data) * 100, 2),
-    "% of `genc_ids` in your cohort can't be linked to census data due to missing/invalid postal codes.\n"
+    "% of `genc_ids` in the cohort could not be linked to census data due to ",
+    "missing/invalid postal code information. These encounters are returned with DA = NA.\n"
   ))
-  # warning about % missing variables for encounters with valid DA
+
+  ## warning about % missing (suppressed) census/ON-Marg variables
+  # only include encounter with valid DA
+  da_exist <- nbhd_data[!is.na(da)]
+  missing_var <- round(100 * sum(rowSums(is.na(da_exist)) > 0) / nrow(da_exist), 2)
   message(paste0(
-    "Among `genc_ids` with valid DA, ",
-    round(length(nar[nar > 0]) / nrow(da_exist) * 100, 2),
-    "% have at least 1 missing SES variable due to suppressed census or On-Marg data. ",
-    "Please carefully check the % of NA for each variable of interest."
+    "Among `genc_ids` with valid DA, ", missing_var,
+    "% have at least 1 missing (suppressed) census or ON-Marg variable. ",
+    "These variables are returned as NA. ",
+    "Please carefully check missingness each variable of interest."
   ))
 
-  ## clean up colns
-  coln_exclude <- c(
-    paste0("c", yr, "_vismin"), paste0("c", yr, "_vismin_not"),
-    paste0("c", yr, "_immsta_imm"), paste0("c", yr, "_immsta"),
-    paste0("c", yr, "_ed_15over_postsec"), paste0("c", yr, "_ed_15over"),
-    paste0("c", yr, "_ed_25to64_postsec"), paste0("c", yr, "_ed_25to64"),
-    "dalast"
-  )
+  ## remove raw numerator/denominator columns from output
+  nbhd_data <- nbhd_data[, -c(
+    "vismin", "vismin_not", "immsta_imm", "immsta", "ed_15over_postsec",
+    "ed_15over", "ed_25to64_postsec", "ed_25to64"
+  )]
 
-  coln_keep <- setdiff(names(nbhd_data), coln_exclude)
-
-  rec <- nbhd_data %>%
-    select(all_of(coln_keep))
-
-  # change to final names
-  setnames(rec, "vm", "vismin_pct")
-  setnames(rec, "im", "immsta_pct")
-  setnames(rec, "ed15", "ed_15over_postsec_pct")
-  setnames(rec, "ed25", "ed_25to64_postsec_pct")
-
-  return(rec)
+  return(nbhd_data)
 }
