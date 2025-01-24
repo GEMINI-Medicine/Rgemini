@@ -79,7 +79,8 @@
 #' This function returns a `data.table` where each row corresponds to a `genc_id` from
 #' the user-provided cohort input, together with the following columns:
 #'
-#' - DA the encounter resides in (based on PCCF+): `da`
+#' - GEMINI encounter ID: `genc_id`
+#' - DA the encounter resides in (based on PCCF+): `da_uid`
 #' - Neighbourhood-level income (continuous):
 #'  - `atippe` (neighbourhood after tax income per single person equivalent)
 #'  - `btippe` (neighbourhood before tax income per single person equivalent)
@@ -133,6 +134,7 @@ neighborhood_ses <- function(dbcon, cohort, census_year) {
   check_input(census_year, c("numeric", "character"), categories = c(2016, 2021))
   
   ## write a temp table to improve querying efficiency
+  dbExecute(dbcon, "SET client_min_messages TO WARNING;") # suppress SQL notices
   DBI::dbSendQuery(dbcon, "Drop table if exists temp_data;")
   DBI::dbWriteTable(
     dbcon, c("pg_temp", "temp_data"), cohort[, .(genc_id)],
@@ -200,13 +202,14 @@ neighborhood_ses <- function(dbcon, cohort, census_year) {
 
   ## Standardize variable names
   # remove year prefixes/suffixes from column names
-  yr <- substring(census_year, 3, 4)
+  setnames(nbhd_data,
+    c("da16uid", "da21uid"), c("da_uid", "da_uid"),
+    skip_absent = TRUE
+  )
   setnames(nbhd_data, gsub(paste0(
-    "c", yr, "_|", # e.g., c16_
-    yr, "uid|", # e.g., da16uid -> da
-    "_da", yr # e.g., instability_da16 -> instability
+    "c16_|c21_|_da16|_da21" # e.g., c16_immsta -> immsta
   ), "", colnames(nbhd_data), ignore.case = TRUE))
-  colnames(nbhd_data)
+
 
   ## Income
   # set all invalid income values to NA
@@ -233,32 +236,25 @@ neighborhood_ses <- function(dbcon, cohort, census_year) {
   nbhd_data[, ed_25to64_postsec_pct := round(100 * ed_25to64_postsec / ed_25to64, 2)]
 
   ## warning about % missing/invalid DA
-  # all valid DAs should be 8-digit numerical codes (2 province + 2 census subdivision + 2-3 DA)
-  # note: according to PCCF+ documentation, DAs ending with 9999 are invalid
-  # (census/ON-Marg variables should all be NA in those cases)
-  nbhd_data[, missing_n := rowSums(is.na(nbhd_data))]
-  check <- nbhd_data %>%
-    group_by(da, missing_n) %>%
-    summarize(N = n())
-
-  check <- nbhd_data[grepl("9999$", da), ] # , da := NA]
-  check <- nbhd_data[rowSums(is.na(nbhd_data)) == 22, ]
-  da_miss <- nbhd_data[grepl("9999^", da), da := NA]
+  # all valid DAs should be 8-digit numerical codes
+  # according to PCCF+ documentation, DAs ending with 9999 are invalid (see page 21:
+  # https://library.carleton.ca/sites/default/files/2023-03/PCCF%2BUserguide-2021.pdf)
+  # census/ON-Marg variables should all be NA in those cases
+  nbhd_data[grepl("9999$", da_uid) | nchar(da_uid) < 8, da_uid := NA]
   message(paste0(
-    round(nrow(da_miss) / nrow(nbhd_data) * 100, 2),
+    round(sum(is.na(nbhd_data$da_uid)) / nrow(nbhd_data) * 100, 2),
     "% of `genc_ids` in the cohort could not be linked to census data due to ",
-    "missing/invalid postal code information. These encounters are returned with DA = NA.\n"
+    "missing/invalid postal code information. These encounters are returned with `da_uid = NA`.\n"
   ))
 
   ## warning about % missing (suppressed) census/ON-Marg variables
-  # only include encounter with valid DA
-  da_exist <- nbhd_data[!is.na(da)]
-  missing_var <- round(100 * sum(rowSums(is.na(da_exist)) > 0) / nrow(da_exist), 2)
+  # only include encounters with valid DA in denominator
   message(paste0(
-    "Among `genc_ids` with valid DA, ", missing_var,
+    "Among `genc_ids` with valid DA, ",
+    round(100 * sum(rowSums(is.na(nbhd_data[!is.na(da_uid)])) > 0) / sum(!is.na(nbhd_data$da_uid)), 2),
     "% have at least 1 missing (suppressed) census or ON-Marg variable. ",
     "These variables are returned as NA. ",
-    "Please carefully check missingness each variable of interest."
+    "Please carefully check missingness for each variable of interest."
   ))
 
   ## remove raw numerator/denominator columns from output
