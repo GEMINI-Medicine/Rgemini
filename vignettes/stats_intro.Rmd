@@ -129,7 +129,7 @@ While it is possible to estimate the effect of age on mortality on its own, ofte
   - Charlson comorbidities are comorbid conditions that can be used to predict the risk of death and     should be controlled for when considering the outcome of death: [Charlson ME et al. J Chronic Dis, 1987](https://www.sciencedirect.com/science/article/abs/pii/0021968187901718).
   - mLAPS (modified laboratory acute physiology score) is an indicator of illness severity based on physiological lab data at or before admission  that is used to adjust for risk: [Roberts S et al. Preprint, 2023](https://www.medrxiv.org/content/10.1101/2023.01.06.23284273v1). GEMINI's in-house package, [Rgemini](https://gemini-medicine.github.io/Rgemini/reference/mlaps.html), is a fast and convenient way of deriving this variable.
 
-Including all variables in a statistical model is referred to as an adjusted model and can help better understand the causal relationship between an exposure and its outcome. The DAG below takes these variables into account. 
+Including additional variables in a statistical model is referred to as an adjusted model and can help better understand the causal relationship between an exposure and its outcome. The DAG below takes these variables into account. 
 ```{r, echo=FALSE, out.width = "60%", fig.align = "center", fig.cap="<span style='color:grey; font-size:11px'> DAG of age and in-hospital mortality, including confounders </span> " }
 knitr::include_graphics("figures/dag_img2.png", dpi = 200)
 ```
@@ -168,7 +168,7 @@ The cohort inclusion/exclusion steps should be developed in close collaboration 
 
 Now that we have clarified the conceptual framework and cohort definition, let's take a look at the data.
 
-Here, we assume our baseline cohort consists of all GIM encounters discharged between Apr 2018 - Apr 2020 (see incl. 1 above) from 20 hospitals. GIM encounters are defined as all encounters that were either admitted to/or discharged from GIM (see `gim_flag_derived` in the `derived_variables` table [**NOTE: This will be added to the next DB version**]).
+Here, we assume our cohort consists of all GIM encounters discharged between Apr 2018 - Apr 2020 (see incl. 1 above) from 20 hospitals. GIM encounters are defined as all encounters that were either admitted to/or discharged from GIM (see `gim_flag_derived` in the `derived_variables` table [**NOTE: This will be added to the next DB version**]).
 
 We'll load this dummy data from a saved file and turn it into a `data.table` object:
 
@@ -225,14 +225,21 @@ Plotting the number of encounters over time and by hospital can provide insights
 </details>
 
 
-In our example data, we can see that sites 6, 9, 10, and 12 do not have any encounters during certain time periods, indicating gaps in data coverage. We will therefore exclude these sites to make sure we have consistent data timelines across all hospitals.
+In our example data, we can see that sites 6, 9, 10, and 12 do not have any encounters during certain time periods, indicating gaps in data coverage. We will therefore exclude these sites to make sure we have consistent data timelines across all hospitals. 
 
+
+<details>
+<summary>***Expand this section for some additional tips***</summary>
+
+There are situations where we might have retained encounters during hospital-time-periods where data were available (e.g., decide to include hospital 12 before the stark drop off instead of exclude hospital 12 altogether). The decision of how to handle missing hospital-time-periods comes down to the specific research question, and whether retaining those data will induce bias. If we are intersted in trends over time, exclusion is generally advised. NB this guidance also applied to **4.1.2 Clinical data coverage**
+
+</details>
 
 ### Clinical data coverage 
 
 Even if a hospital has a large number of encounters during certain time periods, this does not necessarily mean that GEMINI has *all* relevant variables for these encounters. This is particularly relevant for clinical data (e.g., lab/pharmacy/vitals/transfusions etc.), which may have low coverage for certain hospitals and time periods. Therefore, we should also check data coverage for any relevant clinical variables, or specific columns of interest that may have missing values. 
 
-For example, in our analyses, we want to include mLAPS as a covariate. Since mLAPS relies on lab data, `mlaps` will me missing for any time periods where lab data were not available. To check this, we'll plot the % of encounters that have a missing `mlaps` value :
+For example, in our analyses, we want to include mLAPS as a covariate. Since mLAPS relies on lab data, `mlaps` will be missing for any time periods where lab data were not available. To check this, we'll plot the % of encounters that have a missing `mlaps` value :
 
 ```{r, results='hide'}
 Rgemini::plot_over_time(data, plot_var = "mlaps", func = "na")
@@ -432,7 +439,7 @@ cohort_creation <- function(
 
 ```{r}
 cohort_table <- cohort_creation(
-  cohort = list(data[incl1_gim == TRUE], # baseline cohort (discharges between 2018 - 2020)
+  cohort = list(data[incl1_gim == TRUE], #  cohort (discharges between 2018 - 2020)
                 data[incl2_coverage == TRUE],
                 data[incl2_coverage == TRUE & incl3_pneumonia == TRUE],
                 data[incl2_coverage == TRUE & incl3_pneumonia == TRUE & excl1_transfer == FALSE],
@@ -456,7 +463,7 @@ cohort_table %>% knitr::kable(escape = FALSE, format = "html") %>%
 
 <br></br>
 
-Let's create a new table called `cohort` that only contains the included `genc_ids`: 
+Let's create a new data table called `cohort` that only contains the eligible `genc_ids`: 
 
 ```{r}
 cohort <- data[
@@ -514,13 +521,13 @@ Let's first take a closer look at missing values. We need to carefully consider 
 <details>
 <summary>***Consider what potential reasons could explain missing values in `mlaps`. Then expand this section for more information.***</summary>
 
-For `mlaps`, values are missing for any `genc_ids` that do not have any ED lab entries for relevant mLAPS tests. This could be due to the following reasons:
+`mlaps` is based on laboratory tests collected before a patient's `admission_date_time` (i.e., in the emergency department).  `mlaps` values are missing for any `genc_ids` that do not have any ED lab entries for relevant mLAPS tests. This could be due to the following reasons:
 
 **1. The encounter was not admitted via the ED.** These encounters were excluded from our cohort, so this does not apply here.
 
-**2. GEMINI data does not have lab data available for that encounter.** We already checked lab data coverage above and removed hospitals without continuous lab data. For the remaining time periods, `mlaps` missingness was generally low (<10%) so we can assume that lab data coverage was generally high.
+**2. That hospital does not have lab data available for that encounter.** We already checked lab data coverage above and removed hospitals without continuous lab data. For the remaining time periods, `mlaps` missingness was generally low (<10%) so we can assume that lab data coverage was generally high.
 
-**3. Tests were not performed.** If we can rule out 1) and 2), the reason for why individual `genc_ids` don't have an `mlaps` value is likely because testing was not indicated for these particular encounters (e.g., when the patient was admitted, the physician did not order any tests included in the `mlaps` calculation because they were not deemed clinically necessary).
+**3. Tests were not performed.** If we can rule out 1) and 2), the reason for why individual `genc_ids` don't have an `mlaps` value is likely because testing was not indicated for these particular encounters (e.g., when the patient was admitted, the physician did not order any tests included in the `mlaps` calculation because they were not deemed clinically necessary). 
 
 </details>
 
@@ -531,7 +538,7 @@ cohort[is.na(mlaps), mlaps := 0]
 ```
 
 
-**Note that it's important to distinguish between "data coverage" (overall data volume for certain tables) vs. "missing values" (individual entries with `NA` values for certain table columns).** Even when data coverage is generally high, individual entries may still have missing values. For time periods with high data coverage, we can sometimes make certain assumptions about missing values based on the clinical context, allowing us to perform single-value imputation (e.g., imputing all missing `mlaps` values with 0). 
+**Note that it's important to distinguish between "data coverage" (overall data volume for certain tables) vs. "missing values" (individual entries with `NA` values for certain table columns).** Even when data coverage is generally high, individual entries may still have missing values. For time periods with high data coverage, we can sometimes make certain assumptions about missing values based on the clinical context, allowing us to perform single-value imputation (e.g., imputing all missing `mlaps` values with 0). There are many cases where we cannot make these assumptions. Make sure to discuss how you handle missing values with your PI and Scientific Advisor. 
 
 <details>
 <summary>***Expand this section to learn more about different types of missingness.***</summary>
@@ -550,9 +557,9 @@ In the summary plot above, we can see that there are some encounters with extrem
 ```{r}
 100 * sum(cohort$los_days_derived > 90) / nrow(cohort)
 ```
-Only ~0.5% of patients in our cohort stayed in hospital for more than 90 days. These patients are not representative of typical pneumonia patients, but instead, might have additional complications that we may not be able to appropriately account for in our simple model here. Specifically, our baseline covariates like `mlaps` are measured at the time of admission, but for patients with long LOS, several other events may occur throughout their hospitalization, which can affect clinical outcomes (in fact, patients with long LOS may have been admitted with a different condition, but then contracted pneumonia during their hospitalization, which was ultimately coded as their MRDx). 
+Only ~0.5% of patients in our cohort stayed in hospital for more than 90 days. These patients are not representative of the typical pneumonia patient we are interested in. There is an element of complexity to their situation that makes them different than the typical pneumonia patients (maybe they are sicker, maybe they lack social supports to be discharged elsewhere, etc.). Further, our baseline covariates like `mlaps` are measured at the time of admission, but for patients with long LOS, several other events may occur throughout their hospitalization, which can affect clinical outcomes (in fact, patients with long LOS may have been admitted with a different condition, but then contracted pneumonia during their hospitalization, which was ultimately coded as their MRDx). 
 
-To remove any bias these outliers might introduce in the model, we will exclude any encounters with long LOS. Here, we choose LOS <= 90 days as a cut-off, but in general, you should discuss the appropriate criterion with a clinical expert:
+To remove any bias these outliers might introduce in the model, we will exclude any encounters with long LOS. Here, we choose LOS <= 90 days as a cut-off, but in general, you should discuss the appropriate criterion with a clinical expert. This will be informed by the nature of the research question. 
 
 ```{r}
 data[, exclude_los := los_days_derived > 90]
@@ -593,7 +600,7 @@ cohort <- data[
 ```
 
 
-**Note:** We generally do not recommend blindly removing outliers (e.g., based on generic criteria like +/-3 SDs) unless there is a conceptual rationale, or reasons to assume that outliers are implausible values that may reflect data quality issues (e.g., data entry errors). Instead, you should carefully consider what the potential reason for outliers is and whether they might affect the causal relationships between your variables of interest (e.g., see DAG above) in order to decide how to handle extreme values. 
+**Note:** We generally do not recommend blindly removing outliers (e.g., based on generic criteria like +/-3 SDs) unless there is a conceptual rationale, or reasons to assume that outliers are implausible values that may reflect data quality issues (e.g., data entry errors). Instead, you should carefully consider what the potential reason for outliers is and whether they might affect the relationships between your variables of interest (e.g., see DAG above) in order to decide how to handle extreme values. 
 
 
 ### Variable transformation
@@ -636,6 +643,154 @@ Rgemini::plot_over_time(cohort, plot_var = "mlaps", func = "mean")
 *  *  *  *
 
 # Regression model
+
+**This section is meant to walk you through the decision making process that leads us to our final model. We will bulid up to the final model and build your intuition along the way.**
+
+## Types of regression 
+
+Regression is a statistical method used to model the relationship between a dependent variable (often called the outcome or response variable) and one or more independent variables (often called predictors or explanatory variables). The nature of the outcome variable is what determines the type regression we will use. This influences the kind of estimate we report. Note that these models can produce a wider variety of estimates than the table indicates (e.g. logistic regession can produce risk ratios), but these are the interpretations of the coefficients). 
+
+```{r echo = FALSE}
+regression_table <- data.frame(
+  Regression_Type = c("Linear Regression", 
+                     "Logistic Regression", 
+                     "Poisson Regression", 
+                     "Negative Binomial Regression", 
+                     "Cox Proportional Hazards Regression", 
+                     "Fine-Gray Regression"),
+  Outcome_Type = c("Continuous", 
+                   "Binary", 
+                   "Count", 
+                   "Overdispersed Count", 
+                   "Time-to-Event", 
+                   "Time-to-Event with Competing Risk"),
+  Estimate_Type = c("Estimated Mean Difference", 
+                  "Odds Ratio", 
+                  "Rate Ratio", 
+                  "Rate Ratio", 
+                  "Hazard Ratio", 
+                  "Subdistribution hazard ratio") 
+)
+
+# Create a table using kable()
+kable(regression_table, 
+      col.names = c("Regression Type", "Outcome Type", "Estimate Type"), 
+      align = "l", 
+      caption = "Regression Types and Corresponding Outcome Types")
+
+```
+
+## In-hospital mortality 
+We are trying to understand the effect of age on in-hospital mortality. 
+
+One outcome in our study is in-hospital mortality, which is binary (dead, not dead). So, we will be using a logistic regression. We use the `rms` package [3](https://cran.r-project.org/web/packages/rms/index.html), which is a fantastic resource that makes best-practices easy to implement. 
+
+A simple approach would be to fit a univariate logistic regression with mortality as the outcome and age as an independent variable. We fit that regression: 
+```{r}
+options(scipen = 999) # turns off scientific notation in outputs 
+library(rms)
+
+
+mod <- lrm(in_hospital_mortality_derived ~ age,
+  data = cohort,
+  x = TRUE, y = TRUE #this saves some data in model object for downstream use 
+)
+mod
+
+odds_ratio <- data.frame(
+  OR = exp(mod$coefficients),
+  CIL95 = exp(mod$coefficients + qnorm(0.025) * sqrt(diag(mod$var))),
+  CIU95 = exp(mod$coefficients + qnorm(0.975) * sqrt(diag(mod$var)))
+) %>% round(3)
+odds_ratio
+```
+
+We see that the odds ratio is 1.044 and the 95% confidence limits are 1.037 and 1.052. Each additional year of age is associated with 1.044 increased odds of death. Our 95%CI do not cross 1, so our results are statistically significant. 
+
+This tells us that older age is associated with more death, but it does not tell us how much death. For that, we turn to probabilities. Recall that odds are a transformation of probability. If something has a 75% probability (P=0.75), the odds that it happens are 3:1. `Odds = (probability / (1-probability))`.
+
+The logistic regression models log(odds). Thus, predicted values from the logistic regression are in log(odds) units, which can be transformed to probabilities using the above formula. In this way, we can produce predicted probabilities to understand absolute risk. 
+
+```{r}
+dd <- datadist(cohort)
+options(datadist = "dd") # these two lines are required when using Predict()
+
+preds <- Predict(mod,
+              conf.int = 0.95, 
+              conf.type = "mean", 
+              fun = plogis 
+)
+
+plot(preds, main = "Predicted probability of death by age")
+```
+
+We see from this plot that the predicted probability of death ranges from <0.1% in 18 year olds to nearly 20% in the oldest patients. This is new, interesting information. 
+
+<details>
+<summary>***Expand this section if you are confused as to why this plot appears nonlinear***</summary>
+You may notice that this plot is nonlinear, but we modeled age as a linear term. Why is this? We know there is only a single coefficient (the odds ratio) that describes the increase in odds of mortality for each additional year, so why does this relationship appear nonlinear? Remember that logistic regression treats the **log odds** as linear, and our transformation to probabilities involved an exponentiation. This is the source of the nonlinearity on the probability scale. See below proof of linearity on the log-odds scale. 
+
+```{r}
+preds <- Predict(mod,
+              conf.int = 0.95, 
+              conf.type = "mean"
+)
+
+plot(preds, main = "Log-odds of death by age")
+```
+</details>
+
+So, now we have a single odds ratio that describes the increased odds of death per year. We are assuming that each year, the odds of death increase by the same amount as the previous year. We assume that an 18 year old turning 19 and an 89 year old turning 90 have both gained the same additional odds of death. This is a strong assumption and we need to test it! 
+
+We will fit a model that relaxes the linearity assumption on age. We will use a restricted cubic spline with 4 knots to do this. We compare model fit between linear age and nonlinear age. 
+
+```{r}
+mod_spl <- lrm(in_hospital_mortality_derived ~ rcs(age, 4),
+        data = cohort,
+         x = TRUE, y = TRUE 
+)
+mod_spl
+
+lrtest(mod, mod_spl) # likelihood ratio test
+AIC(mod)
+AIC(mod_spl) # AIC no better for nonlinear
+```
+
+See that we now have 3 separate coefficients for age. These coefficients are essentially uninterpretable, which is a cost we pay for relaxing the nonlinearity assumption. We rely on likelihood ratio tests, predicted probabilities, and post-hoc contrasts (beyond the scope of this document) to report results from splines. 
+
+See that the nonlinear model does not fit the data any better based on AIC and likelihood ratio test. This is supported by the plot below, which shows very similar predicted probabilities using the spline.  
+
+```{r}
+preds <- Predict(mod_spl,
+              conf.int = 0.95, 
+              conf.type = "mean", 
+              fun = plogis
+)
+
+plot(preds, main = "Predicted probability of death by age")
+```
+
+We proceed with the linear model because describing every additional year with the same odds ratio seems to be a reasonable assumption. 
+
+
+
+
+<details>
+<summary>**Expand section to learn about restricted cubic splines**</summary>
+-describe basis function, knots, degrees of freedom (more expensive)
+- knots at quantiles, connected by cubic polynomials 
+- restricted means we constrain to linearity in the extremes. 
+
+</details>
+
+<details>
+<summary>**Expand section to learn more about odds and probability**</summary>
+- DESCRIBE ODDS VS PROBABILITY (P/1-P) 
+- LOGREG MODELS LOG ODDS, WHICH CAN BE TRANSFORMED TO PROBABILITY 
+- ODDS RATIOS TELL YOU HOW MUCH MORE LIKELY AN EVENT IS TO OCCUR IN A GROUP, BUT OFTEN WE WAN TTO KNOW HOW LIKELY IN EACH GROUP AND NOT JUST HOW MUCH MORE (EXPLAIN THIS IN THE CONTEXT OF EVENT RATE)
+
+</details>
+
 
 - Fit a-priori regression models (informed by question & variable types -> decision tree illustrating different variable types and appropriate models)
 - Verify regression model assumptions are met 
