@@ -5,17 +5,17 @@
 #' The `neighborhood_ses()` function derives neighborhood-level SES variables for
 #' a given encounter based on the dissemination area they reside in. All variables
 #' returned by this function are based on Statistics Canada Census data and the
-#' Ontario Marginalization Index (ON-Marg).
+#' Ontario Marginalization Index (ON-Marg; see below for details).
 #'
 #' For database versions since `drm_cleandb_v3` / `H4H_template_v4` users can
-#' choose between 2016 vs. 2021 census/ON-Marg data. Note that the names of some
+#' choose between 2016 vs. 2021 census/ON-Marg data. For earlier versions,
+#' only 2016 census data are available. Note that the names of some
 #' output variables vary by census year.
 #'
 #' @section Statistics Canada Census:
-#' All SES variables are sourced from the Statistics Canada Census. The census
-#' is collected every 5 years and provides a detailed statistical portrait of
-#' communities across Canada, including information about income, education,
-#' ethnicity, and immigrant status.
+#' The Statistics Canada census is collected every 5 years and provides a detailed
+#' statistical portrait of communities across Canada, including information about
+#' income, education, ethnicity, and immigrant status.
 #'
 #' Census data are collected by dissemination area (DA), which typically covers
 #' a population of 400-700 people. To enable linkage between GEMINI data and
@@ -30,17 +30,19 @@
 #'  - Statistics Canada sources information about household income from the Canadian Revenue Agency
 #'  - PCCF+ provides an income per person equivalent (IPPE) by adjusting household income by household size
 #'  - Both continuous income and national/community quintiles are returned
-#' - [**Post-secondary education**](https://www12.statcan.gc.ca/census-recensement/2021/ref/dict/az/Definition-eng.cfm?ID=pop038):
-#'  - Based on the long-form census questionnaire, which is only administered
-#' to 25% of households
+#' - [**Education**](https://www12.statcan.gc.ca/census-recensement/2021/ref/dict/az/Definition-eng.cfm?ID=pop038):
+#'  - Indicates a person's highest level of education: Based on the long-form census questionnaire,
+#' which is only administered to 25% of households
+#'  - The function returns the % of respondents with a post-secondary certificate, diploma, or degree
 #' - [**Visible minorities**](https://www12.statcan.gc.ca/census-recensement/2021/ref/98-500/006/98-500-x2021006-eng.cfm):
-#'  - Indicates whether a person identifies as a visible minority as defined by
-#' the Employment Equity Act: “persons, other than Aboriginal peoples, who are
-#' non-Caucasian in race or non-white in colour” (e.g., Black, South Asian,
-#' Chinese, Latin American etc.)
+#'  - Indicates whether a person identifies as a visible minority, defined as follows by
+#' the Employment Equity Act: “persons, other than Aboriginal peoples, who are non-Caucasian in
+#' race or non-white in colour” (e.g., Black, South Asian, Chinese, Latin American etc.)
 #'  - Based on the long-form census questionnaire, which is only administered
 #' to 25% of households
 #' - [**Immigrant status**](https://www12.statcan.gc.ca/census-recensement/2021/ref/dict/az/Definition-eng.cfm?ID=pop148):
+#'  - Indicates whether a person is, or has ever been, a landed immigrant or permanent resident
+#' in Canada. This indludes those who have obtained Canadian citizenship by naturalization.
 #'  - In 2021 census: Sourced from Immigration, Refugees and Citizenship Canada
 #'  - In 2016 census: Based on the long-form questionnaire (25% of households)
 #'
@@ -53,12 +55,12 @@
 #'
 #' 1) Households and dwellings: Measures housing density and characteristics of
 #' family structure (e.g., living alone, % dwellings not owned)
-#' 2) Material resources: Measures access to basic material needs (e.g.,
-#' employment rate)
+#' 2) Material resources: Measures access to basic material needs (e.g., housing,
+#' food, and clothing), education, and employment
 #' 3) Age and labour force: Includes indicators such as the % of seniors (65+),
 #' children, and those that are not part of the labour force
-#' 4) Racialized and newcomer populations: Measures the % of people who are
-#' newcomers or identify as a visible minority
+#' 4) Racialized and newcomer populations: Measures the % of people who are recent
+#' immigrants (within last 5 years) or identify as a visible minority
 #'
 #' In the 2016 version of ON-Marg, the 4 dimensions were called "Residential
 #' instability", "Material deprivation", "Dependency", and "Ethnic concentration"
@@ -71,7 +73,7 @@
 #' @section Missing values:
 #' Some encounters could not be linked to Statistics Canada data due to missing/
 #' invalid postal codes, or due to the fact that they reside in an area not
-#' covereded by the census. These encounters will be returned with `dauid = NA`.
+#' covereded by the census. These encounters will be returned with `da_uid = NA`.
 #'
 #' Additionally, Statistics Canada suppresses results from certain DAs due to
 #' low response rates or data quality issues. The corresponding census/ON-Marg
@@ -92,7 +94,7 @@
 #' `genc_id` from the user-provided cohort input, together with the following
 #' columns:
 #'
-#' - GEMINI encounter ID: `genc_id`
+#' - The user-provided census year: `census_year` (2016 or 2021)
 #' - DA the encounter resides in (based on PCCF+): `da_uid`
 #' - Neighbourhood-level income (continuous):
 #'  - `atippe` (neighbourhood after tax income per single person equivalent)
@@ -104,7 +106,7 @@
 #' based on distribution within a given community (based on census metropolitan
 #' area, census agglomeration, or residual area within each province).
 #' - % visible minorities: `vismin_pct`
-#' - % immigrants: `immsta_pct`
+#' - % with immigrant status: `immsta_pct`
 #' - % with post-secondary education:
 #'  - Including all respondents > 15 years of age: `ed_15over_postsec_pct`
 #'  - Only including respondents between 25-64 years: `ed_25to64_postsec_pct`
