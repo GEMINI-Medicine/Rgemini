@@ -72,7 +72,7 @@
 #' Some encounters could not be linked to Statistics Canada data due to missing/
 #' invalid postal codes, or due to the fact that they reside in an area not
 #' covereded by the census. These encounters will be returned with `dauid = NA`.
-#' 
+#'
 #' Additionally, Statistics Canada suppresses results from certain DAs due to
 #' low response rates or data quality issues. The corresponding census/ON-Marg
 #' variables will be returned as `NA` for all `genc_ids` in those DAs.
@@ -193,7 +193,6 @@ neighborhood_ses <- function(dbcon, cohort, census_year) {
       left join lookup_statcan_v2021 s on l.da21uid = s.da21uid;"
     ) %>%
       as.data.table()
-
   } else if (census_year == 2016) {
     # in DB versions < drm_cleandb_v3/H4H_template_v4, the 2016 statcan table was simply called
     # 'lookup_statcan'; for later versions, it's called 'lookup_statcan_v2016'
@@ -231,7 +230,6 @@ neighborhood_ses <- function(dbcon, cohort, census_year) {
   setnames(nbhd_data, gsub(paste0(
     "c16_|c21_|_da16|_da21" # e.g., c16_immsta -> immsta
   ), "", colnames(nbhd_data), ignore.case = TRUE))
-
 
   ## Income
   # set all invalid income values to NA
@@ -285,5 +283,12 @@ neighborhood_ses <- function(dbcon, cohort, census_year) {
     "ed_15over", "ed_25to64_postsec", "ed_25to64"
   )]
 
-  return(nbhd_data)
+  ## Add census year to output & make sure all encounters are returned
+  cohort[, census_year := census_year]
+  output <- merge(
+    cohort[, .(genc_id, census_year)], nbhd_data,
+    by = "genc_id", all.x = TRUE
+  )
+
+  return(output)
 }
