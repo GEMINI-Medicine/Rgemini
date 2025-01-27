@@ -158,7 +158,7 @@ neighbourhood_ses <- function(dbcon, cohort, census_year) {
   check_input(census_year, c("numeric", "character"), categories = c(2016, 2021))
 
   ## write a temp table to improve querying efficiency
-  dbExecute(dbcon, "SET client_min_messages TO WARNING;") # suppress SQL notices
+  DBI::dbExecute(dbcon, "SET client_min_messages TO WARNING;") # suppress SQL notices
   DBI::dbSendQuery(dbcon, "Drop table if exists temp_data;")
   DBI::dbWriteTable(
     dbcon, c("pg_temp", "temp_data"), cohort[, .(genc_id)],
