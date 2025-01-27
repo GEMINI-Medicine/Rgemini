@@ -23,7 +23,7 @@ This function returns a \code{data.table} where each row corresponds to a
 \code{genc_id} from the user-provided cohort input, together with the following
 columns:
 \itemize{
-\item GEMINI encounter ID: \code{genc_id}
+\item The user-provided census year: \code{census_year} (2016 or 2021)
 \item DA the encounter resides in (based on PCCF+): \code{da_uid}
 \item Neighbourhood-level income (continuous):
 \item \code{atippe} (neighbourhood after tax income per single person equivalent)
@@ -35,7 +35,7 @@ based on \emph{national} income distribution
 based on distribution within a given community (based on census metropolitan
 area, census agglomeration, or residual area within each province).
 \item \% visible minorities: \code{vismin_pct}
-\item \% immigrants: \code{immsta_pct}
+\item \% with immigrant status: \code{immsta_pct}
 \item \% with post-secondary education:
 \item Including all respondents > 15 years of age: \code{ed_15over_postsec_pct}
 \item Only including respondents between 25-64 years: \code{ed_25to64_postsec_pct}
@@ -53,18 +53,18 @@ by the suffix \verb{_q} (e.g., \code{households_dwellings_q})
 The \code{neighborhood_ses()} function derives neighborhood-level SES variables for
 a given encounter based on the dissemination area they reside in. All variables
 returned by this function are based on Statistics Canada Census data and the
-Ontario Marginalization Index (ON-Marg).
+Ontario Marginalization Index (ON-Marg; see below for details).
 
 For database versions since \code{drm_cleandb_v3} / \code{H4H_template_v4} users can
-choose between 2016 vs. 2021 census/ON-Marg data. Note that the names of some
+choose between 2016 vs. 2021 census/ON-Marg data. For earlier versions,
+only 2016 census data are available. Note that the names of some
 output variables vary by census year.
 }
 \section{Statistics Canada Census}{
 
-All SES variables are sourced from the Statistics Canada Census. The census
-is collected every 5 years and provides a detailed statistical portrait of
-communities across Canada, including information about income, education,
-ethnicity, and immigrant status.
+The Statistics Canada census is collected every 5 years and provides a detailed
+statistical portrait of communities across Canada, including information about
+income, education, ethnicity, and immigrant status.
 
 Census data are collected by dissemination area (DA), which typically covers
 a population of 400-700 people. To enable linkage between GEMINI data and
@@ -79,17 +79,19 @@ variables:
 \item Statistics Canada sources information about household income from the Canadian Revenue Agency
 \item PCCF+ provides an income per person equivalent (IPPE) by adjusting household income by household size
 \item Both continuous income and national/community quintiles are returned
-\item \href{https://www12.statcan.gc.ca/census-recensement/2021/ref/dict/az/Definition-eng.cfm?ID=pop038}{\strong{Post-secondary education}}:
-\item Based on the long-form census questionnaire, which is only administered
-to 25\% of households
+\item \href{https://www12.statcan.gc.ca/census-recensement/2021/ref/dict/az/Definition-eng.cfm?ID=pop038}{\strong{Education}}:
+\item Indicates a person's highest level of education: Based on the long-form census questionnaire,
+which is only administered to 25\% of households
+\item The function returns the \% of respondents with a post-secondary certificate, diploma, or degree
 \item \href{https://www12.statcan.gc.ca/census-recensement/2021/ref/98-500/006/98-500-x2021006-eng.cfm}{\strong{Visible minorities}}:
-\item Indicates whether a person identifies as a visible minority as defined by
-the Employment Equity Act: “persons, other than Aboriginal peoples, who are
-non-Caucasian in race or non-white in colour” (e.g., Black, South Asian,
-Chinese, Latin American etc.)
+\item Indicates whether a person identifies as a visible minority, defined as follows by
+the Employment Equity Act: “persons, other than Aboriginal peoples, who are non-Caucasian in
+race or non-white in colour” (e.g., Black, South Asian, Chinese, Latin American etc.)
 \item Based on the long-form census questionnaire, which is only administered
 to 25\% of households
 \item \href{https://www12.statcan.gc.ca/census-recensement/2021/ref/dict/az/Definition-eng.cfm?ID=pop148}{\strong{Immigrant status}}:
+\item Indicates whether a person is, or has ever been, a landed immigrant or permanent resident
+in Canada. This indludes those who have obtained Canadian citizenship by naturalization.
 \item In 2021 census: Sourced from Immigration, Refugees and Citizenship Canada
 \item In 2016 census: Based on the long-form questionnaire (25\% of households)
 }
@@ -105,12 +107,12 @@ variables, which resulted in 18 indicators along the following 4 dimensions:
 \enumerate{
 \item Households and dwellings: Measures housing density and characteristics of
 family structure (e.g., living alone, \% dwellings not owned)
-\item Material resources: Measures access to basic material needs (e.g.,
-employment rate)
+\item Material resources: Measures access to basic material needs (e.g., housing,
+food, and clothing), education, and employment
 \item Age and labour force: Includes indicators such as the \% of seniors (65+),
 children, and those that are not part of the labour force
-\item Racialized and newcomer populations: Measures the \% of people who are
-newcomers or identify as a visible minority
+\item Racialized and newcomer populations: Measures the \% of people who are recent
+immigrants (within last 5 years) or identify as a visible minority
 }
 
 In the 2016 version of ON-Marg, the 4 dimensions were called "Residential
@@ -126,7 +128,7 @@ quintiles. Higher scores represent a higher degree of marginalization.
 
 Some encounters could not be linked to Statistics Canada data due to missing/
 invalid postal codes, or due to the fact that they reside in an area not
-covereded by the census. These encounters will be returned with \code{dauid = NA}.
+covereded by the census. These encounters will be returned with \code{da_uid = NA}.
 
 Additionally, Statistics Canada suppresses results from certain DAs due to
 low response rates or data quality issues. The corresponding census/ON-Marg
