@@ -30,10 +30,11 @@ reference:
   - n_missing
   - n_rbc_transfusions
   - n_routine_bloodwork
+  - neighbourhood_ses
   - readmission
   - season
   - stat_holidays_ON
-  - neighborhood_ses
+  - neighbourhood_ses
 - title: Data Transformation
   desc: These functions aid in querying the data, either by applying filters or mapping values.
 - contents:

@@ -2,7 +2,7 @@
 #' Obtain commonly used neighbourhood-level socioeconomic status (SES) variables
 #'
 #' @description
-#' The `neighborhood_ses()` function derives neighborhood-level SES variables for
+#' The `neighbourhood_ses()` function derives neighbourhood-level SES variables for
 #' a given encounter based on the dissemination area they reside in. All variables
 #' returned by this function are based on Statistics Canada Census data and the
 #' Ontario Marginalization Index (ON-Marg; see below for details).
@@ -23,7 +23,7 @@
 #' code using the [Postal Code Conversion File Plus (PCCF+)](https://library.carleton.ca/sites/default/files/2023-03/PCCF%2BUserguide-2021.pdf)
 #' program.
 #'
-#' The `neighborhood_ses()` function currently returns the following census
+#' The `neighbourhood_ses()` function currently returns the following census
 #' variables:
 #'
 #' - [**Income**](https://www12.statcan.gc.ca/census-recensement/2021/ref/dict/az/definition-eng.cfm?ID=pop123):
@@ -47,7 +47,7 @@
 #'  - In 2016 census: Based on the long-form questionnaire (25% of households)
 #'
 #' @section Ontario Marginalization Index (On-Marg):
-#' On-Marg is a neighborhood-level index measuring marginalization differences
+#' On-Marg is a neighbourhood-level index measuring marginalization differences
 #' between areas based on a subset of variables from the Statistics Canada census.
 #'
 #' The index was derived from a principal component factor analysis on 42
@@ -121,15 +121,15 @@
 #'
 #' @references
 #' - **Statistics Canada Census**
-#'  - [2021 Census](https://www12.statcan.gc.ca/census-recensement/2021/ref/index-eng.cfm)
-#'  - [2016 Census](https://www12.statcan.gc.ca/census-recensement/2016/ref/index-eng.cfm)
+#'  - 2021 Census: https://www12.statcan.gc.ca/census-recensement/2021/ref/index-eng.cfm
+#'  - 2016 Census: https://www12.statcan.gc.ca/census-recensement/2016/ref/index-eng.cfm
 #' - **Ontario Maginalization Index**
-#'  - [ON-Marg 2021](https://www.publichealthontario.ca/-/media/documents/o/2017/on-marg-userguide.pdf)
-#'  - [ON-Marg 2016](https://www.publichealthontario.ca/-/media/documents/U/2018/userguide-on-marg.pdf)
-#'  - [Additional information](https://www.publichealthontario.ca/-/media/Event-Presentations/2023/09/ontario-marginalization-index-updates-products.pdf?rev=07baae2569164c17abaa18464075aa20&sc_lang=en)
+#'  - ON-Marg 2021: https://www.publichealthontario.ca/-/media/documents/o/2017/on-marg-userguide.pdf
+#'  - ON-Marg 2016: https://www.publichealthontario.ca/-/media/documents/U/2018/userguide-on-marg.pdf
+#'  - Additional information from Public Health Ontario: https://www.publichealthontario.ca/-/media/Event-Presentations/2023/09/ontario-marginalization-index-updates-products.pdf?rev=07baae2569164c17abaa18464075aa20&sc_lang=en
 #' - **PCCF+**
-#'  - [PCCF+ Reference Guide](https://library.carleton.ca/sites/default/files/2023-03/PCCF%2BUserguide-2021.pdf)
-#'  - [Measuring Health Inequalities: A Toolkit](https://www.cihi.ca/sites/default/files/document/toolkit-area-level-measurement-pccf-en.pdf)
+#'  - PCCF+ Reference Guide: https://library.carleton.ca/sites/default/files/2023-03/PCCF%2BUserguide-2021.pdf
+#'  - Measuring Health Inequalities - A Toolkit: https://www.cihi.ca/sites/default/files/document/toolkit-area-level-measurement-pccf-en.pdf
 #'
 #' @export
 #'
@@ -146,10 +146,10 @@
 #'
 #' cohort <- dbGetQuery(dbcon, "SELECT genc_id from admdad LIMIT 100;")
 #'
-#' neighborhood_ses_table <- neighborhood_ses(dbcon, cohort, 2021)
+#' neighbourhood_ses_table <- neighbourhood_ses(dbcon, cohort, 2021)
 #' }
 #'
-neighborhood_ses <- function(dbcon, cohort, census_year) {
+neighbourhood_ses <- function(dbcon, cohort, census_year) {
   ## check user inputs
   check_input(cohort, c("data.table", "data.frame"), colnames = "genc_id")
   cohort <- coerce_to_datatable(cohort)
