@@ -2,9 +2,12 @@
 % Please edit documentation in R/neighbourhood_ses.R
 \name{neighbourhood_ses}
 \alias{neighbourhood_ses}
+\alias{neighborhood_ses}
 \title{Obtain commonly used neighbourhood-level socioeconomic status (SES) variables}
 \usage{
 neighbourhood_ses(dbcon, cohort, census_year)
+
+neighborhood_ses(dbcon, cohort, census_year)
 }
 \arguments{
 \item{dbcon}{(\code{DBIConnection})\cr
