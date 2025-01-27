@@ -294,3 +294,8 @@ neighbourhood_ses <- function(dbcon, cohort, census_year) {
 
   return(output)
 }
+
+#' @rdname neighbourhood_ses
+#' @export
+#'
+neighborhood_ses <- neighbourhood_ses
