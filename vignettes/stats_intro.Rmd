@@ -644,7 +644,7 @@ Rgemini::plot_over_time(cohort, plot_var = "mlaps", func = "mean")
 
 # Regression model
 
-**This section is meant to walk you through the decision making process that leads us to our final model. We will bulid up to the final model and build your intuition along the way.**
+**This section is meant to walk you through more conceptual aspects of why we make certain decisions when analyzing these data. We will build starting from simple models to more complex. The step-wise format of this section is more data-driven than we would do in practice. The aim is to build up your intuition about different aspects of the final model, then in the next section we will present the analysis as we might do it for a resarch projcet.**
 
 ## Types of regression 
 
@@ -681,9 +681,9 @@ kable(regression_table,
 ```
 
 ## In-hospital mortality 
-We are trying to understand the effect of age on in-hospital mortality. 
+Let's understand the effect of age on in-hospital mortality. 
 
-One outcome in our study is in-hospital mortality, which is binary (dead, not dead). So, we will be using a logistic regression. We use the `rms` package [3](https://cran.r-project.org/web/packages/rms/index.html), which is a fantastic resource that makes best-practices easy to implement. 
+In-hospital mortality is binary (dead, not dead). So, we will use a logistic regression. We use the `rms` package [3](https://cran.r-project.org/web/packages/rms/index.html), which is a fantastic resource that makes best-practices easy to implement. 
 
 A simple approach would be to fit a univariate logistic regression with mortality as the outcome and age as an independent variable. We fit that regression: 
 ```{r}
@@ -702,12 +702,12 @@ odds_ratio <- data.frame(
   CIL95 = exp(mod$coefficients + qnorm(0.025) * sqrt(diag(mod$var))),
   CIU95 = exp(mod$coefficients + qnorm(0.975) * sqrt(diag(mod$var)))
 ) %>% round(3)
-odds_ratio
+odds_ratio["age",]
 ```
 
-We see that the odds ratio is 1.044 and the 95% confidence limits are 1.037 and 1.052. Each additional year of age is associated with 1.044 increased odds of death. Our 95%CI do not cross 1, so our results are statistically significant. 
+We see that the odds ratio is 1.044 and the 95% confidence limits are 1.037 to 1.052. Each additional year of age is associated with 1.044 increased odds of death. Our 95%CI do not cross 1, so our results are statistically significant. 
 
-This tells us that older age is associated with more death, but it does not tell us how much death. For that, we turn to probabilities. Recall that odds are a transformation of probability. If something has a 75% probability (P=0.75), the odds that it happens are 3:1. `Odds = (probability / (1-probability))`.
+This tells us that older age is associated with more death (1.044-fold increased odds per year), but it does not tell us how much death. Odds ratios are a relative measure of risk, not an absolute measure. For that, we turn to probabilities. Recall that odds are a transformation of probability. If something has a 75% probability (P=0.75), the odds that it happens are 3:1. `Odds = (probability / (1-probability))`.
 
 The logistic regression models log(odds). Thus, predicted values from the logistic regression are in log(odds) units, which can be transformed to probabilities using the above formula. In this way, we can produce predicted probabilities to understand absolute risk. 
 
@@ -728,7 +728,7 @@ We see from this plot that the predicted probability of death ranges from <0.1% 
 
 <details>
 <summary>***Expand this section if you are confused as to why this plot appears nonlinear***</summary>
-You may notice that this plot is nonlinear, but we modeled age as a linear term. Why is this? We know there is only a single coefficient (the odds ratio) that describes the increase in odds of mortality for each additional year, so why does this relationship appear nonlinear? Remember that logistic regression treats the **log odds** as linear, and our transformation to probabilities involved an exponentiation. This is the source of the nonlinearity on the probability scale. See below proof of linearity on the log-odds scale. 
+You may notice that this plot of predicted probabilities is nonlinear. Why is this the case? We mdoeled age as a linear term, so there is only one coefficient (the odds ratio) that describes the increase in odds of mortality for each additional year. So why does this relationship appear nonlinear? Remember that logistic regression treats the **log odds** as linear, and our transformation to probabilities involved an exponentiation. This is the source of the nonlinearity on the probability scale. See below proof of linearity on the log-odds scale. 
 
 ```{r}
 preds <- Predict(mod,
@@ -740,7 +740,7 @@ plot(preds, main = "Log-odds of death by age")
 ```
 </details>
 
-So, now we have a single odds ratio that describes the increased odds of death per year. We are assuming that each year, the odds of death increase by the same amount as the previous year. We assume that an 18 year old turning 19 and an 89 year old turning 90 have both gained the same additional odds of death. This is a strong assumption and we need to test it! 
+So, now we have a single odds ratio that describes the increased odds of death per year. In reporting this single odds ratio, we are assuming that each year, the odds of death increase by the same amount as the previous year. We assume that an 18 year old turning 19 and an 89 year old turning 90 both confer the same additional odds of death. This is a strong assumption. Let's test it! 
 
 We will fit a model that relaxes the linearity assumption on age. We will use a restricted cubic spline with 4 knots to do this. We compare model fit between linear age and nonlinear age. 
 
@@ -749,16 +749,15 @@ mod_spl <- lrm(in_hospital_mortality_derived ~ rcs(age, 4),
         data = cohort,
          x = TRUE, y = TRUE 
 )
-mod_spl
 
 lrtest(mod, mod_spl) # likelihood ratio test
 AIC(mod)
 AIC(mod_spl) # AIC no better for nonlinear
 ```
 
-See that we now have 3 separate coefficients for age. These coefficients are essentially uninterpretable, which is a cost we pay for relaxing the nonlinearity assumption. We rely on likelihood ratio tests, predicted probabilities, and post-hoc contrasts (beyond the scope of this document) to report results from splines. 
+Note that linearity is a strong assumption that we often have no basis to make. In practice, we usually will go ahead and fit the spline if we have enough degrees of freedom to do so. The spline *allows* the relationship to be nonlinear, but can also fit a straight line if that's the shape of the association. If investigators are keen to report a single odds ratio, we would perform a test like the above to determine whether that is reasonable to do. 
 
-See that the nonlinear model does not fit the data any better based on AIC and likelihood ratio test. This is supported by the plot below, which shows very similar predicted probabilities using the spline.  
+See that the nonlinear model does not fit the data any better based on AIC and likelihood ratio test. This is consistent with the plot below, which shows very similar predicted probabilities using the spline.  
 
 ```{r}
 preds <- Predict(mod_spl,
@@ -770,10 +769,94 @@ preds <- Predict(mod_spl,
 plot(preds, main = "Predicted probability of death by age")
 ```
 
-We proceed with the linear model because describing every additional year with the same odds ratio seems to be a reasonable assumption. 
+
+See that we now have 3 separate coefficients for age. These coefficients are essentially uninterpretable, which is a cost we pay for relaxing the nonlinearity assumption. We rely on likelihood ratio tests, predicted probabilities, and post-hoc contrasts to report results from splines. 
+```{r}
+mod_spl
+```
+
+Let's dig into why the spline can't be described by a single odds ratio. Here we compare two specific age values in the linear model. Nice that no matter which ages I pick, the increase in odds per year is 1.044.  
+```{r}
+summary(mod, age = c(20, 21)) 
+summary(mod, age = c(60, 61))
+summary(mod, age = c(90, 91))
+```
+
+Notice that the odds ratio in the spline depends on which age values I pick. You cannot summarize a spline with a single odds ratio, but you can pick points on the curve and calculate an odds ratio between them (as I've done below).
+```{r}
+summary(mod_spl, age = c(20, 21)) 
+summary(mod_spl, age = c(60, 61))
+summary(mod_spl, age = c(90, 91))
+```
+
+This comparison of the linear to non-linear model lets us know that assuming the odds ratio is constant across age (linear) is reasonable. Let's proceed under this assumption for now. We report this result to our hypothetical PI. 
+
+The PI responds with: "Thanks for this analysis, but I think I need an updated analysis. I know that men are more likely to get pneumonia at younger ages, and men also don't live as long as women. I don't want this age effect to be driven by this confounding effect of sex."
+
+We say "no problem, we will adjust the model for sex and report an odds ratio that holds constant the effect of sex."
+
+```{r}
+mod_adj <- lrm(in_hospital_mortality_derived ~ age + sex_female,
+        data = cohort,
+         x = TRUE, y = TRUE 
+)
+
+odds_ratio <- data.frame(
+  OR = exp(mod_adj$coefficients),
+  CIL95 = exp(mod_adj$coefficients + qnorm(0.025) * sqrt(diag(mod_adj$var))),
+  CIU95 = exp(mod_adj$coefficients + qnorm(0.975) * sqrt(diag(mod_adj$var)))
+) %>% round(3)
+odds_ratio[2:3,]
+```
+
+We see that the odds ratio is 1.045 (95%CI 1.037-1.053). We can tell the PI that the effect remains of a simialr magnitude after adjustment for sex. 
+
+We also notice that the odds ratio for female sex is 0.837 (95%CI 0.693-1.010). That is, the effect of female sex holding age constant! This last bit is critical to the interpreation of the adjusted odds ratio. This interpretation of "holding X constant" extends to when we adjust for multiple variables. "The effect of age on death, holding constant A, B, C, D, ...". Please read this paper about important aspects of interpreting regression results: https://academic.oup.com/aje/article-abstract/177/4/292/147738?redirectedFrom=fulltext. Directed acyclic graphs (DAGs) described earlier in this document are central to the interpretation of multivariable regession 
 
 
+Now we discuss a consideration you will make in almost every GEMINI analysis - how to handle nesting (i.e., clustering). GEMINI data include hospitalizations nested within patients, patients nested within physicians, physicians nested within hospitals. This nesting causes the data to be correlated (e.g., there are similarities between patients and processes of care within a each hospital), which violates a central regression assumption: ***independence***. 
 
+Unfortunatley, regression methods are unable to practically handle all of these types of nesting - so we need to prioritize. The PI needs to decide which types of nesting are most important to consider for a given research question. This prioritization is beyond the scope of this section, but please make sure to discuss with your Scientific Advisor. Hospital is the most common form of nesting we account for based on the kinds of research questions we analyze.  
+
+You present the updated results to the PI with sex incorporated, and you bring this point up about nesting to the PI. Your PI responds "Well, the unit of analysis we're using is the hospitalization (i.e., genc_id). There may be hospital-specific practices that affect in-hospital death, and also the patients are quite different at different hospitals. Let's make sure we consider the nesting of hospitalizations within hospitals."
+
+You say "Alright, what about nesting of hospitalizations within patients? Would you like me to consider that?"
+
+PI replies "No it's alright. I'm comfortable thinking about each hospitalization as a distinct opportunity to pass away. My research aims to inform hospital policy, and I think it's reasonable to conceive of each hospitalization as distinct from the hospital's perspective. If reviewers push us, we can randomly select one hospitalization and present that as a sensitivity analysis."
+
+You say "OK. Sounds like you have a good justification and have thought this through. Will you consider the nesting of physicians within hospitals?"
+
+PI replies "Good question. I conceptualize a physician effect in terms of: a) physician-level differences (physicians practice differently from one another); and b) hospital-level effects (policy and process at your hospital can really influence how a physician provides care)". You and I already agreed to account for the hospital effects. I don't think physician-level effects are a priority for us to consider because [...]. We can think about it more and, if necessary, report this as a limitation in the research paper."
+
+The above is an artificially straightforward conversation with the PI. The PI will often need you to ask probing questions for you to undertsand the best way to handle nesting. They may also need you to explain the different options, their interpretations, and their limitations. This is why it's important for you to have a strong understanding of different ways to account for this nesting and when to apply each. In practice, your Scientific Advisor will support you in this conversation. 
+
+
+You go back to update the analysis to account for nesting of hospitalizations within patients, but then you realize you forgot to discuss *how* you will account for this nesting. Gah! There are important considerations! 
+
+You send your PI an email: "Dear PI, We are able to account for hospital-level nesting using using cluster-robust standard errors, generalized estimating equations, or generalized linear mixed effects models. Would you please confirm which approach you would like us to use? Best, Me."
+
+Pi replies: "Dear You, I do not know how to answer this. Please explain to me so I can make an informed decision. Alternatively please tell me what to choose and please write this part into methods section of my research paper. Best, PI."
+
+
+**Narrator switch** 
+
+We will review cluster-robust standard errors, generalized estimating equations (GEE), and generalized liner mixed-effetcs modles (GLMER) as methods to account for nested data. Our example will focus on the PI's request to incorporate hospital-level clustering into the analysis. 
+
+```{r}
+
+# Cluster-robust SE 
+
+
+# GEE 
+
+
+#GLMER 
+library(lme4)
+
+
+```
+
+WITHIN-CLUSTER INTERPRETATION OF GLMER, ILLUSTRATE W SIMPSON'S PARADOX. 
 
 <details>
 <summary>**Expand section to learn about restricted cubic splines**</summary>
