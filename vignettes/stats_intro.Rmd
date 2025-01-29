@@ -669,7 +669,7 @@ regression_table <- data.frame(
                   "Rate Ratio", 
                   "Rate Ratio", 
                   "Hazard Ratio", 
-                  "Subdistribution hazard ratio") 
+                  "Subdistribution Hazard Ratio") 
 )
 
 # Create a table using kable()
@@ -690,26 +690,29 @@ A simple approach would be to fit a univariate logistic regression with mortalit
 options(scipen = 999) # turns off scientific notation in outputs 
 library(rms)
 
-
 mod <- lrm(in_hospital_mortality_derived ~ age,
-  data = cohort,
-  x = TRUE, y = TRUE #this saves some data in model object for downstream use 
+  data = cohort, x = TRUE, y = TRUE
 )
 mod
 
-odds_ratio <- data.frame(
-  OR = exp(mod$coefficients),
-  CIL95 = exp(mod$coefficients + qnorm(0.025) * sqrt(diag(mod$var))),
-  CIU95 = exp(mod$coefficients + qnorm(0.975) * sqrt(diag(mod$var)))
-) %>% round(3)
-odds_ratio["age",]
+get_odds_ratios <- function(mod) {
+  odds_ratio <- data.frame(
+    OR = exp(mod$coefficients),
+    CIL95 = exp(mod$coefficients + qnorm(0.025) * sqrt(diag(vcov(mod)))), 
+    CIU95 = exp(mod$coefficients + qnorm(0.975) * sqrt(diag(vcov(mod))))
+  ) %>% round(4)
+  return(odds_ratio)
+}
+
+odds_ratios <- get_odds_ratios(mod)
+odds_ratios["age",]
 ```
 
 We see that the odds ratio is 1.044 and the 95% confidence limits are 1.037 to 1.052. Each additional year of age is associated with 1.044 increased odds of death. Our 95%CI do not cross 1, so our results are statistically significant. 
 
-This tells us that older age is associated with more death (1.044-fold increased odds per year), but it does not tell us how much death. Odds ratios are a relative measure of risk, not an absolute measure. For that, we turn to probabilities. Recall that odds are a transformation of probability. If something has a 75% probability (P=0.75), the odds that it happens are 3:1. `Odds = (probability / (1-probability))`.
+This tells us that older age is associated with more death (1.044-fold increased odds per year), but it does not tell us how much death. Odds ratios are a relative measure of risk, not an absolute measure. For absolute measures, we turn to probabilities. Recall that odds are a transformation of probability. If something has a 75% probability (P=0.75), the odds that it happens are 3:1. If something has a 50% probability, the odds 1:1.  `Odds = (probability / (1-probability))`.
 
-The logistic regression models log(odds). Thus, predicted values from the logistic regression are in log(odds) units, which can be transformed to probabilities using the above formula. In this way, we can produce predicted probabilities to understand absolute risk. 
+The logistic regression models log(odds), also known as logit. Thus, predicted values from the logistic regression are in log(odds) units, which can be transformed to probabilities using the above formula. In this way, we can produce predicted probabilities to understand absolute risk. 
 
 ```{r}
 dd <- datadist(cohort)
@@ -742,7 +745,18 @@ plot(preds, main = "Log-odds of death by age")
 
 So, now we have a single odds ratio that describes the increased odds of death per year. In reporting this single odds ratio, we are assuming that each year, the odds of death increase by the same amount as the previous year. We assume that an 18 year old turning 19 and an 89 year old turning 90 both confer the same additional odds of death. This is a strong assumption. Let's test it! 
 
-We will fit a model that relaxes the linearity assumption on age. We will use a restricted cubic spline with 4 knots to do this. We compare model fit between linear age and nonlinear age. 
+We will fit a model that relaxes the linearity assumption on age. We will use a restricted cubic spline with 4 knots to do this. 
+
+<details>
+<summary>**Expand section to learn about restricted cubic splines**</summary>
+-describe basis function, knots, degrees of freedom (more expensive)
+- knots at quantiles, connected by cubic polynomials 
+- restricted means we constrain to linearity in the extremes. 
+
+</details>
+
+
+We compare model fit between linear age and nonlinear age. 
 
 ```{r}
 mod_spl <- lrm(in_hospital_mortality_derived ~ rcs(age, 4),
@@ -754,8 +768,6 @@ lrtest(mod, mod_spl) # likelihood ratio test
 AIC(mod)
 AIC(mod_spl) # AIC no better for nonlinear
 ```
-
-Note that linearity is a strong assumption that we often have no basis to make. In practice, we usually will go ahead and fit the spline if we have enough degrees of freedom to do so. The spline *allows* the relationship to be nonlinear, but can also fit a straight line if that's the shape of the association. If investigators are keen to report a single odds ratio, we would perform a test like the above to determine whether that is reasonable to do. 
 
 See that the nonlinear model does not fit the data any better based on AIC and likelihood ratio test. This is consistent with the plot below, which shows very similar predicted probabilities using the spline.  
 
@@ -769,27 +781,31 @@ preds <- Predict(mod_spl,
 plot(preds, main = "Predicted probability of death by age")
 ```
 
+Note that linearity is a strong assumption that we often have no basis to make. In practice, we usually will go ahead and fit the spline if we have enough degrees of freedom to do so. The spline *allows* the relationship to be nonlinear, but can also fit a straight line if that's the shape of the association. The thinking here is analagous to "if I have enough data to fit the spline, I have no reason to take on the rather bold assumption of linearity". If investigators are keen to report a single odds ratio, we would perform a test like the above to determine whether that is reasonable to do. If they are interested in predicted probabilities or in adjusting for age as a covariate, we would most likely proceed with the spline. 
 
-See that we now have 3 separate coefficients for age. These coefficients are essentially uninterpretable, which is a cost we pay for relaxing the nonlinearity assumption. We rely on likelihood ratio tests, predicted probabilities, and post-hoc contrasts to report results from splines. 
+
 ```{r}
 mod_spl
 ```
 
-Let's dig into why the spline can't be described by a single odds ratio. Here we compare two specific age values in the linear model. Nice that no matter which ages I pick, the increase in odds per year is 1.044.  
+See above that we now have 3 separate coefficients for age because of the spline. These coefficients are essentially uninterpretable, which is a cost we pay for relaxing the nonlinearity assumption. We rely on likelihood ratio tests, predicted probabilities, and post-hoc contrasts to report results from splines. 
+
+
+Let's dig into why the spline can't be described by a single odds ratio. Here we do post-hoc contrasts to compare two specific age values in the linear model. Notice that no matter which ages I pick, the increase in odds per year is 1.044.  
 ```{r}
 summary(mod, age = c(20, 21)) 
 summary(mod, age = c(60, 61))
 summary(mod, age = c(90, 91))
 ```
 
-Notice that the odds ratio in the spline depends on which age values I pick. You cannot summarize a spline with a single odds ratio, but you can pick points on the curve and calculate an odds ratio between them (as I've done below).
+Notice that the odds ratio in the spline below depends on which age values I pick. You cannot summarize a spline with a single odds ratio, but you can pick points on the curve and calculate an odds ratio between them (as I've done below).
 ```{r}
 summary(mod_spl, age = c(20, 21)) 
 summary(mod_spl, age = c(60, 61))
 summary(mod_spl, age = c(90, 91))
 ```
 
-This comparison of the linear to non-linear model lets us know that assuming the odds ratio is constant across age (linear) is reasonable. Let's proceed under this assumption for now. We report this result to our hypothetical PI. 
+All of the above information comparing the liner and nonlinear models tell us that it is reasonable to assume the odds ratio is constant across age (linear). Let's proceed under this assumption for now. We report this result to our hypothetical PI. 
 
 The PI responds with: "Thanks for this analysis, but I think I need an updated analysis. I know that men are more likely to get pneumonia at younger ages, and men also don't live as long as women. I don't want this age effect to be driven by this confounding effect of sex."
 
@@ -798,73 +814,348 @@ We say "no problem, we will adjust the model for sex and report an odds ratio th
 ```{r}
 mod_adj <- lrm(in_hospital_mortality_derived ~ age + sex_female,
         data = cohort,
-         x = TRUE, y = TRUE 
+        x = TRUE, y = TRUE, 
+        linear.predictors = TRUE
 )
 
-odds_ratio <- data.frame(
-  OR = exp(mod_adj$coefficients),
-  CIL95 = exp(mod_adj$coefficients + qnorm(0.025) * sqrt(diag(mod_adj$var))),
-  CIU95 = exp(mod_adj$coefficients + qnorm(0.975) * sqrt(diag(mod_adj$var)))
-) %>% round(3)
-odds_ratio[2:3,]
+
+odds_ratio_adj <- get_odds_ratios(mod_adj)
+odds_ratio_adj[c("age", "sex_female"),]
 ```
 
-We see that the odds ratio is 1.045 (95%CI 1.037-1.053). We can tell the PI that the effect remains of a simialr magnitude after adjustment for sex. 
+We see that the odds ratio for age is 1.045 (95%CI 1.037-1.053). We can tell the PI that the effect remains of a similar magnitude after adjustment for sex. 
 
-We also notice that the odds ratio for female sex is 0.837 (95%CI 0.693-1.010). That is, the effect of female sex holding age constant! This last bit is critical to the interpreation of the adjusted odds ratio. This interpretation of "holding X constant" extends to when we adjust for multiple variables. "The effect of age on death, holding constant A, B, C, D, ...". Please read this paper about important aspects of interpreting regression results: https://academic.oup.com/aje/article-abstract/177/4/292/147738?redirectedFrom=fulltext. Directed acyclic graphs (DAGs) described earlier in this document are central to the interpretation of multivariable regession 
+We also notice that the odds ratio for female sex is 0.837 (95%CI 0.693-1.010). That is, the effect of female sex holding age constant! This last bit is critical to the interpreation of the adjusted odds ratio. **This interpretation of "holding X constant" extends to when we adjust for multiple variables.** "The effect of age on death, holding constant A, B, C, D, ...". Please read this paper about important aspects of interpreting regression results: https://academic.oup.com/aje/article-abstract/177/4/292/147738?redirectedFrom=fulltext. Directed acyclic graphs (DAGs) described earlier in this document are central to the interpretation of multivariable regession. 
 
 
-Now we discuss a consideration you will make in almost every GEMINI analysis - how to handle nesting (i.e., clustering). GEMINI data include hospitalizations nested within patients, patients nested within physicians, physicians nested within hospitals. This nesting causes the data to be correlated (e.g., there are similarities between patients and processes of care within a each hospital), which violates a central regression assumption: ***independence***. 
+Here we can see the predicted probabilities of death by age, stratified by sex 
+```{r}
+preds <- Predict(mod_adj,
+              age, sex_female,
+              conf.int = 0.95, 
+              conf.type = "mean", 
+              fun = plogis
+)
 
-Unfortunatley, regression methods are unable to practically handle all of these types of nesting - so we need to prioritize. The PI needs to decide which types of nesting are most important to consider for a given research question. This prioritization is beyond the scope of this section, but please make sure to discuss with your Scientific Advisor. Hospital is the most common form of nesting we account for based on the kinds of research questions we analyze.  
+plot(preds, main = "Predicted probability of death by age and sex")
 
-You present the updated results to the PI with sex incorporated, and you bring this point up about nesting to the PI. Your PI responds "Well, the unit of analysis we're using is the hospitalization (i.e., genc_id). There may be hospital-specific practices that affect in-hospital death, and also the patients are quite different at different hospitals. Let's make sure we consider the nesting of hospitalizations within hospitals."
+```
 
-You say "Alright, what about nesting of hospitalizations within patients? Would you like me to consider that?"
 
-PI replies "No it's alright. I'm comfortable thinking about each hospitalization as a distinct opportunity to pass away. My research aims to inform hospital policy, and I think it's reasonable to conceive of each hospitalization as distinct from the hospital's perspective. If reviewers push us, we can randomly select one hospitalization and present that as a sensitivity analysis."
+
+Now we discuss a consideration you will make in almost every GEMINI analysis - how to handle nesting (i.e., clustering). GEMINI data include hospitalizations nested within patients, patients nested within physicians, physicians nested within hospitals. This nesting causes the data to be correlated (e.g., becuase there are similarities between patients and processes of care within a each hospital), which violates a central regression assumption: ***independence***. Failing to consider clustering leads to artificially narrow standard errors, and in some cases leads to invalid or misleading effect estimates. 
+
+Unfortunatley, regression methods are unable to practically handle all of these types of nesting together - so we need to prioritize which levels of nesting are most relevant. The PI needs to decide which types of nesting are most important to consider for a given research question. This prioritization is beyond the scope of this section, but please make sure to discuss with your Scientific Advisor. Hospital is the most common level of nesting we account for based on the kinds of research questions we ask of the data.  
+
+You present the updated results to the PI with sex incorporated, and you bring this point up about nesting to the PI. Your PI responds "Well, the unit of analysis we're using is the hospitalization (i.e., genc_id), so let's focus on how nesting may affect that level of things. There may be hospital-specific practices that affect the probability of a hospitalization ending in death, and also the patients are quite different at different hospitals. Let's make sure we consider the nesting of hospitalizations within hospitals."
+
+You say "Alright, what about nesting of hospitalizations within patients? Some patients are admitted more than once. Would you like me to consider that?"
+
+PI replies "No it's alright. I'm comfortable thinking about each hospitalization as a distinct opportunity to experience death. My research aims to inform hospital policy, and I think it's reasonable to conceive of each hospitalization as distinct from the hospital's perspective. If reviewers push us, we can randomly select one hospitalization and present that as a sensitivity analysis."
 
 You say "OK. Sounds like you have a good justification and have thought this through. Will you consider the nesting of physicians within hospitals?"
 
-PI replies "Good question. I conceptualize a physician effect in terms of: a) physician-level differences (physicians practice differently from one another); and b) hospital-level effects (policy and process at your hospital can really influence how a physician provides care)". You and I already agreed to account for the hospital effects. I don't think physician-level effects are a priority for us to consider because [...]. We can think about it more and, if necessary, report this as a limitation in the research paper."
+PI replies "Good question. I think the physician effect is described by two things: a) physician-level differences (physicians practice differently from one another); and b) hospital-level effects (policy, process, and case mix at your hospital can really influence how a physician provides care)". You and I already agreed to account for the hospital effects, so physician-level differences explained by the hospital will be accounted for. I don't think the remaining physician-level effects are a priority for us to consider because I my clinical knowledge tells me that the treating physician has very little effect on whether a patient dies. We can think about it more and, if necessary, report this as a limitation in the research paper."
 
-The above is an artificially straightforward conversation with the PI. The PI will often need you to ask probing questions for you to undertsand the best way to handle nesting. They may also need you to explain the different options, their interpretations, and their limitations. This is why it's important for you to have a strong understanding of different ways to account for this nesting and when to apply each. In practice, your Scientific Advisor will support you in this conversation. 
+The above is an artificially straightforward conversation with the PI. The PI will often need you to ask probing questions to undertsand the best way to handle nesting. They may also need you to explain the different options, their interpretations, and their limitations. This is why it's important for you to have a strong understanding of different ways to account for nesting and when to apply each. In practice, your Scientific Advisor will support you in this conversation. 
 
 
-You go back to update the analysis to account for nesting of hospitalizations within patients, but then you realize you forgot to discuss *how* you will account for this nesting. Gah! There are important considerations! 
+You go back to update the analysis to account for nesting of hospitalizations within hospitals, but then you realize you forgot to discuss *how* you will account for this nesting. Gah! There are important considerations! 
 
-You send your PI an email: "Dear PI, We are able to account for hospital-level nesting using using cluster-robust standard errors, generalized estimating equations, or generalized linear mixed effects models. Would you please confirm which approach you would like us to use? Best, Me."
+You send your PI an email: "Dear PI, I am updating the analysis to account for hospital-level nesting. I can use cluster-robust standard errors, generalized estimating equations, or generalized linear mixed effects models. Would you please confirm which approach you would like us to use? Best, Me."
 
-Pi replies: "Dear You, I do not know how to answer this. Please explain to me so I can make an informed decision. Alternatively please tell me what to choose and please write this part into methods section of my research paper. Best, PI."
+Pi replies: "Dear You, I do not know how to answer this. This is complicated stats-speak. Please explain to me so I can make an informed decision. Alternatively please choose for me and then later you can write this part into methods section of the paper yourself. Best, PI."
 
 
 **Narrator switch** 
 
-We will review cluster-robust standard errors, generalized estimating equations (GEE), and generalized liner mixed-effetcs modles (GLMER) as methods to account for nested data. Our example will focus on the PI's request to incorporate hospital-level clustering into the analysis. 
+We will review cluster-robust standard errors, generalized estimating equations (GEE), and generalized liner mixed-effetcs modles (GLMER) as methods to account for nested data. Please review this paper before proceeding: https://pubmed.ncbi.nlm.nih.gov/39393031/
+
+```{r echo = FALSE}
+model_table <- data.frame(
+  Cluster_Robust_SE = c("Simple correction to standard regression", 
+                     "Typically increases standard errors", 
+                     "Works around independence violation by aggregating residuals to the cluster level", 
+                     "Method does not naturally accomodate multiple levels of clustering"),
+  GEE = c("Coefficients have a marginal interpretation (population average)", 
+                   "Specifically models the mean and onsiders clustering a nuisance", 
+                   "Needs a covariance structure to be specified",  
+                   "Software does not naturally accomodate multiple levels of clustering"),
+  GLMER = c("Coefficients have a conditional within-cluster interpretation", 
+                  "Models the distribution (including the mean)", 
+                  "Incorporates random effects that explicitly model the covariance structure of clusters ",  
+                  "Accomodates multiple levels of clustering (but models often fail to converge)") 
+)
+
+# Create a table using kable()
+kable(model_table, 
+      col.names = c("Cluster Robust SE", "GEE", "GLMER"), 
+      align = "l", 
+      caption = "Accounting for nesting (i.e., clustering)")
+
+```
+
+<details>
+<summary>***How many clusters do I need?***</summary>
+All of these methods perform better with more clusters. The guidance varies and there are specific cluster-sample-size calculations beyond the scope of this document. In general less than 10 clusters are too few for GLMER and less than 30-40 clusters are too few for cluster-robust SE and GEE. Larger clusters can help this by allowing for better estimation of within-cluster variance and reducing the effect of outliers (beyond our scope), but not a solution. In GEMINI we often cluster on hospital (less than 30) and so we are always careful to report the number of hospitals in the data so the reader can interpret transparently. 
+</details>
+
+
+ Our example will focus on the PI's request to incorporate hospital-level clustering into the adjusted analysis. Below we fit all three appraoches. 
 
 ```{r}
 
-# Cluster-robust SE 
+# Cluster-robust SE
+library(sandwich)
+library(lmtest)
+
+mod_adj_glm <- glm(in_hospital_mortality_derived ~ age + sex_female,
+  data = cohort, family = binomial
+) # refitting model because library(sandwich) is not immediately compatible w rms::lrm()
+
+cov_matrix <- vcovCL(mod_adj_glm, cluster = cohort$hospital_num, type = "HC3")
+robust_se <- sqrt(diag(cov_matrix))
+
+crse_odds_ratios <- data.frame(
+              "OR" = exp(coef(mod_adj_glm)), 
+              "CIL95" = exp(coef(mod_adj_glm) + qnorm(0.025) *robust_se), 
+              "CIU95" = exp(coef(mod_adj_glm) + qnorm(0.975) *robust_se)
+) %>% round(4)
 
 
-# GEE 
+# GEE
+library(geepack)
+
+gee_mod <- geeglm(in_hospital_mortality_derived ~ age + sex_female,
+  data = cohort,
+  id = hospital_num, 
+  family = binomial, 
+  corstr = "exchangeable" # assumes all hospitalizations within a hospital are equally correlated 
+)
+
+gee_odds_ratios <- data.frame(
+  "OR" = exp(coef(gee_mod)),
+  "CIL95" = exp(coef(gee_mod) + qnorm(0.025) * summary(gee_mod)$coefficients[, "Std.err"]),
+  "CIU95" = exp(coef(gee_mod) + qnorm(0.975) * summary(gee_mod)$coefficients[, "Std.err"])
+) %>% round(4)
 
 
 #GLMER 
 library(lme4)
+cohort$age_c <- scale(cohort$age, center = TRUE, scale = FALSE) # centering age because it helps glmer converge numerically. Do this when you see a warning about model identifiability. It does not affect coefficients - only the intercepts. 
 
+glmer_mod <- glmer(in_hospital_mortality_derived ~ age_c + sex_female + 
+        (1 | hospital_num), 
+       data = cohort, 
+       family = binomial
+)
+
+glmer_odds_ratios <- data.frame(
+  "OR" = exp(fixef(glmer_mod)),
+  "CIL95" = exp(confint(glmer_mod, method = "Wald"))[-1,"2.5 %"],
+  "CIU95" = exp(confint(glmer_mod, method = "Wald"))[-1,"97.5 %"])  %>% round(4)
+
+
+odds_table <- rbind( 
+  odds_ratio_adj,
+  crse_odds_ratios,
+  gee_odds_ratios,
+  glmer_odds_ratios
+)
+
+odds_table$variable <- rownames(odds_table)
+rownames(odds_table) <- NULL 
+odds_table$method <- c(
+  rep("No clustering adjustment", 3),
+  rep("Cluster-Robust SE", 3),
+  rep("GEE", 3),
+  rep("GLMER", 3)
+)
+
+odds_table$variable[substr(odds_table$variable, 0, 4) == "(Int"] <- "Intercept"
+odds_table$variable[substr(odds_table$variable, 0, 3) == "sex"] <- "sex_female"
+odds_table$variable[substr(odds_table$variable, 0, 3) == "age"] <- "age"
+
+kable(odds_table[odds_table$variable != "Intercept",] %>% arrange(variable),
+  col.names = c("Odds Ratio", "Lower 95%CI", "Upper 95%CI", "Variable", "Method"),
+  align = "l",
+  caption = "Estimates"
+)
 
 ```
 
-WITHIN-CLUSTER INTERPRETATION OF GLMER, ILLUSTRATE W SIMPSON'S PARADOX. 
+In this particular case, all three methods yield very similar results. 
+
+Notice that the odds ratios are identical in the original and cluster-robust settings, but they are slightly different in the GEE and GLMER context. This is because cluster-robust standard errors simply adjust the standard error of the original regression - the coefficients are not re-estimated. The GEE and GLMER, on the other hand, explicitly account for clustering in the estimation procedures that calculate the coefficients. 
+
+```{r}
+kable(odds_table[odds_table$variable != "Intercept",] %>% arrange(variable),
+  col.names = c("Odds Ratio", "Lower 95%CI", "Upper 95%CI", "Variable", "Method"),
+  align = "l",
+  caption = "Estimates"
+) %>%
+  column_spec(1, bold = TRUE)
+```
+
+Next we look at the confidence intervals. Notice that cluster-robust standard errors consistently have the largest CI Width as they are generally conservative. Also notice that the CI widths are a bit different for each method. Generally, adjusting for clustering widens confidence intervals. The intuition is that when data are clustered, part of their variability is explained by that clustering. So, there is less information in the data that could explain our effect of interest. The stronger the effect of the cluster, the more individual observations are correlated, the more independence is violated, the less information we actually have in our data. You see here that the confidence intervals did not always get wider. This might be because the clusters explain variance that allows for a more precise estimate of the fixed effect. This might also be because of violation of model assumptions, misspecification of the model, or too few clusters. In reality, it's invariably a mix of all of the above. 
+
+```{r}
+odds_table$CI_width <- odds_table$CIU95 - odds_table$CIL95
+
+kable(odds_table[odds_table$variable != "Intercept",] %>% arrange(variable),
+  col.names = c("Odds Ratio", "Lower 95%CI", "Upper 95%CI", "Variable", "Method", "CI Width"),
+  align = "l",
+  caption = "Estimates"
+) %>%
+  column_spec(c(2,3,6), bold = TRUE)
+```
+
+
+You are excited by the fact that confidence invtervals for sex no longer include 1 when we use GEE and GLMER. Your Scientific Advisor quells your excitement, and refers you to some reading about type I error and Table 2 Fallacy. You both sigh and dream of becoming Bayesians. 
+
+
+Each of the 3 methods provide a way to adjust standard errors for the independence violation induced by clustering. A key criterion for selecting which method to use is the **desired interpretation**. 
+
+The coefficients from a GEE model represent how much the outcome is expected to change for a one-unit change in the variable, ***averaged over all clusters***. GEE provides an interpretation that is marginal to the clustering. 
+
+The coefficients from the cluster-robust SE are interpreted the same way as normal regression coefficients. They are similar in interpretation to GEE estimates, but do not consider the correlation within clusters when estimating that effect. 
+
+The coefficients from a GLMER model are cluster-specific effects. They represent how much the outcome is expected to change for a one-unit change in the variable ***within a specific cluster***. Often this specific cluster is a hypothetical average cluster. If you are interested in the clusters themselves, GLMER is often the way to go. 
+
 
 <details>
-<summary>**Expand section to learn about restricted cubic splines**</summary>
--describe basis function, knots, degrees of freedom (more expensive)
-- knots at quantiles, connected by cubic polynomials 
-- restricted means we constrain to linearity in the extremes. 
+<summary>***Click here for more nuance on how the interpretations differ. ***</summary>
+
+Below is a dummy example on fake data to illustrate the difference between the cluster-agnostic effetc of normal regression, the 'marginal' effect of GEE the 'conditional' effect of the GLMER. When I say 'marginal' and 'conditional', it is with respect to the clusters (e.g., not the other coefficients). 
+
+```{r}
+# based on this post 
+  # https://stats.stackexchange.com/questions/479201/understanding-simpsons-paradox-with-random-effects
+
+n_subj = 20
+n_trials = 20
+subj_intercepts = rnorm(n_subj, 0, 1) 
+subj_slopes = rep(-.5, n_subj)        
+
+subj_mx = subj_intercepts*2  
+
+data <- data.frame(subject = rep(1:n_subj, each=n_trials),
+                  intercept = rep(subj_intercepts, each=n_trials),
+                  slope = rep(subj_slopes, each=n_trials),
+                  mx = rep(subj_mx, each=n_trials)) %>%
+  mutate(
+    x = rnorm(n(), mx, 1),
+    y = intercept + (x-mx)*slope + rnorm(n(), 0, 1))
+```
+
+
+See this cloud of points. 
+```{r}
+ggplot(data, aes(x, y)) +
+  geom_point() +
+  labs(x = "Some Variable", y = "Some Outcome", color = "Hospital") +
+  theme_bw(base_size = 18) +
+  theme(legend.position = "none")
+```
+
+We are going to estimate a linear relationship between Some Variable and Some Outcome. Take a moment to draw in your head what this line looks like. It probably looks similar to this one below (at least the same direction, I'm sure). 
+```{r}
+ggplot(data, aes(x, y)) +
+  geom_point() +
+  stat_smooth(group = 1, method = "lm", color = "black") +
+  labs(x = "Some Action", y = "Some Outcome", color = "Hospital") +
+  theme_bw(base_size = 18)
+
+coef(lm(y ~ x, data = data))
+```
+
+This line has a positive slope. 
+
+This line totally ignores clustering. Let's see how it looks when we reveal clustering in the data. 
+```{r}
+ggplot(data, aes(x, y, color = factor(subject))) +
+  geom_point() +
+  stat_smooth(group = 1, method = "lm", color = "black") +
+  labs(x = "Some Action", y = "Some Outcome", color = "Hospital") +
+  theme_bw(base_size = 18)
+```
+
+It looks like when we account for clustering, the direction of the effect changes! If we had proceeded with cluster-robust standard errors, we would have missed this! 
+
+We fit GEE and linear mixed-effects model (LMER).
+```{r}
+dummy_gee <- geeglm(y ~ x, 
+  data = data,
+  id = subject,
+  family = gaussian, 
+  corstr = "exchangeable"
+)
+data$preds_gee <- predict(dummy_gee)
+
+ggplot(data, aes(x, y, color = factor(subject))) +
+  geom_point() +
+  geom_line(aes(x, preds_gee), color = "black", size = 1.5) + 
+  labs(x = "Some Action", y = "Some Outcome", color = "Hospital") +
+  theme_bw(base_size = 18)
+
+
+dummy_lmer <- lmer(y ~ x + (1 + x | subject), data = data)
+data$preds_lmer <- predict(dummy_lmer, re.form = NA)
+
+ggplot(data, aes(x, y, color=factor(subject))) +
+  geom_point() +
+  stat_smooth(method='lm', se=F) +
+   geom_line(aes(x, preds_lmer), color = "black", size = 1.5) + 
+  labs(x='Some Action', y='Some Outcome', color='Hospital') +
+  theme_bw(base_size = 18)
+
+
+coef(dummy_gee)
+fixef(dummy_lmer)
+```
+
+The GEE and LMER produce similar estimates in this case, but arrive there through fundamentally different means with distinct interpretations. The GEE averages the within-cluster effects into a single marginal estimate. The LMER models each cluster explicitly and reports the effect in a hypothetical average cluster. The GEE estimate is interpreted as the average change in Outcome per unit increase in Action **across all hospitals**, while the LMER estimate is **within a hospital**. 
+
+GEE estimates marginal effects, which are population-averaged. GEE is still fundamentally trying to estimate the average effect across the entire population, taking into account the within-cluster correlation. It's not estimating separate effects for each cluster. The exchangeable covariance structure helps GEE to more accurately estimate this population average in the presence of clustering, but it is still an average.
+
+LMER explicitly models within-cluster effects using random effects. It estimates separate effects for each cluster and then can provide estimates of the distribution of these cluster-specific effects. It can also provide a population average, but it does this by averaging the cluster-specific effects it has already estimated. 
+
+The reason it might seem like GEE is giving within-cluster effects in this scenario is because of how the exchangeable covariance works. By assuming a constant correlation within clusters, GEE is effectively "pooling information" across clusters to get a better estimate of the overall (marginal) effect. In this case, where the within-cluster trends are consistent but opposite to the overall trend, this pooling leads GEE to "see through" the spurious overall trend and converge on a result that is numerically similar to what LMM would produce.  However, the interpretation is still different.
+
+See here all 3 model fits on 1 plot. 
+```{r}
+ggplot(data, aes(x, y, color=factor(subject))) +
+  geom_point() +
+  stat_smooth(group=1, method='lm', color='black') +
+  geom_line(aes(x, preds_gee), color = "blue", size = 1) + 
+  geom_line(aes(x, preds_lmer), color = "red", size = 1) + 
+  labs(x='Some Action', y='Some Outcome', color='Hospital') +
+  theme_bw(base_size = 18)
+```
 
 </details>
+
+**Shifts back to Data Scientist** 
+Now you understand the difference between cluster-robust SE, GEE, and GLMER. 
+
+You reply to your PI ""
+
+
+
+ *NEED TO SHOW A VERSION OF THIS THAT ISN'T TOTALLY STEPWISE CHECKING ALL MODELS. IDEALLY W THE SAME EXAMPLE W HOW WE DECIDE ON MODEL A-PRIORI*  
+
+
+
+BEYOND HERE IS JUST MUSINGS AND HALF BAKED IDEAS 
+
+
+<details>
+<summary>***Learn more about why GLMER is best when we are intersted in clusters themselves.***</summary>
+As an aside that (for now) is beyond the scope of this document, GLMER explicitly models clusters instead of simply using them to generate an cluster-conscious fixed effect. This means that you can generate cluster-specific predictions and also make inferences about how different a cluster is from a hypothetical average cluster. You can also fit GLMER models with random slopes that allow for coefficients to be cluster-specific (e.g., if you think the effect of age on death is hospital-specific, you would add a random slope). GLMERs are central to our risk adjustment in the GeMQIN OurPractice Report. 
+</details>
+
+
+
 
 <details>
 <summary>**Expand section to learn more about odds and probability**</summary>
