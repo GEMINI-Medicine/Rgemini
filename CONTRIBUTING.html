@@ -75,18 +75,18 @@
 <li><p>Once the developer has addressed your comments, approve the pull request (the developer will then merge the PR and close the issue).</p></li>
 </ol></div>
 <div class="section level2">
-<h2 id="merging-into-master">Merging into <code>master</code>
-<a class="anchor" aria-label="anchor" href="#merging-into-master"></a></h2>
-<p>We typically accumulate multiple changes on the <code>develop</code> branch before merging all changes into <code>master</code> and updating the package version number.</p>
-<p>At least one person should review the pull request into <code>master</code> and should run the following final checks before approval:</p>
-<ol style="list-style-type: decimal"><li><p>Check whether there are any changes on <code>master</code> that are not yet on <code>develop</code>. If yes, merge <code>master</code> into <code>develop</code>.</p></li>
+<h2 id="merging-into-main">Merging into <code>main</code>
+<a class="anchor" aria-label="anchor" href="#merging-into-main"></a></h2>
+<p>We typically accumulate multiple changes on the <code>develop</code> branch before merging all changes into <code>main</code> and updating the package version number.</p>
+<p>At least one person should review the pull request into <code>main</code> and should run the following final checks before approval:</p>
+<ol style="list-style-type: decimal"><li><p>Check whether there are any changes on <code>main</code> that are not yet on <code>develop</code>. If yes, merge <code>main</code> into <code>develop</code>.</p></li>
 <li><p>Make sure all changes on <code>develop</code> are summarized in <code>NEWS.md</code>.</p></li>
 <li><p>If new functions have been added, make sure they are listed in <code>_pkgdown.yml</code>.</p></li>
 <li><p>Decide on a new version number based on the guidelines <a href="https://github.com/GEMINI-Medicine/Rgemini#package-versions" class="external-link">here</a>.</p></li>
 <li><p>Update the version number in the <code>NEWS.md</code> and <code>DESCRIPTION</code> files.</p></li>
 <li><p>Run <code>devtools::document()</code> in R to make sure all documentation is up to date.</p></li>
 <li><p>Run <code>rcmdcheck::rcmdcheck()</code> or <code>devtools::check()</code> and make sure no errors or warnings are returned.</p></li>
-<li><p>If everything looks good, approve the pull request and merge <code>develop</code> into <code>master</code> (without squashing commits).</p></li>
+<li><p>If everything looks good, approve the pull request and merge <code>develop</code> into <code>main</code> (without squashing commits).</p></li>
 <li><p>Add a new tag to the repository corresponding to the updated version number.</p></li>
 <li><p>Notify the team about the updated version. Ideally, all members should immediately update to the newest version of <code>Rgemini</code>.</p></li>
 <li><p>Update for HPC4Health users: Download the <code>tar.gz</code> file of the newest package version and save it in <code>R:/GEMINI/HPC4Health/Rgemini versions/</code>. Submit a request on the <a href="https://app.smartsheet.com/sheets/p7P77qF97wcxgr2V4Cr6Vjqw3vjhCpRMQQH3Jwm1" class="external-link">HPC4Health File Transfer Log</a> for the package file to be transferred to <code>/mnt/nfs/pkgs/GEMINI/</code>. Ask the systems team to send out an email to all HPC4Health users announcing the new release.</p></li>
