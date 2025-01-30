@@ -23,7 +23,7 @@ For users within the GEMINI team, please `git clone` the `Rgemini` repository to
 
 ### Other users
 
-Users can install the package from GitHub using the following:
+All other users can install the package from GitHub using the following:
 ``` r
 remotes::install_github("GEMINI-Medicine/Rgemini", build_vignettes = TRUE)
 ```
