@@ -17,7 +17,7 @@ All functions have been developed by the GEMINI team and were tested on the curr
 
 The `Rgemini` package is automatically installed for all HPC4Health users working with GEMINI data. If you run into any issues using `Rgemini` functions or require a specific package version, please submit a ticket on HPC4Health.
 
-### GEMINI users
+### GEMINI team members
 
 For users within the GEMINI team, please `git clone` the `Rgemini` repository to your home directory on NORA, then run `devtools::install("/path/to/repo", repos = NULL, type="source")`.
 
