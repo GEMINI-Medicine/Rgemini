@@ -59,13 +59,13 @@ Briefly, when reviewing code:
 8. Once the developer has addressed your comments, approve the pull request (the developer will then merge the PR and close the issue).
 
 
-## Merging into `master`
+## Merging into `main`
 
-We typically accumulate multiple changes on the `develop` branch before merging all changes into `master` and updating the package version number.
+We typically accumulate multiple changes on the `develop` branch before merging all changes into `main` and updating the package version number.
 
-At least one person should review the pull request into `master` and should run the following final checks before approval:
+At least one person should review the pull request into `main` and should run the following final checks before approval:
 
-1. Check whether there are any changes on `master` that are not yet on `develop`. If yes, merge `master` into `develop`. 
+1. Check whether there are any changes on `main` that are not yet on `develop`. If yes, merge `main` into `develop`. 
 
 2. Make sure all changes on `develop` are summarized in `NEWS.md`.
 
@@ -79,7 +79,7 @@ At least one person should review the pull request into `master` and should run 
 
 7. Run `rcmdcheck::rcmdcheck()` or `devtools::check()` and make sure no errors or warnings are returned.    
 
-8. If everything looks good, approve the pull request and merge `develop` into `master` (without squashing commits).
+8. If everything looks good, approve the pull request and merge `develop` into `main` (without squashing commits).
 
 9. Add a new tag to the repository corresponding to the updated version number. 
 
