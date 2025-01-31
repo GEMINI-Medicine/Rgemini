@@ -223,11 +223,11 @@ data_coverage <- function(dbcon,
   # check which variable to use as hospital identifier
   hosp_var <- return_hospital_field(dbcon)
   check_input(cohort,
-    argtype = c("data.table", "data.frame"),
-    colnames = c(
-      "genc_id", hosp_var, "discharge_date_time",
-      hospital_label, hospital_group
-    )
+              argtype = c("data.table", "data.frame"),
+              colnames = c(
+                "genc_id", hosp_var, "discharge_date_time",
+                hospital_label, hospital_group
+              )
   )
 
   # make sure hospital_group (if any) has 1-1 relationship
@@ -237,8 +237,8 @@ data_coverage <- function(dbcon,
       # when grouping by hospital & group, should result in same
       # nrows as grouping by hospital ID alone
       nrow(cohort %>%
-        dplyr::select(all_of(c(hosp_var, hospital_group))) %>%
-        distinct()) != length(unique(cohort[, get(hosp_var)]))
+           dplyr::select(all_of(c(hosp_var, hospital_group))) %>%
+           distinct()) != length(unique(cohort[, get(hosp_var)]))
     ) {
       stop(paste(
         "Please make sure the `hospital_group` variable is a hospital",
@@ -251,8 +251,8 @@ data_coverage <- function(dbcon,
   # check that custom_dates has correct format
   if (!is.null(custom_dates)) {
     check_input(custom_dates,
-      argtype = c("data.table", "data.frame"),
-      colnames = c(hosp_var, "data", "min_date", "max_date")
+                argtype = c("data.table", "data.frame"),
+                colnames = c(hosp_var, "data", "min_date", "max_date")
     )
   }
 
@@ -340,6 +340,14 @@ data_coverage <- function(dbcon,
     data_coverage_lookup[, data := paste(data, "_subset", sep = "")]
   }
 
+  # if hospital_id exists and hospital_label = hospital_num, it means the user
+  # may have provided a custom version of hospital_num for labelling, so we'll
+  # remove it from data_coverage_lookup, just in case...
+  if (hosp_var == "hospital_id" && hospital_label == "hospital_num" &&
+      "hospital_num" %in% colnames(data_coverage_lookup)) {
+    data_coverage_lookup <- data_coverage_lookup[, -c("hospital_num")]
+  }
+
   # only tables that exist in availability_table are valid `table` inputs
   table <- tolower(table)
   check_input(
@@ -367,14 +375,14 @@ data_coverage <- function(dbcon,
     # check if genc_id's discharge date falls within min-max date range
     # any genc_ids that fall within any gaps will have coverage = FALSE
     coverage_flag_enc[, paste0(table) :=
-      data_coverage_lookup[data == table][
-        coverage_flag_enc,
-        on = c(
-          hosp_var,
-          "min_date <= discharge_date",
-          "max_date >= discharge_date"
-        ), .N, by = .EACHI
-      ]$N > 0]
+                        data_coverage_lookup[data == table][
+                          coverage_flag_enc,
+                          on = c(
+                            hosp_var,
+                            "min_date <= discharge_date",
+                            "max_date >= discharge_date"
+                          ), .N, by = .EACHI
+                        ]$N > 0]
   }
 
   # Apply this to all relevant tables
@@ -413,7 +421,7 @@ data_coverage <- function(dbcon,
     # (ignoring admdad)
     n_enc_coverage <- sum(
       rowSums(coverage_flag_enc %>%
-        dplyr::select(all_of(table[!grepl("admdad", table)]))) ==
+                dplyr::select(all_of(table[!grepl("admdad", table)]))) ==
         length(table[!grepl("admdad", table)])
     )
     p_enc_coverage <- round(100 * n_enc_coverage / lunique(cohort$genc_id), 1)
@@ -422,37 +430,37 @@ data_coverage <- function(dbcon,
       prettyNum(n_enc_coverage, big.mark = ","),
       " `genc_ids` (", p_enc_coverage, "%) that were discharged during time periods with coverage for ",
       ifelse(length(table[!grepl("admdad", table)]) == 1,
-        paste0("the `", table[!grepl("admdad", table)], "` table"),
-        ifelse(length(table[!grepl("admdad", table)]) == 2,
-          paste0("both the `", paste(table[!grepl("admdad", table)],
-            collapse = "` and `"
-          ), "` tables"),
-          paste0(
-            "all of the ", length(table[!grepl("admdad", table)]),
-            " tables `", paste(table[!grepl("admdad", table)],
-              collapse = "`, and `"
-            )
-          )
-        )
+             paste0("the `", table[!grepl("admdad", table)], "` table"),
+             ifelse(length(table[!grepl("admdad", table)]) == 2,
+                    paste0("both the `", paste(table[!grepl("admdad", table)],
+                                               collapse = "` and `"
+                    ), "` tables"),
+                    paste0(
+                      "all of the ", length(table[!grepl("admdad", table)]),
+                      " tables `", paste(table[!grepl("admdad", table)],
+                                         collapse = "`, and `"
+                      )
+                    )
+             )
       ), ". "
     ))
 
     cat(paste0(
       "The remaining ",
       prettyNum(sum(rowSums(coverage_flag_enc %>%
-        dplyr::select(all_of(table[!grepl("admdad", table)]))) <
-        length(table[!grepl("admdad", table)])), big.mark = ","),
+                              dplyr::select(all_of(table[!grepl("admdad", table)]))) <
+                      length(table[!grepl("admdad", table)])), big.mark = ","),
       " `genc_ids` were discharged during time periods where ",
       ifelse(length(table[!grepl("admdad", table)]) == 1,
-        paste0(
-          "the `", table[!grepl("admdad", table)],
-          "` table did not have any data coverage."
-        ),
-        paste0(
-          "at least 1 of the tables (`",
-          paste(table[!grepl("admdad", table)], collapse = "` or `"),
-          "`) did not have any data coverage."
-        )
+             paste0(
+               "the `", table[!grepl("admdad", table)],
+               "` table did not have any data coverage."
+             ),
+             paste0(
+               "at least 1 of the tables (`",
+               paste(table[!grepl("admdad", table)], collapse = "` or `"),
+               "`) did not have any data coverage."
+             )
       )
     ))
 
@@ -542,7 +550,7 @@ data_coverage <- function(dbcon,
     # remove rows that are completely outside date range in cohort
     timeline_data[
       (max_date <= min(as.Date(cohort$discharge_date_time)) |
-        min_date >= max(as.Date(cohort$discharge_date_time))),
+         min_date >= max(as.Date(cohort$discharge_date_time))),
       `:=`(min_date = NA, max_date = NA)
     ]
 
@@ -610,11 +618,11 @@ data_coverage <- function(dbcon,
           name = "Discharge Date",
           date_labels = "%b %Y",
           breaks = ifelse(n_months <= 12, "1 month",
-            ifelse(n_months > 12 & n_months <= 48, "3 months",
-              ifelse(n_months > 24 & n_months <= 96, "6 months",
-                "1 year"
-              )
-            )
+                          ifelse(n_months > 12 & n_months <= 48, "3 months",
+                                 ifelse(n_months > 24 & n_months <= 96, "6 months",
+                                        "1 year"
+                                 )
+                          )
           ),
           expand = c(0, 0)
         ) +
