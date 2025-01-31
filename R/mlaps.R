@@ -133,6 +133,18 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
   # find table corresponding to admdad
   admdad_table <- find_db_tablename(db, "admdad", verbose = FALSE)
 
+  #Ensure cohort is a data.table/data.frame with genc_id and
+  # write a temp table if cohort is not NULL
+  if (!is.null(cohort)){
+    check_input(cohort, c("data.table", "data.frame"),
+                colnames = "genc_id")
+    DBI::dbSendQuery(db,"Drop table if exists cohort_data;")
+    DBI::dbWriteTable(db, c("pg_temp","cohort_data"), cohort[,.(genc_id)], row.names = F, overwrite = T)
+    #Analyze speed up the use of temp table
+    DBI::dbSendQuery(db,"Analyze cohort_data")
+
+  }
+
   admdad <- DBI::dbGetQuery(
     db,
     paste(
@@ -143,7 +155,7 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
       hospital_field, "AS hospital_id",
       "FROM ", admdad_table,
       if (!is.null(cohort)) {
-        paste("WHERE genc_id IN (", paste(cohort$genc_id, collapse = ", "), ")")
+        paste("a WHERE exists (select 1 from cohort_data c where c.genc_id=a.genc_id) ")
       }
     )
   ) %>%
@@ -176,7 +188,7 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
           paste0("AND l.", hospital_field, " = '", hospital_id, "'"),
           "AND EXTRACT(YEAR FROM a.discharge_date_time::DATE) = ", year,
           if (!is.null(cohort)) {
-            paste("AND l.genc_id IN (", paste(cohort$genc_id, collapse = ", "), ")")
+            paste("and exists (select 1 from cohort_data c where c.genc_id=l.genc_id)" )
           }
         )
       ) %>%

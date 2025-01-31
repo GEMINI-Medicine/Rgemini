@@ -175,6 +175,12 @@ readmission <- function(dbcon,
   # Note: restricted cohort is the same in episodes_of_care & readmission function
   epicares <- episodes_of_care(dbcon = dbcon, restricted_cohort = restricted_cohort)
 
+  #load epicare as a temptable
+  DBI::dbSendQuery(dbcon,"Drop table if exists epicares_data;")
+  DBI::dbWriteTable(dbcon, c("pg_temp","epicares_data"), epicares[,.(genc_id)], row.names = F, overwrite = T)
+  #Analyze speed up the use of temp table
+  DBI::dbSendQuery(dbcon,"Analyze epicares_data")
+
   ############ Get additional DB variables ######################
   cat("Querying database ...\n")
 
@@ -182,26 +188,26 @@ readmission <- function(dbcon,
   admdad_name <- find_db_tablename(dbcon, "admdad", verbose = FALSE)
 
   # find variable name corresponding to hospital identifier (hospital_id/hospital_num)
-  admdad_cols <- dbGetQuery(dbcon, paste0("SELECT column_name FROM information_schema.columns WHERE table_name = '", admdad_name,"';")) %>% data.table()
+ # to do minimial changes to querying one row to get all the column names instead
+  admdad_cols <- dbGetQuery(dbcon, paste0("SELECT * from ",admdad_name," limit 1;")) %>% data.table()
+
+  admdad_cols<-data.table(column_name=colnames(admdad_cols))
+
   hospital_var <- admdad_cols[column_name %in% c("hospital_id","hospital_num")]$column_name[1] # if multiple, use first identified variable
 
   admdad <- DBI::dbGetQuery(dbcon, paste0(
     "select genc_id, ", hospital_var, ", admission_date_time, discharge_date_time, admit_category, discharge_disposition
     from ", find_db_tablename(dbcon, "admdad", verbose = FALSE),
-    " where genc_id in (", paste(as.character(epicares$genc_id), sep = "' '", collapse = ","), ");"
+    " a where exists (select 1 from epicares_data t where t.genc_id=a.genc_id) ;"
   )) %>% as.data.table()
   data <- merge(admdad, epicares, by = "genc_id") %>% as.data.table()
-
-  ## write a temp table to improve querying efficiency
-  DBI::dbSendQuery(dbcon, "Drop table if exists temp_readmission_data;")
-  DBI::dbWriteTable(dbcon, c("pg_temp", "temp_readmission_data"), data[, .(genc_id)], row.names = FALSE, overwrite = TRUE)
 
   ## Ipdiagnosis data (if any relevant CIHI flag = TRUE)
   if (any(c(MAID, palliative, chemo, mental, obstetric))) {
     ipdiagnosis <- DBI::dbGetQuery(dbcon, paste0(
       "select genc_id, diagnosis_code, diagnosis_type
       from ", find_db_tablename(dbcon, "ipdiagnosis", verbose = FALSE),
-      " where genc_id in (select genc_id from temp_readmission_data);"
+      " i where exists (select 1 from epicares_data t where t.genc_id=i.genc_id);"
     )) %>% as.data.table()
   }
 
@@ -210,8 +216,8 @@ readmission <- function(dbcon,
     ipintervention <- DBI::dbGetQuery(dbcon, paste0(
       "select genc_id, intervention_code
       from ", find_db_tablename(dbcon, "ipintervention", verbose = FALSE),
-      " where intervention_code in ('1ZZ35HAP7','1ZZ35HAP1','1ZZ35HAN3') AND
-                                      genc_id in (select genc_id from temp_readmission_data);"
+      " i where intervention_code in ('1ZZ35HAP7','1ZZ35HAP1','1ZZ35HAN3') AND
+                                      exists (select 1 from epicares_data t where t.genc_id=i.genc_id);"
     )) %>% as.data.table()
   }
 
@@ -220,12 +226,9 @@ readmission <- function(dbcon,
     ipcmg <- DBI::dbGetQuery(dbcon, paste0(
       "select  genc_id, cmg
       from ", find_db_tablename(dbcon, "ipcmg", verbose = FALSE),
-      " WHERE genc_id in (select genc_id from temp_readmission_data)"
+      " i where exists (select 1 from epicares_data t where t.genc_id=i.genc_id)"
     )) %>% as.data.table()
   }
-
-  # Drop temp table after queries
-  DBI::dbSendQuery(dbcon, "Drop table if exists temp_readmission_data;")
 
   ############  Convert date-times into appropriate format   ############
   data[, discharge_date_time := convert_dt(discharge_date_time)]
