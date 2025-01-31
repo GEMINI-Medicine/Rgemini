@@ -8,7 +8,7 @@ output:
     dfprint: kable
 
 vignette: >
-  %\VignetteIndexEntry{Statistics - Introduction}
+  %\VignetteIndexEntry{Introduction to statistical analyses with GEMINI data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 
@@ -22,7 +22,8 @@ knitr::opts_chunk$set(
   fig.width = 7,
   fig.height = 5,
   warning = FALSE,
-  message = FALSE
+  message = FALSE,
+  out.width = "60%"
 )
 
 library(data.table)
@@ -74,7 +75,7 @@ As a general first step in conducting a research study, researchers would carefu
 - Below is a brief sketch of the core designs in clinical research. Check out these resources for a refresher on core study designs: [1](https://www.ncbi.nlm.nih.gov/books/NBK470342/), [2](https://doi.org/10.1016/S0140-6736(02)07283-5). Of note, although there are general core study designs, designs and their categorizations are not rigid, and there are more complex designs and grey areas that may not clearly distinguish one design from another.
 
 ```{r, echo=FALSE, out.width = "40%", fig.align = "center", fig.cap="<span style='color:grey; font-size:11px'> Figure 1. Common Study Designs. ([Grimes DA and Schulz KF. The Lancet, 2002](https://doi.org/10.1016/S0140-6736(02)07283-5)) </span> " }
-knitr::include_graphics("figures/stat_vignette_study_design.png", dpi = 200)
+knitr::include_graphics("figures/stats_intro/study_design.png", dpi = 200)
 ```
 
 
@@ -114,7 +115,7 @@ With knowledge about study designs and GEMINI data characteristics, let’s dete
 A visual, conceptual model can help understand the research question and how its components are related to one another. A directed acyclic graph (DAG) is a graphical representation of the relationship between the outcome, exposure, and related variables: [Digitale JC et al. J Clin Epidemiol, 2022](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8821727/). It can be helpful in picking a statistical model by 'drawing' out the assumptions between variables. The following DAG shows a simple theoretical causal relationship between age, the exposure variable, and in-hospital mortality, one of the outcomes of interest. 
 
 ```{r, echo=FALSE, out.width = "60%", fig.align = "center", fig.cap="<span style='color:grey; font-size:11px'> DAG of age and in-hospital mortality</span> " }
-knitr::include_graphics("figures/dag_img1.png", dpi = 200)
+knitr::include_graphics("figures/stats_intro/dag_img1.png", dpi = 200)
 ```
 
 <br></br>
@@ -136,7 +137,7 @@ While it is possible to estimate the effect of age on mortality on its own, ofte
 
 Including additional variables in a statistical model is referred to as an adjusted model and can help better understand the causal relationship between an exposure and its outcome. The DAG below takes these variables into account. 
 ```{r, echo=FALSE, out.width = "60%", fig.align = "center", fig.cap="<span style='color:grey; font-size:11px'> DAG of age and in-hospital mortality, including confounders </span> " }
-knitr::include_graphics("figures/dag_img2.png", dpi = 200)
+knitr::include_graphics("figures/stats_intro/dag_img2.png", dpi = 200)
 ```
 
 Confounders are not the only variables that can affect the relationship between age and in-hospital mortality or LOS. Mediators, or intermediate variables, lie in the causal pathway between the exposure variable and outcome. In this analysis, a mediator would be caused by age and is a cause of the outcome variables. This type of analysis, mediation analysis, is beyond the scope of this vignette, but it is important to understand the distinction between controlling for a confounder that could bias results, and including mediators that block the path to an outcome: [MacKinnon D. Res Soc Work Pract, 2011](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3366634/)
@@ -237,7 +238,7 @@ By default, the function will return multiple plots:
 **1) Timeline plot**
 
 ```{r}
-knitr::include_graphics("figures/stats_intro_coverage1.png")
+knitr::include_graphics("figures/stats_intro/timeline_plot.png")
 ```
 
 **2) Coverage plots**
@@ -245,13 +246,13 @@ knitr::include_graphics("figures/stats_intro_coverage1.png")
 ## `admdad`
 
 ```{r}
-knitr::include_graphics("figures/stats_intro_coverage2.png")
+knitr::include_graphics("figures/stats_intro/coverage_admdad.png")
 ```
 
 ## `lab`
 
 ```{r}
-knitr::include_graphics("figures/stats_intro_coverage3.png")
+knitr::include_graphics("figures/stats_intro/coverage_lab.png")
 ```
 
 ## Encounter-level flags
