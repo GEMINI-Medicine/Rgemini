@@ -1,7 +1,7 @@
 Package: Rgemini
 Type: Package
 Title: R Functions for GEMINI Data
-Version: 0.5.0
+Version: 1.0.2
 Author: GEMINI
 Maintainer: GEMINIdata <Gemini.data@unityhealth.to>
 Description: Common functions for GEMINI data analyses.
@@ -43,9 +43,9 @@ Suggests:
     testthat (>= 3.0.0),
     viridis
 Config/testthat/edition: 3
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr
 Depends: 
-    R (>= 2.10)
+    R (>= 3.5.0)
 URL: https://gemini-medicine.github.io/Rgemini/

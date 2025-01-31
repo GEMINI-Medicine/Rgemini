@@ -10,12 +10,14 @@ reference:
   - comorbidity_index
   - covid_flag
   - daily_census
+  - data_coverage
   - day_time_of_admission
   - disability
   - elixhauser_comorbidity_index
   - episodes_of_care
   - er_los
   - frailty_score
+  - homelessness
   - hospital_fiscal_year
   - hospitalizations_last_n_days
   - icu_entry
@@ -79,3 +81,4 @@ reference:
   - mapping_message
   - matches("ni")
   - return_hospital_field
+  - quiet
