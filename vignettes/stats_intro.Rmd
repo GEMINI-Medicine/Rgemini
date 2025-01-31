@@ -31,6 +31,9 @@ library(dplyr)
 library(Rgemini)
 library(lubridate)
 library(kableExtra)
+library(DBI)
+library(getPass)
+library(RPostgreSQL)
 
 #rmarkdown::render("~/GitHub/Rgemini/vignettes/stats_intro.Rmd", output_dir = "/mnt/nfs/projects/research_projects/Rgemini/stats_vignette/")
 
@@ -206,16 +209,35 @@ First, we'll check data coverage. Generally, this should be performed on the **w
 
 Here we illustrate how you can use the `Rgemini::data_coverage()` function to explore data coverage of the relevant variables. Please review the [data coverage vignette](https://github.com/GEMINI-Medicine/Rgemini/blob/139_data_coverage/vignettes/data_coverage.Rmd) for more details. 
 
-For our research question, the relevant data tables are `admdad` (containing administrative data like patient age and sex) and `lab` (containing all lab tests that are relevant for `mLAPS`). As stated in the cohort inclusions above, we only want to include encounters with high data coverage for both of these tables.
+For our research question, the relevant data tables are `admdad` (containing administrative data like patient age and sex) and `lab` (containing all lab tests that are relevant for `mLAPS`). As stated in the cohort inclusions above, we only want to include encounters from hospitals & time periods that have data coverage for both of these tables.
 
-We can achieve this by running the `data_coverage` function as follows:
+We can achieve this by running the `data_coverage()` function as follows (note that this requires a connection to a database version `drm_cleandb_v3` / `H4H_template_v4` or newer):
 
-```{r}
+```{r eval = FALSE}
 # note: need to source this from this branch for now until it's been merged
 source("~GitHub/Rgemini/R/data_coverage.R")
-coverage <- data_coverage()
+drv <- dbDriver("PostgreSQL")
+dbcon <- DBI::dbConnect(drv,
+  dbname = "drm_cleandb_v3_1_0", 
+  host = "prime.smh.gemini-hpc.ca",
+  port = 5432,
+  user = getPass("User:"),
+  password = getPass("Enter Password:")
+)
+
+coverage <- data_coverage(
+  cohort = data,
+  table = c("admdad", "lab")
+)
 ```
 
+By default, the function will return multiple plots:
+
+**1) Timeline plot**
+
+```{}
+
+```
 
 **Note:** We typically check coverage by plotting variables by hospital * discharge month (because GEMINI data are pulled based on patients' discharge dates).
 
