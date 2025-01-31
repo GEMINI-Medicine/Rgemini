@@ -44,7 +44,7 @@ library(kableExtra)
 
 This vignette illustrates an example analysis with (dummy) GEMINI data. The goal of this vignette is to provide an educational resource for analysts to make informed decisions at each analysis step. Throughout the vignette, we also provide links to existing resources with more detailed explanations.
 
-If you would like to discuss any topics in more detail, please use the [Rgemini discussion forum](https://github.com/GEMINI-Medicine/Rgemini/discussions/categories/statistics)
+If you would like to discuss any topics in more detail, please use the [Rgemini discussion forum](https://github.com/GEMINI-Medicine/Rgemini/discussions/categories/statistics).
 
 
 *  *  *  *
@@ -94,7 +94,7 @@ With knowledge about study designs and GEMINI data characteristics, let’s dete
 
 - Experimental studies are not possible for this question (impossible for researchers to manipulate the exposure variable, age). The question is **observational** by nature, which is well suited for using GEMINI data.
 
-- The question is looking to estimate the association (magnitude and direction) between patient's age at admission and their clinical outcomes. An analytical study rather than a descriptive study is required. Since in-hospital mortality and LOS can only be known after hospital admission, the temporal relationship between exposure and outcome is implied. Therefore, our research question calls for a **cohort study design**, which means that researchers would assemble a cohort of patients based on characteristics at admission (e.g. pneumonia) and then follow them over time for the occurrence of outcomes.
+- The question is looking to estimate the association (magnitude and direction) between patients' age at admission and their clinical outcomes. An analytical study rather than a descriptive study is required. Since in-hospital mortality and LOS can only be known after hospital admission, the temporal relationship between exposure and outcome is implied. Therefore, our research question calls for a **cohort study design**, which means that researchers would assemble a cohort of patients based on characteristics at admission (e.g. pneumonia) and then follow them over time for the occurrence of outcomes.
 
 - As the outcomes of interest have already occurred upon data extraction, the cohort is considered retrospective.
 
@@ -127,36 +127,44 @@ While it is possible to estimate the effect of age on mortality on its own, ofte
 
   - Gender can affect the age that one acquires pneumonia, along with the severity of illness            experienced when pneumonia is acquired: [Corica B et at. Intern   Emerg Med, 2022](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9294783/).
   - Charlson comorbidities are comorbid conditions that can be used to predict the risk of death and     should be controlled for when considering the outcome of death: [Charlson ME et al. J Chronic Dis, 1987](https://www.sciencedirect.com/science/article/abs/pii/0021968187901718).
-  - mLAPS (modified laboratory acute physiology score) is an indicator of illness severity based on physiological lab data at or before admission  that is used to adjust for risk: [Roberts S et al. Preprint, 2023](https://www.medrxiv.org/content/10.1101/2023.01.06.23284273v1). GEMINI's in-house package, [Rgemini](https://gemini-medicine.github.io/Rgemini/reference/mlaps.html), is a fast and convenient way of deriving this variable.
+  - mLAPS (modified laboratory acute physiology score) is an indicator of illness severity based on physiological lab data at or before admission that is used to adjust for risk: [Roberts S et al. Preprint, 2023](https://www.medrxiv.org/content/10.1101/2023.01.06.23284273v1). GEMINI's in-house package `Rgemini` contains an [`mlaps()` function](https://github.com/GEMINI-Medicine/Rgemini/blob/main/R/mlaps.R) with additional documentation on how mLAPS is derived.
 
 Including additional variables in a statistical model is referred to as an adjusted model and can help better understand the causal relationship between an exposure and its outcome. The DAG below takes these variables into account. 
 ```{r, echo=FALSE, out.width = "60%", fig.align = "center", fig.cap="<span style='color:grey; font-size:11px'> DAG of age and in-hospital mortality, including confounders </span> " }
 knitr::include_graphics("figures/dag_img2.png", dpi = 200)
 ```
 
-Confounders are not the only variables that can affect the relationship between age and in-hospital mortality or LOS. Mediators, or intermediate variables, lie in the causal pathway between the exposure variable and outcome. In this analysis, a mediator would be caused by age and is a cause of the outcome variables. This type of analysis, mediation analysis, is beyond the scope of this study, but it is important to understand the distinction between controlling for a confounder that could bias results, and including mediators that block the path to an outcome: [MacKinnon D. Res Soc Work Pract, 2011](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3366634/)
+Confounders are not the only variables that can affect the relationship between age and in-hospital mortality or LOS. Mediators, or intermediate variables, lie in the causal pathway between the exposure variable and outcome. In this analysis, a mediator would be caused by age and is a cause of the outcome variables. This type of analysis, mediation analysis, is beyond the scope of this vignette, but it is important to understand the distinction between controlling for a confounder that could bias results, and including mediators that block the path to an outcome: [MacKinnon D. Res Soc Work Pract, 2011](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3366634/)
 
 
 ## Cohort definition
 
-Based on the conceptual model discussed above, we will define our cohort as follows:
+### GEMINI cohort
+
+GEMINI data include all patients admitted to the department of medicine or an intensive care unit. A lot of GEMINI projects focus on a subset of the medicine cohort: Patients admitted to/discharged from General Internal Medicine (GIM). GIM is the biggest medicine department and exists at all hospitals participating in GEMINI. A large portion (~40%) of emergency admissions are admitted to GIM. The GIM cohort is very heterogenous (unlike patients admitted to other medicine subservices that specialize in cardiology, nephrology, neurology etc.). GIM patients tend to have complex, multimorbid conditions making this cohort of particular interest when studying the effect of patient characteristics on clinical outcomes. 
+
+[May remove this since it's irrelevant for our question here: "Additionally, this cohort is well suited for physician-level inference and assessing quality of care due to the fact that GIM physicians are assigned to patients in a quasirandom manner."]
+
+### Study cohort
+
+Based on the conceptual model discussed above, we will define our study cohort as follows:
 
 + **Inclusion steps**
   - Incl. 1: All GIM encounters discharged between Apr 2018 - Apr 2020
-  - Incl. 2: Hospitals with high data coverage for relevant variables (here: administrative & lab data for `mlaps`)
+  - Incl. 2: Encounters with high data coverage for relevant variables (here: administrative & lab data for `mlaps`)
   - Incl. 3: Encounters with Pneumonia as most responsible diagnosis code (MRDx)
 
 + **Exclusion steps:**
   - Excl. 1: Encounters transferred from another acute-care institute 
   - Excl. 2: Encounters not admitted from ED
   
-The reason for the two exclusion steps is to make sure that any covariates we include as baseline characteristics (e.g., `mlaps` at admission) accurately reflect patients' condition when they first entered the hospital (rather than having received prior treatment at another healthcare facility they were transferred from). 
+The reason for the two exclusion steps is to make sure that any covariates we include as baseline characteristics (e.g., `mlaps` at admission) accurately reflect patients' condition when they first entered the hospital (rather than having received prior treatment at another healthcare facility they were transferred from).
 
 
 <details>
 <summary>***Expand this section for some additional tips***</summary>
 
-The cohort inclusion/exclusion steps should be developed in close collaboration between the clinical researcher and data analyst. Typically, the steps will need to be refined during the project kick-off meeting to make sure the specific criteria, sequence, and rationale for the cohort definition makes sense. The cohort creation steps may also need to be refined once the analyst has completed the data checks (see next section), which might reveal unforeseen challenges/data issues.
+The cohort inclusion/exclusion steps should be developed in close collaboration between the clinical researcher and data analyst. Typically, the steps will need to be refined during the project kick-off meeting to make sure the specific criteria, sequence, and rationale for the cohort definition makes sense. The cohort creation steps may also need to be refined once the analyst has completed the data checks (see next section), which might reveal unforeseen challenges, such as data coverage/quality issues.
 
 </details>
 
@@ -168,7 +176,7 @@ The cohort inclusion/exclusion steps should be developed in close collaboration 
 
 Now that we have clarified the conceptual framework and cohort definition, let's take a look at the data.
 
-Here, we assume our cohort consists of all GIM encounters discharged between Apr 2018 - Apr 2020 (see incl. 1 above) from 20 hospitals. GIM encounters are defined as all encounters that were either admitted to/or discharged from GIM (see `gim_flag_derived` in the `derived_variables` table [**NOTE: This will be added to the next DB version**]).
+Here, we assume our cohort consists of all GIM encounters discharged between Apr 2018 - Apr 2020 (see incl. 1 above) from 20 hospitals. GIM encounters are defined as all encounters that were either admitted to/or discharged from GIM (see `gim_flag_derived` in the `derived_variables` table).
 
 We'll load this dummy data from a saved file and turn it into a `data.table` object:
 
@@ -184,26 +192,37 @@ To briefly inspect the variables in our data table, we can use `head():`
 head(data)
 ```
 
-The [GEMINI data dictionary](https://geminimedicine.ca/wp-content/uploads/2023/12/GEMINI-Data-Repository-Data-Dictionary-v3.0.2.html) contains more information about each of these variables.
+The [GEMINI data dictionary](https://geminimedicine.ca/the-gemini-database/) contains more information about each of these variables.
 
 
 <br></br>
 
 Next, we will perform data quality/coverage checks and create our cohort. **The steps in the sections below are not strictly sequential!** Instead, data checks and cohort refinement typically go hand in hand based on an iterative process: We usually start with some basic data checks & exploration on the whole dataset, then apply cohort inclusion/exclusion steps, then check the data for cohort-specific issues, which may cause us to refine your inclusions/exclusions etc. ... Throughout this process, we may also derive additional variables, which should be included in the data checks to make sure all variables in the final cohort are ready to be analyzed.
 
-Please also review this [Rgemini vignette](https://gemini-medicine.github.io/Rgemini/articles/plotting_data_exploration.html), which contains more details about some of the functions used below.
-
 
 ## Check data coverage
 
-First, we'll check data coverage. Generally, this should be performed on the **whole dataset** within the relevant cohort period (2018-2020), prior to applying any additional inclusion/exclusion steps.
+First, we'll check data coverage. Generally, this should be performed on the **whole dataset** within the relevant study period (2018-2020), prior to applying any additional inclusion/exclusion steps.
+
+Here we illustrate how you can use the `Rgemini::data_coverage()` function to explore data coverage of the relevant variables. Please review the [data coverage vignette](https://github.com/GEMINI-Medicine/Rgemini/blob/139_data_coverage/vignettes/data_coverage.Rmd) for more details. 
+
+For our research question, the relevant data tables are `admdad` (containing administrative data like patient age and sex) and `lab` (containing all lab tests that are relevant for `mLAPS`). As stated in the cohort inclusions above, we only want to include encounters with high data coverage for both of these tables.
+
+We can achieve this by running the `data_coverage` function as follows:
+
+```{r}
+# note: need to source this from this branch for now until it's been merged
+source("~GitHub/Rgemini/R/data_coverage.R")
+coverage <- data_coverage()
+```
+
 
 **Note:** We typically check coverage by plotting variables by hospital * discharge month (because GEMINI data are pulled based on patients' discharge dates).
 
 
 ### Number of encounters 
 
-A basic sanity check is to plot the number of encounters per hospital per month:
+A basic sanity check is to plot the number of encounters per hospital per month. This provides information about data coverage & volume for **administrative** (DAD) data:
 
 ```{r}
 Rgemini::plot_over_time(data, func = "n")
@@ -212,28 +231,21 @@ Rgemini::plot_over_time(data, func = "n")
 <br></br>
 
 <details>
-<summary>***Please review this plot carefully and think about what information you can gather from it. Then expand this section for more information on things to consider.***</summary>
+<summary>***Please review this plot carefully and think about the information you can gather from it. Then expand this section for some tips.***</summary>
 
 Plotting the number of encounters over time and by hospital can provide insights into:
 
-**1) Data coverage:** Certain hospitals may not have any (administrative) data during certain time periods.
+**1) Data coverage:** Certain hospitals may not have any (administrative) data during certain time periods. For example, data coverage for sites 6, 9, 10, and 12 starts later/ends earlier than for the other sites. 
 
-**2) Patient volume:** Some hospitals might have a very large/small number of encounters overall, which is important to consider for the analyses below (e.g., small community hospitals will generally contribute fewer encounters to the overall cohort than large academic hospitals).
+**2) Patient volume:** Some hospitals have a smaller number of encounters overall (e.g., sites 6 & 15), which is important to consider for the analyses below (e.g., small community hospitals will generally contribute fewer encounters to the overall cohort than large academic hospitals).
 
 **3) Changes in the cohort over time:** For example, you might observe sudden drops/increases in encounter numbers, which might be due to seasonal changes, COVID-related factors, changes in the GEMINI cohort definition (e.g., expansion from GIM to all-medicine), or potential biases introduced during cohort inclusion/exclusion steps (see below).
 
 </details>
 
+Depending on your research question, you should consider whether hospitals with incomplete data timelines should be removed from the analyses altogether, or whether you instead want to retain any available encounters from each site. This decision comes down to whether differences in data timelines between hospitals may induce bias in your analyses. For the purpose of our example research question, we included all 20 hospitals regardless of data timelines since we do not assume that the effect of age on mortality would have changed throughout the study period from 2018-2020.
 
-In our example data, we can see that sites 6, 9, 10, and 12 do not have any encounters during certain time periods, indicating gaps in data coverage. We will therefore exclude these sites to make sure we have consistent data timelines across all hospitals. 
-
-
-<details>
-<summary>***Expand this section for some additional tips***</summary>
-
-There are situations where we might have retained encounters during hospital-time-periods where data were available (e.g., decide to include hospital 12 before the stark drop off instead of exclude hospital 12 altogether). The decision of how to handle missing hospital-time-periods comes down to the specific research question, and whether retaining those data will induce bias. If we are intersted in trends over time, exclusion is generally advised. NB this guidance also applied to **4.1.2 Clinical data coverage**
-
-</details>
+Regardless of your decision, you should always inspect data timelines and, if relevant, report differences in timelines between hospitals in your manuscript (***LINK TO DATA COVERAGE TIMELINE PLOT ONCE IT'S BEEN MERGED***).
 
 ### Clinical data coverage 
 
