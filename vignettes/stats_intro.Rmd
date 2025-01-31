@@ -37,6 +37,8 @@ library(RPostgreSQL)
 
 #rmarkdown::render("~/GitHub/Rgemini/vignettes/stats_intro.Rmd", output_dir = "/mnt/nfs/projects/research_projects/Rgemini/stats_vignette/")
 
+#setwd("~/GitHub/Rgemini/vignettes/")
+
 ```
 
 
@@ -185,7 +187,7 @@ We'll load this dummy data from a saved file and turn it into a `data.table` obj
 
 ```{r}
 # read sample data
-data <- readRDS("/mnt/nfs/projects/research_projects/Rgemini/stats_vignette/dummy_data_stats.rds") %>% 
+data <- readRDS("/mnt/nfs/projects/research_projects/Rgemini/stats_vignette/dummy_data_stats.rds") %>%
   data.table()
 ```
 
@@ -205,7 +207,7 @@ Next, we will perform data quality/coverage checks and create our cohort. **The 
 
 ## Check data coverage
 
-First, we'll check data coverage. Generally, this should be performed on the **whole dataset** within the relevant study period (2018-2020), prior to applying any additional inclusion/exclusion steps.
+First, we'll check data coverage. Generally, this should be performed on the **whole dataset** within the relevant study period (2018-2020), prior to applying any additional inclusion/exclusion steps. Typically, we recommend checking data coverage by hospital \* **discharge month** (because GEMINI data are pulled based on patients' discharge dates).
 
 Here we illustrate how you can use the `Rgemini::data_coverage()` function to explore data coverage of the relevant variables. Please review the [data coverage vignette](https://github.com/GEMINI-Medicine/Rgemini/blob/139_data_coverage/vignettes/data_coverage.Rmd) for more details. 
 
@@ -214,32 +216,49 @@ For our research question, the relevant data tables are `admdad` (containing adm
 We can achieve this by running the `data_coverage()` function as follows (note that this requires a connection to a database version `drm_cleandb_v3` / `H4H_template_v4` or newer):
 
 ```{r eval = FALSE}
-# note: need to source this from this branch for now until it's been merged
-source("~GitHub/Rgemini/R/data_coverage.R")
-drv <- dbDriver("PostgreSQL")
 dbcon <- DBI::dbConnect(drv,
-  dbname = "drm_cleandb_v3_1_0", 
-  host = "prime.smh.gemini-hpc.ca",
-  port = 5432,
-  user = getPass("User:"),
-  password = getPass("Enter Password:")
+  dbname = "db",
+  host = "domain_name.ca",
+  port = 1234,
+  user = getPass("Enter user:"),
+  password = getPass("password")
 )
 
 coverage <- data_coverage(
+  dbcon = dbcon,
   cohort = data,
   table = c("admdad", "lab")
 )
 ```
 
+
 By default, the function will return multiple plots:
 
 **1) Timeline plot**
 
-```{}
-
+```{r}
+knitr::include_graphics("figures/stats_intro_coverage1.png")
 ```
 
-**Note:** We typically check coverage by plotting variables by hospital * discharge month (because GEMINI data are pulled based on patients' discharge dates).
+**2) Coverage plots**
+
+## `admdad`
+
+```{r}
+knitr::include_graphics("figures/stats_intro_coverage2.png")
+```
+
+## `lab`
+
+```{r}
+knitr::include_graphics("figures/stats_intro_coverage3.png")
+```
+
+## Encounter-level flags
+
+```{r}
+
+```
 
 
 ### Number of encounters 
