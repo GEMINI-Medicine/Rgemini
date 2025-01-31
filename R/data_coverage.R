@@ -774,6 +774,7 @@ data_coverage <- function(dbcon,
           facet_group = if (is.null(hospital_label)) hosp_var else hospital_label,
           line_group = hosp_var,
           plot_var = "data_entry",
+          plot_cat = TRUE,
           show_overall = FALSE,
           return_data = TRUE
         )[[1]]
