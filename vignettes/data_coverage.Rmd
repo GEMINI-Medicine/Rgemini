@@ -515,7 +515,7 @@ Users should carefully inspect these plots for unexpected patterns (e.g., sudden
 
 <br></br>
 
-*\*As a side note: 0 in the coverage plot indicates that there were some encounters in the cohort during these time periods (i.e., `admdad` data are available), but none of the encounters had an entry in the `transfusion` table. By contrast, time periods that are not covered in the cohort/admdad table are shown as `NA` in these plots. For example, at site 1, we can see that the cohort only starts in February 2018 in line with the `additional_information` column stating that this hospital only opened in February 2018. between Feb 2018 - Jan 2020, GEMINI did not receive any transfusion data for the encounters from this site (% coverage = 0). Since January 2020, GEMINI has started receiving transfusion data with ~15-20% of encounters having an entry in the transfusion table at this site.
+*\*As a side note: 0 in the coverage plot indicates that there were some encounters in the cohort during these time periods (i.e., `admdad` data are available), but none of the encounters had an entry in the `transfusion` table. By contrast, time periods that are not covered in the cohort/admdad table are shown as `NA` in these plots. For example, at site 1, we can see that the cohort only starts in February 2018 in line with the `additional_info` column stating that this hospital only opened in February 2018. between Feb 2018 - Jan 2020, GEMINI did not receive any transfusion data for the encounters from this site (% coverage = 0). Since January 2020, GEMINI has started receiving transfusion data with ~15-20% of encounters having an entry in the transfusion table at this site.
 </details>
 
 
