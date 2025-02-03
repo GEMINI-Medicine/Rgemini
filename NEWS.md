@@ -1,3 +1,7 @@
+# Rgemini `develop`
+
+* New function `neighbourhood_ses()` deriving neighbourhood-level variables from the Statistics Canada Census & Ontario Marginalization Index
+
 # Rgemini `1.0.2`
 
 * Small bug fix in `find_db_tablename()` for materialized views (H4H >= v4)
