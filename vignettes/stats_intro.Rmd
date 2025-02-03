@@ -343,7 +343,7 @@ data[, incl3_pneumonia := grepl("^J12|^J13|^J14|^J15|^J16|^J17|^J18", ipdiagnosi
 ```
 
 <details>
-<summary>**Expand this section for additional considerations when filtering by ICD-10-CA codes**</summary>
+<summary>**Expand this section for additional considerations when filtering by diagnosis codes**</summary>
 
 **1) What diagnosis codes to include/exclude?** 
 This is usually determined by an SME who will provide you with a list of relevant ICD-10-CA codes. In our example, all ICD-10-CA codes from J10-J18 should be included for pneumonia. Usually, you should filter for all diagnosis codes that **start** with the same characters (i.e., including children codes like "J12.8"), unless otherwise specified. If you are unsure, please clarify with the SME. 
@@ -354,9 +354,9 @@ In our example, the cohort definition specifies "Pneumonia as a most responsible
 **3) Do you only want to filter by in-patient diagnosis codes or also include ED diagnoses?**  
 When filtering for a specific condition based on patient's MRDx, we typically only include in-patient diagnoses as they tend to be more reliable compared to ED diagnoses. However, this decision may be project specific, and in certain cases it might make sense to consider ED diagnoses to increase sensitivity. If you are unsure, please discuss this with the SME. 
 
-
+**4) Can you use CCSR instead of ICD-10-CA codes?**
+CCSR (Clinical Classifications Software Refined) groups ICD-10-CA diagnosis codes into cleanically meaningful categories. This can be useful if you are analyzing a large, heterogenous cohort of patients and want to group them for descriptive purposes or to perform risk adjustment by diagnosis group (see [here](https://gemini-medicine.github.io/Rgemini/articles/icd_to_ccsr.html) for more details). However, if your analysis is focused on a single, well-defined diagnosis of interest (e.g., pneumonia in our case), we typically recommend using ICD-10-CA codes to select the specific diagnoses that should be included/excluded. 
 </details>
-
 
 <br></br>
 
