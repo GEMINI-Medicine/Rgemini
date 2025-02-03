@@ -34,19 +34,18 @@ accepts arguments passed to \code{sample_icd()} for customizing the sampling sch
 }
 \details{
 To ensure simulated table resembles "ip(er)diagnosis" table, the following characteristics are applied to fields:
-
 \itemize{
-\item{\code{genc_id}: } {Numerical identification of encounters starting from 1. The number of unique encounters is defined by \code{nid}. The total number of rows is defined by \code{nrow},
-where the number of rows for each encounter is random, but each encounter has at least one row.}
-\item{\code{hospital_num}: }{Numerical identification of hospitals from 1 to 5. All rows of an encounter are linked to a single hospital}
-\item{\code{diagnosis_code}: }{"ipdiagnosis" table only. Simulated ICD-10 diagnosis codes. Each encounter can be associated with multiple diagnosis codes in long format.}
-\item{\code{diagnosis_type}: }{"ipdiagnosis" table only. The first row of each encounter is consistently assigned to the diagnosis type "M".
+\item \code{genc_id}: Numerical identification of encounters starting from 1. The number of unique encounters is defined by \code{nid}. The total number of rows is defined by \code{nrow},
+where the number of rows for each encounter is random, but each encounter has at least one row.
+\item \code{hospital_num}: Numerical identification of hospitals from 1 to 5. All rows of an encounter are linked to a single hospital
+\item \code{diagnosis_code}: "ipdiagnosis" table only. Simulated ICD-10 diagnosis codes. Each encounter can be associated with multiple diagnosis codes in long format.
+\item \code{diagnosis_type}: "ipdiagnosis" table only. The first row of each encounter is consistently assigned to the diagnosis type "M".
 For the remaining rows, if \code{diagnosis_type} is specified by users, diagnosis types are sampled randomly from values provided;
-if \code{diagnosis_type} is NULL, diagnosis types are sampled from ("1", "2", "3", "4", "5", "6", "9", "W", "X", and "Y"), with sampling probability proportionate to their prevalence in the "ipdiagnosis" table.}
-\item{\code{diagnosis_cluster}: }{"ipdiagnosis" table only. Proportionally sampled from values that have a prevalence of more than 1\% in the "diagnosis_cluster" field of the "ipdiagnosis" table, which are ("", "A", "B").}
-\item{\code{diagnosis_prefix}: }{"ipdiagnosis" table only. Proportionally sampled from values that have a prevalence of more than 1\% in the "diagnosis_prefix" field of the "ipdiagnosis" table, which are ("", "N", "Q", "6").}
-\item{\code{er_diagnosis_code}: }{"erdiagnosis" table only. Simulated ICD-10 diagnosis codes. Each encounter can be associated with multiple diagnosis codes in long format. }
-\item{\code{er_diagnosis_type}: }{"erdiagnosis" table only. Proportionally sampled from values that have a prevalence of more than 1\% in the "er_diagnosis_type" field of the "erdiagnosis" table, which are ("", "M", "9", "3", "O").}
+if \code{diagnosis_type} is NULL, diagnosis types are sampled from ("1", "2", "3", "4", "5", "6", "9", "W", "X", and "Y"), with sampling probability proportionate to their prevalence in the "ipdiagnosis" table.
+\item \code{diagnosis_cluster}: "ipdiagnosis" table only. Proportionally sampled from values that have a prevalence of more than 1\% in the "diagnosis_cluster" field of the "ipdiagnosis" table, which are ("", "A", "B").
+\item \code{diagnosis_prefix}: "ipdiagnosis" table only. Proportionally sampled from values that have a prevalence of more than 1\% in the "diagnosis_prefix" field of the "ipdiagnosis" table, which are ("", "N", "Q", "6").
+\item \code{er_diagnosis_code}: "erdiagnosis" table only. Simulated ICD-10 diagnosis codes. Each encounter can be associated with multiple diagnosis codes in long format.
+\item \code{er_diagnosis_type}: "erdiagnosis" table only. Proportionally sampled from values that have a prevalence of more than 1\% in the "er_diagnosis_type" field of the "erdiagnosis" table, which are ("", "M", "9", "3", "O").
 }
 }
 \note{

@@ -11,44 +11,40 @@ All functions have been developed by the GEMINI team and were tested on the curr
 
 ## Installation
 
-`Rgemini` is currently not yet available on CRAN. The development version can be installed from GitHub with the following:
+`Rgemini` is currently not yet available on CRAN. Please follow the installation instructions below, depending on the environment you work in (HPC4Health, NORA, other).
 
+### HPC4Health
+
+The `Rgemini` package is automatically installed for all HPC4Health users working with GEMINI data. If you run into any issues using `Rgemini` functions or require a specific package version, please submit a ticket on HPC4Health.
+
+### GEMINI team members
+
+For users within the GEMINI team, please `git clone` the `Rgemini` repository to your home directory on NORA, then run `devtools::install("/path/to/repo", repos = NULL, type="source")`.
+
+### Other users
+
+All other users can install the package from GitHub using the following:
 ``` r
 remotes::install_github("GEMINI-Medicine/Rgemini", build_vignettes = TRUE)
 ```
 
-### Alternatives
-
-If the installation method above does not work, try one of the following:
+If the installation method above does not work, please try one of the following:
 
 1. Install using `pak::pkg_install("GEMINI-Medicine/Rgemini")`.
-2. `git clone` the package to some directory such as `/path/to/repo`, and run `devtools::install("/path/to/repo", build_vignettes = TRUE)`.
-3. Download the latest source tarball from the [package releases](https://github.com/GEMINI-Medicine/Rgemini/tags) to some directory such as `/path/to/tarball` and run `install.packages("/path/to/tarball", repos = NULL, type="source")`.
-4. Try configuring secure downloads as described in [this blog post](https://support.posit.co/hc/en-us/articles/206827897-Secure-Package-Downloads-for-R37).
+2. Download the latest source tarball from the [package releases](https://github.com/GEMINI-Medicine/Rgemini/tags) to some directory such as `/path/to/tarball` and run `install.packages("/path/to/tarball", repos = NULL, type="source")`.
+3. Try configuring secure downloads as described in [this blog post](https://support.posit.co/hc/en-us/articles/206827897-Secure-Package-Downloads-for-R37).
 
 If none of the above methods work, please create a post on our [discussion board](https://github.com/GEMINI-Medicine/Rgemini/discussions/categories/q-a).
 
-### HPC4Health
-
-If installing `Rgemini` from the GEMINI HPC4Health environment, simply call `install.packages("Rgemini")`.
-
-If your `R` script has a dependency on `Rgemini` and you would like to run this script with `Slurm`, please point your library call to the local folder under which `Rgemini` was installed.
-
-For example:
-
-```r
-library(Rgemini, lib.loc = "$HOME/R/x86_64-pc-linux-gnu-library/4.1")
-```
- 
 ## Example
 
-Most functions require access to the GEMINI database. With access, the functions can be used as follows:
+Some functions require access to the GEMINI database. With access, the functions can be used as follows:
 
 ``` r
 library(Rgemini)
 
+# establish DB connection
 drv <- DBI::dbDriver("PostgreSQL")
-
 db <- DBI::dbConnect(
   drv,
   dbname = "db_name",
@@ -58,23 +54,18 @@ db <- DBI::dbConnect(
   password = getPass::getPass("Enter Password")
 )
 
+# For HPC4Health users: For newer datacuts (H4H >= v4.0.0) set the schema according to the datacut name
+dbSendQuery(db, "Set schema 'datacut_name'");
+
+# query data
 admdad <- DBI::dbGetQuery(
   db,
-  "SELECT * FROM public.admdad LIMIT 200;"
+  "SELECT * FROM admdad LIMIT 200;"
 )
 
+# run Rgemini function
 readm <- readmission(
-  db = db,
-  elective_admit = TRUE,
-  death = TRUE,
-  MAID = TRUE,
-  palliative = TRUE,
-  chemo = TRUE,
-  mental = TRUE,
-  obstetric = TRUE,
-  signout = TRUE,
-  restricted_cohort = admdad,
-  readm_win = c(7, 30, 60, 90, 150)
+  db = db
 )
 ```
 
@@ -88,7 +79,7 @@ If you identify any package bugs or would like to request enhancements, please o
 [discussion forum](https://github.com/GEMINI-Medicine/Rgemini/discussions) for you to submit any questions about package functionality or discuss applications of `Rgemini` functions to your research question.
 Note that the repository is public, so please do not share any sensitive information and/or GEMINI data on the GitHub site!
 
-For GEMINI team members: Please carefully review the [CONTRIBUTING.md](https://github.com/GEMINI-Medicine/Rgemini/blob/master/CONTRIBUTING.md) file for guidelines on how to contribute and review code.
+For GEMINI team members: Please carefully review the [CONTRIBUTING.md](https://github.com/GEMINI-Medicine/Rgemini/blob/main/CONTRIBUTING.md) file for guidelines on how to contribute and review code.
 
 ## Package versions
 
@@ -98,7 +89,7 @@ Different versions of `Rgemini` are released with X.Y.Z. increments following th
 * `Y`: Minor version, new function added, some large changes to existing functions (including even changes to the type and number of arguments).
 * `X`: Major version, change to the underlying DB the code was written for (e.g., table and variable names).
 
-Usually we accumulate a series of changes on develop and release them all at once on master with a version increment.
+Usually we accumulate a series of changes on develop and release them all at once on `main` with a version increment.
 
 ## Citation
 

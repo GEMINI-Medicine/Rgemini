@@ -171,7 +171,7 @@ plot_summary <- function(data,
 
 
   ## if variables are provided as character vector, turn into list
-  if (class(plot_vars) == "character") {
+  if (is(plot_vars, "character")) {
     plot_vars <- setNames(lapply(plot_vars, function(x) list()), plot_vars)
 
     ## add plot_var as list item

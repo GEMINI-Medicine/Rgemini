@@ -3,6 +3,10 @@
 **New functions:**
 	* `cohort_creation()` to generate cohort and show number (%) of entries at each inclusion/exclusion step
 
+# Rgemini `1.0.2`
+
+* Small bug fix in `find_db_tablename()` for materialized views (H4H >= v4)
+
 # Rgemini `1.0.1`
 
 * Enhanced `find_db_tablename()` to work with materialized views (H4H >= v4)
