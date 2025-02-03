@@ -803,7 +803,7 @@ data_coverage <- function(dbcon,
             ...
           ) +
             labs(
-              title = paste0("Data coverage - ", table),
+              title = paste0("Data volume - ", table),
               y = paste0("N genc_ids in ", table, " table")
             ) +
             theme(strip.text.y = element_text(margin = margin(b = 10, t = 10)))
