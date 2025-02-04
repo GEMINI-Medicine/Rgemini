@@ -149,8 +149,6 @@ Confounders are not the only variables that can affect the relationship between 
 
 GEMINI data include all patients admitted to the department of medicine or an intensive care unit. A lot of GEMINI projects focus on a subset of the medicine cohort: Patients admitted to/discharged from General Internal Medicine (GIM). GIM is the biggest medicine department and exists at all hospitals participating in GEMINI. A large portion (~40%) of emergency admissions are admitted to GIM. The GIM cohort is very heterogenous (unlike patients admitted to other medicine subservices that specialize in cardiology, nephrology, neurology etc.). GIM patients tend to have complex, multimorbid conditions making this cohort of particular interest when studying the effect of patient characteristics on clinical outcomes. 
 
-[May remove this since it's irrelevant for our question here: "Additionally, this cohort is well suited for physician-level inference and assessing quality of care due to the fact that GIM physicians are assigned to patients in a quasirandom manner."]
-
 ### Study cohort
 
 Based on the conceptual model discussed above, we will define our study cohort as follows:
@@ -198,7 +196,9 @@ To briefly inspect the variables in our data table, we can use `head():`
 head(data)
 ```
 
-The [GEMINI data dictionary](https://geminimedicine.ca/the-gemini-database/) contains more information about each of these variables.
+You can also use `summary()` or `Hmisc::describe()` to gather quick insights into the variables in this dataset.
+
+Additionally, the [GEMINI data dictionary](https://geminimedicine.ca/the-gemini-database/) contains more information about all data elements in the GEMINI database.
 
 
 <br></br>
@@ -208,14 +208,14 @@ Next, we will perform data quality/coverage checks and create our cohort. **The 
 
 ## Check data coverage
 
-To answer our research question, we rely on data elements from the `admdad` table (containing administrative data like patient age and sex) and the `lab` table (containing all laboratory tests that are relevant for `mLAPS`). We should therefore carefully check data coverage for both of these tables to a) gain more detailed insights into which hospitals & time periods contribute to our analyses and b) select encounters with high data coverage for our cohort (see cohort inclusions mentioned above).
+To answer our research question, we rely on data elements from the `admdad` table (containing administrative data like patient age and sex) and the `lab` table (containing all laboratory tests that are relevant for `mLAPS`). We should therefore carefully check data coverage for both of these tables to a) gain more detailed insights into which hospitals & time periods contribute to our analyses and b) select encounters with high data coverage for our cohort (see cohort inclusion 2 mentioned above).
 
 Please carefully review the **`Rgemini::data_coverage()` function and [data coverage vignette](https://github.com/GEMINI-Medicine/Rgemini/blob/139_data_coverage/vignettes/data_coverage.Rmd)** for more details.
 
 + <strong style="color:red;">Here is a brief summary of important coverage considerations: </strong>
   + By definition, all GEMINI encounters exist in the `admdad` table. However, patient volume (overall number of encounters) and the min-max dates of `admdad` coverage may vary across hospitals.
   + Clinical variables (such as `lab` data) may only have partial data coverage, even when administrative data are fully available. This is due to challenges associated with data extraction of clinical data, which can lead to gaps/unexpected drops in data coverage.
-  + It is crucial to always check data coverage for **all** relevant tables and make an informed decision on how to handle time periods/hospitals without full data coverage in the analyses. If relevant, report report differences in coverage periods between hospitals in your manuscript.
+  + It is crucial to always check data coverage for **all** relevant tables and make an informed decision on how to handle time periods/hospitals with data coverage issues in the analyses. If relevant, report differences in coverage periods between hospitals in your manuscript.
   + In general, data coverage checks should be performed on **all encounters** from hospitals and time periods of interest (e.g., data from Apr 2018-2020 from 20 hospitals), before applying study-specific cohort inclusions/exclusions (e.g., based on diagnosis criteria).
   + Typically, we recommend checking data coverage by hospital \* **discharge month** because GEMINI data are pulled based on patients' discharge dates. For clinical variables, you may also want to plot coverage by the relevant clinical date-time variable (e.g., `collection_date_time` for lab data).
 
@@ -229,9 +229,9 @@ coverage <- data_coverage(
 )
 ```
 
-Briefly, the `data_coverage()` function queries the `lookup_data_coverage` table, which lists the min-max dates with coverage for each data table and hospital (also see Data Availability plot in the [Data Dictionary](https://geminimedicine.ca/the-gemini-database/)). According to this table, a **gap in data coverage is defined as a period of >28 days without any data**. In other words, this lookup table only provides a very rough check of whether GEMINI received **any** data (at least 1 `genc_id`) from a given hospital during a certain time period.
+The `data_coverage()` function queries the `lookup_data_coverage` table, which lists the min-max dates with coverage for each data table and hospital (also see Data Availability plot in the [Data Dictionary](https://geminimedicine.ca/the-gemini-database/)). According to this table, a **gap in data coverage is defined as a period of >28 days without any data**. In other words, this lookup table only provides a very rough check of whether GEMINI received **any** data (at least 1 `genc_id`) from a given hospital during a certain time period.
 
-The `data_coverage` function provides users with a tool to perform additional coverage checks. By default, the it returns multiple plots:
+The `data_coverage` facilitates coverage checks by returning multiple plots:
 
 ### Timeline plot
 
@@ -246,18 +246,18 @@ knitr::include_graphics("figures/stats_intro/timeline_plot.png")
 <summary>**Let's inspect the timeline plot. What should you look out for?**</summary>
 
 + **Between-hospital differences in data timelines**
-  + Looking at the timelines for `admdad`, you’ll notice that some hospitals may have later start dates (e.g., hospitals 3, 4, and 12) and/or earlier end dates compared to other hospitals. If you are specifically interested in time trends, and/or assume that your analyses may be biased by changes over time, you may need to explicitly account for differences in timelines, restrict your analyses to time periods that overlap across all sites, or exclude sites with limited data timelines. Similarly, if you aim to analyse differences between hospitals, make sure that any between-hospital differences are not driven by differences in timelines. 
+  + Looking at the timelines for `admdad`, you’ll notice that some hospitals may have later start dates (e.g., hospitals 3, 4, and 12) and/or earlier end dates compared to other hospitals. If you are specifically interested in time trends or assume that your analyses may be biased by changes over time, you may need to explicitly account for differences in timelines, restrict your analyses to time periods that overlap across all sites, or exclude sites with limited data timelines. Similarly, if you aim to analyse differences between hospitals, make sure that any between-hospital differences are not driven by differences in timelines. 
 + **Within-hospital differences in data timelines**
   + Even within the same hospital, data timelines can vary between tables. For example, at site 13, `lab` data coverage only starts in November 2019 even though `admdad` data are covered throughout all of 2018-2020. This is typically due to challenges associated with extracting clinical (as opposed to administrative) data. Since we will only include encounters that have coverage for *both* `admdad` and `lab` data, keep in mind that our effective data timeline for site 13 is Nov 2019 - April 2020.
 + **Other coverage issues**
-  + Although this isn't the case here, you may also encounter interrupted timelines (i.e., gaps in data coverage) or scenarios where some hospitals don't have any data coverage at all for a given table of interest. Please carefully review the [data coverage vignette](https://github.com/GEMINI-Medicine/Rgemini/blob/139_data_coverage/vignettes/data_coverage.Rmd) for further examples and a more detailed discussion on these issues.
+  + Although this isn't the case here, you may also observe interrupted timelines (i.e., gaps in data coverage) or scenarios where some hospitals don't have any data coverage at all for a given table of interest. Please carefully review the [data coverage vignette](https://github.com/GEMINI-Medicine/Rgemini/blob/139_data_coverage/vignettes/data_coverage.Rmd) for further examples and a more detailed discussion on these issues.
 </details>
 
 <br></br>
 
 ### Coverage plots
 
-As mentioned above, the current definition for "data coverage" in the timeline plot only requires a single `genc_id` with an entry in the `admdad`/`lab` table. We therefore recommend performing additional, more granular checks of coverage. The `data_coverage()` function returns additional coverage plots to faciliate these checks: 
+As mentioned above, the current definition for "data coverage" in the timeline plot only requires a single `genc_id` with an entry in the `admdad`/`lab` table during a given time period. We therefore recommend performing additional, more granular checks of coverage. The `data_coverage()` function returns additional coverage plots to faciliate these checks: 
 
 **a) `admdad` volume**
 
@@ -302,16 +302,23 @@ knitr::include_graphics("figures/stats_intro/coverage_lab.png")
 
 Finally, the `data_coverage` function returns a flag for each `genc_id` in `data` indicating whether a given encounter was discharged during a time period/from a hospital with *any* `admdad`/`lab` coverage (based on the min-max dates listed in the `lookup_data_coverage` table). This does *not* mean that all `genc_ids` where the flag is `TRUE` have an entry in the lab table. Instead, the coverage flag being `TRUE` only tells us that there were *some* encounters during the same discharge period that had an entry in the `lab` table. This is extremely valuable information that can help us determine how to handle `genc_ids` without an entry in the lab table (i.e., `genc_ids` with missing `mLAPS` - see below):
 
-+ **If the coverage flag is `TRUE` and the additional coverage plots did not reveal any issues (e.g., sudden drops in `lab` data coverage):** We can now infer that if an encounter indeed received a lab test, it should be reflected in the `lab` table (since coverage is consistently high). Conversely, if a `genc_id` does not exist in the `lab` table (even though the coverage flag is `TRUE`), we can assume that the encounter did not receive a lab test - for example, because it may not have been clinically indicated.
++ **If the coverage flag is `TRUE` and the additional coverage plots did not reveal any issues (e.g., sudden drops in `lab` data coverage):** We can now infer that if an encounter indeed received a lab test, it should be reflected in the `lab` table (since coverage is consistently high). Conversely, if a `genc_id` does not exist in the `lab` table (even though the coverage flag is `TRUE`), we can assume that the encounter did not receive a lab test - for example, because testing may not have been clinically indicated.
 
 + **If the coverage flag is `FALSE` or if we identified any issues in the coverage plots above:** This means that if a `genc_id` does not exist in the `lab` table, we don't have sufficient information to determine whether a) the encounter did in fact not receive a lab test (true negative) or b) whether the encounter received a lab test but the test is not captured by GEMINI data due to coverage issues (false negative).
 
 In our case, we can go ahead and filter for encounters where the coverage flags are `TRUE`. If you identified data coverage issues during your checks, the `data_coverage` function allows for custom exclusions of hospitals/time periods with data coverage/quality issues to adjust the encounter-level flags accordingly (see [here](https://github.com/GEMINI-Medicine/Rgemini/blob/139_data_coverage/vignettes/data_coverage.Rmd) for more details):
 
-```{r}
-coverage$coverage_flag_enc[1:10, ]
+For example, for some (dummy) encounters from site 13, the encounter-level flags would look like this:
+
+```{r echo = FALSE}
+data.table(
+  genc_id = c(1, 2, 3, 4, 5),
+  hospital_num = c(13, 13, 13, 13, 13),
+  discharge_date = c("2018-05-25", "2018-05-25", "2018-05-25", "2018-05-25", "2018-05-25"),
+  admdad = rep(TRUE, 5),
+  lab = c(TRUE, FALSE, FALSE, FALSE, TRUE)
+) %>% knitr::kable(format = "html")
 ```
- 
 
 ## Apply cohort inclusions/exclusions
 
