@@ -55,7 +55,7 @@ knitr::include_graphics("figures/epicare_out_2.png", dpi = 100)
 ```
 
 
-## `readmission()`
+## `readmission()` {#sectionIntro}
 
 The function **`readmission()`** computes whether or not a patient associated with an epicare was readmitted to a GEMINI hospital within a specified time window. For each hospitalization (`genc_id`), the function returns its corresponding: `AT_in_occurred`, `AT_out_occurred`, `epicare`, and `readmitX`. `readmitX` is a boolean variable denoting whether readmission took place during a time window X-days post-discharge. 
 
@@ -112,7 +112,7 @@ readmission_7d_derived <- mean( readm$readmit7, na.rm=T )
 
 ### GEMINI specific considerations
 
-**1. Readmission attribution when end of episode is unknown**
+#### Readmission attribution when end of episode is unknown {#sectionATout}
 
 - When the last hospitalization of an epicare has transfer out coded (`AT_out_coded`==T) and `time_to_next_admission` is greater than 12 hours or infinite, it suggests that the patient likely had been transferred to a hospital **outside of the GEMINI network**. It cannot be known for certain that the last hospitalization in our records is the last hospitalization of the epicare in reality. 
 
@@ -130,7 +130,7 @@ knitr::include_graphics("figures/attribution_2.png", dpi = 100)
 <br>
 
 
-**2. Buffer period based on each hospital’s data availability** {#sectionBuffer}
+#### Buffer period based on each hospital’s data availability {#sectionBuffer}
 
 - A patient needs to be discharged from hospital before appearing in GEMINI database. If a patient was readmitted to a hospital but has not yet been discharged by the time data is transferred to GEMINI, that readmission record will not be captured in our database. As a result, readmission rates could be underestimated in the time period before the latest data transfers.
 
@@ -485,3 +485,19 @@ There may be more complex scenarios where the inclusion criteria for index admis
 5) Calculate readmission rates: Filter the output of the `readmission` function based on your index admissions (cohort created in step 1) in order to get readmission rates of surgery patients to GIM. This step is important to avoid that any admissions following GIM epicares (e.g., GIM to GIM readmissions or GIM to surgery readmissions) are included in the readmission rates. 
 
 These steps are meant as a general guideline, but you may need to consider additional aspects for a given research project. Please make sure you carefully consider the implications of the decisions you make when building your `restricted_cohort`. You will also need to consider if any additional REB restrictions apply, in which case the `restricted_cohort` should be filtered based on REB considerations first before applying any additional inclusion steps.  
+
+
+# FAQ
+
+## Why are there missing values in the readmission flags?
+
+Missing values (`NA`) in the returned readmission flags indicate that the encounter was removed from the denominator and should not be included in any analyses of readmission rates. There are several reasons for `NA` in the derived readmission flags:
+
+1) **Buffer period:** Any `genc_ids` that were discharged during the buffer period (end of data availability period for a given hospital) are returned as `readmit = NA` because readmission cannot be reliably determined for these encounters (see [here](#sectionBuffer) for more details). Note that longer readmission windows will lead to a longer buffer period (i.e., more `NA`).
+
+2) **Attribution to last encounter per episode of care:** If there are multiple encounters in a given episode of care, readmission will only be attributed to the *last* encounter. All previous encounters associated with the same episode of care will be returned as `readmit = NA` (see [here](#sectionIntro)). If attribution to the last encounter (i.e., the last discharging physician/hospital) is irrelevant for your research question, you may consider assigning the last readmission value to *all* encounters of a given episode of care. This could be relevant if you are only analyzing the first encounter per patient (or a randomly selected encounter).
+
+3) **Acute transfers to non-GEMINI site:** If an encounter is followed by a transfer to an acute care institution but the transfer encounter does not exist in GEMINI data (e.g., transfer to non-GEMINI hospital), all encounters of that episode of care will be returned with `readmit = NA` (see [here](#sectionATout)). This is because readmission is typically attributed to the last encounter of an episode of care (see point 2 above), which in this case does not exist in our data. Additionally, we don't know how long a patient was hospitalized for at a non-GEMINI site, so we cannot reliably determine if any subsequent encounter occurred within the readmission window of interest.
+
+4) **CIHI flags:** If set to `TRUE`, the following CIHI flags will result in `readmit = NA` for encounters meeting the relevant criteria (see [here](#sectionCIHI) for details): `death` (`TRUE` by default), `palliative`, `mental`, and `signout`
+
