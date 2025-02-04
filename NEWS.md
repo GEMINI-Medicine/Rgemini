@@ -1,3 +1,7 @@
+# Rgemini `develop`
+
+* Remove redundant AT check in `episodes_of_care`
+
 # Rgemini `1.0.2`
 
 * Small bug fix in `find_db_tablename()` for materialized views (H4H >= v4)
