@@ -41,10 +41,11 @@
 #'   \item{An admission occurs within 7-12 hours after discharge, and at least one hospital has coded the transfer.}
 #' }
 #'
-#' Acute transfers that are coded by hospitals (`AT_in_coded` and `AT_out_coded`) are defined by the mapped institution types
-#' (mapped versions of raw DAD fields `institution_from` and `institution_to`):
-#' `AT_in_coded`/`AT_out_coded` is `TRUE`, when '`institution_from_type_mns == "AT"` or '`institution_to_type_mns == "AT"`. All
-#' remaining entries are set to `FALSE`.
+#' Acute transfers that are coded by hospitals (`AT_in_coded` and `AT_out_coded`) are based on GEMINI-derived
+#' mappings of institution types that can be found in the `lookup_transfer` table. The mapped institution types are
+#' derived from the raw institution codes in `admdad` (DAD fields `institution_from` and `institution_to`):
+#' `AT_in_coded`/`AT_out_coded` is `TRUE`, when the mapped
+#' institution from/to type is "AT". All remaining entries are set to `FALSE`.
 #'
 #' Acute transfers that actually occurred (`AT_in_occurred` and `AT_out_occurred`) are defined as follows:
 #' `AT_in_occurred`/`AT_out_occurred` is `TRUE` when admission is within 7 hrs of discharge regardless of transfer
