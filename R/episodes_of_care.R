@@ -41,9 +41,9 @@
 #'   \item{An admission occurs within 7-12 hours after discharge, and at least one hospital has coded the transfer.}
 #' }
 #'
-#' Acute transfers that are coded by hospitals (`AT_in_coded` and `AT_out_coded`) are defined by the DAD fields
-#' `institution_from` and `institution_to`:
-#' `AT_in_coded`/`AT_out_coded` is `TRUE`, when '`institution_from == "AT"` or '`institution_to == "AT"`. All
+#' Acute transfers that are coded by hospitals (`AT_in_coded` and `AT_out_coded`) are defined by the mapped institution types
+#' (mapped versions of raw DAD fields `institution_from` and `institution_to`):
+#' `AT_in_coded`/`AT_out_coded` is `TRUE`, when '`institution_from_type_mns == "AT"` or '`institution_to_type_mns == "AT"`. All
 #' remaining entries are set to `FALSE`.
 #'
 #' Acute transfers that actually occurred (`AT_in_occurred` and `AT_out_occurred`) are defined as follows:
@@ -82,27 +82,28 @@
 #' \dontrun{
 #' drv <- dbDriver("PostgreSQL")
 #' dbcon <- DBI::dbConnect(drv,
-#'                         dbname = "db",
-#'                         host = "domain_name.ca",
-#'                         port = 1234,
-#'                         user = getPass("Enter user:"),
-#'                         password = getPass("password"))
+#'   dbname = "db",
+#'   host = "domain_name.ca",
+#'   port = 1234,
+#'   user = getPass("Enter user:"),
+#'   password = getPass("password")
+#' )
 #'
 #' epicare_table <- episodes_of_care(dbcon)
 #' }
 #'
 episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
-
   ## check user inputs
   check_input(dbcon, "DBI")
-  if (!is.null(restricted_cohort)){
+  if (!is.null(restricted_cohort)) {
     check_input(restricted_cohort, c("data.table", "data.frame"),
-                colnames = "genc_id")
+      colnames = "genc_id"
+    )
   }
 
   ############ Load lookup_transfer ############
-  lookup_transfer_name<-find_db_tablename(dbcon, "lookup_transfer", verbose = FALSE)
-  lookup_transfer <- DBI::dbGetQuery(dbcon, paste0("select * from ", lookup_transfer_name, ";"))%>% as.data.table()
+  lookup_transfer_name <- find_db_tablename(dbcon, "lookup_transfer", verbose = FALSE)
+  lookup_transfer <- DBI::dbGetQuery(dbcon, paste0("select * from ", lookup_transfer_name, ";")) %>% as.data.table()
 
   ############ Load whole admdad table (default) ############
   ## find relevant table name corresponding to admdad
@@ -118,15 +119,17 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
       )
 
       ## write a temp table to improve querying efficiency
-      DBI::dbSendQuery(dbcon,"Drop table if exists temp_data;")
-      DBI::dbWriteTable(dbcon, c("pg_temp","temp_data"), restricted_cohort[,.(genc_id)], row.names = F, overwrite = T)
-      #Analyze speed up the use of temp table
-      DBI::dbSendQuery(dbcon,"Analyze temp_data")
+      DBI::dbSendQuery(dbcon, "Drop table if exists temp_data;")
+      DBI::dbWriteTable(dbcon, c("pg_temp", "temp_data"), restricted_cohort[, .(genc_id)], row.names = F, overwrite = T)
+      # Analyze speed up the use of temp table
+      DBI::dbSendQuery(dbcon, "Analyze temp_data")
 
-      admdad <- DBI::dbGetQuery(dbcon, paste0("select genc_id, patient_id_hashed, age, admit_category, admission_date_time,
+      admdad <- DBI::dbGetQuery(dbcon, paste0(
+        "select genc_id, patient_id_hashed, age, admit_category, admission_date_time,
                                             discharge_date_time, institution_from_type, institution_to_type
                                             from ", admdad_name,
-                                            " a where exists (select 1 from temp_data t where t.genc_id=a.genc_id); ")) %>% as.data.table()
+        " a where exists (select 1 from temp_data t where t.genc_id=a.genc_id); "
+      )) %>% as.data.table()
     }
   } else {
     admdad <- DBI::dbGetQuery(dbcon, paste0("select genc_id, patient_id_hashed, age, admit_category, admission_date_time,
@@ -155,22 +158,22 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
   data$AT_out_coded <- FALSE
 
   ## identify acute-care transfers ("AT") based on
-  # 1) raw institution_from/to_type in admdad and 
+  # 1) raw institution_from/to_type in admdad and
   # 2) mapped AT transfers according to lookup_transfer (relevant column names depend on DB version of lookup_transfer table)
   if ("acute_transfer_in" %in% colnames(lookup_transfer)) {
     # For DB versions <= report/drm DB v2 [H4H_template v3]: filter lookup_transfer for acute_transfer_in/out = "AT"
-    data[institution_from_type == "AT" | acute_transfer_in == "AT", AT_in_coded := TRUE]
-    data[institution_to_type == "AT" | acute_transfer_out == "AT", AT_out_coded := TRUE]
+    data[acute_transfer_in == "AT", AT_in_coded := TRUE]
+    data[acute_transfer_out == "AT", AT_out_coded := TRUE]
   } else {
     # For DB versions > report/drm DB v2 [H4H_template v3]: filter lookup_transfer for institution_from/to_type_mns = "AT"
-    data[institution_from_type == "AT" | institution_from_type_mns == "AT", AT_in_coded := TRUE]
-    data[institution_to_type == "AT" | institution_to_type_mns == "AT", AT_out_coded := TRUE]
+    data[institution_from_type_mns == "AT", AT_in_coded := TRUE]
+    data[institution_to_type_mns == "AT", AT_out_coded := TRUE]
   }
 
   ############  Compute `time_to_next_admission`, `time_since_last_admission`  ############
   ## Defined as time difference between admission date-time of (n+1)th encounter minus
   ## discharge date-time of (n)th encounter
-  
+
   data[, time_to_next_admission := as.numeric(difftime(
     data.table::shift(admission_date_time, type = "lead"), # (n+1)th encounter
     discharge_date_time, # (n)th encounter
