@@ -325,34 +325,51 @@ data.table(
 ) %>% knitr::kable(format = "html")
 ```
 
+```{r echo = FALSE}
+coverage <- data.table(
+  hospital_num = data$hospital_num,
+  genc_id = data$genc_id,
+  discharge_date = as.Date(data$discharge_date_time)
+)
+coverage[, lab := TRUE]
+coverage[hospital_num == 13 & discharge_date < "2019-11-01", lab := FALSE]
+```
+
 ## Apply cohort inclusions/exclusions
 
-Once we checked coverage on the whole dataset, we can filter for the relevant encounters based on the inclusion/exclusion steps listed above. To facilitate this process, let's derive a flag for each `genc_id` indicating whether that encounter meets a given inclusion/exclusion criterion.
+Once we checked coverage on the whole dataset, we can filter for the relevant encounters based on the inclusion/exclusion steps listed above. The `Rgemini` package contains a `cohort_creation()` function to facilitate this process. 
+
+Briefly, this is how you would use the function:
+
+```{r}
+
+
+```
+
+The function returns a list with 2 items:
+
+1) A table showing the number (%) of encounters that were included/excluded at each cohort creation step:
+
+```{r}
+
+```
+
+2) A `data.table` object containing all encounters that are included in the final cohort (N = XXX, based on all inclusions/exclusions shown above) .
+
+
+Let's go through each cohort creation step in a bit more detail and discuss the decisions the analyst had to make to build the cohort correctly. 
 
 ***Incl. 1: GIM encounters between 2018 - 2020***
 
-In our case, this corresponds to all encounters in the dummy data.
-
-```{r}
-data[, incl1_gim := TRUE]
-```
+In our case, this corresponds to all encounters in the dummy data, which is our baseline cohort (i.e., first row in the cohort inclusion/exclusion table).
 
 ***Incl. 2: Encounters with data coverage***
 
-Here, we include all encounters with `lab` data coverage (note: by definition, the `admdad` coverage flag is always `TRUE` for all encounters): 
-
-```{r}
-data[, incl2_coverage := genc_id %in% coverage$coverage_flag_enc[lab == TRUE]$genc_id]
-```
-
+Here, we include all encounters with `lab` data coverage based on the coverage checks we performed in the previous section. Note: by definition, the `admdad` coverage flag is always `TRUE` for all encounters. 
 
 ***Incl. 3: Pneumonia diagnosis***
 
-In our dummy data, we will filter for entries where `ipdiagnosis_mrdx` (most responsible discharge diagnosis from inpatient diagnosis table) starts with J10-J18 ("Pneumonia"):
-
-```{r}
-data[, incl3_pneumonia := grepl("^J12|^J13|^J14|^J15|^J16|^J17|^J18", ipdiagnosis_mrdx)]
-```
+In our dummy data, we will filter for entries where `ipdiagnosis_mrdx` (most responsible discharge diagnosis from inpatient diagnosis table) starts with J10-J18 ("Pneumonia").
 
 <details>
 <summary>**Expand this section for additional considerations when filtering by diagnosis codes**</summary>
@@ -374,140 +391,13 @@ CCSR (Clinical Classifications Software Refined) groups ICD-10-CA diagnosis code
 
 ***Excl. 1: Acute-care transfer in***
 
-In our dummy `data` table, this is defined by `acute_transfer_in`, which is derived based on whether the `genc_id` has an entry in `lookup_transfers` where `acute_transfer_in = TRUE`:
-
-```{r}
-data[, excl1_transfer := acute_transfer_in]
-```
-
+In our dummy `data` table, this is defined by `acute_transfer_in`, which is derived based on whether the `genc_id` has an entry in `lookup_transfers` where `acute_transfer_in = TRUE`.
 
 ***Excl. 2: Not admitted from ED***
 
-In our dummy `data` table, this is defined by `admitted_from_er`, which is a flag indicating whether or not a given `genc_id` has an entry in the `er` table:
-
-```{r}
-data[, excl2_ed := !admitted_from_er]
-```
-
-
-Let's make sure there are no missing values in any of the derived inclusion/exclusion flags (missing values would indicate that certain flags can't be defined for some `genc_ids`, in which case you should carefully check all variables that are required for the cohort definition):
-
-```{r}
-Rgemini::n_missing(data[, .(incl1_gim, incl2_coverage, incl3_pneumonia, excl1_transfer, excl2_ed)])
-```
-
+In our dummy `data` table, this is defined by `admitted_from_er`, which is a flag indicating whether or not a given `genc_id` has an entry in the `er` table.
 
 <br></br>
-
-Here, we don't have any missing values in any of the inclusion/exclusion flags, so we can go ahead and build our cohort as follows: 
-
-```{r echo = FALSE}
-## Note: This will be added to Rgemini soon...
-cohort_creation <- function(
-    cohort,
-    labels,
-    exclusion_flag = NULL,
-    show_prct = TRUE,
-    group_var = NULL,
-    ...) {
-
-  ## if no exclusion flags provided, interpret all steps as "inclusions"
-  if (is.null(exclusion_flag)) {
-    exclusion_flag <- c(rep(FALSE, length(cohort)))
-  }
-
-  ## check user input
-  Rgemini:::check_input(cohort, "list")
-  Rgemini:::check_input(labels, "character")
-  Rgemini:::check_input(list(exclusion_flag, show_prct), "logical")
-  if (!is.null(group_var)) {
-    Rgemini:::check_input(group_var, "charater")
-  }
-
-  if (length(cohort) != length(labels) | length(cohort) != length(exclusion_flag)) {
-    stop("The `cohort`, `labels`, and `exclusion_flag` (if provided) inputs need to have the same length.")
-  }
-
-  create_cohort <- function(cohort, exclusion_flag, group_var, ...) {
-
-    ## get number of rows at each cohort creation step (= usually number of unique genc_ids)
-    N <- sapply(cohort, nrow)
-
-    ## calculate change in N between steps
-    cohort_tab <- data.table(N, previous_n = lag(N))
-    cohort_tab[, `%` := 100 * N / previous_n]
-
-    ## for any steps with exclusion_flag = TRUE, show removal as -n (-X%)
-    cohort_tab[exclusion_flag == TRUE & !is.na(previous_n), N := -(previous_n - N)]
-    cohort_tab[exclusion_flag == TRUE & !is.na(previous_n), `%` := -(100 - `%`)]
-
-    ## combine N (%, if show_prct = TRUE)
-    cohort_tab[, `N (%)` := ifelse(
-      !is.na(`%`) & show_prct == TRUE, paste0(prettyNum(N, ...), " (", round(`%`, 1), "%)"), prettyNum(N, ...)
-    )]
-    cohort_tab <- cohort_tab[, .(`N (%)`)]
-
-    ## add row with final cohort number
-    # (only needed if last step was showing exclusion)
-    if (exclusion_flag[length(exclusion_flag)] == TRUE) {
-      cohort_tab <- rbind(
-        cohort_tab,
-        data.table(`N (%)` = prettyNum(nrow(cohort[[length(cohort)]]), ...))
-      )
-    }
-
-    if (!is.null(group_var)) {
-      if (length(unique(unique(cohort[[1]][[group_var]]))) == 1) {
-        colnames(cohort_tab) <- paste(group_var, "=", as.character(unique(cohort[[1]][[group_var]])))
-      }
-    }
-
-    return(cohort_tab)
-  }
-
-
-  ## create table for overall cohort
-  cohort_tab <- create_cohort(cohort, exclusion_flag, group_var, ...)
-
-  ## add columns by subgroup (if group_var specified)
-  if (!is.null(group_var)) {
-    groups <- unique(cohort[[1]][[group_var]])
-    grouped_list <- list()
-    for (i in groups) {
-      grouped_list[[i]] <- lapply(cohort, function(x) x[get(group_var) == i])
-    }
-    cohort_tab_grouped <- lapply(
-      grouped_list, create_cohort,
-      exclusion_flag = exclusion_flag, group_var = group_var, ...
-    )
-    cohort_tab_grouped <- do.call(cbind, cohort_tab_grouped)
-    cohort_tab <- cbind(cohort_tab, cohort_tab_grouped)
-  }
-
-  ## add column with inclusion/exclusion step number
-  steps <- c(ifelse(
-    exclusion_flag == TRUE,
-    paste("Excl. ", ave(seq_along(exclusion_flag), exclusion_flag, FUN = seq_along), sep = ""),
-    paste("Incl. ", ave(seq_along(exclusion_flag), exclusion_flag, FUN = seq_along), sep = "")
-  ), if (exclusion_flag[length(exclusion_flag)] == TRUE) "")
-
-  labels <- c(labels, if (exclusion_flag[length(exclusion_flag)] == TRUE) "Final cohort")
-
-  cohort_tab <- cbind(
-    steps,
-    labels,
-    cohort_tab
-  )
-
-  ## Fix column names
-  colnames(cohort_tab)[1:3] <- c("", "Cohort creation step", ifelse(show_prct == TRUE, "N (%)", "N"))
-  if (!is.null(group_var)) {
-    colnames(cohort_tab)[3] <- paste("Overall", colnames(cohort_tab)[3])
-  }
-
-  return(cohort_tab)
-}
-```
 
 ```{r}
 cohort_table <- cohort_creation(
