@@ -27,7 +27,7 @@ knitr::opts_chunk$set(
 )
 
 library(data.table)
-library(tidyverse)
+#library(tidyverse)
 library(dplyr)
 library(Rgemini)
 library(lubridate)
@@ -35,6 +35,7 @@ library(kableExtra)
 library(DBI)
 library(getPass)
 library(RPostgreSQL)
+library(ggplot2)
 
 #rmarkdown::render("~/GitHub/Rgemini/vignettes/stats_intro.Rmd", output_dir = "/mnt/nfs/projects/research_projects/Rgemini/stats_vignette/")
 
@@ -155,7 +156,7 @@ Based on the conceptual model discussed above, we will define our study cohort a
 
 + **Inclusion steps**
   - Incl. 1: All GIM encounters discharged between Apr 2018 - Apr 2020
-  - Incl. 2: Encounters with high data coverage for relevant variables (here: administrative & lab data for `mlaps`)
+  - Incl. 2: Encounters with high lab data coverage (required for `mlaps`)
   - Incl. 3: Encounters with Pneumonia as most responsible diagnosis code (MRDx)
 
 + **Exclusion steps:**
@@ -171,7 +172,6 @@ The reason for the two exclusion steps is to make sure that any covariates we in
 The cohort inclusion/exclusion steps should be developed in close collaboration between the clinical researcher and data analyst. Typically, the steps will need to be refined during the project kick-off meeting to make sure the specific criteria, sequence, and rationale for the cohort definition makes sense. The cohort creation steps may also need to be refined once the analyst has completed the data checks (see next section), which might reveal unforeseen challenges, such as data coverage/quality issues.
 
 </details>
-
 
 
 *  *  *  *
@@ -212,12 +212,13 @@ To answer our research question, we rely on data elements from the `admdad` tabl
 
 Please carefully review the **`Rgemini::data_coverage()` function and [data coverage vignette](https://github.com/GEMINI-Medicine/Rgemini/blob/139_data_coverage/vignettes/data_coverage.Rmd)** for more details.
 
-+ <strong style="color:red;">Here is a brief summary of important coverage considerations: </strong>
-  + By definition, all GEMINI encounters exist in the `admdad` table. However, patient volume (overall number of encounters) and the min-max dates of `admdad` coverage may vary across hospitals.
-  + Clinical variables (such as `lab` data) may only have partial data coverage, even when administrative data are fully available. This is due to challenges associated with extraction of clinical data, which can lead to gaps/unexpected drops in data coverage.
-  + It is crucial to always check data coverage for **all** relevant tables and make an informed decision on how to handle time periods/hospitals with data coverage issues in the analyses. If relevant, report differences in coverage periods between hospitals in your manuscript.
-  + In general, data coverage checks should be performed on **all encounters** from hospitals and time periods of interest (e.g., data from Apr 2018-2020 from 20 hospitals), before applying study-specific cohort inclusions/exclusions (e.g., based on diagnosis criteria).
-  + Typically, we recommend checking data coverage by hospital \* **discharge month** because GEMINI data are pulled based on patients' discharge dates. For clinical variables, you may also want to plot coverage by the relevant clinical date-time variable (e.g., `collection_date_time` for lab data). We will the latter check here for simplicity.
+<strong style="color:red;">Here is a brief summary of important coverage considerations: </strong>
+
++ By definition, all GEMINI encounters exist in the `admdad` table. However, patient volume (overall number of encounters) and the min-max dates of `admdad` coverage may vary across hospitals.
++ **Clinical variables** (such as `lab` data) may only have partial data coverage, even when administrative data are fully available. This is due to challenges associated with extraction of clinical data, which can lead to gaps/unexpected drops in data coverage.
++ It is crucial to always check data coverage for **all relevant tables** and make an informed decision on how to handle time periods/hospitals with data coverage issues in the analyses. If relevant, report differences in coverage periods between hospitals in your manuscript.
++ In general, data coverage checks should be performed on **all encounters** from hospitals and time periods of interest (e.g., data from Apr 2018-2020 from 20 hospitals), before applying study-specific cohort inclusions/exclusions (e.g., based on diagnosis criteria).
++ Typically, we recommend checking data coverage by hospital \* **discharge month** because GEMINI data are pulled based on patients' discharge dates. For clinical variables, you may also want to plot coverage by the relevant clinical date-time variable (e.g., `collection_date_time` for lab data). 
 
 In our case, we can run the `data_coverage()` function to check coverage for `admdad` and `lab` as follows:
 
@@ -272,7 +273,7 @@ knitr::include_graphics("figures/stats_intro/coverage_admdad.png")
 
 **1) Data timeline periods:** As we already saw in the timeline plot above, hospitals 3, 4, and 12 do not have any encounters in `admdad` during earlier time periods (shown as `NA` in the coverage plot).
 
-**2) Patient volume:** Some hospitals have a smaller number of encounters overall (e.g., sites 7, 11, & 12) compared to others (e.g., sites 5 & 17). This means that some sites will contribute fewer data points to our analyses than others (e.g., small community hospitals vs. large academic hospitals). GEMINI also includes some hospitals that provide specialized care, with only a small subset of encounters being considered GIM. You can find more information about each hospital in the `lookup_hospital` table as well as the `additional_info` column in the `lookup_data_coverage` table. This can help you determine how to handle these sites in your analyses.
+**2) Patient volume at each hospital:** Some hospitals have a smaller number of encounters overall (e.g., sites 7, 11, & 12) compared to others (e.g., sites 5 & 17). This means that some sites will contribute fewer data points to our analyses than others (e.g., small community hospitals vs. large academic hospitals). GEMINI also includes some hospitals that provide specialized care, with only a small subset of encounters being considered GIM. You can find more information about each hospital in the `lookup_hospital` table as well as the `additional_info` column in the `lookup_data_coverage` table. This can help you determine how to handle these sites in your analyses.
 
 **3) Changes in patient volume over time:** Although this isn't the case here, you might observe sudden drops/increases in encounter numbers over time. This might be due to seasonal changes, COVID-related factors, changes in the GEMINI cohort definition (e.g., expansion from GIM to all-medicine), or potential biases introduced during cohort inclusion/exclusion steps (see below). 
 </details>
@@ -295,6 +296,7 @@ As we already showed in the timeline plot above, site 13 does not have any lab d
 <summary>**Expand this section for some tips**</summary>
 
 The expected % of `genc_ids` with an entry in a given table depends on the clinical context. For example, we would expect the vast majority of GIM encounters to receive at least 1 lab test. As a result, >95% of `genc_ids` should have an entry in the lab table, and this should be fairly stable over time and across sites. By contrast, let's say we are looking at data coverage for transfusion or radiology data: Only a small proportion of GIM encounters receive a transfusion or radiology test during their hospitalization, and transfusion/imaging practices can vary across sites. Similarly, if you look at data coverage for ICU (`ipscu` table), keep in mind that some hospitals don't have an ICU. Thus, you need to evaluate the coverage plots with the relevant clinical context in mind, and typically, there is no single coverage threshold that can be applied across all tables/hospitals. Instead, we recommend the following:
+
 - Discuss with an SME what % of patients they would expect to receive a lab test/transfusion/etc.
 - Check the `lookup_hospital` table and the `additional_info` column in the `lookup_data_coverage` table to check for any relevant information that may explain differences in coverage between hospitals (e.g., hospital provides specialized care, doesn't have an ICU etc.). 
 - Look out for sudden drops in data coverage *within* a given hospital. This might indicate a coverage issue due to data extraction challenges. Please flag these issues to the GEMINI team.
@@ -305,7 +307,7 @@ The expected % of `genc_ids` with an entry in a given table depends on the clini
 
 ### Encounter-level flags
 
-Finally, the `data_coverage()` function returns a flag for each `genc_id` in `data` indicating whether a given encounter was discharged during a time period/from a hospital with *any* `admdad`/`lab` coverage (based on the min-max dates listed in the `lookup_data_coverage` table). This does *not* mean that all `genc_ids` where the flag is `TRUE` have an entry in the lab table. Instead, the coverage flag being `TRUE` only tells us that there were *some* encounters during the same discharge period that had an entry in the `lab` table. This is extremely valuable information that can help us determine how to handle `genc_ids` that **do not** have an entry in the lab table (i.e., `genc_ids` with missing `mLAPS` - see below):
+Finally, the `data_coverage()` function returns a flag for each `genc_id` in `data` indicating whether a given encounter was discharged during a time period/from a hospital with *any* `admdad`/`lab` coverage (based on the min-max dates listed in the `lookup_data_coverage` table). This does *not* mean that all `genc_ids` where the flag is `TRUE` have an entry in the lab table. Instead, the coverage flag being `TRUE` only tells us that there were *some* encounters during the same discharge period that had an entry in the `lab` table. This is  valuable information that can help us determine how to handle `genc_ids` that **do not** have an entry in the lab table (i.e., `genc_ids` with missing `mLAPS` - see below):
 
 + **If the coverage flag is `TRUE` and the additional coverage plots did not reveal any issues (e.g., sudden drops in `lab` data coverage):** We can now infer that if an encounter indeed received a lab test, it should be reflected in the `lab` table (since coverage is consistently high). Conversely, if a `genc_id` does not exist in the `lab` table (even though the coverage flag is `TRUE`), we can assume that the encounter did not receive a lab test - for example, because testing may not have been clinically indicated.
 
@@ -340,121 +342,106 @@ coverage[hospital_num == 13 & discharge_date < "2019-11-01", lab := FALSE]
 Once we checked coverage on the whole dataset, we can filter for the relevant encounters based on the inclusion/exclusion steps listed above. The `Rgemini` package contains a `cohort_creation()` function to facilitate this process. 
 
 Briefly, this is how you would use the function:
-
 ```{r}
+# the function doesn't exist on the main branch yet, so pull from branch 142 in the meantime
+source("../R/cohort_creation.R")
 
-
+cohort_table <- cohort_creation(
+  cohort = list(
+    data, # all GIM encounters between 2018-2020
+    data[genc_id %in% coverage[lab == TRUE]$genc_id], # lab coverage
+    data[grepl("^J1[2-8]", ipdiagnosis_mrdx)], # Pneumonia MRDx
+    data[acute_transfer_in == TRUE], # acute care transfer
+    data[admitted_from_er == FALSE] # ED admission
+  ),
+  labels = c(
+    "All GIM encounters discharged between Apr 2018 - Apr 2020",
+    "Encounters with lab data coverage",
+    "Encounters with Pneumonia as MRDx",
+    "Encounters transferred from another acute-care institute",
+    "Encounters not admitted from ED"
+  ),
+  exclusion_flag = c(FALSE, FALSE, FALSE, TRUE, TRUE) 
+)
 ```
 
 The function returns a list with 2 items:
 
-1) A table showing the number (%) of encounters that were included/excluded at each cohort creation step:
+1) A `data.table` object containing all rows from the original `data` table that are included in the final cohort (N = 8,515, based on all inclusions/exclusions). We will name this table `cohort`, which will be used in all subsequent analyses below:
 
 ```{r}
+cohort <- cohort_table[[1]]
 
+head(cohort) %>%
+  knitr::kable(escape = FALSE, format = "html")
 ```
 
-2) A `data.table` object containing all encounters that are included in the final cohort (N = XXX, based on all inclusions/exclusions shown above) .
+2) A table showing the number (%) of encounters that were included/excluded at each cohort creation step:
 
+```{r}
+cohort_table[[2]] %>%
+  knitr::kable(escape = FALSE, format = "html")
+```
 
 Let's go through each cohort creation step in a bit more detail and discuss the decisions the analyst had to make to build the cohort correctly. 
 
-***Incl. 1: GIM encounters between 2018 - 2020***
+**1) Incl. 1: GIM encounters discharged between April 2018-2020**
 
-In our case, this corresponds to all encounters in the dummy data, which is our baseline cohort (i.e., first row in the cohort inclusion/exclusion table).
+- This is our baseline cohort that includes all encounters in `data`.
+- As a reminder, the `derived_variables` table contains a `gim` flag, which is `TRUE` for all encounters that were admitted to/discharged from a GIM service.
 
-***Incl. 2: Encounters with data coverage***
+**2) Incl. 2: Encounters with lab data coverage**
 
-Here, we include all encounters with `lab` data coverage based on the coverage checks we performed in the previous section. Note: by definition, the `admdad` coverage flag is always `TRUE` for all encounters. 
+- Here, we include all encounters where the `lab` coverage flag returned by the `data_coverage()` function is `TRUE`. If you spotted any coverage issues and wanted to exclude any other hospitals/time periods, you could apply additional criteria here or run the `data_coverage()` function [with customized dates](https://github.com/GEMINI-Medicine/Rgemini/blob/139_data_coverage/vignettes/data_coverage.Rmd). Note: by definition, the `admdad` coverage flag is always `TRUE` for all encounters, so we do not need to apply any inclusions for that.
 
-***Incl. 3: Pneumonia diagnosis***
+**3) Incl. 3: Pneumonia diagnosis**
 
-In our dummy data, we will filter for entries where `ipdiagnosis_mrdx` (most responsible discharge diagnosis from inpatient diagnosis table) starts with J10-J18 ("Pneumonia").
+- Here, we filter for entries where `ipdiagnosis_mrdx` (most responsible discharge diagnosis from inpatient diagnosis table) starts with J10-J18 ("Pneumonia").
 
 <details>
 <summary>**Expand this section for additional considerations when filtering by diagnosis codes**</summary>
 
-**1) What diagnosis codes to include/exclude?** 
+**a) What diagnosis codes to include/exclude?** 
 This is usually determined by an SME who will provide you with a list of relevant ICD-10-CA codes. In our example, all ICD-10-CA codes from J10-J18 should be included for pneumonia. Usually, you should filter for all diagnosis codes that **start** with the same characters (i.e., including children codes like "J12.8"), unless otherwise specified. If you are unsure, please clarify with the SME. 
 
-**2) Is the diagnosis type relevant?** 
+**b) Is the diagnosis type relevant?** 
 In our example, the cohort definition specifies "Pneumonia as a most responsible diagnosis code (MRDx)". We therefore need to filter by `diagnosis_type = M`. According to (HSMR methodology)[https://www.cihi.ca/sites/default/files/document/hospital-standardized-mortality-ratio-meth-notes-en.pdf] `diagnosis_type = 6` (Proxy MRDx) should also be included and takes priority over type-M.
 
-**3) Do you only want to filter by in-patient diagnosis codes or also include ED diagnoses?**  
+**c) Do you only want to filter by in-patient diagnosis codes or also include ED diagnoses?**  
 When filtering for a specific condition based on patient's MRDx, we typically only include in-patient diagnoses as they tend to be more reliable compared to ED diagnoses. However, this decision may be project specific, and in certain cases it might make sense to consider ED diagnoses to increase sensitivity. If you are unsure, please discuss this with the SME. 
 
-**4) Can you use CCSR instead of ICD-10-CA codes?**
+**d) Can you use CCSR instead of ICD-10-CA codes?**
 CCSR (Clinical Classifications Software Refined) groups ICD-10-CA diagnosis codes into cleanically meaningful categories. This can be useful if you are analyzing a large, heterogenous cohort of patients and want to group them for descriptive purposes or to perform risk adjustment by diagnosis group (see [here](https://gemini-medicine.github.io/Rgemini/articles/icd_to_ccsr.html) for more details). However, if your analysis is focused on a single, well-defined diagnosis of interest (e.g., pneumonia in our case), we typically recommend using ICD-10-CA codes to select the specific diagnoses that should be included/excluded. 
 </details>
 
 <br></br>
 
-***Excl. 1: Acute-care transfer in***
+**4) Excl. 1: Acute-care transfer in**
 
-In our dummy `data` table, this is defined by `acute_transfer_in`, which is derived based on whether the `genc_id` has an entry in `lookup_transfers` where `acute_transfer_in = TRUE`.
+- In our dummy `data` table, this is defined by `acute_transfer_in`, which is derived based on whether the `genc_id` has an entry in `lookup_transfers` where `institution_from_type_mns = AT`. "AT" are acute care institutions that were mapped by GEMINI based on the raw `insitution_from` codes in `admdad`.
+- Here, we want to *exclude* encounters where `acute_transfer_in = TRUE` so we will set the `exclusion_flag` to `TRUE` for this step. The function will then automatically show the number (%) of encounters that were *removed* based on this criterion. Depending on your preference, you could also rephrase this as an inclusion step to include all `genc_ids` where `acute_transfer_in = FALSE`.
 
-***Excl. 2: Not admitted from ED***
+**5) Excl. 2: Not admitted from ED**
 
-In our dummy `data` table, this is defined by `admitted_from_er`, which is a flag indicating whether or not a given `genc_id` has an entry in the `er` table.
-
-<br></br>
-
-```{r}
-cohort_table <- cohort_creation(
-  cohort = list(data[incl1_gim == TRUE], #  cohort (discharges between 2018 - 2020)
-                data[incl2_coverage == TRUE],
-                data[incl2_coverage == TRUE & incl3_pneumonia == TRUE],
-                data[incl2_coverage == TRUE & incl3_pneumonia == TRUE & excl1_transfer == FALSE],
-                data[incl2_coverage == TRUE & incl3_pneumonia == TRUE & excl1_transfer == FALSE & excl2_ed == FALSE]),
-  labels = c("All GEMINI encounters discharged between Apr 2018 - March 2020",
-             "Encounters from hospitals with high data coverage",
-             "Encounters with Pneumonia MRDx",
-             "Encounters with an acute-care transfer",
-             "Encounters not admitted from the ED"
-             ),
-  exclusion_flag = c(FALSE, FALSE, FALSE, TRUE, TRUE),
-  big.mark = ","
-)
-
-cohort_table %>% knitr::kable(escape = FALSE, format = "html") %>%
-  kable_styling("hover") %>%
-  row_spec(6,  bold = TRUE)
-
-```
-
+- In our dummy `data` table, `admitted_from_er` indicates if an encounter was admitted from the ED, based on whether a given `genc_id` has an entry in the `er` table.
+- Here, we want to *exclude* any encounters that were *not* admitted from the ED, so we can specify `admitted_from_er = FALSE` and `exclusion_flag = TRUE`
 
 <br></br>
-
-Let's create a new data table called `cohort` that only contains the eligible `genc_ids`: 
-
-```{r}
-cohort <- data[
-  incl2_coverage == TRUE & 
-  incl3_pneumonia == TRUE & 
-  excl1_transfer == FALSE & 
-  excl2_ed == FALSE
-]
-```
-
-We should make sure the number of rows in this table corresponds to what's shown in the last row of the cohort creation table above:
-
-```{r}
-nrow(cohort)
-```
-
 
 ## Check variable distributions & missingness in cohort
 
-Now that we have created the cohort, we should plot some basic descriptive statistics to check the distribution & missingness of all relevant predictors/covariates and outcome variables.
+Now that we have created the cohort, we should plot some basic descriptive statistics to check the distribution & missingness of all relevant predictors/covariates and outcome variables. You can use `Rgemini::plot_summary()` to achieve this:
 
 ```{r}
 Rgemini::plot_summary(
-  cohort[, .(age, gender, mlaps, admit_charlson_derived, los_days_derived, in_hospital_mortality_derived)]
+  cohort[, .(
+    age, gender, mlaps, admit_charlson_derived,
+    los_days_derived, in_hospital_mortality_derived
+  )]
 )
 ```
 
 <br></br>
-
 
 <details>
 <summary>***Please review this plot carefully and think about what information you can gather from it. Then expand this section for more information.***</summary>
@@ -465,7 +452,7 @@ By plotting histograms/bar plots of all relevant cohort variables, we can gain i
 
 **2) Whether the variables are of the expected type (e.g., categorical vs. continuous):** For example, gender in CIHI data largely reflects biological sex, which is treated as a categorical variables with 3 levels (M/F/O).
 
-**3) Whether continuous variables are within the expected range:** For example, in our case, all continuous variables should have values >= 0 (or >= 18 in the case of age) and Charlson Comorbidity Index should be an integer between 0-24. Length of stay has some extreme values (e.g., >365 days). Although these are no implausible (patients can be hospitalized for very long periods of time), we should carefully consider if these patients are part of our patient population of interest (see section *4.3.2 Considering extreme values*](#extreme)).  
+**3) Whether continuous variables are within the expected range:** For example, in our case, all continuous variables should have values >= 0 (or >= 18 in the case of age) and Charlson Comorbidity Index should be an integer between 0-24. Length of stay has some extreme values (e.g., >365 days). Although these are not implausible (patients can be hospitalized for very long periods of time), we should carefully consider if these patients are part of our patient population of interest (see section *4.3.2 Considering extreme values*](#extreme)).
 
 **4) Whether continuous variables are normally distributed or skewed:** For example, length of stay is heavily right-skewed, which we should consider in our modelling decisions later on (see ***Regression model*** section below).
 
@@ -475,7 +462,6 @@ By plotting histograms/bar plots of all relevant cohort variables, we can gain i
 In the sections below, we will discuss missing values and outliers in more detail. 
 
 
-
 ### Missing values {#missing}
 
 Let's first take a closer look at missing values. We need to carefully consider what the reason for missing values is in order to make an informed decision about how to deal with them.
@@ -483,11 +469,11 @@ Let's first take a closer look at missing values. We need to carefully consider 
 <details>
 <summary>***Consider what potential reasons could explain missing values in `mlaps`. Then expand this section for more information.***</summary>
 
-`mlaps` is based on laboratory tests collected before a patient's `admission_date_time` (i.e., in the emergency department).  `mlaps` values are missing for any `genc_ids` that do not have any ED lab entries for relevant mLAPS tests. This could be due to the following reasons:
+`mlaps` is based on laboratory tests collected before a patient's `admission_date_time` (i.e., in the emergency department). `mlaps` values are missing for any `genc_ids` that do not have any ED lab entries for relevant mLAPS tests. This could be due to the following reasons:
 
 **1. The encounter was not admitted via the ED.** These encounters were excluded from our cohort, so this does not apply here.
 
-**2. That hospital does not have lab data available for that encounter.** We already checked lab data coverage above and removed hospitals without continuous lab data. For the remaining time periods, `mlaps` missingness was generally low (<10%) so we can assume that lab data coverage was generally high.
+**2. That hospital does not have lab data available for that encounter.** We already checked lab data coverage above and removed encounters that were discharged from hospitals/during time periods without lab data coverage. For the remaining time periods, `lab` data coverage was consistently high (>95%).
 
 **3. Tests were not performed.** If we can rule out 1) and 2), the reason for why individual `genc_ids` don't have an `mlaps` value is likely because testing was not indicated for these particular encounters (e.g., when the patient was admitted, the physician did not order any tests included in the `mlaps` calculation because they were not deemed clinically necessary). 
 
@@ -523,46 +509,40 @@ Only ~0.5% of patients in our cohort stayed in hospital for more than 90 days. T
 
 To remove any bias these outliers might introduce in the model, we will exclude any encounters with long LOS. Here, we choose LOS <= 90 days as a cut-off, but in general, you should discuss the appropriate criterion with a clinical expert. This will be informed by the nature of the research question. 
 
+Let's re-run the `cohort_creation()` function with the updated cohort inclusions/exclusions:
 ```{r}
-data[, exclude_los := los_days_derived > 90]
-
 cohort_table <- cohort_creation(
-  cohort = list(data[incl1_gim == TRUE], # baseline cohort (discharges between 2018 - 2020)
-                data[incl2_coverage == TRUE],
-                data[incl2_coverage == TRUE & incl3_pneumonia == TRUE],
-                data[incl2_coverage == TRUE & incl3_pneumonia == TRUE & excl1_transfer == FALSE],
-                data[incl2_coverage == TRUE & incl3_pneumonia == TRUE & excl1_transfer == FALSE & excl2_ed == FALSE],
-                data[incl2_coverage == TRUE & incl3_pneumonia == TRUE & excl1_transfer == FALSE & excl2_ed == FALSE & exclude_los == FALSE]),
-  labels = c("All GEMINI encounters discharged between Apr 2018 - March 2020",
-             "Encounters from hospitals with high data coverage",
-             "Encounters with Pneumonia MRDx",
-             "Encounters with an acute-care transfer",
-             "Encounters not admitted from the ED",
-             "Encounters with LOS > 90 days"
-             ),
-  exclusion_flag = c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE),
-  big.mark = ","
+  cohort = list(
+    data,
+    data[genc_id %in% coverage[lab == TRUE]$genc_id],
+    data[grepl("^J1[2-8]", ipdiagnosis_mrdx)],
+    data[acute_transfer_in == TRUE],
+    data[admitted_from_er == FALSE],
+    data[los_days_derived > 90] # additional exclusion of extreme LOS
+  ),
+  labels = c(
+    "All GIM encounters discharged between Apr 2018 - Apr 2020",
+    "Encounters with lab data coverage",
+    "Encounters with Pneumonia as MRDx",
+    "Encounters transferred from another acute-care institute",
+    "Encounters not admitted from ED",
+    "Encounters with LOS > 90 days"
+  ),
+  exclusion_flag = c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE)
 )
 
-cohort_table %>% knitr::kable(escape = FALSE, format = "html") %>%
-  kable_styling("hover") %>%
-  row_spec(7,  bold = TRUE)
+cohort_table[[2]] %>%
+  knitr::kable(escape = FALSE, format = "html")
 ```
 
 Remember to update your `cohort` data table in line with the updated exclusion criteria: 
 
 ```{r}
-cohort <- data[
-  incl2_coverage == TRUE & 
-    incl3_pneumonia == TRUE & 
-    excl1_transfer == FALSE & 
-    excl2_ed == FALSE & 
-    exclude_los == FALSE # add new exclusion
-]
+cohort <- cohort_table[[1]]
 ```
 
 
-**Note:** We generally do not recommend blindly removing outliers (e.g., based on generic criteria like +/-3 SDs) unless there is a conceptual rationale, or reasons to assume that outliers are implausible values that may reflect data quality issues (e.g., data entry errors). Instead, you should carefully consider what the potential reason for outliers is and whether they might affect the relationships between your variables of interest (e.g., see DAG above) in order to decide how to handle extreme values. 
+**Note:** We generally do not recommend blindly removing outliers (e.g., based on generic criteria like +/-3 SDs) unless there is a conceptual rationale, or reasons to assume that outliers are implausible values that may reflect data quality issues (e.g., negative LOS that could be due to data entry errors). Instead, you should carefully consider what the potential reason for outliers is and whether they might affect the relationships between your variables of interest (e.g., see DAG above) in order to decide how to handle extreme values. 
 
 
 ### Variable transformation
@@ -579,7 +559,7 @@ cohort[, sex_female := gender == "F"]
 
 In the previous steps, we created the cohort and performed some data preprocessing. Let's plot our cohort variables over time (again) to check whether there are any weird time trends that may introduce biases. This is also a good way to double check whether any of our inclusion/exclusion steps may have introduced unexpected patterns in our data.
 
-As an example, we'll just plot `mlaps` here again (but you should perform similar checks for all other relevant predictor/outcome variables). We would expect `mlaps` to remain fairly stable over time (with some noise). Since we already checked for lab data coverage, we would not expect there to be any time periods with missing entries:
+As an example, we'll just plot `mlaps` here again (but you should perform similar checks for all other relevant predictor/outcome variables). We would expect `mlaps` to remain fairly stable over time (with some noise). Since we already checked for lab data coverage, we would not expect there to be any time periods with a high percentage of missing entries:
 
 ```{r}
 Rgemini::plot_over_time(cohort, plot_var = "mlaps", func = "mean")
