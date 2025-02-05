@@ -493,7 +493,10 @@ knitr::include_graphics("figures/coverage_plot.png")
 
 <br></br>
 
-**Let's inspect this plot. What should you look out for?**
+The expected percentage of `genc_ids` with an entry in a given table depends on the clinical context & differences in practice across sites (e.g., how many patients receive a transfusion vs. a lab/imaging test etc.). Therefore, there is no single threshold that can be applied to define "good" coverage across different tables/hospitals. 
+
+
+**With that in mind, how would you evaluate this coverage plot for transfusion data?**
 
 <details>
 <summary>**Expand this section to learn more**</summary>
