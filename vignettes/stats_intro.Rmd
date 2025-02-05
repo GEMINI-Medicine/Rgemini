@@ -27,15 +27,17 @@ knitr::opts_chunk$set(
 )
 
 library(data.table)
-#library(tidyverse)
 library(dplyr)
 library(Rgemini)
 library(lubridate)
 library(kableExtra)
-library(DBI)
-library(getPass)
-library(RPostgreSQL)
 library(ggplot2)
+
+#library(DBI)
+#library(getPass)
+#library(RPostgreSQL)
+# library(tidyverse)
+
 
 #rmarkdown::render("~/GitHub/Rgemini/vignettes/stats_intro.Rmd", output_dir = "/mnt/nfs/projects/research_projects/Rgemini/stats_vignette/")
 
