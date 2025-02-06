@@ -1,3 +1,7 @@
+# Rgemini `1.0.3`
+
+* Adds `compare_sets()` to find the number of unique and common elements in two sets.
+
 # Rgemini `1.0.2`
 
 * Small bug fix in `find_db_tablename()` for materialized views (H4H >= v4)
