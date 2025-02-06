@@ -247,7 +247,9 @@ data_coverage <- function(dbcon,
       ))
     }
   }
-
+  # make copy of cohort so we don't overwrite anything
+  cohort <- copy(cohort)
+  
   # check that custom_dates has correct format
   if (!is.null(custom_dates)) {
     check_input(custom_dates,

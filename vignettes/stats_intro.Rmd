@@ -232,7 +232,7 @@ coverage <- data_coverage(
 )
 ```
 
-The `data_coverage()` function queries the `lookup_data_coverage` table, which lists the min-max dates with coverage for each data table and hospital (also see Data Availability plot in the [Data Dictionary](https://geminimedicine.ca/the-gemini-database/)). According to this table, a **gap in data coverage is defined as a period of >28 days without any data**. In other words, this lookup table only provides a very rough check of whether GEMINI received **any** data (at least 1 `genc_id`) from a given hospital during a certain time period.
+The function queries the `lookup_data_coverage` table, which lists the min-max dates with coverage for each data table and hospital (also see Data Availability plot in the [Data Dictionary](https://geminimedicine.ca/the-gemini-database/)). According to this table, a **gap in data coverage is defined as a period of >28 days without any data**. In other words, this lookup table only provides a very rough check of whether GEMINI received **any** data (at least 1 `genc_id`) from a given hospital during a certain time period.
 
 The `data_coverage()` function facilitates coverage checks by returning multiple plots:
 
@@ -309,16 +309,11 @@ The expected % of `genc_ids` with an entry in a given table depends on the clini
 
 ### Encounter-level flags
 
-Finally, the `data_coverage()` function returns a flag for each `genc_id` in `data` indicating whether a given encounter was discharged during a time period/from a hospital with *any* `admdad`/`lab` coverage (based on the min-max dates listed in the `lookup_data_coverage` table). This does *not* mean that all `genc_ids` where the flag is `TRUE` have an entry in the lab table. Instead, the coverage flag being `TRUE` only tells us that there were *some* encounters during the same discharge period that had an entry in the `lab` table. This is  valuable information that can help us determine how to handle `genc_ids` that **do not** have an entry in the lab table (i.e., `genc_ids` with missing `mLAPS` - see below):
+Finally, the `data_coverage()` function returns a flag for each `genc_id` in `data` indicating whether a given encounter was discharged during a time period/from a hospital with *any* `lab` coverage (based on the min-max dates listed in the `lookup_data_coverage` table). For example, here are some (dummy) encounters from site 13 with the corresponding coverage flags for `lab`:
 
-+ **If the coverage flag is `TRUE` and the additional coverage plots did not reveal any issues (e.g., sudden drops in `lab` data coverage):** We can now infer that if an encounter indeed received a lab test, it should be reflected in the `lab` table (since coverage is consistently high). Conversely, if a `genc_id` does not exist in the `lab` table (even though the coverage flag is `TRUE`), we can assume that the encounter did not receive a lab test - for example, because testing may not have been clinically indicated.
-
-+ **If the coverage flag is `FALSE` or if we identified any issues in the coverage plots above:** This means that if a `genc_id` does not exist in the `lab` table, we don't have sufficient information to determine whether a) the encounter did in fact not receive a lab test (true negative) or b) whether the encounter received a lab test but the test is not captured by GEMINI data due to coverage issues (false negative).
-
-In our case, we did not observe any lab data coverage issues (beyond periods without any lab data at all), so we can go ahead and filter for `genc_ids` where the flags returned by `data_coverage()` are `TRUE`. This will exclude any encounters that were discharged during time periods where GEMINI did not receive any lab data at all.
-
-For example, here are some (dummy) encounters from site 13 with the corresponding coverage flags for `admdad` and `lab`:
-
+```{r echo = FALSE, results = 'asis'}
+cat("<div style='font-size: 10px;'>")
+```
 ```{r echo = FALSE}
 data.table(
   genc_id = c(1, 2, 3, 4, 5),
@@ -327,6 +322,9 @@ data.table(
   admdad = rep(TRUE, 5),
   lab = c(FALSE, FALSE, FALSE, TRUE, TRUE)
 ) %>% knitr::kable(format = "html")
+```
+```{r echo = FALSE, results = 'asis'}
+cat("</div>")
 ```
 
 ```{r echo = FALSE}
@@ -338,6 +336,25 @@ coverage <- data.table(
 coverage[, lab := TRUE]
 coverage[hospital_num == 13 & discharge_date < "2019-11-01", lab := FALSE]
 ```
+
+**Note: The coverage flag being `TRUE` does not necessarily mean that the corresponding `genc_id` has an entry in the `lab` table. Instead, the coverage flag only tells us that there were *some* encounters during the same discharge period and at the same hospital that had an entry in the `lab` table.** 
+
+**Let's revisit why that's helpful to know for our analyses.**
+
+<details>
+<summary>Expand this section</summary>
+
+Knowing overall data coverage in the GEMINI database is valuable information that can help us determine how to handle `genc_ids` that **do not** have an entry in the lab table (i.e., `genc_ids` with missing `mLAPS` - see below):
+
++ **If the coverage flag is `TRUE` AND the additional coverage checks you performed did not reveal any issues (e.g., sudden drops in `lab` data coverage):** We can now infer that if an encounter indeed received a lab test, it should be reflected in the `lab` table (since coverage is consistently high). Conversely, if a `genc_id` does not exist in the `lab` table (even though the coverage flag is `TRUE`), we can assume that the encounter did not receive a lab test - for example, because testing may not have been clinically indicated.
+
++ **If the coverage flag is `FALSE` OR if we identified any issues in the coverage checks performed above:** This means that if a `genc_id` does not exist in the `lab` table, we don't have sufficient information to determine whether a) the encounter did in fact not receive a lab test (true negative) or b) whether the encounter received a lab test but the test is not captured by GEMINI data due to coverage issues (false negative).
+</details>
+
+<br></br>
+
+In our case, we did not observe any lab data coverage issues (beyond periods without any lab data at all), so we can go ahead and filter for `genc_ids` where the flags returned by `data_coverage()` are `TRUE`. This will exclude any encounters that were discharged during time periods where GEMINI did not receive any lab data at all.
+
 
 ## Apply cohort inclusions/exclusions
 
@@ -354,7 +371,7 @@ cohort_table <- cohort_creation(
     data[genc_id %in% coverage[lab == TRUE]$genc_id], # lab coverage
     data[grepl("^J1[2-8]", ipdiagnosis_mrdx)], # Pneumonia MRDx
     data[acute_transfer_in == TRUE], # acute care transfer
-    data[admitted_from_er == FALSE] # ED admission
+    data[admitted_from_er == FALSE] # not admitted from ED
   ),
   labels = c(
     "All GIM encounters discharged between Apr 2018 - Apr 2020",
@@ -363,7 +380,8 @@ cohort_table <- cohort_creation(
     "Encounters transferred from another acute-care institute",
     "Encounters not admitted from ED"
   ),
-  exclusion_flag = c(FALSE, FALSE, FALSE, TRUE, TRUE) 
+  exclusion_flag = c(FALSE, FALSE, FALSE, TRUE, TRUE), # last 2 steps are EXCLUSIONS
+  big.mark = ","
 )
 ```
 
@@ -380,17 +398,25 @@ head(cohort) %>%
 
 2) A table showing the number (%) of encounters that were included/excluded at each cohort creation step:
 
+```{r echo = FALSE, results = 'asis'}
+cat("<div style='font-size: 10px;'>")
+```
 ```{r}
 cohort_table[[2]] %>%
   knitr::kable(escape = FALSE, format = "html")
 ```
+
+```{r echo = FALSE, results = 'asis'}
+cat("</div>")
+```
+
 
 Let's go through each cohort creation step in a bit more detail and discuss the decisions the analyst had to make to build the cohort correctly. 
 
 **1) Incl. 1: GIM encounters discharged between April 2018-2020**
 
 - This is our baseline cohort that includes all encounters in `data`.
-- As a reminder, the `derived_variables` table contains a `gim` flag, which is `TRUE` for all encounters that were admitted to/discharged from a GIM service.
+- As a reminder, you can obtain this from the `derived_variables` table, which contains a `gim` flag that is `TRUE` for all encounters that were admitted to/discharged from a GIM service.
 
 **2) Incl. 2: Encounters with lab data coverage**
 
@@ -434,7 +460,7 @@ CCSR (Clinical Classifications Software Refined) groups ICD-10-CA diagnosis code
 
 Now that we have created the cohort, we should plot some basic descriptive statistics to check the distribution & missingness of all relevant predictors/covariates and outcome variables. You can use `Rgemini::plot_summary()` to achieve this:
 
-```{r}
+```{r out.width = "80%"}
 Rgemini::plot_summary(
   cohort[, .(
     age, gender, mlaps, admit_charlson_derived,
@@ -466,7 +492,7 @@ In the sections below, we will discuss missing values and outliers in more detai
 
 ### Missing values {#missing}
 
-Let's first take a closer look at missing values. We need to carefully consider what the reason for missing values is in order to make an informed decision about how to deal with them.
+Let's first take a closer look at missing values. We need to carefully consider what the reason for missing values is in order to make an informed decision about how to deal with them. In our example scenario, the only relevant variable with `NA` is `mlaps`.
 
 <details>
 <summary>***Consider what potential reasons could explain missing values in `mlaps`. Then expand this section for more information.***</summary>
@@ -475,9 +501,9 @@ Let's first take a closer look at missing values. We need to carefully consider 
 
 **1. The encounter was not admitted via the ED.** These encounters were excluded from our cohort, so this does not apply here.
 
-**2. That hospital does not have lab data available for that encounter.** We already checked lab data coverage above and removed encounters that were discharged from hospitals/during time periods without lab data coverage. For the remaining time periods, `lab` data coverage was consistently high (>95%).
+**2. That hospital does not have lab data coverage for that encounter.** We already checked lab data coverage above and removed encounters that were discharged from hospitals/during time periods without lab data coverage. For the remaining time periods, lab coverage was consistently high (>95%).
 
-**3. Tests were not performed.** If we can rule out 1) and 2), the reason for why individual `genc_ids` don't have an `mlaps` value is likely because testing was not indicated for these particular encounters (e.g., when the patient was admitted, the physician did not order any tests included in the `mlaps` calculation because they were not deemed clinically necessary). 
+**3. Tests were not performed.** If we can rule out 1) and 2), the reason for why individual `genc_ids` don't have an `mlaps` value is likely because testing was not indicated for these particular encounters (e.g., when the patient was admitted, the physician did not order any tests included in the `mlaps` calculation because they were not deemed clinically necessary).
 
 </details>
 
@@ -487,17 +513,12 @@ In our case, the main plausible reason for missing `mlaps` is that testing was n
 cohort[is.na(mlaps), mlaps := 0]
 ```
 
-
-**Note that it's important to distinguish between "data coverage" (overall data volume for certain tables) vs. "missing values" (individual entries with `NA` values for certain table columns).** Even when data coverage is generally high, individual entries may still have missing values. For time periods with high data coverage, we can sometimes make certain assumptions about missing values based on the clinical context, allowing us to perform single-value imputation (e.g., imputing all missing `mlaps` values with 0). There are many cases where we cannot make these assumptions. Make sure to discuss how you handle missing values with your PI and Scientific Advisor. 
-
-<details>
-<summary>***Expand this section to learn more about different types of missingness.***</summary>
-
-In our scenario, missingness of `mlaps` represents an example of systematic missingness - also referred to as **"missing not at random" (MNAR)**. This means that the missingness is directly related to other predictor variables (e.g., patients' illness severity) and/or outcomes (e.g., in-hospital death). 
-
-In other scenarios, values might be **missing at random (MAR)**. In that case, we should not perform single-value imputation. Instead, we may decide to use a complete-case analyses (i.e., only include encounters without missing values) or performing multiple imputation. See [here](https://onlinecjc.ca/article/S0828-282X(20)31111-9/fulltext#:~:text=Missing%20data%20is%20a%20common,all%20subjects%20in%20the%20sample) for a more detailed discussion on this.
-
-</details>
++ **Other considerations**
+  - Note that it's important to distinguish between "data coverage" (overall data volume for certain tables - see section above) vs. "missing values" (individual entries with `NA` values for certain table columns).** Even when data coverage is generally high, individual entries may still have missing values.
+  - For time periods with high data coverage, we can sometimes make certain assumptions about missing values based on the clinical context, allowing us to perform single-value imputation (e.g., imputing all missing `mlaps` values with 0).
+  - There are many cases where we cannot make these assumptions, and instead need to a) either exclude encounters with `NA` (complete-case analysis), b) use multiple imputation, c) use a missing indicator method, or d) apply modelling approaches that can otherwise handle missing values. This decision depends on various factors, such as your sample size, the type of model you are using, the goal of your model (e.g., prediction vs. inference) etc.
+  - Another important consideration is whether you are dealing with variables that are **"missing at random" (MAR)** or **"missing not at random" (MNAR)**. The details of this are beyond the scope of the current vignette, but this paper by [Austin et al. (2021)](https://onlinecjc.ca/article/S0828-282X(20)31111-9/fulltext#:~:text=Missing%20data%20is%20a%20common,all%20subjects%20in%20the%20sample) provides a nice overview on this topic. 
+  - **Always make sure to discuss how to handle missing values with your PI and Scientific Advisor.**
 
 
 ### Considering extreme values {#extreme}
