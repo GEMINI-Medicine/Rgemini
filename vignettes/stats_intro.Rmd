@@ -577,24 +577,22 @@ cohort[, sex_female := gender == "F"]
 ```
 
 
-
 ## Final checks: Plot variables over time & by hospital
 
-In the previous steps, we created the cohort and performed some data preprocessing. Let's plot our cohort variables over time (again) to check whether there are any weird time trends that may introduce biases. This is also a good way to double check whether any of our inclusion/exclusion steps may have introduced unexpected patterns in our data.
+In the previous steps, we created the cohort and performed some data preprocessing. Let's plot our cohort variables over time to check whether there are any unexpected time trends that could bias our analyses or may indicate data quality issues. This is also a good way to double check whether any of our inclusion/exclusion steps may have introduced unforeseen patterns/gaps in our data.
 
-As an example, we'll just plot `mlaps` here again (but you should perform similar checks for all other relevant predictor/outcome variables). We would expect `mlaps` to remain fairly stable over time (with some noise). Since we already checked for lab data coverage, we would not expect there to be any time periods with a high percentage of missing entries:
+As an example, we'll just plot the average `mlaps` here (but you should perform similar checks for all other relevant predictor/outcome variables). We would generally expect `mlaps` to remain fairly stable over time. If you observe a sudden increase/decrease in `mLAPS`, this could indicate changes in testing practices, errors/omissions in lab mappings, or data quality issues (e.g., data coverage gaps for specific test types) that you may need to investigate further:
 
 ```{r}
 Rgemini::plot_over_time(cohort, plot_var = "mlaps", func = "mean")
 ```
-  
-**Note:** For the purpose of data exploration and data quality checks, it can often be helpful to plot means instead of medians. Because means are more sensitive to outliers than medians (see more details in the following section), it's often easier to detect unexpected trends/outliers when plotting the mean.
 
-
+**Note:** For the purpose of data exploration and data quality checks, it can often be helpful to plot means instead of medians. Because means are more sensitive to outliers than medians (see more details in the following section), it's often easier to detect unexpected trends/outliers when plotting the mean. You can also check missingness over time by specifying `func = "na"`.
 
 *  *  *  *
 
 # Descriptive statistics
+
 
 - Generate table1 and additional descriptive plots (but no outcome peeking)
 - Double check that numbers match up across all variables
