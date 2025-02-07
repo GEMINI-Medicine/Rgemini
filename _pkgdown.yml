@@ -41,6 +41,9 @@ reference:
   - icd_to_ccsr
   - max_result_value
   - min_result_value
+- title: Cohort Creation & Data Checks
+  desc: These functions help with cohort generation and commonly performed data checks
+  - cohort_creation
 - title: Cell Suppression
   desc: This includes all helper functions associated with producing a Table 1.
 - contents:

@@ -5,6 +5,8 @@
 * **New functions:**
 	* `data_coverage()` function to facilitate data coverage checks
 	* Utility function `quiet()` to run any functions without warning/error/print messages
+**New functions:**
+	* `cohort_creation()` to generate cohort and show number (%) of entries at each inclusion/exclusion step
 
 # Rgemini `1.0.2`
 

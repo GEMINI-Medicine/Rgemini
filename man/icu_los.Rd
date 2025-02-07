@@ -48,10 +48,10 @@ Step-Down Units are not considered as ICUs.
 Therefore, this function excludes below CIHI defined Step-Down Units numbers
 from calculation:
 \itemize{
-\item{90 : }{Step-Down Medical Unit}
-\item{93 : }{Combined Medical/Surgical Step-Down Unit}
-\item{95 : }{Step-Down Surgical Unit}
-\item{99 : }{No SCU}
+\item 90: Step-Down Medical Unit
+\item 93: Combined Medical/Surgical Step-Down Unit
+\item 95: Step-Down Surgical Unit
+\item 99: No SCU
 }
 
 Please refer to the CIHI DAD abstracting manual for more details.
