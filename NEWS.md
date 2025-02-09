@@ -1,3 +1,7 @@
+# Rgemini 2025 sprint
+
+* Only include lab tests with valid numeric results in `n_routine_bloodwork`
+
 # Rgemini `1.0.2`
 
 * Small bug fix in `find_db_tablename()` for materialized views (H4H >= v4)
