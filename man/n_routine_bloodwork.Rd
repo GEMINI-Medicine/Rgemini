@@ -46,8 +46,7 @@ standardization efforts on lab table (performed by GEMINI). Currently, the
 number of routine bloodwork tests is one of the performance metrics in
 \href{https://www.hqontario.ca/Quality-Improvement/Practice-Reports/MyPractice-General-Medicine}{MyPracticeReport}.
 
-Function does NOT removes tests without valid numeric result value to include
-all tests where blood was drawn from the patients.
+Function removes tests without valid numeric result value.
 }
 \section{Warning}{
 

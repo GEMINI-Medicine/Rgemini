@@ -17,8 +17,7 @@
 #' number of routine bloodwork tests is one of the performance metrics in
 #' [MyPracticeReport](https://www.hqontario.ca/Quality-Improvement/Practice-Reports/MyPractice-General-Medicine).
 #'
-#' Function does NOT removes tests without valid numeric result value to include
-#' all tests where blood was drawn from the patients.
+#' Function removes tests without valid numeric result value.
 #'
 #' @section Warning:
 #' Function returns data.table with id field `genc_id` and one numeric field
@@ -87,7 +86,7 @@ n_routine_bloodwork <- function(dbcon,
 
   # speed up query by using temp table with analyze
   DBI::dbSendQuery(dbcon, "Drop table if exists cohort_data;")
-  DBI::dbWriteTable(dbcon, c("pg_temp","cohort_data"), cohort[, .(genc_id)], row.names = FALSE, overwrite = TRUE)
+  DBI::dbWriteTable(dbcon, c("pg_temp", "cohort_data"), cohort[, .(genc_id)], row.names = FALSE, overwrite = TRUE)
   DBI::dbSendQuery(dbcon, "Analyze cohort_data")
 
   # load lab from db
@@ -114,9 +113,13 @@ n_routine_bloodwork <- function(dbcon,
     )
   ) %>% as.data.table
 
-  # only count tests with a valid
-  # to be consistent with MyPracticeReport definition, all results are included
-  # without restricting to numeric result values.
+# Convert result_value to numeric after removing special characters
+lab <- lab[, result_value :=
+  as.numeric(stringr::str_replace_all(
+    tolower(result_value),
+    "@([a-z0-9]*)|<|>|less than|greater than|;", ""))]
+
+  # only count tests with valid numeric result values.
   lab <- lab[, .(n_routine_bloodwork_derived = .N), .(genc_id)]
 
   # merge with provided admission list
