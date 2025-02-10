@@ -568,12 +568,24 @@ cohort <- cohort_table[[1]]
 **Note:** We generally do not recommend blindly removing outliers (e.g., based on generic criteria like +/-3 SDs) unless there is a conceptual rationale, or reasons to assume that outliers are implausible values that may reflect data quality issues (e.g., negative LOS that could be due to data entry errors). Instead, you should carefully consider what the potential reason for outliers is and whether they might affect the relationships between your variables of interest (e.g., see DAG above) in order to decide how to handle extreme values. 
 
 
-### Variable transformation
+### Variable transformation & pre-processing
 
 During cohort generation, you will often need to create new derived variables, or perform additional preprocessing/transformations. For example, as shown in the plot above, `gender` is a categorical variable with 3 levels. Since `gender = "O"` is very rare and low cell counts represent a patient privacy issue, we will dichotomize this into a new variable "Female" vs. "Not female". We will also rename it into `sex_female` since CIHI data largely reflect biological sex, rather than gender: 
 
 ```{r}
 cohort[, sex_female := gender == "F"]
+```
+
+Additionally, we will create a categorical version of the Charlson Comorbidity Index. Note that the majority of patients have a CCI of 0-2. CCI >= 3 represents patients with several different comorbidities. For descriptive purposes (see section on Table 1 below), we will group these into a single ("high comorbidity") category:
+
+```{r}
+cohort <- cohort[, admit_charlson_derived_cat := case_when(
+      admit_charlson_derived == 0 ~ "0",
+      admit_charlson_derived == 1 ~ "1",
+      admit_charlson_derived == 2 ~ "2",
+      admit_charlson_derived >= 3 ~ "3+",
+    )
+]
 ```
 
 
@@ -593,14 +605,45 @@ Rgemini::plot_over_time(cohort, plot_var = "mlaps", func = "mean")
 
 # Descriptive statistics
 
+In the previous section, we illustrated some examples of descriptive analyses that facilitate data checks and cohort creation. We have also already checked the distribution of all variables in our cohort. So now, we can start performing our main analyses on our final cohort table (N = 8,481).
 
-- Generate table1 and additional descriptive plots (but no outcome peeking)
-- Double check that numbers match up across all variables
-- Confirm that our cohort has sample size to support the analysis. 
+## Table 1
+
+The first step is typically to create a table with descriptive statistics summarizing the baseline characteristics of patients in our cohort - commonly referred to as **"Table 1"**. This table usually includes demographic information (e.g., age and sex) and clinical indicators measured at admission (e.g., diagnosis codes/comorbidities, lab results, admission from ED, transfers from other hospitals/long-term care etc.). The main purpose of this table is to help others understand what type of patients were included in your study (and whether or not those patients are comparable to other studies). **You should *not* use this table to perform any kind of inference, so p-values or confidence intervals *should not* be included in Table 1. Similarly, you *should not* include outcome variables since this table is meant to reflect baseline characteristics prior to any intervention.**
+
+`Rgemini` contains a wrapper for the `table1` package, creating a nicely formatted Table 1 while suppression any cells with n < 6 (see [here](https://gemini-medicine.github.io/Rgemini/articles/cell_suppression_and_table1.html for more information on cell suppression). Here, we will include age, sex, Charlson Comorbidity, and mLAPS in Table 1. Our continuous variables `age` and `mLAPS` are skewed (see histograms in previous section). Therefore, we will specify `continuous_fn = "median"` to obtain the median and 25th/75th percentile [Q1, Q3] because the mean [SD] is sensitive to extreme values (see [here](https://pmc.ncbi.nlm.nih.gov/articles/PMC137399/) for an introdoctory overview of different measures of central tendency and spread).
 
 ```{r}
+library(Hmisc)
+library(table1)
 
+# first, let's label our variables so the names show up nicely in Table 1
+label(cohort$age) <- "Age"
+label(cohort$sex_female) <- "Sex = Female"
+label(cohort$admit_charlson_derived_cat) <- "Charlson Comorbidity Index (at admission)"
+label(cohort$mlaps) <- "mLAPS (at admission)"
+
+# generate Table 1 with baseline characteristics
+table1(~ age + sex_female + admit_charlson_derived_cat + mlaps,
+  data = cohort,
+  render = render_cell_suppression.default,
+  continuous_fn = "median",
+  single_level_binary = TRUE,
+  digits = 1
+)
 ```
+
+**Note:** If your main analysis involves a group comparison (e.g., treated vs. untreated patients), Table 1 should be stratified by the relevant groups and between-group differences should be described using standardized mean differences (SMDs, see [here](https://gemini-medicine.github.io/Rgemini/articles/cell_suppression_and_table1.html#calculating-standardized-mean-differences) for more details). 
+
+**Table 1 should not be used to select predictor variables for your model.** Similarly, you should not perform any other descriptive analyses (e.g., bivariate correlations between predictors and outcomes) to inform variable selection. Instead, if the goal of your analysis is to perform inference, variable selection should be informed by your conceptual framework & DAG (see section above). Although there are scenarios where data-driven variable selection may be appropriate (e.g., feature selection for predictive ML models), this should typically follow a rigorous modelling approach to avoid common pitfalls (see [here](https://onlinelibrary.wiley.com/doi/epdf/10.1111/tri.12895), [here](https://www.sciencedirect.com/science/article/abs/pii/S0895435621002146), and [here](https://www.frontiersin.org/journals/bioinformatics/articles/10.3389/fbinf.2022.927312/full) for a more detailed discussion).
+
+
+## Required sample size
+
+Finally, before we perform our main modelling approach, we should confirm that our cohort has a sufficient sample size to support the analysis. The required sample size depends on multiple factors, such as the goal of your model (inference vs. prediction), the study design (clinical trial vs. observational study), the degrees of freedom in your model, and the clinically relevant effect sizes of the predictors of interest. 
+https://www.sciencedirect.com/science/article/pii/S001236922030458X
+
+For prediction models: https://www.bmj.com/content/368/bmj.m441
 
 
 *  *  *  *
