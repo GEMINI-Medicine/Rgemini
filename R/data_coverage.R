@@ -345,8 +345,8 @@ data_coverage <- function(dbcon,
   # if hospital_id exists and hospital_label = hospital_num, it means the user
   # may have provided a custom version of hospital_num for labelling, so we'll
   # remove it from data_coverage_lookup, just in case...
-  if (hosp_var == "hospital_id" && hospital_label == "hospital_num" &&
-      "hospital_num" %in% colnames(data_coverage_lookup)) {
+  if (all(hosp_var == "hospital_id", hospital_label == "hospital_num",
+      "hospital_num" %in% colnames(data_coverage_lookup))) {
     data_coverage_lookup <- data_coverage_lookup[, -c("hospital_num")]
   }
 
