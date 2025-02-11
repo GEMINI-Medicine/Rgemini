@@ -176,6 +176,15 @@ The cohort inclusion/exclusion steps should be developed in close collaboration 
 </details>
 
 
+## Sample size considerations
+
+As a final step in planning our analyses, we should consider the minimum required sample size to ensure our study is feasible. The sample size we need depends on multiple factors, such as the goal of our model (inference vs. prediction), the study design (clinical trial vs. observational study), the type of model and its degrees of freedom (e.g., number of parameters), whether analyses are performed within a frequentist or Bayesian framework, the frequency of the outcome (e.g., mortality rate), and what effect sizes are considered clinically relevant (e.g., see [here](http://ndl.ethernet.edu.et/bitstream/123456789/15304/1/9103.pdf)). 
+
+Here, we are conducting an observational study with the goal of performing inference. In this context, our sample size considerations should focus on whether we have sufficient **statistical power** - i.e., assuming that there is indeed an effect of age on mortality, we want to be sure that our analyses have a high chance of detecting this effect. Based on previous research, we would expect age to have a relatively large effect on clinical outcomes, and for simplicity, we are planning to fit a regression model with only a small number of parameters. Therefore, the required sample size should be relatively small, but how small exactly?
+
+> **As a rule of thumb**, it has been proposed that for binary outcomes (e.g., mortality) in a logistic regression model, we should have a minimum of 10 outcome events per predictor parameter (i.e., number of predictor variables + their interactions/non-linear terms if any). As we will see below, our cohort consists of more than 8,000 encounters and typical in-hospital mortality ranges from 5-10% (i.e., we can expect ~400-800 outcome events in our cohort). Thus, even if we had a large number of model parameters, we would have sufficient statistical power. In fact, for studies using a large portion of the GEMINI cohort, sample size is typically not a limiting factor (also see [here](https://www.sciencedirect.com/science/article/pii/S1386505622000764)). However, this may not hold true if you are analyzing rare events and plan to use highly complex models. In those cases, we encourage you to explore existing sample size calculators (e.g., the [Cleveland Clinic Sample Size Calculator](https://riskcalc.org/samplesize/) or [Sample Size Calculator for Clinical Prediction Models](https://www.bmj.com/content/368/bmj.m441)), but keep in mind that these methods often rely on several assumptions and simplifications, and therefore, may only give you a rough estimate. 
+
+
 *  *  *  *
 
 # Data checks & cohort generation
@@ -387,26 +396,26 @@ cohort_table <- cohort_creation(
 
 The function returns a list with 2 items:
 
-1) A `data.table` object containing all rows from the original `data` table that are included in the final cohort (N = 8,515, based on all inclusions/exclusions). We will name this table `cohort`, which will be used in all subsequent analyses below:
+1) A `data.table` object containing all rows from the original `data` table that are included in the final cohort (N = 8,481, based on all inclusions/exclusions). We will name this table `cohort`, which will be used in all subsequent analyses below:
 
 ```{r}
 cohort <- cohort_table[[1]]
+```
 
+```{r echo = FALSE, results = 'asis'}
+cat("<div style='font-size: 10px;'>")
 head(cohort) %>%
   knitr::kable(escape = FALSE, format = "html")
+cat("</div>")
 ```
+
 
 2) A table showing the number (%) of encounters that were included/excluded at each cohort creation step:
 
 ```{r echo = FALSE, results = 'asis'}
 cat("<div style='font-size: 10px;'>")
-```
-```{r}
 cohort_table[[2]] %>%
   knitr::kable(escape = FALSE, format = "html")
-```
-
-```{r echo = FALSE, results = 'asis'}
 cat("</div>")
 ```
 
@@ -635,15 +644,11 @@ table1(~ age + sex_female + admit_charlson_derived_cat + mlaps,
 
 **Note:** If your main analysis involves a group comparison (e.g., treated vs. untreated patients), Table 1 should be stratified by the relevant groups and between-group differences should be described using standardized mean differences (SMDs, see [here](https://gemini-medicine.github.io/Rgemini/articles/cell_suppression_and_table1.html#calculating-standardized-mean-differences) for more details). 
 
-**Table 1 should not be used to select predictor variables for your model.** Similarly, you should not perform any other descriptive analyses (e.g., bivariate correlations between predictors and outcomes) to inform variable selection. Instead, if the goal of your analysis is to perform inference, variable selection should be informed by your conceptual framework & DAG (see section above). Although there are scenarios where data-driven variable selection may be appropriate (e.g., feature selection for predictive ML models), this should typically follow a rigorous modelling approach to avoid common pitfalls (see [here](https://onlinelibrary.wiley.com/doi/epdf/10.1111/tri.12895), [here](https://www.sciencedirect.com/science/article/abs/pii/S0895435621002146), and [here](https://www.frontiersin.org/journals/bioinformatics/articles/10.3389/fbinf.2022.927312/full) for a more detailed discussion).
+## Other descriptive analyses
 
+You may perform other descriptive analyses at this stage if relevant. For example, you may want to check the prevalence of outcome events (in our case, we can already see the prevalence of in-hospital mortality in the summary plot created in the previous section). For time-to-event analyses, you can also plot the cumulative incidence over time.
 
-## Required sample size
-
-Finally, before we perform our main modelling approach, we should confirm that our cohort has a sufficient sample size to support the analysis. The required sample size depends on multiple factors, such as the goal of your model (inference vs. prediction), the study design (clinical trial vs. observational study), the degrees of freedom in your model, and the clinically relevant effect sizes of the predictors of interest. 
-https://www.sciencedirect.com/science/article/pii/S001236922030458X
-
-For prediction models: https://www.bmj.com/content/368/bmj.m441
+**Importantly, any descriptive analyses you perform at this stage should not look at any associations between predictor and outcome variables. Additionally, avoid performing any type of descriptive analyses with the goal of picking relevant covariates for your model.** For example, you should never use bivariate correlations between predictors and outcomes to inform variable selection as this ignores covariance between multiple predictors and their possible interactions, and invalidates inference performed on your final model due to "double dipping" (i.e., using the same data to both generate and test your hypotheses). This is also referreed to as circular inference, which makes your analyis prone to incorrectly rejecting a true null hypothesis (inflation of type-1 error, see [here](https://pmc.ncbi.nlm.nih.gov/articles/PMC10515571/) and [here](https://pmc.ncbi.nlm.nih.gov/articles/PMC2841687/#:~:text=Abstract,a%20policy%20for%20avoiding%20circularity.)). Instead, if the goal of your analysis is to perform inference, variable selection should be informed by your conceptual framework & DAG (see section above). Although there are scenarios where data-driven variable selection may be appropriate (e.g., feature selection for predictive ML models), this should typically follow a rigorous modelling approach to avoid common pitfalls (see [here](https://onlinelibrary.wiley.com/doi/epdf/10.1111/tri.12895), [here](https://www.sciencedirect.com/science/article/abs/pii/S0895435621002146), and [here](https://www.frontiersin.org/journals/bioinformatics/articles/10.3389/fbinf.2022.927312/full) for a more detailed discussion).
 
 
 *  *  *  *
