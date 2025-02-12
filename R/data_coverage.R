@@ -112,7 +112,7 @@
 #'      min_date = "2019-01-01",
 #'      max_date = "2022-06-30"
 #'  )`
-#'
+#' 
 #' This will overwrite the `min_date`/`max_date` values for site 104
 #' transfusion data in the `lookup_data_coverage` table (data for all other
 #' hospital*table combinations will remain the same). Additionally, the coverage
@@ -253,9 +253,11 @@ data_coverage <- function(dbcon,
   # check that custom_dates has correct format
   if (!is.null(custom_dates)) {
     check_input(custom_dates,
-                argtype = c("data.table", "data.frame"),
-                colnames = c(hosp_var, "data", "min_date", "max_date")
+      argtype = c("data.table", "data.frame"),
+      colnames = c(hosp_var, "data", "min_date", "max_date")
     )
+    # make sure min/max date are in format that can be converted to ymd
+
   }
 
   ## get optional, implicit arguments (if any)
@@ -307,8 +309,21 @@ data_coverage <- function(dbcon,
     custom_dates <- custom_dates[
       data %in% table & get(hosp_var) %in% unique(cohort[, get(hosp_var)])
     ]
-    custom_dates[, min_date := as.Date(min_date)]
-    custom_dates[, max_date := as.Date(max_date)]
+    tryCatch({ # make sure min/max dates can be converted to date format
+      custom_dates[, min_date := as.Date(convert_dt(
+        min_date, c("ymdHMS", "mdyHMS", "dmyHMS"),
+        truncated = 3
+      ))]
+      custom_dates[, max_date := as.Date(convert_dt(
+        max_date, c("ymdHMS", "mdyHMS", "dmyHMS"),
+        truncated = 3
+      ))]
+      },
+      error = function(e) {
+        stop("Invalid format for min/max dates in `custom_dates` input.
+          Please make sure dates are specified in 'yyyy-mm-dd' format (e.g., min_date = '2020-01-01'.")
+      }
+    )
 
     # save additional_info column to merge back in later
     addtl_info <- data_coverage_lookup[
@@ -348,6 +363,14 @@ data_coverage <- function(dbcon,
   if (all(hosp_var == "hospital_id", hospital_label == "hospital_num",
       "hospital_num" %in% colnames(data_coverage_lookup))) {
     data_coverage_lookup <- data_coverage_lookup[, -c("hospital_num")]
+  }
+
+  # merge in hospital labels (if any) from cohort table
+  if (!is.null(hospital_label)) {
+    data_coverage_lookup <- merge(data_coverage_lookup,
+      cohort %>% dplyr::select(all_of(c(hosp_var, hospital_label))) %>% distinct(),
+      by = hosp_var
+    )
   }
 
   # only tables that exist in availability_table are valid `table` inputs
@@ -491,11 +514,13 @@ data_coverage <- function(dbcon,
         data = unique(timeline_data[, data]),
         hospital = unique(cohort[, get(hosp_var)])
       ) %>%
-        distinct()
+        distinct() %>%
+        data.table()
     )
+    setnames(append, "hospital", hosp_var)
     timeline_data <- merge(
       append, timeline_data,
-      by.x = c("hospital", "data"), by.y = c(hosp_var, "data"), all.x = TRUE
+      by = c(hosp_var, "data"), all.x = TRUE
     )
 
     # merge in color grouping variable (if any)
@@ -504,28 +529,17 @@ data_coverage <- function(dbcon,
         timeline_data, cohort %>%
           dplyr::select(all_of(c(hosp_var, hospital_group))) %>%
           distinct(),
-        by.x = "hospital", by.y = hosp_var,
+        by = hosp_var,
         all.x = TRUE
       )
     }
 
-    # merge in hospital label from cohort table to be used in plots (if any)
-    if (!is.null(hospital_label)) {
-      timeline_data[
-        cohort,
-        on = c("hospital" = hosp_var),
-        hospital_label := get(hospital_label)
-      ]
-      timeline_data[, hospital := hospital_label]
-      timeline_data$hospital_label <- NULL
-    }
-
     # make sure data & hospital are factors
     timeline_data[, data := factor(data, levels = unique(table))]
-    if (!"factor" %in% class(timeline_data$hospital)) {
-      timeline_data[, hospital := factor(
-        hospital,
-        levels = sort(unique(hospital))
+    if (!"factor" %in% class(timeline_data[, get(hosp_var)])) {
+      timeline_data[, paste(hosp_var) := factor(
+        get(hosp_var),
+        levels = sort(unique(get(hosp_var)))
       )]
     }
 
@@ -535,14 +549,14 @@ data_coverage <- function(dbcon,
       # contain facet_wrap around hospital group
       # therefore, we need to create a new index WITHIN each hospital group
       # to make sure hospitals are shown in subsequent rows within each subplot
-      timeline_data[, idx := .GRP, by = c(hospital_group, "hospital")]
+      timeline_data[, idx := .GRP, by = c(hospital_group, hosp_var)]
       timeline_data[, idx := match(
-        hospital, unique(hospital)
+        get(hosp_var), unique(get(hosp_var))
       ), by = hospital_group]
     } else {
       # if no hospital grouping, simply arrange hospitals by hosp_var
       # i.e., each row/bar is a single hospital*table combination
-      timeline_data[, idx := hospital]
+      timeline_data[, idx := get(hosp_var)]
     }
     timeline_data[, y := (
       -as.numeric(idx) - (as.numeric(data) - 1) * (2 * 0.25) /
@@ -590,7 +604,7 @@ data_coverage <- function(dbcon,
         ]
       }
       timeline_data_subset <- timeline_data_subset %>%
-        arrange(hospital) %>%
+        arrange(get(hosp_var)) %>%
         data.table()
 
       timeline_plot <-
@@ -604,16 +618,20 @@ data_coverage <- function(dbcon,
           } else {
             data
           },
-          label = hospital,
+          label = get(hosp_var),
           label2 = min_date, label3 = max_date # for ggplotly labels
         )) +
         geom_rect(show.legend = length(table) > 1 | !is.null(hospital_group)) +
         scale_y_continuous(
           name = "Hospital",
           breaks = seq(-1, -length(
-            unique(as.numeric(timeline_data_subset$hospital))
+            unique(as.numeric(timeline_data_subset[, get(hosp_var)]))
           ), -1),
-          labels = unique(timeline_data_subset$hospital),
+          labels = if (is.null(hospital_label)) {
+            unique(timeline_data_subset[, get(hosp_var)])
+          } else {
+            unique(timeline_data_subset[, get(hospital_label)])
+          },
           expand = c(0.01, 0.01)
         ) +
         scale_x_date(
@@ -673,7 +691,7 @@ data_coverage <- function(dbcon,
       # get number of hospitals per grouping level to adjust height
       # of subplots accordingly
       n_hosp <- timeline_data %>%
-        group_by(hospital, get(hospital_group)) %>%
+        group_by(get(hosp_var), get(hospital_group)) %>%
         slice(1) %>%
         group_by(get(hospital_group)) %>%
         summarize(N = as.numeric(n())) %>%
@@ -898,7 +916,7 @@ data_coverage <- function(dbcon,
     data %in% table & get(hosp_var) %in% unique(cohort[[hosp_var]]) &
       !is.na(additional_info) & additional_info != ""
   ] %>%
-    dplyr::select(all_of(c(hosp_var, "additional_info"))) %>%
+    dplyr::select(all_of(c(hosp_var, hospital_label, "additional_info"))) %>%
     distinct() %>%
     arrange(get(hosp_var))
 

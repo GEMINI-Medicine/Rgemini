@@ -145,8 +145,8 @@ custom_dates <- data.table(
   min_date = c("2018-02-01", "2018-02-01", "2018-04-01", "2015-04-01", "", "2015-04-01", "2015-04-01", "2020-04-01"),
   max_date = c("2023-03-31", "2023-03-31", "2023-06-30", "2023-03-31", "", "2023-03-31", "2023-03-31", "2023-03-31")
 )
-custom_dates[, min_date := as.Date(min_date)]
-custom_dates[, max_date := as.Date(max_date)]
+custom_dates[, min_date := min_date]
+custom_dates[, max_date := max_date]
 
 custom_dates <- rbind(lookup_data_coverage, custom_dates, fill = TRUE)
 
@@ -313,8 +313,8 @@ custom_dates2 <- data.table(
   data = c("lab"),
   hospital_num = c(4),
   hospital_id = c("HHCO"),
-  min_date = as.Date("2019-04-01"),
-  max_date = as.Date("2023-06-30")
+  min_date = "2019-04-01",
+  max_date = "2023-06-30"
 )
 
 custom_dates <- rbind(custom_dates, custom_dates2, fill = TRUE)
@@ -582,8 +582,8 @@ In some cases, users may want to provide customized timelines for a given hospit
 custom_dates <- data.table(
   data = c("lab"),
   hospital_num = c(4),
-  min_date = as.Date("2019-04-01"),
-  max_date = as.Date("2023-06-30")
+  min_date = "2019-04-01",
+  max_date = "2023-06-30"
 )
 
 coverage <- data_coverage(
