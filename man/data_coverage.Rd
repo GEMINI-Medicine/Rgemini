@@ -70,9 +70,9 @@ of hospitals (e.g., Teaching vs. Non-teaching). Hospitals will be grouped
 accordingly in all plots/output tables.}
 
 \item{custom_dates}{(\code{data.frame}|\code{data.table})
-Optional input allowing users to specify a customized timeline to be
-included for a given hospital*table combination. The user-provided input
-overwrites the corresponding row(s) in the \code{lookup_data_coverage} table.
+Optional input allowing users to specify a customized timeline (in 'yyyy-mm-dd'
+format) to be included for a given hospital*table combination. The user-provided
+input overwrites the corresponding row(s) in the \code{lookup_data_coverage} table.
 This can be used to exclude time periods (e.g., due to data quality
 issues) and generate customized timeline plots.
 For example, let's say you identified a data quality issue in the
