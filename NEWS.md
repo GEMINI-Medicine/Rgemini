@@ -1,3 +1,7 @@
+# Rgemini `1.0.3`
+
+* Improved organization of figures for vignettes.
+
 # Rgemini `1.0.2`
 
 * Small bug fix in `find_db_tablename()` for materialized views (H4H >= v4)
