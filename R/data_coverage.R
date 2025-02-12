@@ -97,9 +97,9 @@
 #' The flag will be ignored if the `plotly` package is not installed.
 #'
 #' @param custom_dates (`data.frame`|`data.table`)
-#' Optional input allowing users to specify a customized timeline to be
-#' included for a given hospital*table combination. The user-provided input
-#' overwrites the corresponding row(s) in the `lookup_data_coverage` table.
+#' Optional input allowing users to specify a customized timeline (in 'yyyy-mm-dd'
+#' format) to be included for a given hospital*table combination. The user-provided
+#' input overwrites the corresponding row(s) in the `lookup_data_coverage` table.
 #' This can be used to exclude time periods (e.g., due to data quality
 #' issues) and generate customized timeline plots.
 #' For example, let's say you identified a data quality issue in the
@@ -112,7 +112,7 @@
 #'      min_date = "2019-01-01",
 #'      max_date = "2022-06-30"
 #'  )`
-#' 
+#'
 #' This will overwrite the `min_date`/`max_date` values for site 104
 #' transfusion data in the `lookup_data_coverage` table (data for all other
 #' hospital*table combinations will remain the same). Additionally, the coverage
@@ -257,7 +257,20 @@ data_coverage <- function(dbcon,
       colnames = c(hosp_var, "data", "min_date", "max_date")
     )
     # make sure min/max date are in format that can be converted to ymd
-
+    tryCatch(
+      {
+        custom_dates[, min_date := as.Date(
+          convert_dt(min_date, c("ymdHMS"), truncated = 3)
+        )]
+        custom_dates[, max_date := as.Date(
+          convert_dt(max_date, c("ymdHMS"), truncated = 3)
+        )]
+      },
+      warning = function(w) {
+        stop("Invalid format for min/max dates in `custom_dates` input.
+        Please make sure dates are specified in 'yyyy-mm-dd' format (e.g., min_date = '2020-12-01').")
+      }
+    )
   }
 
   ## get optional, implicit arguments (if any)
@@ -309,21 +322,6 @@ data_coverage <- function(dbcon,
     custom_dates <- custom_dates[
       data %in% table & get(hosp_var) %in% unique(cohort[, get(hosp_var)])
     ]
-    tryCatch({ # make sure min/max dates can be converted to date format
-      custom_dates[, min_date := as.Date(convert_dt(
-        min_date, c("ymdHMS", "mdyHMS", "dmyHMS"),
-        truncated = 3
-      ))]
-      custom_dates[, max_date := as.Date(convert_dt(
-        max_date, c("ymdHMS", "mdyHMS", "dmyHMS"),
-        truncated = 3
-      ))]
-      },
-      error = function(e) {
-        stop("Invalid format for min/max dates in `custom_dates` input.
-          Please make sure dates are specified in 'yyyy-mm-dd' format (e.g., min_date = '2020-01-01'.")
-      }
-    )
 
     # save additional_info column to merge back in later
     addtl_info <- data_coverage_lookup[
