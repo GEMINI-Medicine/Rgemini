@@ -15,16 +15,20 @@ cohort_creation(
 }
 \arguments{
 \item{cohort}{(\code{list})
-A list where each item corresponds to the cohort definition at a single step
-of the cohort inclusions/exclusions.
-The function will automatically combine the inclusion/exclusion steps in a
-sequential manner, and will then count the number of entries that remain
-after each criterion.
-For example, for \code{cohort = list(data[gender == "F"], data[age > 65])}, the
-function will return a cohort of all encounters that are female and older
-than 65 years. The cohort inclusion/exclusion table will contain 2 rows
-listing the number of encounters that are 1) female, and 2) female \strong{AND}
-older than 65 years.}
+A list where each item corresponds to a filtered \code{data.table}/\code{data.frame}
+object that contains the cohort at a given step of the cohort
+inclusions/exclusions. The function will automatically combine the
+inclusion/exclusion steps in a sequential manner, and will then count the
+number of entries that remain after each criterion.
+For example, if you have a \code{data.table} object called \code{data}: To obtain a
+cohort of encounters that are female and older than 65 years, you can use:
+\code{cohort = list(data[gender == "F"], data[age > 65])}. In this case, the
+returned cohort inclusion/exclusion table will contain 2 rows listing the
+number of encounters that are 1) female, and 2) female \strong{AND} older than 65
+years (= final cohort).
+Note that if \code{data} is a \code{data.frame}, you will need to filter the relevant
+rows as follows:
+`cohort = list(data\link{data$gender == "F", }, data\link{data$age > 65, })``}
 
 \item{labels}{(\code{character})
 Vector containing a description for each inclusion/exclusion step (needs to
@@ -39,9 +43,10 @@ removed (rather than included) will be shown.
 By default, all cohort steps will be interpreted as inclusion steps.}
 
 \item{show_prct}{(\code{logical})
-Flag indicating whether to show percentage values. If \code{FALSE}, only raw
-counts will be shown. Note that the percentages always reflect the \% change
-relative to the N in the \emph{previous} inclusion/exclusion step.}
+Flag indicating whether to show percentage values (default = \code{TRUE}).
+If \code{FALSE}, only raw counts will be shown. Note that the percentages
+always reflect the \% change relative to the N in the \emph{previous}
+inclusion/exclusion step.}
 
 \item{group_var}{(\code{character})
 Optional: Name of a grouping variable (e.g., hospital). If provided, cohort
