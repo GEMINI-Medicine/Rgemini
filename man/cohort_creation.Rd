@@ -28,7 +28,7 @@ number of encounters that are 1) female, and 2) female \strong{AND} older than 6
 years (= final cohort).
 Note that if \code{data} is a \code{data.frame}, you will need to filter the relevant
 rows as follows:
-`cohort = list(data\link{data$gender == "F", }, data\link{data$age > 65, })``}
+\code{cohort = list(data[data$gender == "F", ], data[data$age > 65, ])}}
 
 \item{labels}{(\code{character})
 Vector containing a description for each inclusion/exclusion step (needs to
