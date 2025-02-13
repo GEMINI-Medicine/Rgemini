@@ -1,6 +1,7 @@
 # Rgemini `develop`
 
 * New function `neighbourhood_ses()` deriving neighbourhood-level variables from the Statistics Canada Census & Ontario Marginalization Index
+* Improved documentation in `readmission()` vignette
 
 # Rgemini `1.0.2`
 
