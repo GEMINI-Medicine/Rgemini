@@ -1,6 +1,7 @@
 # Rgemini `develop`
 
 * Remove redundant AT check in `episodes_of_care `(only use mapped institution types from `lookup_transfer)`
+* Improved documentation in `readmission()` vignette
 
 # Rgemini `1.0.2`
 
