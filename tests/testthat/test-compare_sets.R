@@ -63,3 +63,25 @@ test_that("function performs as expected when there are no overlaps", {
 
   expect_equal(compare_sets(x, y, dates = FALSE), result_table)
 })
+
+test_that("function works when supplying custom date formats", {
+  ## set up correct table
+  result_table <- data.table(in_both = 3, x_only = 0, y_only = 0)
+
+  ## create vectors (using mdy rather than ymd)
+  x <- c("08212025", "02-14-2024", "12-25-2022")
+  y <- c("08-21-2025", "02142024", "12252022")
+
+  expect_equal(compare_sets(x, y, dates = TRUE, orders = c("mdy")), result_table)
+})
+
+test_that("function works when supplying custom order but vectors have no overlap", {
+  ## set up correct table
+  result_table <- data.table(in_both = 0, x_only = 3, y_only = 3)
+
+  ## create vectors (using mdy rather than ymd)
+  x <- c("10212025", "02-15-2024", "01-29-2022")
+  y <- c("06-21-2025", "12142024", "12272022")
+
+  expect_equal(compare_sets(x, y, dates = TRUE, orders = c("mdy")), result_table)
+})

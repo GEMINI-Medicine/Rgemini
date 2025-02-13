@@ -911,12 +911,19 @@ fix_var_str <- function(str) {
 #' This function takes in two vectors and returns the number
 #' of overlapping elements, along with the number of unique elements.
 #' The function can compare sets of characters, numerics, and dates.
-#' @param x ('vector') \cr
+#' @param x (`vector`) \cr
 #' The first set to be compared
-#' @param y ('vector') \cr
+#' @param y (`vector`) \cr
 #' The second set to be compared
 #' @param dates (`logical`)\cr
 #' If set to TRUE, will attempt to convert x & y into dates, and then compare. Set to FALSE by default.
+#' @param orders (`vector`)\cr
+#' Allows user to specify potential date or date-time formats they would like
+#' to compare. The function will check for `"ymd"`, `"ymd HM"`, and `"ymd HMS"`
+#' by default.
+#'
+#' For example, users can set `orders = "dmy"` to compare vectors in `dmy`
+#' format.
 #'
 #' @return (`data.table`)\cr
 #' A table showing the number of elements in both vectors, in the first vector only, and in the second vector only
@@ -925,10 +932,13 @@ fix_var_str <- function(str) {
 #'
 #' @examples
 #' compare_sets(c(1:10), c(5:10), dates = FALSE)
-compare_sets <- function(x, y, dates = FALSE) {
+compare_sets <- function(x,
+                         y,
+                         dates = FALSE,
+                         orders = c("ymd", "ymd HM", "ymd HMS")) {
   if (dates == TRUE) {
-    x <- convert_dt(x, orders = c("ymd", "ymd HM", "ymd HMS"))
-    y <- convert_dt(y, orders = c("ymd", "ymd HM", "ymd HMS"))
+    x <- convert_dt(x, orders = orders)
+    y <- convert_dt(y, orders = orders)
   }
 
   in_both <- length(intersect(x, y))
