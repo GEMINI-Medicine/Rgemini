@@ -21,7 +21,7 @@
 #' years (= final cohort).
 #' Note that if `data` is a `data.frame`, you will need to filter the relevant
 #' rows as follows:
-#' `cohort = list(data[data$gender == "F", ], data[data$age > 65, ])`
+#' `cohort = list(data[data\$gender == "F", ], data[data\$age > 65, ])`
 #'
 #' @param labels (`character`)
 #' Vector containing a description for each inclusion/exclusion step (needs to
