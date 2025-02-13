@@ -89,3 +89,31 @@ test_that("cell suppression works as expected", {
   ))
   expect_equal(cohort[[2]][, 3], expected_output)
 })
+
+test_that("show_prct works as expected", {
+  set.seed(1)
+  dummy_data <- Rgemini::dummy_ipadmdad(300, n_hospitals = 2) %>%
+    data.table()
+
+  cohort <- cohort_creation(
+    cohort = list(
+      dummy_data,
+      dummy_data[dummy_data$gender == "F"],
+      dummy_data[dummy_data$age > 65],
+      dummy_data[grepl("^7", dummy_data$discharge_disposition)]
+    ),
+    labels = c(
+      "All GEMINI encounters",
+      "Gender = Female",
+      "Age > 65",
+      "In-hospital death"
+    ),
+    exclusion_flag = c(FALSE, FALSE, FALSE, TRUE),
+    show_prct = FALSE
+  )
+
+  expected_output <- data.table(N = c(
+    "300", "156", "103", "-7", "96"
+  ))
+  expect_equal(cohort[[2]][, 3], expected_output)
+})
