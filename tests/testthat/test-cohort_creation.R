@@ -1,14 +1,14 @@
 test_that("cohort_creation inclusions/exclusions are applied correctly", {
   set.seed(1)
-  my_data <- dummy_ipadmdad(300, n_hospitals = 2) %>%
+  dummy_data <- Rgemini::dummy_ipadmdad(300, n_hospitals = 2) %>%
     data.table()
 
   cohort <- cohort_creation(
     cohort = list(
-      my_data,
-      my_data[my_data$gender == "F"],
-      my_data[my_data$age > 65],
-      my_data[grepl("^7", my_data$discharge_disposition)]
+      dummy_data,
+      dummy_data[dummy_data$gender == "F"],
+      dummy_data[dummy_data$age > 65],
+      dummy_data[grepl("^7", dummy_data$discharge_disposition)]
     ),
     labels = c(
       "All GEMINI encounters",
@@ -26,13 +26,17 @@ test_that("cohort_creation inclusions/exclusions are applied correctly", {
 })
 
 test_that("grouping works as expected", {
+  set.seed(1)
+  dummy_data <- Rgemini::dummy_ipadmdad(300, n_hospitals = 2) %>%
+    data.table()
+
   # apply grouping by hospital_num
   cohort <- cohort_creation(
     cohort = list(
-      my_data,
-      my_data[my_data$gender == "F"],
-      my_data[my_data$age > 65],
-      my_data[!grepl("^7", my_data$discharge_disposition)]
+      dummy_data,
+      dummy_data[dummy_data$gender == "F"],
+      dummy_data[dummy_data$age > 65],
+      dummy_data[!grepl("^7", dummy_data$discharge_disposition)]
     ),
     labels = c(
       "All GEMINI encounters",
@@ -56,14 +60,18 @@ test_that("grouping works as expected", {
 
 
 test_that("cell suppression works as expected", {
+  set.seed(1)
+  dummy_data <- Rgemini::dummy_ipadmdad(300, n_hospitals = 2) %>%
+    data.table()
+
   expect_warning( # should produce warning
     cohort <- cohort_creation(
       cohort = list(
-        my_data,
-        my_data[my_data$gender == "F"],
-        my_data[genc_id < 250, ],
-        my_data[my_data$age > 65],
-        my_data[grepl("^7", my_data$discharge_disposition)]
+        dummy_data,
+        dummy_data[dummy_data$gender == "F"],
+        dummy_data[genc_id < 250, ],
+        dummy_data[dummy_data$age > 65],
+        dummy_data[grepl("^7", dummy_data$discharge_disposition)]
       ),
       labels = c(
         "All GEMINI encounters",
@@ -80,5 +88,4 @@ test_that("cell suppression works as expected", {
     "300", "156 (52%)", "-135 (-86.5%)", "12 (57.1%)", "N < 6", "11"
   ))
   expect_equal(cohort[[2]][, 3], expected_output)
-
 })
