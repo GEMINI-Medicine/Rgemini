@@ -33,13 +33,12 @@ variable indicating whether the patient has deceased during hospital stay.
 
 The current version of the function captures the four possible
 values indicating that a patient has deceased in hospital:
-
 \itemize{
-\item{7 :  }{Died (Deprecated post 2017)}
-\item{72 : }{Died in Facility}
-\item{73 : }{Medical Assistance in Dying}
-\item{74 : }{Suicide in Facility (Excluded in calculation by default;
-can be included by setting \code{suicide} argument to \code{TRUE})}
+\item 7: Died (Deprecated post 2017)
+\item 72: Died in Facility
+\item 73: Medical Assistance in Dying
+\item 74: Suicide in Facility (Excluded in calculation by default;
+can be included by setting \code{suicide} argument to \code{TRUE})
 }
 }
 \section{Warning}{

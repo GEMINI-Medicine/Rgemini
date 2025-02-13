@@ -55,7 +55,7 @@ knitr::include_graphics("figures/epicare_out_2.png", dpi = 100)
 ```
 
 
-## `readmission()`
+## `readmission()` {#sectionIntro}
 
 The function **`readmission()`** computes whether or not a patient associated with an epicare was readmitted to a GEMINI hospital within a specified time window. For each hospitalization (`genc_id`), the function returns its corresponding: `AT_in_occurred`, `AT_out_occurred`, `epicare`, and `readmitX`. `readmitX` is a boolean variable denoting whether readmission took place during a time window X-days post-discharge. 
 
@@ -112,7 +112,7 @@ readmission_7d_derived <- mean( readm$readmit7, na.rm=T )
 
 ### GEMINI specific considerations
 
-**1. Readmission attribution when end of episode is unknown**
+#### Readmission attribution when end of episode is unknown {#sectionATout}
 
 - When the last hospitalization of an epicare has transfer out coded (`AT_out_coded`==T) and `time_to_next_admission` is greater than 12 hours or infinite, it suggests that the patient likely had been transferred to a hospital **outside of the GEMINI network**. It cannot be known for certain that the last hospitalization in our records is the last hospitalization of the epicare in reality. 
 
@@ -130,7 +130,7 @@ knitr::include_graphics("figures/attribution_2.png", dpi = 100)
 <br>
 
 
-**2. Buffer period based on each hospital’s data availability** {#sectionBuffer}
+#### Buffer period based on each hospital’s data availability {#sectionBuffer}
 
 - A patient needs to be discharged from hospital before appearing in GEMINI database. If a patient was readmitted to a hospital but has not yet been discharged by the time data is transferred to GEMINI, that readmission record will not be captured in our database. As a result, readmission rates could be underestimated in the time period before the latest data transfers.
 
@@ -190,7 +190,7 @@ readmission_30d_derived_cihi = mean( res$readmit30, na.rm=T)
 
 ## Overview of numerator & denominator removal by flag
 
-> There are 8 CIHI flags, each of which can be set to TRUE or FALSE. Elective admission and death flags are active by default. Activating a given flag (e.g., chemo and/or self sign-out flag) results in removal from numerator and/or denominator as illustrated in the flow chart below. Note that some flags (mental & palliative) result in the removal from both numerator and denominator:
+> There are 8 CIHI flags, each of which can be set to `TRUE` or `FALSE`. The `elective` and `death` flags are `TRUE` by default. Each flag results in removal of a given episode of care from the numerator and/or denominator as illustrated in the flow chart below. Note that some flags (mental & palliative) result in the removal from both numerator *and* denominator:
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center"}
 knitr::include_graphics("figures/flags_diagram_2.png", dpi = 100)
@@ -201,9 +201,8 @@ knitr::include_graphics("figures/flags_diagram_2.png", dpi = 100)
 **Disclaimer**: all the examples (focus on red text in tables) below are mock final outputs of `readmission.R`
 
 ### Elective flag
-- An episode is elective if its admit_category is 'L'
-- An episode of care is considered elective if the **FIRST** encounter of that episode is elective (admit_category = 'L')
-- An episode with elective admissions is removed from the numerator
+- An episode of care is considered elective if the **FIRST** encounter of that episode is elective (`admit_category = 'L'`)
+- Episodes with elective admission are removed from the numerator because they are planned hospitalizations, and therefore, are not reflective of quality of care
 
 ```{r, echo=FALSE, out.width = "65%", fig.align = "center"}
 knitr::include_graphics("figures/elective_2.png", dpi = 100)
@@ -211,8 +210,8 @@ knitr::include_graphics("figures/elective_2.png", dpi = 100)
 
 
 ### Death flag
-- An episode ends with death if this episode has discharge as death (DAD Discharge Disposition Code = 07, 72, 73, 74)
-- If the index admission results in death, there cannot be any readmission. Therefore, episodes of care with death are excluded from the denominator (reamitX=NA)
+- Episodes of care ending in death are indicated by DAD Discharge Disposition Codes 07, 72, 73, and 74
+- If the index admission results in death, there cannot be any readmission. Therefore, episodes of care with death are excluded from the denominator (`reamitX = NA`)
 
 ```{r, echo=FALSE, out.width = "65%", fig.align = "center"}
 knitr::include_graphics("figures/death_2.png", dpi = 100)
@@ -220,57 +219,48 @@ knitr::include_graphics("figures/death_2.png", dpi = 100)
 
 
 ### MAID flag
-- Rationale for exclusion: MAID (medical assistance in dying) is planned and doesn't reflect quality of care
-- After 2018-04-01: An episode is MAID if its discharge disposition=73
-- Before 2018-04-01: An episode is MAID if **ANY** genc_id of an epicare has discharge disposition=7 **AND** all 3 records of drugs (1st drug lets patient relax, 2nd drug stops heart beat, 3rd drug stops brain function; indicated by intervention_codes loaded)
-- If an epicare has **ANY** encounter with MAID, it is not considered to be a true readmission and is removed from numerator.
-- Note: If death = T, the epicare with MAID (which results in death) is additionally removed from the denominator. If death = F, the epicare with MAID is kept in the denominator. The general recommendation is to set death to T if MAID is T.
+- Rationale for exclusion: MAID (medical assistance in dying) is planned, and therefore, readmissions involving MAID are not reflective of quality of care
+- After 2018-04-01: An episode is MAID if its discharge disposition = 73
+- Before 2018-04-01: An episode is MAID if **ANY** `genc_id` of an epicare has discharge disposition = 7 **AND** all 3 records of drugs (1st drug lets patient relax, 2nd drug stops heart beat, 3rd drug stops brain function; indicated by intervention codes)
+- If an epicare has **ANY** encounter with MAID, it is not considered to be a true readmission and is removed from the numerator.
+- Note: If `death = TRUE`, the epicare with MAID (which results in death) is additionally removed from the denominator. If `death = FALSE`, the epicare with MAID is kept in the denominator. The general recommendation is to set death to `TRUE` if MAID is `TRUE`.
 
 ```{r, echo=FALSE, out.width = "65%", fig.align = "center"}
 knitr::include_graphics("figures/maid_2.png", dpi = 100)
 ```
 
-### self sign-out / LAMA flag
-- Rationale for exclusion: self sign-out doesn't reflect physicians' decisions to discharge and doesn't reflect quality of care
+### Self sign-out / LAMA flag
+- Rationale for exclusion: Self sign-out does not reflect physicians' decisions to discharge, and therefore, readmission should not be attributed to discharging physician/hospital
 - When **LAST** encounter of episode of care has discharge disposition = self sign-out (i.e. LAMA - left against medical advice: 61, 62, 65, 66, 67), the episode is removed from denominator to avoid attribution of potential readmission to physician
-- Note: While self sign-out is excluded based on CIHI definition, GEMINI DB doesn't capture different physician practices or philosophies regarding self sign-out (eg. Amol never codes self sign-out since he believes it's patients' right to leave on their own), or self sign-out information only recorded on paper. 
-
+- Note: While self sign-out is excluded based on the CIHI definition, coding practices of self sign-out may vary widely across hospitals/physicians (e.g., some physicians may not record self sign-out since it is a patient's right to leave on their own). Please keep that in mind if your analyses involve comparisons of readmission rates between providers. 
 
 ```{r, echo=FALSE, out.width = "65%", fig.align = "center"}
 knitr::include_graphics("figures/sign-out_2.png", dpi = 100)
 ```
 
-
-
-### palliative flag
-- Rationale for exclusion: palliative care is not acute care and can be scheduled to some extent, therefore, it doesn't reflect quality of care
-- An episode is palliative care if it has diagnosis code of (ICD-10-CA: Z51.5) as type MRDx
+### Palliative flag
+- Rationale for exclusion: Palliative care is not considered acute care, and therefore, readmissions involving palliative care are not reflective of quality of care; additionally, encounters with palliative care typically result in death, and thus, the patient is not eligible for readmission calculations (see `death` flag above) 
+- An episode is palliative care if it has an ICD-10-CA diagnosis code of Z51.5 as type MRDx
 - When an episode of care includes **ANY** encounter with palliative care as most responsible discharge diagnosis, it is removed from numerator and denominator
 
-
-### chemo flag
-- Rationale for exclusion: same as palliative flag
-- An episode has chemotherapy if it has diagnosis code of (ICD-10-CA: Z51.1) as type (M), (1), (C), (W), (X) or (Y)
-- When an episode of care (epicare) includes **ANY** encounter with chemotherapy, the entire epicare is considered as a chemotherapy episode.
+### Chemo flag
+- Rationale for exclusion: Chemotherapy is planned, and therefore, any readmissions involving chemotherapy are not reflective of quality of care
+- An episode has chemotherapy if it has an ICD-10-CA diagnosis code of Z51.1 as type M, 1, C, W, X or Y
+- When an episode of care includes **ANY** encounter with chemotherapy, the entire epicare is considered as a chemotherapy episode.
 - Readmission with chemotherapy is not considered a true readmission, and it is removed from numerator.
 
-
-### mental health flag
-- Rationale for exclusion: same as palliative flag
-- An episode is mental health if it falls under MCC=17
+### Mental health flag
+- Rationale for exclusion: Admissions for mental health diagnoses are not considered acute care
+- An episode is mental health if it falls under MCC = 17
 - When an episode of care includes **ANY** encounter with a mental health diagnosis, it is removed from numerator and denominator
 
-
-
-### obstetric delivery
-- Rationale for exclusion: same as palliative flag
-- An episode is obstetric delivery if it has diagnosis codes of (ICD-10-CA: O10–O16, O21–O29, O30–O37, O40–O46, O48, O60–O69, O70–O75, O85–O89, O90–O92, O95, O98, O99 with a sixth digit of 1 or 2; or Z37 recorded in any diagnosis field)
+### Obstetric delivery
+- Rationale for exclusion: Admissions for obstetric delivery are planned
+- An episode is obstetric delivery if it has an ICD-10-CA diagnosis codes of: O10–O16, O21–O29, O30–O37, O40–O46, O48, O60–O69, O70–O75, O85–O89, O90–O92, O95, O98, O99 with a sixth digit of 1 or 2; or Z37 recorded in any diagnosis field
 - Episodes of care that have **ANY** encounter with obstetric delivery are not considered a true readmission, and are therefore removed from numerator
 
 
-
 # Practical examples & special scenarios
-
 
 > This flow chart provides an overview of how readmission calculations can be customized for different research purposes. Depending on the research context, you may be able to use the derived readmission variables in the DB (see [*Section 3.1*](#sectionderived)). Alternatively, you can run the readmission function with customized CIHI flags ([*Section 3.2*](#sectioncustomCIHI)), customized readmission window ([*Section 3.3*](#sectionrewin)), and/or a restricted readmission cohort ([*Section 3.4*](#sectionrecohort)):
 
@@ -485,3 +475,20 @@ There may be more complex scenarios where the inclusion criteria for index admis
 5) Calculate readmission rates: Filter the output of the `readmission` function based on your index admissions (cohort created in step 1) in order to get readmission rates of surgery patients to GIM. This step is important to avoid that any admissions following GIM epicares (e.g., GIM to GIM readmissions or GIM to surgery readmissions) are included in the readmission rates. 
 
 These steps are meant as a general guideline, but you may need to consider additional aspects for a given research project. Please make sure you carefully consider the implications of the decisions you make when building your `restricted_cohort`. You will also need to consider if any additional REB restrictions apply, in which case the `restricted_cohort` should be filtered based on REB considerations first before applying any additional inclusion steps.  
+
+
+# FAQ
+
+## Why are there missing values in the readmission flags?
+
+Missing values (`NA`) in the returned readmission flags indicate that readmission status for these encounters cannot be determined. Encounters with `NA` are excluded from the denominator in readmission rate calculations, and thus, should be removed from any readmission analyses. There are several reasons for `NA` in the readmission flags:
+
+
+1) **Buffer period:** Any `genc_ids` that were discharged during the buffer period (end of data availability period for a given hospital) are returned as `readmit = NA` because readmission cannot be reliably determined for these encounters (see [here](#sectionBuffer) for more details). Note that longer readmission windows will lead to a longer buffer period (i.e., more `NA`).
+
+2) **Attribution to last encounter per episode of care:** If there are multiple encounters in a given episode of care, readmission will only be attributed to the *last* encounter. All previous encounters associated with the same episode of care will be returned as `readmit = NA` (see [here](#sectionIntro)). If attribution to the last encounter (i.e., the last discharging physician/hospital) is irrelevant for your research question, you may consider assigning the last readmission value to *all* encounters of a given episode of care. This could be relevant if you are only analyzing the first encounter per patient (or a randomly selected encounter).
+
+3) **Acute transfers to non-GEMINI site:** If an encounter is followed by a transfer to an acute care institution but the transfer encounter does not exist in GEMINI data (e.g., transfer to non-GEMINI hospital), all encounters of that episode of care will be returned with `readmit = NA` (see [here](#sectionATout)). This is because readmission is typically attributed to the last encounter of an episode of care (see point 2 above), which in this case does not exist in our data. Additionally, we don't know how long a patient was hospitalized for at a non-GEMINI site, so we cannot reliably determine if any subsequent encounter occurred within the readmission window of interest.
+
+4) **CIHI flags:** If set to `TRUE`, the following CIHI flags will result in `readmit = NA` for encounters meeting the relevant criteria (see [here](#sectionCIHI) for details): `death` (`TRUE` by default), `palliative`, `mental`, and `signout`
+
