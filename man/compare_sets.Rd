@@ -4,17 +4,25 @@
 \alias{compare_sets}
 \title{Compare two sets to get the number of unique and common elements in each set}
 \usage{
-compare_sets(x, y, dates = FALSE)
+compare_sets(x, y, dates = FALSE, orders = c("ymd", "ymd HM", "ymd HMS"))
 }
 \arguments{
-\item{x}{('vector') \cr
+\item{x}{(\code{vector}) \cr
 The first set to be compared}
 
-\item{y}{('vector') \cr
+\item{y}{(\code{vector}) \cr
 The second set to be compared}
 
 \item{dates}{(\code{logical})\cr
 If set to TRUE, will attempt to convert x & y into dates, and then compare. Set to FALSE by default.}
+
+\item{orders}{(\code{vector})\cr
+Allows user to specify potential date or date-time formats they would like
+to compare. The function will check for \code{"ymd"}, \code{"ymd HM"}, and \code{"ymd HMS"}
+by default.
+
+For example, users can set \code{orders = "dmy"} to compare vectors in \code{dmy}
+format.}
 }
 \value{
 (\code{data.table})\cr
