@@ -481,7 +481,8 @@ These steps are meant as a general guideline, but you may need to consider addit
 
 ## Why are there missing values in the readmission flags?
 
-Missing values (`NA`) in the returned readmission flags indicate that the encounter was removed from the denominator and should not be included in any analyses of readmission rates. There are several reasons for `NA` in the derived readmission flags:
+Missing values (`NA`) in the returned readmission flags indicate that readmission status for these encounters cannot be determined. Encounters with `NA` are excluded from the denominator in readmission rate calculations, and thus, should be removed from any readmission analyses. There are several reasons for `NA` in the readmission flags:
+
 
 1) **Buffer period:** Any `genc_ids` that were discharged during the buffer period (end of data availability period for a given hospital) are returned as `readmit = NA` because readmission cannot be reliably determined for these encounters (see [here](#sectionBuffer) for more details). Note that longer readmission windows will lead to a longer buffer period (i.e., more `NA`).
 
