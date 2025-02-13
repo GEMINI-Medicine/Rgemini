@@ -8,16 +8,20 @@
 #' step of the cohort creation.
 #'
 #' @param cohort (`list`)
-#' A list where each item corresponds to the cohort definition at a single step
-#' of the cohort inclusions/exclusions.
-#' The function will automatically combine the inclusion/exclusion steps in a
-#' sequential manner, and will then count the number of entries that remain
-#' after each criterion.
-#' For example, for `cohort = list(data[gender == "F"], data[age > 65])`, the
-#' function will return a cohort of all encounters that are female and older
-#' than 65 years. The cohort inclusion/exclusion table will contain 2 rows
-#' listing the number of encounters that are 1) female, and 2) female **AND**
-#' older than 65 years.
+#' A list where each item corresponds to a filtered `data.table`/`data.frame`
+#' object that contains the cohort at a given step of the cohort
+#' inclusions/exclusions. The function will automatically combine the
+#' inclusion/exclusion steps in a sequential manner, and will then count the
+#' number of entries that remain after each criterion.
+#' For example, if you have a `data.table` object called `data`: To obtain a
+#' cohort of encounters that are female and older than 65 years, you can use:
+#' `cohort = list(data[gender == "F"], data[age > 65])`. In this case, the
+#' returned cohort inclusion/exclusion table will contain 2 rows listing the
+#' number of encounters that are 1) female, and 2) female **AND** older than 65
+#' years (= final cohort).
+#' Note that if `data` is a `data.frame`, you will need to filter the relevant
+#' rows as follows:
+#' `cohort = list(data[data$gender == "F", ], data[data$age > 65, ])``
 #'
 #' @param labels (`character`)
 #' Vector containing a description for each inclusion/exclusion step (needs to
@@ -32,9 +36,10 @@
 #' By default, all cohort steps will be interpreted as inclusion steps.
 #'
 #' @param show_prct (`logical`)
-#' Flag indicating whether to show percentage values. If `FALSE`, only raw
-#' counts will be shown. Note that the percentages always reflect the % change
-#' relative to the N in the *previous* inclusion/exclusion step.
+#' Flag indicating whether to show percentage values (default = `TRUE`).
+#' If `FALSE`, only raw counts will be shown. Note that the percentages
+#' always reflect the % change relative to the N in the *previous*
+#' inclusion/exclusion step.
 #'
 #' @param group_var (`character`)
 #' Optional: Name of a grouping variable (e.g., hospital). If provided, cohort
@@ -109,6 +114,10 @@ cohort_creation <- function(
     stop("The `cohort`, `labels`, and `exclusion_flag` (if provided) inputs need to have the same length.")
   }
 
+  ## Initialize a flag for cell suppression warning
+  # (to avoid redundant warnings)
+  warning_shown <- FALSE
+
   ## Create new cohort list according to inclusion/exclusion criteria
   # in the new list, each list item reflects the combination of the current
   # and ALL previous steps of inclusions/exclusions
@@ -129,11 +138,9 @@ cohort_creation <- function(
     }
   }
 
-
   create_cohort <- function(cohort, exclusion_flag, group_var, ...) {
     ## get number of rows at each cohort creation step (= usually number of unique genc_ids)
     N <- sapply(cohort, nrow)
-
 
     ## calculate change in N between steps
     cohort_tab <- data.table(N, previous_n = lag(N))
@@ -147,6 +154,21 @@ cohort_creation <- function(
     cohort_tab[, `N (%)` := ifelse(
       !is.na(`%`) & show_prct == TRUE, paste0(prettyNum(N, ...), " (", round(`%`, 1), "%)"), prettyNum(N, ...)
     )]
+
+    ## apply cell suppression for N < 6 (unless N = 0)
+    if (nrow(cohort_tab[abs(N) < 6 & N != 0]) > 0) {
+      cohort_tab[abs(N) < 6 & N != 0, `N (%)` := "N < 6"]
+      if (warning_shown == FALSE) {
+        warning(paste(
+          "Some cells in the returned cohort inclusion/exclusion table have fewer than 6 counts.",
+          "These cells have been suppressed (\"N < 6\").",
+          "If it is possible to backcalculate the cell count based on other rows, please remove",
+          "the suppressed cells when disseminating your work."
+        ), immediate. = TRUE)
+        warning_shown <<- TRUE
+      }
+    }
+
     cohort_tab <- cohort_tab[, .(`N (%)`)]
 
     ## add row with final cohort number
