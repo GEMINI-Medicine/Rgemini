@@ -1,5 +1,9 @@
 # Rgemini `develop`
 
+**New functions:**
+	* `cohort_creation()` to generate cohort and show number (%) of entries at each inclusion/exclusion step
+
+**Documentation updates:**
 * Improved documentation in `readmission()` vignette
 
 # Rgemini `1.0.2`
