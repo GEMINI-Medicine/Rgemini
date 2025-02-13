@@ -1,7 +1,12 @@
 # Rgemini `develop`
 
+**New functions:**
+	* `cohort_creation()` to generate cohort and show number (%) of entries at each inclusion/exclusion step
+
+* **Documentation updates:**
+  * Improved documentation in `readmission()` vignette
+
 * Remove redundant AT check in `episodes_of_care `(only use mapped institution types from `lookup_transfer)`
-* Improved documentation in `readmission()` vignette
 
 # Rgemini `1.0.2`
 
