@@ -1,3 +1,7 @@
+# Rgemini `develop`
+
+* Improved documentation in `readmission()` vignette
+
 # Rgemini `1.0.2`
 
 * Small bug fix in `find_db_tablename()` for materialized views (H4H >= v4)
