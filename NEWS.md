@@ -1,12 +1,15 @@
 # Rgemini `develop`
 
-* **Bug fixes:**
-  * Minor bug fix in `plot_over_time` to allow custom line color without specifying color grouping variable
 * **New functions:**
 	* `data_coverage()` function to facilitate data coverage checks
 	* Utility function `quiet()` to run any functions without warning/error/print messages
+	* `cohort_creation()` to generate cohort and show number (%) of entries at each inclusion/exclusion step
 
-* Improved documentation in `readmission()` vignette
+* **Bug fixes:**
+  * Minor bug fix in `plot_over_time` to allow custom line color without specifying color grouping variable
+
+* **Documentation updates:**
+  * Improved documentation in `readmission()` vignette
 
 
 # Rgemini `1.0.2`
