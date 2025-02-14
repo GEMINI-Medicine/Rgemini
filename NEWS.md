@@ -1,6 +1,11 @@
-# Rgemini `1.0.3`
+# Rgemini `develop`
 
-* Adds `compare_sets()` to find the number of unique and common elements in two sets.
+**New functions:**
+	* `cohort_creation()` to generate cohort and show number (%) of entries at each inclusion/exclusion step
+  * `compare_sets()` to find the number of unique and common elements in two sets
+
+**Documentation updates:**
+* Improved documentation in `readmission()` vignette
 
 # Rgemini `1.0.2`
 
