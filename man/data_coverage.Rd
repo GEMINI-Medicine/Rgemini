@@ -42,7 +42,7 @@ Flag indicating whether to plot an overview of data timelines by hospital and
 table.
 \strong{Note:} This plot only shows a rough overview of min-max dates per table
 for each hospital. Gaps in this plot illustrate time periods where no data
-were available for at least 30 consecutive days. Importantly, for time
+were available for >28 consecutive days. Importantly, for time
 periods without any gaps, overall data volume may still be low and certain
 entries/columns may still be missing. Users should further inspect the
 coverage plots (\code{plot_coverage = TRUE}) and perform additional customized
