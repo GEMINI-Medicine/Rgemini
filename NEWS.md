@@ -1,10 +1,16 @@
 # Rgemini `develop`
 
-**New functions:**
+* **New functions:**
+	* `data_coverage()` function to facilitate data coverage checks
+	* Utility function `quiet()` to run any functions without warning/error/print messages
 	* `cohort_creation()` to generate cohort and show number (%) of entries at each inclusion/exclusion step
 
-**Documentation updates:**
-* Improved documentation in `readmission()` vignette
+* **Bug fixes:**
+  * Minor bug fix in `plot_over_time` to allow custom line color without specifying color grouping variable
+
+* **Documentation updates:**
+  * Improved documentation in `readmission()` vignette
+
 
 # Rgemini `1.0.2`
 
@@ -34,20 +40,22 @@
   * Plotting functions & vignette for plot aesthetics: `plot_theme()` and `gemini_colors()`
   * `hospitalizations_last_n_days()` to calculate the number of previous hospitalizations in a given window
   * `convert_dt()` to handle date-time variables and show missing/invalid entries
-* **Function enhancements:**
 
+* **Function enhancements:**
   * `n_imaging`, `n_routine_bloodwork()` and `n_rbc_transfusion()` refactored and updated to be able to exclude clinical records in ED
+  * `n_imaging`, `n_routine_bloodwork` and `n_rbc_transfusion` refactored and updated to be able to exclude clinical records in ED
   * Inclusion of all routine blood tests (regardless of result value) in `n_routine_bloodwork()`
   * Option to derive ICU entries as a clinical outcome with customizable time windows in `icu_entry()`
   * For functions with date-time inputs: Allow for character and POSIXct inputs
   * Improved efficiency in `mlaps()` hospital query
-* **Minor bug fixes & updated unit tests:**
 
+* **Minor bug fixes & updated unit tests:**
   * `frailty_score()`: Return frailty score 0
   * `daily_census()`: Limit time period by discharge date
   * `disability()`: Only return encounters in cohort input
   * Table 1 render functions: Enable `prettyNum` formatting
   * `Rgemini:::check_input()`: Return error for `odbc` connections
+
 * **Small documentation updates & clean-up of pkdgown reference file**
 
 # Rgemini 0.4.2

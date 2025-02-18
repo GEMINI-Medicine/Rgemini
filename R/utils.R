@@ -96,6 +96,7 @@ coerce_to_datatable <- function(data) {
 #' "ipintervention_subset"). This strict search (as opposed to a more flexible
 #' regex search) is used to allow for a broad range of table names to be
 #' searched while avoiding false positive matches.
+#' 
 #'
 #' @section HPC datacuts with materialized views:
 #' For HPC datacuts created from `gemini_h4h_template_v4_0_0` (or newer),
@@ -912,4 +913,22 @@ convert_dt <- function(dt_var,
 #'
 fix_var_str <- function(str) {
   str <- tools::toTitleCase(gsub("[_.]", " ", str))
+}
+
+
+#' @title Suppress errors/messages/warnings
+#'
+#' @description
+#' Run function without showing any errors/warnings/printed messages.
+#' 
+#' Note that certain messages (e.g., from RPostgreSQL) cannot be suppressed.
+#'
+#' @param func
+#' Function to be run quietly
+#'
+#' @export
+quiet <- function(func) {
+  sink(tempfile(), type = "out")
+  on.exit(sink())
+  invisible(force(suppressMessages(suppressWarnings(func))))
 }
