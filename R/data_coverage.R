@@ -653,11 +653,11 @@ data_coverage <- function(dbcon,
         }) +
         labs(
           title = "Data Timeline by Hospital & Table\n",
-          fill = if (
-            length(table) == 1 & !is.null(hospital_group)
-          ) {
+          fill = if (length(table) == 1 & !is.null(hospital_group)) {
             fix_var_str(hospital_group)
-          } else if (length(table) > 1) "Table"
+          } else if (length(table) > 1) {
+            "Table"
+          }
         ) +
         plot_theme(
           base_size = ifelse("base_size" %in% names(args), args$base_size, 12)
