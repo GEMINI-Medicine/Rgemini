@@ -946,7 +946,7 @@ compare_sets <- function(x,
   x_only <- length(unique(setdiff(x, y)))
   y_only <- length(unique(setdiff(y, x)))
   data.table(in_both, x_only, y_only)
-
+}
  
 #' @title Suppress errors/messages/warnings
 #'
