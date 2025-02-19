@@ -76,6 +76,7 @@ reference:
 - contents:
   - check_input
   - coerce_to_datatable
+  - compare_sets
   - coverage_message
   - convert_dt
   - find_db_tablename
