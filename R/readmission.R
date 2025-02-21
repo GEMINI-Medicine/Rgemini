@@ -658,4 +658,3 @@ readmission <- function(dbcon,
   return(dataf)
 }
 
-test_smaller <- test[1:20000]
