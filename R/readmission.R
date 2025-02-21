@@ -133,19 +133,6 @@
 #'
 #' @export
 
-### Just for function development
-library(data.table)
-library(dplyr)
-library(DBI)
-library(Rgemini)
-library(RPostgreSQL)
-source("~/repos/Rgemini/Rgemini/R/episodes_of_care.R")
-
-## connect to DB
-drv <- dbDriver("PostgreSQL")
-db <- dbConnect(drv, dbname = "drm_cleandb_v3_1_0", host = "prime.smh.gemini-hpc.ca", port = 5432, user = "anoutchinad", pass = getPass::getPass("Pass: "))
-
-###########################################################################
 
 readmission <- function(dbcon,
                         elective_admit = TRUE,
