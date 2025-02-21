@@ -69,6 +69,10 @@
 #' If `TRUE` (default), episodes of care where the last encounter was self sign-out/left against medical advice (LAMA)
 #' are removed from the denominator. Specifically, if the (n)th episode of care ended in self-signout/LAMA, it is not
 #' considered in the readmission calculation (`readmit(n) = NA`).
+#' @param return_readmit_enc (`logical`)\cr
+#' If `TRUE` (default): The function will return a table of readmission
+#' encounters corresponding to each encounter in the cohort (full or 
+#' restricted).
 #' @param restricted_cohort (`data.frame` or `data.table`)\cr
 #' User specified cohort that is a restricted subset of all encounters in DRM table "ipadmdad" (see
 #' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
@@ -129,6 +133,19 @@
 #'
 #' @export
 
+### Just for function development
+library(data.table)
+library(dplyr)
+library(DBI)
+library(Rgemini)
+library(RPostgreSQL)
+source("~/repos/Rgemini/Rgemini/R/episodes_of_care.R")
+
+## connect to DB
+drv <- dbDriver("PostgreSQL")
+db <- dbConnect(drv, dbname = "drm_cleandb_v3_1_0", host = "prime.smh.gemini-hpc.ca", port = 5432, user = "anoutchinad", pass = getPass::getPass("Pass: "))
+
+###########################################################################
 
 readmission <- function(dbcon,
                         elective_admit = TRUE,
@@ -139,6 +156,7 @@ readmission <- function(dbcon,
                         mental = FALSE,
                         obstetric = FALSE,
                         signout = FALSE,
+                        return_readmit_enc = TRUE,
                         restricted_cohort = NULL,
                         readm_win = c(7, 30)) {
 
@@ -233,6 +251,14 @@ readmission <- function(dbcon,
   ############  Convert date-times into appropriate format   ############
   data[, discharge_date_time := convert_dt(discharge_date_time)]
   data[, admission_date_time := convert_dt(admission_date_time)]
+
+  # store next related genc_id, even if it's in the same episode of care
+  # for now
+  if (return_readm_enc == TRUE) {
+    data <- data[order(patient_id_hashed, admission_date_time)]
+    data[, next_genc_id := shift(genc_id, type = "lead"), by = patient_id_hashed]
+  }
+
   data <- data[order(patient_id_hashed, discharge_date_time, admission_date_time)]
 
 
@@ -608,19 +634,36 @@ readmission <- function(dbcon,
   ### Finalize outputs
   ## keep all encounters from original data set but only last encounter of epicare should have readmit flag
   # (readmit7/30 for all other encounters of epicare are set to readmit7/30 = NA)
+  # This assumption means that the next_genc_id (if it exists) is truly a 
+  # readmissison, rather than a transfer
+
   data <- data[order(epicare, discharge_date_time, admission_date_time)]
   lapply(readm_win, function(win) {
     # if last encounter of epicare, keep readmit value, otherwise set to NA
     data[, paste0("readmit", win) := ifelse(seq_len(.N) != .N, NA, get(paste0("readmit", win))), by = epicare]
   })
 
-  ## get final output variables
-  vars <- c(
-    "genc_id", "AT_in_occurred", "AT_out_occurred", "epicare",
+  ## Get final output variables 
+  # If return_readmit_enc == TRUE, create readmit genc_id column for each window
+  if (return_readmit_enc == TRUE){
     lapply(readm_win, function(win) {
-      paste0("readmit", win)
+      data[, paste0("readmit", win, "_genc_id") := ifelse(get(paste0("readmit", win)) == TRUE, next_genc_id, NA)]
     })
-  ) # all readmit 7/30/X... values
+    vars <- c(
+      "genc_id", "AT_in_occurred", "AT_out_occurred", "epicare",
+      unlist(lapply(readm_win, function(win) {
+        c(paste0("readmit", win), paste0("readmit", win, "_genc_id"))
+      })) # unlist to return character vector 
+    ) # all readmit 7/30/X... values and genc_ids
+  } else {
+    # case when user doesn't want readmit_genc_ids
+    vars <- c(
+      "genc_id", "AT_in_occurred", "AT_out_occurred", "epicare",
+      lapply(readm_win, function(win) {
+        paste0("readmit", win)
+      })
+    ) # all readmit 7/30/X... values
+  }
 
   dataf <- data[, names(data) %in% vars, with = FALSE]
 
