@@ -241,7 +241,7 @@ readmission <- function(dbcon,
 
   # store next related genc_id, even if it's in the same episode of care
   # for now
-  if (return_readm_enc == TRUE) {
+  if (return_readmit_enc == TRUE) {
     data <- data[order(patient_id_hashed, admission_date_time)]
     data[, next_genc_id := shift(genc_id, type = "lead"), by = patient_id_hashed]
   }
