@@ -79,6 +79,7 @@ reference:
   - compare_sets
   - coverage_message
   - convert_dt
+  - create_ntiles
   - find_db_tablename
   - fix_var_str
   - lunique

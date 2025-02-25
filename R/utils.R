@@ -95,7 +95,7 @@ coerce_to_datatable <- function(data) {
 #' "ipintervention_subset"). This strict search (as opposed to a more flexible
 #' regex search) is used to allow for a broad range of table names to be
 #' searched while avoiding false positive matches.
-#' 
+#'
 #'
 #' @section HPC datacuts with materialized views:
 #' For HPC datacuts created from `gemini_h4h_template_v4_0_0` (or newer),
@@ -947,12 +947,12 @@ compare_sets <- function(x,
   y_only <- length(unique(setdiff(y, x)))
   data.table(in_both, x_only, y_only)
 }
- 
+
 #' @title Suppress errors/messages/warnings
 #'
 #' @description
 #' Run function without showing any errors/warnings/printed messages.
-#' 
+#'
 #' Note that certain messages (e.g., from RPostgreSQL) cannot be suppressed.
 #'
 #' @param func
@@ -963,4 +963,57 @@ quiet <- function(func) {
   sink(tempfile(), type = "out")
   on.exit(sink())
   invisible(force(suppressMessages(suppressWarnings(func))))
+}
+
+#' @title
+#' Create N-tiles
+#'
+#' @description
+#' This function bins continuous variables into quantiles
+#' (quartiles, deciles, etc.) of the user's choosing.
+#' Note: The function will quit if any breakpoints are
+#' duplicated (e.g. 1st quartile identical to 2nd quartile).
+#'
+#' @param x (`vector`)\cr
+#' A vector of numeric values.
+#'
+#' @param n (`integer`)\cr
+#' The number of bins to create. For example, for quartiles set `n=4`.
+#'
+#' @return (`factor`)\cr
+#' A factor with labelled bins.
+#'
+#' @export
+#'
+#' @examples
+#' set.seed(123)
+#' values <- rnorm(100)
+#' quartiles <- create_ntiles(values, 4)
+#' deciles <- create_ntiles(values, 10)
+#'
+create_ntiles <- function(x, n) {
+  ## check that variable is numeric
+  if (!is.numeric(x)) stop("Variable must be numeric.")
+
+  ## check that n is positive and numeric
+  if (!is.numeric(n) || n < 0) stop("n must be a positive integer.")
+
+  ## create breaks
+  probs <- seq(0, 1, length.out = n + 1)
+
+  ## split into quartiles
+  ntiles <- quantile(x, probs = probs)
+
+  ## check for duplicates
+  if (anyDuplicated(ntiles)) {
+    percentile_names <- paste0(probs * 100, "%")
+    formatted_ntiles <- paste(percentile_names, ntiles, sep = ": ", collapse = "\n")
+    stop(paste("Duplicated percentiles detected:\n", formatted_ntiles))
+  }
+
+  ## assign labels for ntiles
+  results <- cut(x, breaks = ntiles, include.lowest = TRUE, labels = seq_len(n))
+
+  ## return output
+  return(results)
 }
