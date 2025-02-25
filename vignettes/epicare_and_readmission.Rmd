@@ -160,6 +160,8 @@ knitr::include_graphics("figures/buffer_2.png", dpi = 100)
 
 - **Restricted cohort:** By default, readmissions are determined by searching all the data in the database. There may be scenarios where users want to determine readmissions only among records within a restricted cohort. Both the `episodes_of_care()` and `readmission()` functions allow users to input a customized cohort using the `restricted_cohort` argument. We recommend to exercise caution when a restricted cohort is used, see [*Section 3.4*](#sectionrecohort) for details. 
 
+- **Return readmission encounters:** By default, the `readmission()` function only returns TRUE/FALSE based on whether the genc_id was followed by a subsequent readmission. There may be scenarios where the readmission encounter itself is of interest to the user, (e.g. analyzing the exact time-to-readmission, or to analyze diagnosis and/or clinical outcomes of the readmission encounter). In this case, the user can set the `return_readmit_enc` as TRUE to return readmission genc_ids (1 additional column per readmission window) if there exists a readmission in that time window. 
+
 
 # Readmission: CIHI flags {#sectionCIHI}
 
