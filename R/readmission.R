@@ -70,7 +70,7 @@
 #' are removed from the denominator. Specifically, if the (n)th episode of care ended in self-signout/LAMA, it is not
 #' considered in the readmission calculation (`readmit(n) = NA`).
 #' @param return_readmit_enc (`logical`)\cr
-#' If `TRUE` (default): The function will return additionally return a column 
+#' If `TRUE`: The function will return additionally return a column 
 #' for each readmission window the user provides, containing the genc_id 
 #' corresponding to the readmission, if readmit(n) = TRUE.
 #' @param restricted_cohort (`data.frame` or `data.table`)\cr
@@ -143,7 +143,7 @@ readmission <- function(dbcon,
                         mental = FALSE,
                         obstetric = FALSE,
                         signout = FALSE,
-                        return_readmit_enc = TRUE,
+                        return_readmit_enc = FALSE,
                         restricted_cohort = NULL,
                         readm_win = c(7, 30)) {
 
