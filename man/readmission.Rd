@@ -14,7 +14,7 @@ readmission(
   mental = FALSE,
   obstetric = FALSE,
   signout = FALSE,
-  return_readmit_enc = TRUE,
+  return_readmit_enc = FALSE,
   restricted_cohort = NULL,
   readm_win = c(7, 30)
 )
@@ -72,7 +72,7 @@ are removed from the denominator. Specifically, if the (n)th episode of care end
 considered in the readmission calculation (\code{readmit(n) = NA}).}
 
 \item{return_readmit_enc}{(\code{logical})\cr
-If \code{TRUE} (default): The function will return additionally return a column
+If \code{TRUE}: The function will return additionally return a column
 for each readmission window the user provides, containing the genc_id
 corresponding to the readmission, if readmit(n) = TRUE.}
 
