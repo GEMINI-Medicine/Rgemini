@@ -9,7 +9,7 @@ day_time_of_admission(ipadmdad, dtvar = "admission_date_time")
 \arguments{
 \item{ipadmdad}{(\code{data.table} or \code{data.frame})\cr
 Table with all relevant encounters of interest from DRM table "ipadmdad" (see
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}).
+\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}).
 Must contain two fields: \code{genc_id} and a date-time variable (typically
 \code{admission_date_time} in "yyyy-mm-dd hh:mm" format).}
 

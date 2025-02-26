@@ -9,7 +9,7 @@ in_hospital_mortality(ipadmdad, suicide = FALSE)
 \arguments{
 \item{ipadmdad}{(\code{data.frame} or \code{data.table})\cr
 Table with all relevant encounters of interest from DRM table "ipadmdad" (see
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}).
+\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}).
 Must contain two fields: \code{genc_id} and \code{discharge_disposition}.}
 
 \item{suicide}{(\code{logical})\cr

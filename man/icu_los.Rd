@@ -13,7 +13,7 @@ a single encounter. Must contain GEMINI Encounter ID (\code{genc_id}).}
 
 \item{ipscu}{(\code{data.table} or \code{data.frame})\cr
 Table equivalent to the \code{ipscu} table defined in the
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
 Table must contain fields:
 GEMINI Encounter ID (\code{genc_id}),
 SCU admission time (\code{scu_admit_date_time} in "yyyy-mm-dd hh:mm" format),

@@ -13,7 +13,7 @@ dummy_diag(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = NULL, ...)
 
 \item{ipdiagnosis}{(\code{logical})\cr Default to "TRUE" and returns simulated "ipdiagnosis" table.
 If FALSE, returns simulated "erdiagnosis" table.
-See tables in \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.}
+See tables in \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.}
 
 \item{diagnosis_type}{(\verb{character vector})\cr The type(s) of diagnosis to return.
 Possible diagnosis types are ("M", 1", "2", "3", "4", "5", "6", "9", "W", "X", and "Y").
