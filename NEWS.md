@@ -5,6 +5,10 @@
 
 **Documentation updates:**
 * Improved documentation in `readmission()` vignette
+* Added documentation for return_readmit_enc flag in `readmission()` vignette
+
+**Function Enhancements:**
+* Added option to return readmission genc_id for each time window in `readmission()` function
 
 # Rgemini `1.0.2`
 
