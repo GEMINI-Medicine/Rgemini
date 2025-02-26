@@ -160,7 +160,7 @@ knitr::include_graphics("figures/buffer_2.png", dpi = 100)
 
 - **Restricted cohort:** By default, readmissions are determined by searching all the data in the database. There may be scenarios where users want to determine readmissions only among records within a restricted cohort. Both the `episodes_of_care()` and `readmission()` functions allow users to input a customized cohort using the `restricted_cohort` argument. We recommend to exercise caution when a restricted cohort is used, see [*Section 3.4*](#sectionrecohort) for details. 
 
-- **Return readmission encounters:** By default, the `readmission()` function only returns TRUE/FALSE based on whether the genc_id was followed by a subsequent readmission. There may be scenarios where the readmission encounter itself is of interest to the user, (e.g. analyzing the exact time-to-readmission, or to analyze diagnosis and/or clinical outcomes of the readmission encounter). In this case, the user can set the `return_readmit_enc` as TRUE to return readmission genc_ids (1 additional column per readmission window) if there exists a readmission in that time window. 
+- **Return readmission encounters:** By default, the `readmission()` function only returns TRUE/FALSE based on whether the genc_id was followed by a subsequent readmission. There may be scenarios where the readmission encounter itself is of interest to the user, (e.g. analyzing the exact time-to-readmission, or to analyze diagnosis and/or clinical outcomes of the readmission encounter). In this case, the user can set the `return_readmit_enc` argument as TRUE to return readmission genc_ids (1 additional column per readmission window) if there exists a readmission in that time window. 
 
 
 # Readmission: CIHI flags {#sectionCIHI}
@@ -264,10 +264,10 @@ knitr::include_graphics("figures/sign-out_2.png", dpi = 100)
 
 # Practical examples & special scenarios
 
-> This flow chart provides an overview of how readmission calculations can be customized for different research purposes. Depending on the research context, you may be able to use the derived readmission variables in the DB (see [*Section 3.1*](#sectionderived)). Alternatively, you can run the readmission function with customized CIHI flags ([*Section 3.2*](#sectioncustomCIHI)), customized readmission window ([*Section 3.3*](#sectionrewin)), and/or a restricted readmission cohort ([*Section 3.4*](#sectionrecohort)):
+> This flow chart provides an overview of how readmission calculations can be customized for different research purposes. Depending on the research context, you may be able to use the derived readmission variables in the DB (see [*Section 3.1*](#sectionderived)). Alternatively, you can run the readmission function with customized CIHI flags ([*Section 3.2*](#sectioncustomCIHI)), customized readmission window ([*Section 3.3*](#sectionrewin)), readmission encounters, and/or a restricted readmission cohort ([*Section 3.4*](#sectionrecohort)):
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center"}
-knitr::include_graphics("figures/customReadm_fig3.png", dpi = 100)
+knitr::include_graphics("figures/customReadm_fig4.png", dpi = 100)
 ```
 
 
