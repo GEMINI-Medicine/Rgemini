@@ -11,7 +11,7 @@
 
 * **Documentation updates:**
   * Improved documentation in `readmission()` vignette
-
+  * Improved organization of figures for vignettes
 
 # Rgemini `1.0.2`
 
