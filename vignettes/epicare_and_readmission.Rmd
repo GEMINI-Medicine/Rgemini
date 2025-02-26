@@ -264,7 +264,7 @@ knitr::include_graphics("figures/sign-out_2.png", dpi = 100)
 
 # Practical examples & special scenarios
 
-> This flow chart provides an overview of how readmission calculations can be customized for different research purposes. Depending on the research context, you may be able to use the derived readmission variables in the DB (see [*Section 3.1*](#sectionderived)). Alternatively, you can run the readmission function with customized CIHI flags ([*Section 3.2*](#sectioncustomCIHI)), customized readmission window ([*Section 3.3*](#sectionrewin)), readmission encounters, and/or a restricted readmission cohort ([*Section 3.4*](#sectionrecohort)):
+> This flow chart provides an overview of how readmission calculations can be customized for different research purposes. Depending on the research context, you may be able to use the derived readmission variables in the DB (see [*Section 3.1*](#sectionderived)). Alternatively, you can run the readmission function with customized CIHI flags ([*Section 3.2*](#sectioncustomCIHI)), customized readmission window ([*Section 3.3*](#sectionrewin)), readmission encounters for each time window, and/or a restricted readmission cohort ([*Section 3.4*](#sectionrecohort)):
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center"}
 knitr::include_graphics("figures/customReadm_fig4.png", dpi = 100)
