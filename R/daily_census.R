@@ -41,7 +41,7 @@
 #' Optional table containing special care unit (SCU) encounters. This is only required if patients who were in an SCU
 #' should be excluded from the census calculation during time periods where they were in the SCU. The `scu_exclude`
 #' table typically refers to the `ipscu` table (see
-#' [GEMINI database schema](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/)).
 #' However, users may want to filter the `ipscu` table by specific SCU unit numbers that should be excluded from the
 #' census calculation. Entries where `scu_unit_number = 99` (`"No SCU"`) are automatically removed by this function.
 #'

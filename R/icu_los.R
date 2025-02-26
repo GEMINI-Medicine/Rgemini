@@ -36,7 +36,7 @@
 #'
 #' @param ipscu (`data.table` or `data.frame`)\cr
 #' Table equivalent to the `ipscu` table defined in the
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #' Table must contain fields:
 #' GEMINI Encounter ID (`genc_id`),
 #' SCU admission time (`scu_admit_date_time` in "yyyy-mm-dd hh:mm" format),

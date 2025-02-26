@@ -23,7 +23,7 @@
 #' @param dxtable (`data.frame` | `data.table`)
 #' Table containing ICD-10-CA diagnosis codes of interest. Typically, this refers to the `ipdiagnosis` table, which
 #' contains the CIHI in-patient diagnoses for each encounter (see
-#' [GEMINI database schema](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
+#' [GEMINI database schema](https://geminimedicine.ca/the-gemini-database/)).
 #'
 #' If a different type of diagnosis table is provided as input (e.g., `erdiagnosis`), please make sure the table
 #' contains a column named `diagnosis_code` (`character`) where each row refers to a single, alphanumeric diagnosis

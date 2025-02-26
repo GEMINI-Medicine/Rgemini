@@ -71,7 +71,7 @@
 #' considered in the readmission calculation (`readmit(n) = NA`).
 #' @param restricted_cohort (`data.frame` or `data.table`)\cr
 #' User specified cohort that is a restricted subset of all encounters in DRM table "ipadmdad" (see
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/)).
 #' Must contain `genc_id` as the identifier. Default is `Null`, which loads the entire "ipadmdad"
 #' table in the user-provided database (recommended approach).
 #'
