@@ -10,7 +10,7 @@
 #' the R [comorbidity](https://ellessenne.github.io/comorbidity/index.html) package.
 #' If `source` is `icd_lookup`, ICD-10-CA codes will be sampled from the
 #' `lookup_icd10_ca_description` table in the GEMINI database,
-#' see details in [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
+#' see details in the [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #'
 #' @param dbcon (`DBIConnection`)\cr
 #' A database connection to any GEMINI database. Required when `source` is `icd_lookup`.
