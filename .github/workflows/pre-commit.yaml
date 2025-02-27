@@ -5,12 +5,14 @@ on:
   pull_request:
     branches: [main, develop]
 
-name: Pre-Commit Hook Check
+name: Pre-commit hooks
 
 jobs:
   pre-commit:
     name: Run pre-commit hooks
     runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
     - name: Checkout code
