@@ -35,6 +35,7 @@
 #' max_pairwise_smd(split(mtcars$disp, mtcars$am))
 #'
 max_pairwise_smd <- function(x, name, round_to = 3, ...) {
+  browser()
   x[["overall"]] <- NULL # remove overall category if exists
 
   x <- reshape2::melt(x)
