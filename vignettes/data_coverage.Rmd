@@ -194,7 +194,7 @@ coverage_timeline <- data_coverage(
 
 
 # save timeline plot as png
-ggsave("~/GitHub/Rgemini/vignettes/figures/coverage_timeline_plot.png", width = 8, height = 5)
+ggsave("~/GitHub/Rgemini/vignettes/figures/data_coverage/coverage_timeline_plot.png", width = 8, height = 5)
 coverage_timeline$timeline_plot <- data.frame()
 
 # rename columns for output shown below
@@ -270,7 +270,7 @@ coverage <- data_coverage(
 )
 
 # save timeline plot as png
-ggsave("~/GitHub/Rgemini/vignettes/figures/coverage_plot.png", width = 8, height = 5)
+ggsave("~/GitHub/Rgemini/vignettes/figures/data_coverage/coverage_plot.png", width = 8, height = 5)
 coverage$coverage_plot <- data.frame()
 
 coverage[[2]]$hospital_id <- NULL
@@ -305,7 +305,7 @@ coverage_cust1 <- data_coverage(
   hospital_group = "hospital_type",
   colors = gemini_colors(3)
 )$timeline_plot
-ggsave("~/GitHub/Rgemini/vignettes/figures/coverage_custom_plot1.png", width = 8, height = 5)
+ggsave("~/GitHub/Rgemini/vignettes/figures/data_coverage/coverage_custom_plot1.png", width = 8, height = 5)
 
 
 ##### Custom dates
@@ -329,7 +329,7 @@ coverage_cust2 <- data_coverage(
 )$timeline_plot +
   ggtitle("Data timeline for 'lab' table with customized dates for site 4\n")
 
-ggsave("~/GitHub/Rgemini/vignettes/figures/coverage_custom_plot2.png", width = 8, height = 5)
+ggsave("~/GitHub/Rgemini/vignettes/figures/data_coverage/coverage_custom_plot2.png", width = 8, height = 5)
 
 # save data to data folder
 save(coverage_enc, coverage_timeline, coverage, file = "~/GitHub/Rgemini/data/dummy_data_coverage.rda")
@@ -397,7 +397,7 @@ coverage <- data_coverage(
 ```
 
 ```{r echo = FALSE, warning = FALSE}
-knitr::include_graphics("figures/coverage_timeline_plot.png")
+knitr::include_graphics("figures/data_coverage/coverage_timeline_plot.png")
 ```
 
 <br></br>
@@ -488,7 +488,7 @@ coverage <- data_coverage(
 ```
 
 ```{r echo = FALSE}
-knitr::include_graphics("figures/coverage_plot.png")
+knitr::include_graphics("figures/data_coverage/coverage_plot.png")
 ```
 
 <br></br>
@@ -568,7 +568,7 @@ coverage <- data_coverage(
 ```
 
 ```{r echo = FALSE}
-knitr::include_graphics("figures/coverage_custom_plot1.png")
+knitr::include_graphics("figures/data_coverage/coverage_custom_plot1.png")
 ```
 
 <br></br>
@@ -597,7 +597,7 @@ coverage <- data_coverage(
 ```
 
 ```{r echo = FALSE}
-knitr::include_graphics("figures/coverage_custom_plot2.png")
+knitr::include_graphics("figures/data_coverage/coverage_custom_plot2.png")
 ```
 
 
