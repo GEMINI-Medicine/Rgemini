@@ -14,8 +14,8 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
-      - id: filesize
+      - id: check-added-large-files
         name: Check file size <= 5MB
         description: Check if a file size exceeds 5 MB
         args:
-          - '--max-size=5m' 
+          - '--maxkb=5000' 
