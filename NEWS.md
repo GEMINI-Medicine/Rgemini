@@ -6,12 +6,15 @@
   * Utility function `quiet()` to run any functions without warning/error/print messages
   * `cohort_creation()` to generate cohort and show number (%) of entries at each inclusion/exclusion step
   * `compare_sets()` to find the number of unique and common elements in two sets
+
 * **Bug fixes:**
 
   * Minor bug fix in `plot_over_time` to allow custom line color without specifying color grouping variable
+
 * **Documentation updates:**
 
   * Improved documentation in `readmission()` vignette
+  * Improved organization of figures for vignettes
   * Added pre-commit hooks checking for `browser()` statements and large files
 
 # Rgemini `1.0.2`
