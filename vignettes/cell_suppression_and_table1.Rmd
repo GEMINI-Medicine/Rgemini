@@ -100,7 +100,7 @@ Consider the group of patients in the post-pandemic subgroup. Note that patients
 
 Therefore the algorithm is designed to continue suppressing successively larger groups until the total number of suppressed patients is six or more, such that they cannot be reverse-calculated with reasonable precision. The default option shows the desired behaviour and the most conservative with respect to patient privacy.
 
-Note that in this case, the number of DM patients in post-pandemic can still be reverse-calculated from the table above, given that the total number of DM patients is 37 and the other two groups have 15 DM patients each. In this scenario we could consider [suppressing the "Overall" column](#suppress-overall-count) by setting `overall = FALSE`.
+Note that in this case, the number of DM patients in post-pandemic group can still be reverse-calculated, given that the total number of DM patients is 37 and the other two groups have 15 DM patients each. In this scenario we could consider removing the "Overall" column by setting `overall = FALSE`. See example in [suppressing "Overall" column](#suppress-overall-count) section.
 
 ## Customizing output for continuous variables - change to medians
 
