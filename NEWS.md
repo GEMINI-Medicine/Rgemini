@@ -11,6 +11,7 @@
 
 * **Documentation updates:**
   * Improved documentation in `readmission()` vignette
+  * Updated references to data dictionary
 
 
 # Rgemini `1.0.2`
