@@ -36,7 +36,7 @@ Should be specified in valid date format (e.g., \code{'yyyy-mm-dd'}).}
 Optional table containing special care unit (SCU) encounters. This is only required if patients who were in an SCU
 should be excluded from the census calculation during time periods where they were in the SCU. The \code{scu_exclude}
 table typically refers to the \code{ipscu} table (see
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI database schema}).
+\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}).
 However, users may want to filter the \code{ipscu} table by specific SCU unit numbers that should be excluded from the
 census calculation. Entries where \code{scu_unit_number = 99} (\code{"No SCU"}) are automatically removed by this function.
 

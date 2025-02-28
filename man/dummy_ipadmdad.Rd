@@ -72,7 +72,7 @@ for \code{number_of_alc_days} to be larger than \code{los_days_derived}.
 \description{
 This function creates a dummy dataset with a subset of variables that
 are contained in the GEMINI "ipadmdad" table (see details in
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}).
+\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}).
 
 The simulated encounter-level variables that are returned by this function
 are currently: Admission date-time, discharge date-time, age, gender,

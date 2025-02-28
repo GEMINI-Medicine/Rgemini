@@ -8,11 +8,11 @@
 #'
 #' @param ipdiag (`data.table` or `data.frame`)\cr
 #' `ipdiagnosis` table as defined in the
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #'
 #' @param erdiag (`data.table` or `data.frame`)\cr
 #' `erdiagnosis` table as defined in the
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #' Typically, ER diagnoses should be included when deriving comorbidity in order
 #' to increase sensitivity. However, in certain scenarios, users may choose to
 #' only include IP diagnoses by specifying `erdiag = NULL`. This may be useful

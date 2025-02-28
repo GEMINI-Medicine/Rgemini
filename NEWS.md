@@ -16,6 +16,7 @@
   * Improved documentation in `readmission()` vignette
   * Improved organization of figures for vignettes
   * Added pre-commit hooks checking for `browser()` statements and large files
+  * Updated links referencing data dictionary
 
 # Rgemini `1.0.2`
 

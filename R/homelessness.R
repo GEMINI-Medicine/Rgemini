@@ -47,12 +47,12 @@
 #' (`genc_id`).
 #'
 #' @param ipdiag (`data.table`)
-#' `ipdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' `ipdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #' This table must contain `genc_id` and `diagnosis_code` (as ICD-10-CA
 #' alphanumeric code) in long format.
 #'
 #' @param erdiag (`data.table`)
-#' `erdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' `erdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #' This table must contain `genc_id` and `er_diagnosis_code` (as ICD-10-CA
 #' alphanumeric code) in long format.
 #'
