@@ -42,13 +42,13 @@
 #' @export
 day_time_of_admission <- function(ipadmdad,
                                   dtvar = "admission_date_time") {
-
   ## coerce data frame to data table if necessary
   ipadmdad <- coerce_to_datatable(ipadmdad)
 
   ## make sure dtvar is in appropriate format (ymd + HM/HMS timestamp)
   ipadmdad[, dtvar := convert_dt(
-    get(dtvar), orders = c("ymd HM", "ymd HMS"), dt_varname = dtvar
+    get(dtvar),
+    orders = c("ymd HM", "ymd HMS"), dt_varname = dtvar
   )]
 
   ## select relevant variables
@@ -57,12 +57,12 @@ day_time_of_admission <- function(ipadmdad,
   ## daytime = 08:00 to 16:59
   ## nighttime = 17:00 to 07:59
   res[, ":="(day_of_admission_derived =
-    ifelse(lubridate::wday(dtvar,label = TRUE) %in% c("Sun", "Sat"),
+    ifelse(lubridate::wday(dtvar, label = TRUE) %in% c("Sun", "Sat"),
       "weekend", "weekday"
     ),
   time_of_admission_derived =
     ifelse(lubridate::hour(dtvar) >= 8 & lubridate::hour(dtvar) < 17,
-    "daytime", "nighttime"
+      "daytime", "nighttime"
     ),
   dtvar = NULL)][]
 

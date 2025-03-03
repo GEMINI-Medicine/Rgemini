@@ -26,7 +26,7 @@
 diagnoses_at_admission <- function(ipdiag, erdiag) {
   ipdiag <- coerce_to_datatable(ipdiag)
 
-  if (!is.null(erdiag)){
+  if (!is.null(erdiag)) {
     erdiag <- coerce_to_datatable(erdiag)
 
     ### Synchronize varnames between ipdiag and erdiag
@@ -123,7 +123,7 @@ diagnoses_at_admission <- function(ipdiag, erdiag) {
 
   ### Combine er-diagnoses and inpatient-diagnoses as diagnoses at admission
   res <- ipcharl[, -c("genc_diag")]
-  if (!is.null(erdiag)){
+  if (!is.null(erdiag)) {
     res <- rbind(res, erdiag[, c("genc_id", "diagnosis_code", "diagnosis_type")])
   }
 
@@ -171,20 +171,22 @@ comorbidity_index <- function(ipdiag, erdiag, map, weights, at_admission = TRUE,
 
   ### check that ipdiag/erdiag contains genc_id & diagnosis_code
   check_input(ipdiag, c("data.table", "data.frame"),
-              colnames = c("genc_id", "diagnosis_code"),
-              coltypes = c("", "character"))
+    colnames = c("genc_id", "diagnosis_code"),
+    coltypes = c("", "character")
+  )
 
-  if (!is.null(erdiag)){
+  if (!is.null(erdiag)) {
     check_input(erdiag, c("data.table", "data.frame"),
-                colnames = c("genc_id", "er_diagnosis_code"),
-                coltypes = c("", "character"))
+      colnames = c("genc_id", "er_diagnosis_code"),
+      coltypes = c("", "character")
+    )
   }
 
 
   ipdiag <- coerce_to_datatable(ipdiag)
 
   all_diagnoses <- ipdiag[, .(genc_id, diagnosis_code, diagnosis_type)]
-  if (!is.null(erdiag)){
+  if (!is.null(erdiag)) {
     erdiag <- coerce_to_datatable(erdiag)
 
     all_diagnoses <- rbind(
@@ -217,7 +219,7 @@ comorbidity_index <- function(ipdiag, erdiag, map, weights, at_admission = TRUE,
       select(genc_id) %>%
       unique() %>%
       full_join(comorbidities, by = c("genc_id" = "genc_id")) %>%
-      mutate(across(setdiff(names(comorbidities), "genc_id"), ~tidyr::replace_na(., 0)))
+      mutate(across(setdiff(names(comorbidities), "genc_id"), ~ tidyr::replace_na(., 0)))
 
     return(comorbidities)
   }
@@ -266,7 +268,6 @@ comorbidity_index <- function(ipdiag, erdiag, map, weights, at_admission = TRUE,
 #' }
 #'
 charlson_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_comorbidities = FALSE) {
-
   res <- comorbidity_index(
     ipdiag = ipdiag,
     erdiag = erdiag,
@@ -314,7 +315,6 @@ charlson_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_
 #' }
 #'
 elixhauser_comorbidity_index <- function(ipdiag, erdiag, at_admission = TRUE, raw_comorbidities = FALSE) {
-
   res <- comorbidity_index(
     ipdiag = ipdiag,
     erdiag = erdiag,

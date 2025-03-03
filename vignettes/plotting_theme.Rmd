@@ -18,15 +18,15 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  include = TRUE, 
-  eval = TRUE, 
-  echo = TRUE, 
-  warning = FALSE, 
-  message = FALSE, 
+  include = TRUE,
+  eval = TRUE,
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
   collapse = TRUE,
-  cache = FALSE, 
+  cache = FALSE,
   tidy = FALSE,
-  fig.height = 3.5, 
+  fig.height = 3.5,
   fig.width = 3.5,
   fig.align = "left"
 )
@@ -79,7 +79,7 @@ my_plot +
 `plot_theme()` accepts inputs specifying the font size/type (which are passed to `ggthemes::theme_foundation()`). Users can also specify whether to show major/minor grid lines. For example:
 
 ```{r}
-my_plot + 
+my_plot +
   plot_theme(base_size = 15, base_family = "mono", show_grid = c("major", "minor")) +
   ggtitle("Mono plot with grid lines")
 ```
@@ -89,7 +89,7 @@ my_plot +
 Additionally, `plot_theme()` accepts inputs that can be passed to `ggplot2::theme()`, which allows for further customization (see [here](https://ggplot2.tidyverse.org/reference/theme.html)). For example, to change the aspect ratio of the plot and angle of the x-tick labels:
  
 ```{r}
-my_plot + 
+my_plot +
   plot_theme(
     aspect.ratio = 1.5,
     axis.text.x = element_text(angle = 45, hjust = 1)
@@ -104,7 +104,7 @@ my_plot +
 If you are specifying inputs for settings that are already defined by `plot_theme()`, you will see an error message saying that the argument was matched by multiple inputs. For example, `plot_theme()` already specifies default characteristics for `plot.title` (`face = "bold"`). Thus, if you try to run the following code to italicize the title, you will see an error message saying:
 
 ```{r eval = F}
-my_plot + 
+my_plot +
   plot_theme(plot.title = element_text(face = "italic")) +
   ggtitle("Plot with additional theme")
 ```
@@ -117,7 +117,7 @@ my_plot +
 To avoid this error, you need to add a separate `ggplot2::theme()`, which will overwrite the default characteristics specified by `plot_theme()`:
 
 ```{r}
-my_plot + 
+my_plot +
   plot_theme() +
   theme(plot.title = element_text(face = "italic")) +
   ggtitle("Plot with italicized title")
@@ -145,14 +145,18 @@ For example, this simulates how the colors from the "GEMINI Glow" palette (#1) w
 ```{r fig.height = 1.5, fig.width = 2.4}
 library(colorBlindness)
 
-fig <- ggplot(data.frame(x = as.factor(seq(7, 1))),
-              aes(x = 1, y = 1, fill = x)) +
+fig <- ggplot(
+  data.frame(x = as.factor(seq(7, 1))),
+  aes(x = 1, y = 1, fill = x)
+) +
   geom_col(position = position_stack(reverse = TRUE), show.legend = FALSE) +
   scale_fill_manual(values = gemini_colors(1)) +
-  coord_flip() + 
-  theme_void() + 
-  theme(aspect.ratio = 0.3,
-        plot.title = element_text(hjust = 0))
+  coord_flip() +
+  theme_void() +
+  theme(
+    aspect.ratio = 0.3,
+    plot.title = element_text(hjust = 0)
+  )
 
 fig + ggtitle("Original")
 ```
@@ -168,15 +172,16 @@ For example:
 
 ```{r}
 set.seed(2)
-data <- data.frame(x = rnorm(50), 
-                   y = rnorm(50), 
-                   group = sample(c("A", "B", "C", "D", "E"), 50, replace = TRUE))
+data <- data.frame(
+  x = rnorm(50),
+  y = rnorm(50),
+  group = sample(c("A", "B", "C", "D", "E"), 50, replace = TRUE)
+)
 
 ggplot(data, aes(x = x, y = y, color = group)) +
   geom_point() +
   plot_theme() +
   scale_color_manual(values = gemini_colors(2)) # = gemini_colors("S")
-
 ```
 
 &nbsp;
@@ -248,7 +253,7 @@ fig + scale_fill_jama()
 **Lancet palette:**
 
 ```{r fig.height = 0.5}
-fig + scale_fill_lancet() 
+fig + scale_fill_lancet()
 ```
 
 **JCO palette:**
@@ -275,7 +280,7 @@ fig + scale_fill_brewer(palette = "PRGn")
 You can explore all colorblind friendly ColorBrewer palettes by running: 
 
 ```{r fig.height = 6.5}
-display.brewer.all(colorblindFriendly = TRUE) 
+display.brewer.all(colorblindFriendly = TRUE)
 ```
 
 

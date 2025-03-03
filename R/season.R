@@ -19,7 +19,10 @@ season <- function(date) {
   m <- lubridate::month(date)
 
   ifelse(m %in% c(3, 4, 5), "Spring",
-         ifelse(m %in% c(6, 7, 8), "Summer",
-                ifelse(m %in% c(9, 10, 11), "Fall",
-                       "Winter")))
+    ifelse(m %in% c(6, 7, 8), "Summer",
+      ifelse(m %in% c(9, 10, 11), "Fall",
+        "Winter"
+      )
+    )
+  )
 }

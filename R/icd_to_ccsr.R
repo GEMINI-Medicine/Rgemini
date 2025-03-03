@@ -117,22 +117,23 @@
 #' \dontrun{
 #' drv <- dbDriver("PostgreSQL")
 #' dbcon <- DBI::dbConnect(drv,
-#'                         dbname = "db",
-#'                         host = "domain_name.ca",
-#'                         port = 1234,
-#'                         user = getPass("Enter user:"),
-#'                         password = getPass("password"))
+#'   dbname = "db",
+#'   host = "domain_name.ca",
+#'   port = 1234,
+#'   user = getPass("Enter user:"),
+#'   password = getPass("password")
+#' )
 #'
 #' dxtable <- dbGetQuery(dbcon, "select * from ipdiagnosis") %>% data.table()
 #' icd_to_ccsr(dbcon, dxtable)
 #' }
 icd_to_ccsr <- function(dbcon, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, replace_invalidpdx = TRUE) {
-
   mapping_message("ICD-10-CA codes to CCSR categories")
 
   cat(paste0(
     "\nObtaining CCSR categories for ICD-10-CA codes in input table ",
-    deparse(substitute(dxtable)), "\n "))
+    deparse(substitute(dxtable)), "\n "
+  ))
 
   #######  Check user inputs  #######
   ## Valid DB connection?
@@ -186,16 +187,21 @@ icd_to_ccsr <- function(dbcon, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, r
   dxtable[dxtable == ""] <- NA
   # add ICD-10-CA code descriptions
   dxtable <- merge(dxtable, lookup_icd10_ca[, .(diagnosis_code, diagnosis_code_desc)],
-                   by = "diagnosis_code", all.x = TRUE)
+    by = "diagnosis_code", all.x = TRUE
+  )
 
   ## clean up CCSR lookup table
   lookup_icd_to_ccsr[lookup_icd_to_ccsr == ""] <- NA
   # add CCSR category descriptions to default CCSR categories
   lookup_icd_to_ccsr <- merge(lookup_icd_to_ccsr, lookup_ccsr, by = "ccsr_default", all.x = TRUE)
   # change column order for clarity
-  setcolorder(lookup_icd_to_ccsr,
-              c("ccsr_default", "ccsr_default_desc",
-                first(setdiff(names(lookup_icd_to_ccsr), c("ccsr_default", "ccsr_default_desc")))))
+  setcolorder(
+    lookup_icd_to_ccsr,
+    c(
+      "ccsr_default", "ccsr_default_desc",
+      first(setdiff(names(lookup_icd_to_ccsr), c("ccsr_default", "ccsr_default_desc")))
+    )
+  )
 
 
   #######  Filter by diagnosis type  #######
@@ -216,12 +222,14 @@ icd_to_ccsr <- function(dbcon, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, r
   #######  Quality checks  #######
   ## 1) Check for duplicated diagnosis codes in ICD-to-CCSR lookup table (each code should have unique mapping to CCSR)
   if (sum(duplicated(lookup_icd_to_ccsr$diagnosis)) > 0) {
-    warning(paste0("Duplicate entries in lookup table.
+    warning(paste0(
+      "Duplicate entries in lookup table.
       The ICD-to-CCSR lookup table in the database contained duplicate entries for ",
       sum(duplicated(lookup_icd_to_ccsr$diagnosis)), " diagnosis codes.
       Each ICD-10-CA code should have a unique mapping to its corresponding CCSR category(s).
       Therefore, all duplicated entries have been automatically removed by this function.
-      Please contact Gemini[dot]Data[at]unityhealth[dot]to in order to notify us about this issue."), immediate. = TRUE)
+      Please contact Gemini[dot]Data[at]unityhealth[dot]to in order to notify us about this issue."
+    ), immediate. = TRUE)
 
     # remove any duplicated ICD-10-CA codes (select mapping based on latest CCSR version)
     lookup_icd_to_ccsr <- lookup_icd_to_ccsr[order(ccsr_version)][, .SD[.N], by = diagnosis_code]
@@ -256,22 +264,29 @@ icd_to_ccsr <- function(dbcon, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, r
     # i.e., missing/empty type-6/-M diagnosis codes
     missing_mrdx <- dxtable[!genc_id %in% dxtable_final$genc_id, ]
     if (nrow(missing_mrdx) > 0) {
-      warning(paste0("Missing MRDx codes.
+      warning(
+        paste0(
+          "Missing MRDx codes.
       ", length(unique(missing_mrdx$genc_id)),
-      ' genc_ids in the diagnosis table input do not have any MRDx (type-6 or type-M) diagnosis code.
+          ' genc_ids in the diagnosis table input do not have any MRDx (type-6 or type-M) diagnosis code.
       These encounters are returned with diagnosis_code = NA and ccsr_default_desc = "Missing diagnosis code".
-      Missing MRDx codes may reflect a data quality issue, which should only affect a very small percentage of encounters (<0.01%).'),
+      Missing MRDx codes may reflect a data quality issue, which should only affect a very small percentage of encounters (<0.01%).'
+        ),
         immediate. = TRUE
       )
     }
   } else { # if including all diagnosis types, just check for any NAs in diagnosis_code
     missing_dx <- dxtable[is.na(diagnosis_code), ]
     if (nrow(missing_dx) > 0) {
-      warning(paste0("Missing diagnosis codes.", nrow(missing_dx),
-      ' diagnosis codes in the input table have missing values (diagnosis_code = NA).
+      warning(
+        paste0(
+          "Missing diagnosis codes.", nrow(missing_dx),
+          ' diagnosis codes in the input table have missing values (diagnosis_code = NA).
       These rows are returned with ccsr_default_desc = "Missing diagnosis code".
-      Missing codes likely reflect a data quality issue, which should only affect a very small percentage of encounters (<0.01%).'),
-      immediate. = TRUE)
+      Missing codes likely reflect a data quality issue, which should only affect a very small percentage of encounters (<0.01%).'
+        ),
+        immediate. = TRUE
+      )
     }
   }
 
@@ -280,7 +295,8 @@ icd_to_ccsr <- function(dbcon, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, r
   #######  Get ICD-to-CCSR mapping  #######
   # merge with lookup table
   dxtable_final <- merge(dxtable_final, lookup_icd_to_ccsr[, -c("gemini_derived", "ccsr_version")],
-                         by = "diagnosis_code", all.x = TRUE)
+    by = "diagnosis_code", all.x = TRUE
+  )
   dxtable_final[is.na(ccsr_default_desc), ccsr_default_desc := "Unmapped"]
 
 
@@ -291,9 +307,11 @@ icd_to_ccsr <- function(dbcon, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, r
     invalid_pdx <- dxtable_final[grepl("XXX", ccsr_default), ]
 
     if (nrow(invalid_pdx) > 0) {
-      cat(paste0("\nReplacing CCSR default categories for ", length(unique(invalid_pdx$diagnosis_code)),
-      " unique diagnosis codes  (n = ", nrow(invalid_pdx), ' encounters) that were mapped to "invalid PDX".
-      Please refer to the function documentation for details.\n '))
+      cat(paste0(
+        "\nReplacing CCSR default categories for ", length(unique(invalid_pdx$diagnosis_code)),
+        " unique diagnosis codes  (n = ", nrow(invalid_pdx), ' encounters) that were mapped to "invalid PDX".
+      Please refer to the function documentation for details.\n '
+      ))
 
 
       #######  Create new lookup table for any codes that were mapped to XXX000
@@ -314,9 +332,11 @@ icd_to_ccsr <- function(dbcon, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, r
       # 2b) get potential default categories for each diagnosis code based on ICD chapter
       lookup_icd_to_ccsr_new2 <- merge(
         lookup_icd_to_ccsr_new[grepl("XXX", ccsr_default) & !is.na(ccsr_2), .(
-          diagnosis_code, icd_chapter, ccsr_1, ccsr_2, ccsr_3, ccsr_4, ccsr_5, ccsr_6)],
+          diagnosis_code, icd_chapter, ccsr_1, ccsr_2, ccsr_3, ccsr_4, ccsr_5, ccsr_6
+        )],
         ccsr_chapter,
-        by = "icd_chapter", all.x = TRUE, allow.cartesian = TRUE)
+        by = "icd_chapter", all.x = TRUE, allow.cartesian = TRUE
+      )
 
       # 2c) only keep rows where potential default category is among CCSR 1-6 of corresponding code
       lookup_icd_to_ccsr_new2 <- lookup_icd_to_ccsr_new2[apply(lookup_icd_to_ccsr_new2, 1, function(row) {
@@ -325,12 +345,14 @@ icd_to_ccsr <- function(dbcon, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, r
 
       # 2d) sort default categories by frequency and only most frequent CCSR default
       lookup_icd_to_ccsr_new2 <- lookup_icd_to_ccsr_new2[
-        order(diagnosis_code, desc(N))][, .SD[1], by = "diagnosis_code"]
+        order(diagnosis_code, desc(N))
+      ][, .SD[1], by = "diagnosis_code"]
 
       # 2e) add updated mappings for codes with > 1 CCSR category to new lookup table
       lookup_icd_to_ccsr_new <- lookup_icd_to_ccsr_new[
         diagnosis_code %in% lookup_icd_to_ccsr_new2$diagnosis_code,
-        ccsr_default := lookup_icd_to_ccsr_new2[.SD, ccsr_default, on = "diagnosis_code"]]
+        ccsr_default := lookup_icd_to_ccsr_new2[.SD, ccsr_default, on = "diagnosis_code"]
+      ]
 
 
       ### 3) For any remaining codes:
@@ -345,15 +367,14 @@ icd_to_ccsr <- function(dbcon, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, r
 
       ### Update mappings according to new lookup table
       dxtable_final[diagnosis_code %in% invalid_pdx$diagnosis_code, ccsr_default :=
-                      lookup_icd_to_ccsr_new[.SD, ccsr_default, on = "diagnosis_code"]]
+        lookup_icd_to_ccsr_new[.SD, ccsr_default, on = "diagnosis_code"]]
       # Update CCSR default description for invalid PDX according to newly assigned ccsr_default
       dxtable_final[diagnosis_code %in% invalid_pdx$diagnosis_code, ccsr_default_desc :=
-                      lookup_ccsr[.SD, ccsr_default_desc, on = "ccsr_default"]]
+        lookup_ccsr[.SD, ccsr_default_desc, on = "ccsr_default"]]
 
       ## Test: Check that no more 'XXX000' among default categories
       if (nrow(dxtable_final[grepl("XXX", ccsr_default), ]) == 0) {
         message("all 'invalid PDX' (ccsr_default == 'XXX000') have been replaced.")
-
       } else {
         message("some 'invalid PDX' (ccsr_default == 'XXX000') have not been replaced.")
       }
@@ -368,7 +389,8 @@ icd_to_ccsr <- function(dbcon, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, r
     if (nrow(missing_mrdx) > 0) {
       # append unique genc_ids with missing MRDx
       dxtable_final <- rbind(dxtable_final, unique(missing_mrdx[, "genc_id"]),
-                             fill = TRUE)[order(genc_id)] # diagnosis_code = NA for missing MRDx
+        fill = TRUE
+      )[order(genc_id)] # diagnosis_code = NA for missing MRDx
     }
   }
   dxtable_final[is.na(diagnosis_code), ccsr_default_desc := "Missing diagnosis code"]
