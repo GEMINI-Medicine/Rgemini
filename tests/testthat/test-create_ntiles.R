@@ -45,3 +45,15 @@ test_that("function quits when quartile breakpoints are identical", {
   ## create error by supplying vector with number repeated 20 times
   expect_error(create_ntiles(rep(20, 20), 5))
 })
+
+test_that("function returns percentiles that are the same length as input vector", {
+  ## create sample vector
+  set.seed(123)
+  values <- rnorm(100)
+
+  ## run the function
+  n_tile_results <- create_ntiles(values, 10)
+
+  ## confirm length of values == length of n_tile_results
+  expect_equal(length(values), length(n_tile_results))
+})
