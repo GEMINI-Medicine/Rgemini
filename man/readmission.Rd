@@ -72,9 +72,11 @@ are removed from the denominator. Specifically, if the (n)th episode of care end
 considered in the readmission calculation (\code{readmit(n) = NA}).}
 
 \item{return_readmit_enc}{(\code{logical})\cr
-If \code{TRUE}: The function will return additionally return a column
-for each readmission window the user provides, containing the genc_id
-corresponding to the readmission, if readmit(n) = TRUE.}
+If \code{TRUE}: The function will additionally return a column
+for each readmission window the user provides, containing the \code{genc_id}
+corresponding to the readmission encounter (i.e., encounter following the index encounter within n days).
+This can be used to analyze characteristics of the readmission encounter (e.g., time of readmission, diagnoses/clinical outcomes at the time of readmission etc.).
+For index encounters where the readmission flag is \code{FALSE}/\code{NA}, \verb{readmit(n)_genc_id} will be returned as \code{NA}.}
 
 \item{restricted_cohort}{(\code{data.frame} or \code{data.table})\cr
 User specified cohort that is a restricted subset of all encounters in DRM table "ipadmdad" (see
