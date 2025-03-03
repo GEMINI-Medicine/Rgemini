@@ -184,7 +184,7 @@ neighbourhood_ses <- function(dbcon, cohort, census_year) {
     # note: columns with capital letters need "" to maintain column name
     nbhd_data <- DBI::dbGetQuery(
       dbcon, paste(
-      "SELECT tmp.genc_id, l.da21uid, s.c21_vismin, s.c21_vismin_not, s.qnatippe, s.qnbtippe, s.qaatippe,
+        "SELECT tmp.genc_id, l.da21uid, s.c21_vismin, s.c21_vismin_not, s.qnatippe, s.qnbtippe, s.qaatippe,
       s.qabtippe, s.atippe, s.btippe, s.c21_immsta, s.c21_immsta_imm, s.c21_ed_15over_postsec,
       s.c21_ed_15over, s.c21_ed_25to64_postsec, s.c21_ed_25to64, \"households_dwellings_DA21\",
       \"material_resources_DA21\", \"age_labourforce_DA21\", \"racialized_NC_pop_DA21\",
@@ -192,7 +192,8 @@ neighbourhood_ses <- function(dbcon, cohort, census_year) {
       \"racialized_NC_pop_q_DA21\"
       FROM temp_data tmp
       left join locality_variables l on l.genc_id = tmp.genc_id
-      left join ", table_name, " s on l.da21uid = s.da21uid;")
+      left join ", table_name, " s on l.da21uid = s.da21uid;"
+      )
     ) %>%
       as.data.table()
   } else if (census_year == 2016) {
