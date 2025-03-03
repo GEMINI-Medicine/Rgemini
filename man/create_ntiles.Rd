@@ -15,7 +15,8 @@ The number of bins to create. For example, for quartiles set \code{n=4}.}
 }
 \value{
 (\code{factor})\cr
-A factor with labelled bins.
+A factor with \code{n} levels representing the bins (ntiles) of the input values.
+The factor returned will be the same length as \code{x}.
 }
 \description{
 This function bins continuous variables into quantiles
