@@ -147,11 +147,12 @@ a standardized measure of patient counts, rather than a measure of true capacity
 \dontrun{
 drv <- dbDriver("PostgreSQL")
 dbcon <- DBI::dbConnect(drv,
-                        dbname = "db",
-                        host = "domain_name.ca",
-                        port = 1234,
-                        user = getPass("Enter user:"),
-                        password = getPass("password"))
+  dbname = "db",
+  host = "domain_name.ca",
+  port = 1234,
+  user = getPass("Enter user:"),
+  password = getPass("password")
+)
 
 ipadm <- dbGetQuery(dbcon, "select * from admdad") \%>\% data.table()
 

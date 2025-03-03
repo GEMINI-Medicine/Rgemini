@@ -61,10 +61,12 @@ length_of_stay <- function(ipadmdad,
   )]
 
   res[, ":="(los_hrs_derived = as.numeric(difftime(
-    dis_dtvar, adm_dtvar, units = "hours"
+    dis_dtvar, adm_dtvar,
+    units = "hours"
   )),
   los_days_derived = as.numeric(difftime(
-    dis_dtvar, adm_dtvar, units = "days"
+    dis_dtvar, adm_dtvar,
+    units = "days"
   )),
   adm_dtvar = NULL,
   dis_dtvar = NULL)][]

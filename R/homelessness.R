@@ -38,7 +38,7 @@
 #' a lack of utilities. Some examples include unsafe living
 #' conditions, safety issues such as a lack of heating, and
 #' if the home isn't safely inhabitable due to repairs in progress.
-#' 
+#'
 #' For more information, please refer to the references in this page.
 #'
 #' @param cohort (`data.frame` or `data.table`)
@@ -96,7 +96,6 @@ homelessness <- function(
     cohort,
     ipdiag,
     erdiag) {
-
   ############# CHECK & PREPARE DATA #############
   if (is.null(erdiag)) {
     cat("\n*** Based on the input you provided, only in-patient diagnoses (ipdiag) will be included in the derived homelessness flag.

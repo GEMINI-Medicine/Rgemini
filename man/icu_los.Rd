@@ -72,6 +72,6 @@ make sure the list of encounters aligns in both tables.
 \examples{
 # Compute ICU LoS for all encounters in ipadmdad:
 \dontrun{
-icu_los (cohort=ipadmdad, ipscu=ipscu)
+icu_los(cohort = ipadmdad, ipscu = ipscu)
 }
 }

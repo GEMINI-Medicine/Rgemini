@@ -67,10 +67,12 @@ er_los <- function(cohort, er) {
   ##### Prepare er data #####
   er[, `:=`(
     triage_date_time = convert_dt(
-      triage_date_time, addtl_msg = ""
+      triage_date_time,
+      addtl_msg = ""
     ),
     left_er_date_time = convert_dt(
-      left_er_date_time, addtl_msg = ""
+      left_er_date_time,
+      addtl_msg = ""
     )
   )]
 

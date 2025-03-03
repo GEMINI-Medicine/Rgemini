@@ -89,17 +89,17 @@ Users interested in the UK version should refer to the original publications for
 \examples{
 \dontrun{
 cohort_dum <- data.table(
- genc_id = c(1, 2, 3), age = c(64, 65, 80)
+  genc_id = c(1, 2, 3), age = c(64, 65, 80)
 )
 ipdiag_dum <- dummy_diag(
- nid = 3, nrow = 10,
- ipdiagnosis = TRUE,
- pattern = "C20$|R460$" # frailty conditions
+  nid = 3, nrow = 10,
+  ipdiagnosis = TRUE,
+  pattern = "C20$|R460$" # frailty conditions
 )
 erdiag_dum <- dummy_diag(
- nid = 3, nrow = 5,
- ipdiagnosis = FALSE,
- pattern = "M121$" # not a frailty condition
+  nid = 3, nrow = 5,
+  ipdiagnosis = FALSE,
+  pattern = "M121$" # not a frailty condition
 )
 # calculate frailty score
 frailty_score(cohort_dum, ipdiag_dum, erdiag_dum, component_wise = FALSE)

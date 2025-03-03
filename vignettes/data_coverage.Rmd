@@ -27,7 +27,7 @@ library(lemon)
 library(ggplot2)
 library(Rgemini)
 library(lubridate)
-#setwd("~/GitHub/Rgemini/vignettes/")
+# setwd("~/GitHub/Rgemini/vignettes/")
 ```
 
 *  *  *  *
@@ -151,7 +151,7 @@ custom_dates[, max_date := max_date]
 custom_dates <- rbind(lookup_data_coverage, custom_dates, fill = TRUE)
 
 # adjust path according to your Rgemini folder
-source("~/GitHub/Rgemini/R/data_coverage.R") 
+source("~/GitHub/Rgemini/R/data_coverage.R")
 source("~/GitHub/Rgemini/R/utils.R")
 source("~/GitHub/Rgemini/R/plot_over_time.R")
 
@@ -215,9 +215,9 @@ cohort <- cohort[hospital_id != "GRH" | (hospital_id == "GRH" & discharge_date_t
 transf <- dbGetQuery(dbcon, "SELECT genc_id FROM transfusion WHERE hospital_id = 'HRH';") %>%
   data.table()
 cohort[, excl := hospital_id == "HRH" & genc_id %in% transf$genc_id &
-((discharge_date_time > "2019-01-07" & discharge_date_time < "2019-02-10") |
-(discharge_date_time > "2019-02-20" & discharge_date_time < "2019-03-15") | 
-(discharge_date_time > "2019-03-20" & discharge_date_time < "2019-04-05"))]
+  ((discharge_date_time > "2019-01-07" & discharge_date_time < "2019-02-10") |
+    (discharge_date_time > "2019-02-20" & discharge_date_time < "2019-03-15") |
+    (discharge_date_time > "2019-03-20" & discharge_date_time < "2019-04-05"))]
 cohort <- cohort[excl == FALSE, ]
 
 # remove some genc_ids with transfusions from sites 4 & 9 to align transfusion & lab availability (more realistic)

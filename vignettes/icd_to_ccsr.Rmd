@@ -19,12 +19,10 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
-options(knitr.kable.NA = '')
+options(knitr.kable.NA = "")
 
 library(data.table)
 library(dplyr)
-
-
 ```
 
 # Overview & background
@@ -64,44 +62,40 @@ library(getPass)
 
 # Establish database connection
 db <- DBI::dbConnect(drv,
-                     dbname = "DB_name",
-                     host = "172.XX.XX.XXX",
-                     port = 1234,
-                     user = getPass("Enter user:"),
-                     password = getPass("Enter Password:"))
+  dbname = "DB_name",
+  host = "172.XX.XX.XXX",
+  port = 1234,
+  user = getPass("Enter user:"),
+  password = getPass("Enter Password:")
+)
 
 # query relevant columns of ipdiagnosis table
-ipdiagnosis <- dbGetQuery(db, "SELECT genc_id, diagnosis_code, diagnosis_type FROM ipdiagnosis;") 
+ipdiagnosis <- dbGetQuery(db, "SELECT genc_id, diagnosis_code, diagnosis_type FROM ipdiagnosis;")
 
-# Run default version of icd_to_ccsr         
-ipdiagnosis_ccsr <- icd_to_ccsr(db, dxtable = ipdiagnosis) 
+# Run default version of icd_to_ccsr
+ipdiagnosis_ccsr <- icd_to_ccsr(db, dxtable = ipdiagnosis)
 
 head(ipdiagnosis_ccsr, 10)
-
 ```
 
 > **Mock output table of `icd_to_ccsr()`:**
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE,options(knitr.kable.NA = '')}
-
 data(dummy_ccsr, package = "Rgemini")
 
 dummy_ccsr <- setDT(dummy_ccsr)
-dummy_ccsr[dummy_ccsr==""] <- NA
+dummy_ccsr[dummy_ccsr == ""] <- NA
 
 # for default settings, only MRDx is shown
-ipdiagnosis_ccsr <- dummy_ccsr[diagnosis_type %in% c("M","6") & !is.na(ccsr_default) & !grepl("XXX000",ccsr_default),]
-ipdiagnosis_ccsr <- ipdiagnosis_ccsr[order(genc_id,diagnosis_type), head(.SD, 1), by = "genc_id"]
+ipdiagnosis_ccsr <- dummy_ccsr[diagnosis_type %in% c("M", "6") & !is.na(ccsr_default) & !grepl("XXX000", ccsr_default), ]
+ipdiagnosis_ccsr <- ipdiagnosis_ccsr[order(genc_id, diagnosis_type), head(.SD, 1), by = "genc_id"]
 
 library(kableExtra)
 # show output example
-head(ipdiagnosis_ccsr,10) %>% 
-  knitr::kable(align = "c") %>% 
+head(ipdiagnosis_ccsr, 10) %>%
+  knitr::kable(align = "c") %>%
   kable_styling("striped") %>%
   kableExtra::scroll_box(width = "100%")
-
-
-
 ```
 
 The function returns the GEMINI-derived ICD-to-CCSR mappings. Each row in the output corresponds to a single ICD-10-CA code (`diagnosis_code`) of a given encounter (`genc_id`). Each diagnosis code is returned with its description (`diagnosis_code_desc`) and one or multiple (up to 6) CCSR categories (`ccsr_1` to `ccsr_6`). One CCSR category has been assigned as the default category (`ccsr_default`), which corresponds to the main disease group and is typically the category of interest for further analyses (see [*Example applications of CCSR*](#examples)). The output also contains the description of the CCSR default category (`ccsr_default_desc`). 
@@ -119,8 +113,7 @@ As illustrated in the example output table above, the function by default only r
 
 
 ```{r, eval=F}
-ipdiagnosis_ccsr <- icd_to_ccsr(db, ipdiagnosis, `type_mrdx` = FALSE) 
-
+ipdiagnosis_ccsr <- icd_to_ccsr(db, ipdiagnosis, `type_mrdx` = FALSE)
 ```
 
 In that case, the function will not apply any filtering by diagnosis type, and instead, will return all rows from the original input table. Note that this output contains multiple rows per `genc_id`, corresponding to the different diagnosis types. For more information on diagnosis type coding, see [here](https://www.cihi.ca/sites/default/files/document/diagnosis-type-definitions-en.pdf).
@@ -128,16 +121,14 @@ In that case, the function will not apply any filtering by diagnosis type, and i
 > **Mock output table of `icd_to_ccsr()` with `type_mrdx = FALSE`:**
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
-
 # all types, but ignore special cases for now
-ipdiagnosis_ccsr <- dummy_ccsr[!is.na(ccsr_default) & !grepl("XXX000",ccsr_default),]
+ipdiagnosis_ccsr <- dummy_ccsr[!is.na(ccsr_default) & !grepl("XXX000", ccsr_default), ]
 
 # show output example
-head(ipdiagnosis_ccsr,10) %>% 
-  knitr::kable(align = "c") %>% 
+head(ipdiagnosis_ccsr, 10) %>%
+  knitr::kable(align = "c") %>%
   kable_styling("striped") %>%
   kableExtra::scroll_box(width = "100%")
-
 ```
 
 
@@ -162,14 +153,13 @@ Many of the external cause diagnosis codes (`diagnosis_type = 9`) fall into that
 
 ```{r, eval=T,echo=F}
 # show example of invalid PDX
-ipdiagnosis_ccsr <- dummy_ccsr[grepl("XXX000",ccsr_default) & !diagnosis_type %in% c(6,"M"),]
-ipdiagnosis_ccsr <- ipdiagnosis_ccsr[order(diagnosis_code)] 
+ipdiagnosis_ccsr <- dummy_ccsr[grepl("XXX000", ccsr_default) & !diagnosis_type %in% c(6, "M"), ]
+ipdiagnosis_ccsr <- ipdiagnosis_ccsr[order(diagnosis_code)]
 # show output example
-head(ipdiagnosis_ccsr,10) %>% 
-  knitr::kable(align = "c") %>% 
+head(ipdiagnosis_ccsr, 10) %>%
+  knitr::kable(align = "c") %>%
   kable_styling("striped") %>%
   kableExtra::scroll_box(width = "100%")
-
 ```
 
 When `type_mrdx = TRUE`, invalid PDX categories are typically rare. However, due to country-specific differences in coding and mapping ambiguity for some ICD-10-CA codes, users may find that even some type M/6 (MRDx) codes are returned with CCSR default category `"XXX000"`. This usually only affects a few injury/poisoning codes or codes starting with "Z", including pregnancy-related, procedural, or health status/personal history codes: 
@@ -178,14 +168,13 @@ When `type_mrdx = TRUE`, invalid PDX categories are typically rare. However, due
 
 ```{r, eval=T,echo=F}
 # show example of invalid PDX for MRDx
-ipdiagnosis_ccsr <- dummy_ccsr[grepl("XXX000",ccsr_default) & diagnosis_type %in% c(6,"M"),]
+ipdiagnosis_ccsr <- dummy_ccsr[grepl("XXX000", ccsr_default) & diagnosis_type %in% c(6, "M"), ]
 
 # show output example
-head(ipdiagnosis_ccsr,10) %>% 
-  knitr::kable(align = "c") %>% 
+head(ipdiagnosis_ccsr, 10) %>%
+  knitr::kable(align = "c") %>%
   kable_styling("striped") %>%
   kableExtra::scroll_box(width = "100%")
-
 ```
 
 The invalid PDX category is in line with coding for insurance purposes, however, it typically is not meaningful in research contexts and can result in a loss of information. For example, in the scenario shown above, users may still want to group the patient with `diagnosis_code = "Z37000"` into a relevant, pregnancy-related CCSR category. In fact, the code has been assigned a CCSR 1 category of `"PRG030"` ("Maternal outcome of delivery"), which contains useful information about the encounter. 
@@ -198,18 +187,17 @@ As an example, when `replace_invalidpdx` is set to `TRUE` (default), `"XXX000"` 
 
 ```{r, eval=T,echo=F}
 # show example of invalid PDX for MRDx
-ipdiagnosis_ccsr <- dummy_ccsr[grepl("Z37000",diagnosis_code),]
+ipdiagnosis_ccsr <- dummy_ccsr[grepl("Z37000", diagnosis_code), ]
 
 ipdiagnosis_ccsr$ccsr_default <- ipdiagnosis_ccsr$ccsr_1
 ipdiagnosis_ccsr$ccsr_default_desc <- "Maternal outcome of delivery"
-  
+
 
 # show output example
-head(ipdiagnosis_ccsr,10) %>% 
-  knitr::kable(align = "c") %>% 
+head(ipdiagnosis_ccsr, 10) %>%
+  knitr::kable(align = "c") %>%
   kable_styling("striped") %>%
   kableExtra::scroll_box(width = "100%")
-
 ```
 
 
@@ -228,19 +216,17 @@ Diagnosis codes that are returned with `ccsr_default_desc = "Missing diagnosis c
 > **Mock output table showing missing diagnosis codes:**
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
-
 # all types, but ignore special cases for now
-ipdiagnosis_ccsr <- dummy_ccsr[is.na(diagnosis_code),]
+ipdiagnosis_ccsr <- dummy_ccsr[is.na(diagnosis_code), ]
 ipdiagnosis_ccsr$diagnosis_code <- "NA"
 ipdiagnosis_ccsr$diagnosis_code_desc <- "NA"
 ipdiagnosis_ccsr$ccsr_default <- "NA"
 
 # show output example
-ipdiagnosis_ccsr %>% 
-  knitr::kable(align = "c") %>% 
+ipdiagnosis_ccsr %>%
+  knitr::kable(align = "c") %>%
   kable_styling("striped") %>%
   kableExtra::scroll_box(width = "100%")
-
 ```
 
 
@@ -256,16 +242,14 @@ For rows where `ccsr_default = "Unmapped"`, a valid ICD-10-CA diagnosis code exi
 > **Mock output table showing unmapped diagnosis codes:**
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
-
 # all types, but ignore special cases for now
-ipdiagnosis_ccsr <- dummy_ccsr[ccsr_default_desc == "Unmapped",]
+ipdiagnosis_ccsr <- dummy_ccsr[ccsr_default_desc == "Unmapped", ]
 
 # show output example
-ipdiagnosis_ccsr %>% 
-  knitr::kable(align = "c") %>% 
+ipdiagnosis_ccsr %>%
+  knitr::kable(align = "c") %>%
   kable_styling("striped") %>%
   kableExtra::scroll_box(width = "100%")
-
 ```
 
 Type-4 morphology codes (e.g., row 1 in example output above) will always be returned as `"Unmapped"` since they are numeric codes based on ICD-0 (oncology) diagnoses, which are not meant to be mapped to CCSR categories. 
@@ -284,29 +268,29 @@ Analyzing the frequency of each CCSR default category in large, heterogeneous co
 ```{r, eval=F}
 library(data.table)
 
-ccsr_summary <- ipdiagnosis_ccsr[, .(N = .N, `% patients` = .N/nrow(ipdiagnosis_ccsr) * 100), 
-                                 by = c("ccsr_default","ccsr_default_desc")]
+ccsr_summary <- ipdiagnosis_ccsr[, .(N = .N, `% patients` = .N / nrow(ipdiagnosis_ccsr) * 100),
+  by = c("ccsr_default", "ccsr_default_desc")
+]
 
-head(ccsr_summary[order(N, decreasing = TRUE)],5)
-
+head(ccsr_summary[order(N, decreasing = TRUE)], 5)
 ```
 
 > **Mock output table showing top 5 most frequent CCSR default categories in a GIM cohort:**
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
-
 # make up some data
-ccsr_summary <- data.table(ccsr_default = c("CIR019","RSP002","RSP008","GEN004","NVS011"),
-                           ccsr_default_desc = c("Heart failure","Pneumonia (except that caused by tuberculosis)","Chronic obstructive pulmonary disease and bronchiectasis","Urinary tract infections","Neurocognitive disorders"),
-                           N = c(4775,4007,3760,3561,2981),
-                           `% patients` = c(4.98, 4.23, 3.85, 3.51, 3.23))
+ccsr_summary <- data.table(
+  ccsr_default = c("CIR019", "RSP002", "RSP008", "GEN004", "NVS011"),
+  ccsr_default_desc = c("Heart failure", "Pneumonia (except that caused by tuberculosis)", "Chronic obstructive pulmonary disease and bronchiectasis", "Urinary tract infections", "Neurocognitive disorders"),
+  N = c(4775, 4007, 3760, 3561, 2981),
+  `% patients` = c(4.98, 4.23, 3.85, 3.51, 3.23)
+)
 
 # show output example
-ccsr_summary %>% 
-  knitr::kable(align = "c") %>% 
+ccsr_summary %>%
+  knitr::kable(align = "c") %>%
   kable_styling("striped") %>%
   kableExtra::scroll_box(width = "100%")
-
 ```
 
 Users could additionally analyse the cumulative percentage of patients across CCSR categories to determine the number of unique disease categories accounting for 50% (or 75%/90%...) of patients. This provides a useful quantitative measure of the breadth of conditions managed at a given hospital/medical ward. 
@@ -327,8 +311,7 @@ For example, to filter for any `genc_ids` with Septicemia, the relevant CCSR cat
 
 ```{r, eval=F}
 # option 1: filter by CCSR default category only
-ipdiagnosis_ccsr <- ipdiagnosis_ccsr[ccsr_default=="INF002",]
-
+ipdiagnosis_ccsr <- ipdiagnosis_ccsr[ccsr_default == "INF002", ]
 ```
 
 2) Filter encounters where INF002 is among **any of the CCSR 1-6 categories (recommended)**:
@@ -336,9 +319,10 @@ ipdiagnosis_ccsr <- ipdiagnosis_ccsr[ccsr_default=="INF002",]
 ```{r, eval=F}
 # option 2: filter by CCSR 1-6 (includes default category)
 ipdiagnosis_ccsr <- ipdiagnosis_ccsr[
-  rowSums(ipdiagnosis_ccsr[,c("ccsr_1","ccsr_2","ccsr_3","ccsr_4","ccsr_5","ccsr_6")] == "INF002", 
-          na.rm = TRUE) > 0,]
-
+  rowSums(ipdiagnosis_ccsr[, c("ccsr_1", "ccsr_2", "ccsr_3", "ccsr_4", "ccsr_5", "ccsr_6")] == "INF002",
+    na.rm = TRUE
+  ) > 0,
+]
 ```
 
 The difference between the two approaches is that the CCSR default category is meant as the main disease category. Focusing on that single category is usually only relevant if users need to ensure that each diagnosis code has exactly one corresponding CCSR category. For example, in the analyses in the previous section, patients are grouped according to their default CCSR category because we don't want to double-count patients whose MRDx code has been mapped to more than 1 CCSR category. By contrast, when filtering for patients who fit a certain CCSR criterion, a 1:1 mapping between diagnosis code and CCSR categories is usually not required. Instead, we likely want to capture all patients who have the CCSR category of interest among *any* of the mapped CCSR 1-6 categories. 

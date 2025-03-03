@@ -31,11 +31,11 @@
 #' @importFrom stringr str_sub
 #' @export
 hospital_fiscal_year <- function(date_ymd) {
-
   # make sure provided date column can be converted to YYYY-MM-DD date format
   # (with timestamp being optional) + show warnings about any missing entries
   date_ymd <- convert_dt(
-    date_ymd, orders = "ymd HMS", truncated = 3, # HMS optional
+    date_ymd,
+    orders = "ymd HMS", truncated = 3, # HMS optional
     dt_varname = deparse(substitute(date_ymd))
   )
 
@@ -45,6 +45,6 @@ hospital_fiscal_year <- function(date_ymd) {
   # based on month in date, assign fiscal year
   # (month < 4 belongs to previous fiscal year)
   ifelse(as.numeric(str_sub(date_ymd, 6, 7)) < 4,
-         yr - 1, yr
+    yr - 1, yr
   )
 }

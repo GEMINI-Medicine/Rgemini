@@ -32,8 +32,10 @@
 #' @examples
 #' df <- data.frame(
 #'   x = c(1, 2, NA, 4, 5),
-#'   y = as.POSIXct(c("2023-12-01 15:00", "2021-07-09 19:30", "2020-01-02 09:00",
-#'                    "1998-08-23 15:23", NA)),
+#'   y = as.POSIXct(c(
+#'     "2023-12-01 15:00", "2021-07-09 19:30", "2020-01-02 09:00",
+#'     "1998-08-23 15:23", NA
+#'   )),
 #'   z = c("NA", NA, "a", " ", ""),
 #'   v = as.Date(c("2023-10-23", "2012-06-30", NA, "2023-08-12", "2009-01-01"))
 #' )
@@ -44,12 +46,11 @@
 #' n_missing(df, na_strings = c("", "NA", " "), index = TRUE)
 #'
 n_missing <- function(x, na_strings = c(""), index = FALSE) {
-  
   ##### Define function to identify missingness in vector ######
   is_missing <- function(x, na_strings) {
     return(is.na(x) | x %in% na_strings)
   }
-  
+
   ## Define function to count missingness in vector ###
   count_missing <- function(x, na_strings) {
     len_missing <- sum(is_missing(x, na_strings = na_strings))
@@ -63,7 +64,7 @@ n_missing <- function(x, na_strings = c(""), index = FALSE) {
       )
     )
   }
-  
+
   ## Compute number of missingness or index
   if (any(class(x) %in% c("data.frame", "data.table"))) {
     if (index) {
@@ -78,7 +79,6 @@ n_missing <- function(x, na_strings = c(""), index = FALSE) {
       return(count_missing(x, na_strings = na_strings))
     }
   }
-  
 }
 
 
