@@ -241,15 +241,13 @@ readmission <- function(dbcon,
   data[, discharge_date_time := convert_dt(discharge_date_time)]
   data[, admission_date_time := convert_dt(admission_date_time)]
 
+  data <- data[order(patient_id_hashed, discharge_date_time, admission_date_time)]
+
   # store next related genc_id, even if it's in the same episode of care
   # for now
   if (return_readmit_enc == TRUE) {
-    data <- data[order(patient_id_hashed, admission_date_time)]
     data[, next_genc_id := shift(genc_id, type = "lead"), by = patient_id_hashed]
   }
-
-  data <- data[order(patient_id_hashed, discharge_date_time, admission_date_time)]
-
 
   ## readmit coding by encounter based on time_to_next_admission
   # 7-/30-/X-day readmission = TRUE if time_to_next_admission is within 7/30/X days, otherwise readmission = FALSE
