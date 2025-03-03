@@ -19,7 +19,7 @@ A database connection to any GEMINI database.}
 \item{dxtable}{(\code{data.frame} | \code{data.table})
 Table containing ICD-10-CA diagnosis codes of interest. Typically, this refers to the \code{ipdiagnosis} table, which
 contains the CIHI in-patient diagnoses for each encounter (see
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI database schema}).
+\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI database schema}).
 
 If a different type of diagnosis table is provided as input (e.g., \code{erdiagnosis}), please make sure the table
 contains a column named \code{diagnosis_code} (\code{character}) where each row refers to a single, alphanumeric diagnosis
@@ -124,11 +124,12 @@ carefully read the documentation to understand how exactly invalid PDX categorie
 \dontrun{
 drv <- dbDriver("PostgreSQL")
 dbcon <- DBI::dbConnect(drv,
-                        dbname = "db",
-                        host = "domain_name.ca",
-                        port = 1234,
-                        user = getPass("Enter user:"),
-                        password = getPass("password"))
+  dbname = "db",
+  host = "domain_name.ca",
+  port = 1234,
+  user = getPass("Enter user:"),
+  password = getPass("password")
+)
 
 dxtable <- dbGetQuery(dbcon, "select * from ipdiagnosis") \%>\% data.table()
 icd_to_ccsr(dbcon, dxtable)

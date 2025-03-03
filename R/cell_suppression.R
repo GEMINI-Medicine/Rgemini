@@ -42,7 +42,7 @@ max_pairwise_smd <- function(x, name, round_to = 3, ...) {
   pairs <- unique(x$L1) %>% combn(2, simplify = FALSE)
 
   vartype <- class(x$value)
-  vartype <- vartype[!vartype=="labelled"]
+  vartype <- vartype[!vartype == "labelled"]
 
   fn <- if ((vartype == "numeric") || is.integer(x$value)) {
     stddiff.numeric
@@ -55,16 +55,16 @@ max_pairwise_smd <- function(x, name, round_to = 3, ...) {
   max_smd <- 0
 
   for (pair in pairs) {
-
     current_smd <- max(
-      fn(x %>% dplyr::filter(L1 %in% pair) %>% droplevels(), # drop factor levels, otherwise singularity may arise for group(s) containing an empty level
-         2, 1) %>% .[[1, "stddiff"]] # alternate reference group through every group
+      fn(
+        x %>% dplyr::filter(L1 %in% pair) %>% droplevels(), # drop factor levels, otherwise singularity may arise for group(s) containing an empty level
+        2, 1
+      ) %>% .[[1, "stddiff"]] # alternate reference group through every group
     )
 
     if (is.na(current_smd)) {
       warning("Some pairwise SMDs could not be calculated. Please investigate.", .call = FALSE)
       max_smd <- current_smd
-
     } else if ((current_smd > max_smd) || is.na(max_smd)) {
       max_smd <- current_smd
     }
@@ -137,20 +137,16 @@ render_cell_suppression.default <- function(
 
   if (is.factor(x) || is.character(x)) {
     r <- do.call(render.categorical, list(x = x, ...))
-
   } else if (is.numeric(x)) {
-
     r <- do.call(render.continuous, list(x = x, ...))
-
   } else {
-
     stop(paste("Unrecognized variable type:", class(x)))
   }
 
   if (missing && !is.null(render.missing)) {
     r <- c(r, do.call(render.missing, list(x = x, ...)))
   }
-  
+
   if (transpose) {
     if (!is.null(names(r))) {
       r <- paste0(sprintf("%s: %s", names(r), r), collapse = "<br/>")
@@ -264,8 +260,8 @@ render_cell_suppression.categorical <- function(x, ...) {
 
   if (
     !is.null(args$single_level_binary) &&
-    args$single_level_binary &&
-    length(res) == 2
+      args$single_level_binary &&
+      length(res) == 2
   ) {
     res <- res[1]
   }
@@ -350,9 +346,9 @@ render_strict_cell_suppression.categorical <- function(x, ...) {
 
   if (
     !is.null(args$single_level_binary) &&
-    args$single_level_binary &&
-    length(res) == 2
-    ) {
+      args$single_level_binary &&
+      length(res) == 2
+  ) {
     res <- res[1]
   }
 
@@ -432,7 +428,7 @@ render_median.continuous <- function(x, ...) {
 #'
 #' @param ... \cr
 #' Further arguments, such as `continuous_fn`, or those passed to `table1:::stats.apply.rounding()`.
-#' Use `continuous_fn` to specify the summary statistics to display, 
+#' Use `continuous_fn` to specify the summary statistics to display,
 #' which accepts character string: "mean", "median", or c("mean", "median") to display both. Defaults to "mean".
 #'
 #' @return named (`character`)\cr
@@ -446,43 +442,45 @@ render_median.continuous <- function(x, ...) {
 #'
 #' y <- 1:2
 #' render_cell_suppression.continuous(y)
-#' 
+#'
 #' ## Use in `table1`:
 #' \dontrun{
 #' library(table1)
-#' dat <- expand.grid(id=1:10, treat=c("Treated", "Placebo"))
+#' dat <- expand.grid(id = 1:10, treat = c("Treated", "Placebo"))
 #' dat$age <- runif(nrow(dat), 10, 50)
 #' label(dat$age) <- "Age"
-#' 
-#' table1(~ age | treat, data=dat,
-#'        render.continuous = render_cell_suppression.continuous,
-#'        continuous_fn = c("mean", "median"), # to display mean and median simultaneously
-#'        digits=2)
-#' }
-#' 
 #'
-
+#' table1(~ age | treat,
+#'   data = dat,
+#'   render.continuous = render_cell_suppression.continuous,
+#'   continuous_fn = c("mean", "median"), # to display mean and median simultaneously
+#'   digits = 2
+#' )
+#' }
+#'
 render_cell_suppression.continuous <- function(x, ...) {
   args <- list(...)
-  
-  if (is.null(args$continuous_fn)) {args$continuous_fn <- "mean"}
+
+  if (is.null(args$continuous_fn)) {
+    args$continuous_fn <- "mean"
+  }
 
   if (length(x) < 6) {
-      mea <- c("", `Mean (SD)` = "&lt; 6 obs. (suppressed)")
-      med <- c("", `Median [Q1, Q3]` = "&lt; 6 obs. (suppressed)")
-    } else {
-      mea <- render_mean.continuous(x, ...)
-      med <- render_median.continuous(x, ...)
-    }
-  
-  if (all(args$continuous_fn=="mean")) {
+    mea <- c("", `Mean (SD)` = "&lt; 6 obs. (suppressed)")
+    med <- c("", `Median [Q1, Q3]` = "&lt; 6 obs. (suppressed)")
+  } else {
+    mea <- render_mean.continuous(x, ...)
+    med <- render_median.continuous(x, ...)
+  }
+
+  if (all(args$continuous_fn == "mean")) {
     res <- mea
-  } else if (all(args$continuous_fn=="median")) {
+  } else if (all(args$continuous_fn == "median")) {
     res <- med
   } else {
     res <- c(mea, med)
   }
-  
+
   return(res)
 }
 
@@ -517,7 +515,6 @@ render_cell_suppression.continuous <- function(x, ...) {
 #' @export
 #'
 render_cell_suppression.strat <- function(label, n, transpose = FALSE) {
-  
   sprintf(
     ifelse(
       is.na(n),
@@ -612,11 +609,11 @@ render_cell_suppression.discrete <- function(x) {
 #'
 #' @param x (`character` or `factor`)\cr
 #' A variable with missing values to summarize.
-#' 
+#'
 #' @param ... \cr
 #' Further arguments, passed to `table1:::stats.apply.rounding()` and
 #' `prettyNum()` for additional formatting (e.g., `big.mark = ","`).
-#' 
+#'
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
 #'

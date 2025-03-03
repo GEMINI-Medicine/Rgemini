@@ -13,12 +13,12 @@ Each row corresponds to a single encounter.
 Must contain GEMINI encounter ID (\code{genc_id}), and age of the encounter (\code{age}).}
 
 \item{ipdiag}{(\code{data.table}, \code{data.frame})\cr
-\code{ipdiagnosis} table as defined in the \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+\code{ipdiagnosis} table as defined in the \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
 This table must contain the \code{genc_id} and \code{diagnosis_code} fields in long format.
 The diagnosis codes must be free from any punctuation or special characters.}
 
 \item{erdiag}{(\code{data.table}, \code{data.frame})\cr
-\code{erdiagnosis} table as defined in the \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+\code{erdiagnosis} table as defined in the \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
 This table must contain the \code{genc_id} and \code{er_diagnosis_code} fields in long format.
 The diagnosis codes must be free from punctuation or special characters.}
 
@@ -89,17 +89,17 @@ Users interested in the UK version should refer to the original publications for
 \examples{
 \dontrun{
 cohort_dum <- data.table(
- genc_id = c(1, 2, 3), age = c(64, 65, 80)
+  genc_id = c(1, 2, 3), age = c(64, 65, 80)
 )
 ipdiag_dum <- dummy_diag(
- nid = 3, nrow = 10,
- ipdiagnosis = TRUE,
- pattern = "C20$|R460$" # frailty conditions
+  nid = 3, nrow = 10,
+  ipdiagnosis = TRUE,
+  pattern = "C20$|R460$" # frailty conditions
 )
 erdiag_dum <- dummy_diag(
- nid = 3, nrow = 5,
- ipdiagnosis = FALSE,
- pattern = "M121$" # not a frailty condition
+  nid = 3, nrow = 5,
+  ipdiagnosis = FALSE,
+  pattern = "M121$" # not a frailty condition
 )
 # calculate frailty score
 frailty_score(cohort_dum, ipdiag_dum, erdiag_dum, component_wise = FALSE)

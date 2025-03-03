@@ -76,7 +76,7 @@ n_routine_bloodwork <- function(dbcon,
 
   # check input type and column name
   check_input(dbcon, argtype = "DBI")
-  check_input(cohort, argtype = c("data.table", "data.frame"), colnames =  c("genc_id"))
+  check_input(cohort, argtype = c("data.table", "data.frame"), colnames = c("genc_id"))
   check_input(exclude_ed, argtype = "logical")
   cohort <- coerce_to_datatable(cohort)
 
@@ -111,7 +111,7 @@ n_routine_bloodwork <- function(dbcon,
         "and l.test_type_mapped_omop in ('3000963', '3019550')"
       )
     )
-  ) %>% as.data.table
+  ) %>% as.data.table()
 
 # Convert result_value to numeric after removing special characters
 lab <- lab[, result_value :=

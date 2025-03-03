@@ -10,6 +10,7 @@ reference:
   - comorbidity_index
   - covid_flag
   - daily_census
+  - data_coverage
   - day_time_of_admission
   - disability
   - elixhauser_comorbidity_index
@@ -40,6 +41,9 @@ reference:
   - icd_to_ccsr
   - max_result_value
   - min_result_value
+- title: Cohort Creation & Data Checks
+  desc: These functions help with cohort generation and commonly performed data checks
+  - cohort_creation
 - title: Cell Suppression
   desc: This includes all helper functions associated with producing a Table 1.
 - contents:
@@ -72,6 +76,7 @@ reference:
 - contents:
   - check_input
   - coerce_to_datatable
+  - compare_sets
   - coverage_message
   - convert_dt
   - find_db_tablename
@@ -80,3 +85,4 @@ reference:
   - mapping_message
   - matches("ni")
   - return_hospital_field
+  - quiet

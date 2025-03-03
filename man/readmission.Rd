@@ -14,6 +14,7 @@ readmission(
   mental = FALSE,
   obstetric = FALSE,
   signout = FALSE,
+  return_readmit_enc = FALSE,
   restricted_cohort = NULL,
   readm_win = c(7, 30)
 )
@@ -70,9 +71,16 @@ If \code{TRUE} (default), episodes of care where the last encounter was self sig
 are removed from the denominator. Specifically, if the (n)th episode of care ended in self-signout/LAMA, it is not
 considered in the readmission calculation (\code{readmit(n) = NA}).}
 
+\item{return_readmit_enc}{(\code{logical})\cr
+If \code{TRUE}: The function will additionally return a column
+for each readmission window the user provides, containing the \code{genc_id}
+corresponding to the readmission encounter (i.e., encounter following the index encounter within n days).
+This can be used to analyze characteristics of the readmission encounter (e.g., time of readmission, diagnoses/clinical outcomes at the time of readmission etc.).
+For index encounters where the readmission flag is \code{FALSE}/\code{NA}, \verb{readmit(n)_genc_id} will be returned as \code{NA}.}
+
 \item{restricted_cohort}{(\code{data.frame} or \code{data.table})\cr
 User specified cohort that is a restricted subset of all encounters in DRM table "ipadmdad" (see
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}).
+\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}).
 Must contain \code{genc_id} as the identifier. Default is \code{Null}, which loads the entire "ipadmdad"
 table in the user-provided database (recommended approach).}
 
@@ -135,21 +143,22 @@ Warnings are produced if
 \dontrun{
 drv <- dbDriver("PostgreSQL")
 dbcon <- DBI::dbConnect(drv,
-                        dbname = "db",
-                        host = "domain_name.ca",
-                        port = 1234,
-                        user = getPass("Enter user:"),
-                        password = getPass("password"))
+  dbname = "db",
+  host = "domain_name.ca",
+  port = 1234,
+  user = getPass("Enter user:"),
+  password = getPass("password")
+)
 
 ## default readmission calculation (with elective = TRUE & death = TRUE by default)
 readmission(dbcon)
 
 ## Readmission calculation following CIHI definition
-readmission(dbcon, elective_admit = TRUE, death = TRUE, MAID = TRUE, palliative = TRUE,
-                   chemo = TRUE, mental = TRUE, obstetric = TRUE, signout = TRUE)
-
+readmission(dbcon,
+  elective_admit = TRUE, death = TRUE, MAID = TRUE, palliative = TRUE,
+  chemo = TRUE, mental = TRUE, obstetric = TRUE, signout = TRUE
+)
 }
-
 
 }
 \references{
