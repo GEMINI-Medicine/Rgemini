@@ -69,6 +69,12 @@
 #' If `TRUE` (default), episodes of care where the last encounter was self sign-out/left against medical advice (LAMA)
 #' are removed from the denominator. Specifically, if the (n)th episode of care ended in self-signout/LAMA, it is not
 #' considered in the readmission calculation (`readmit(n) = NA`).
+#' @param return_readmit_enc (`logical`)\cr
+#' If `TRUE`: The function will additionally return a column
+#' for each readmission window the user provides, containing the `genc_id`
+#' corresponding to the readmission encounter (i.e., encounter following the index encounter within n days).
+#' This can be used to analyze characteristics of the readmission encounter (e.g., time of readmission, diagnoses/clinical outcomes at the time of readmission etc.).
+#' For index encounters where the readmission flag is `FALSE`/`NA`, `readmit(n)_genc_id` will be returned as `NA`.
 #' @param restricted_cohort (`data.frame` or `data.table`)\cr
 #' User specified cohort that is a restricted subset of all encounters in DRM table "ipadmdad" (see
 #' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/)).
@@ -140,6 +146,7 @@ readmission <- function(dbcon,
                         mental = FALSE,
                         obstetric = FALSE,
                         signout = FALSE,
+                        return_readmit_enc = FALSE,
                         restricted_cohort = NULL,
                         readm_win = c(7, 30)) {
   ## check user inputs
@@ -235,8 +242,14 @@ readmission <- function(dbcon,
   ############  Convert date-times into appropriate format   ############
   data[, discharge_date_time := convert_dt(discharge_date_time)]
   data[, admission_date_time := convert_dt(admission_date_time)]
+
   data <- data[order(patient_id_hashed, discharge_date_time, admission_date_time)]
 
+  # store next related genc_id, even if it's in the same episode of care
+  # for now
+  if (return_readmit_enc == TRUE) {
+    data[, next_genc_id := shift(genc_id, type = "lead"), by = patient_id_hashed]
+  }
 
   ## readmit coding by encounter based on time_to_next_admission
   # 7-/30-/X-day readmission = TRUE if time_to_next_admission is within 7/30/X days, otherwise readmission = FALSE
@@ -614,20 +627,27 @@ readmission <- function(dbcon,
   ### Finalize outputs
   ## keep all encounters from original data set but only last encounter of epicare should have readmit flag
   # (readmit7/30 for all other encounters of epicare are set to readmit7/30 = NA)
+  # This assumption means that the next_genc_id (if it exists) is truly a
+  # readmissison, rather than a transfer
+
   data <- data[order(epicare, discharge_date_time, admission_date_time)]
   lapply(readm_win, function(win) {
     # if last encounter of epicare, keep readmit value, otherwise set to NA
     data[, paste0("readmit", win) := ifelse(seq_len(.N) != .N, NA, get(paste0("readmit", win))), by = epicare]
   })
 
-  ## get final output variables
+  ## Get final output variables
+  # If return_readmit_enc == TRUE, create readmit genc_id column for each window
+  if (return_readmit_enc == TRUE) {
+    lapply(readm_win, function(win) {
+      data[, paste0("readmit", win, "_genc_id") := ifelse(get(paste0("readmit", win)) == TRUE, next_genc_id, NA)]
+    })
+  }
+
   vars <- c(
     "genc_id", "AT_in_occurred", "AT_out_occurred", "epicare",
-    lapply(readm_win, function(win) {
-      paste0("readmit", win)
-    })
-  ) # all readmit 7/30/X... values
-
+    grep("^readmit", names(data), value = TRUE) # all readmit 7/30/X... values
+  )
   dataf <- data[, names(data) %in% vars, with = FALSE]
 
   cat("\nDONE!")

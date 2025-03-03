@@ -15,6 +15,11 @@
   * Improved organization of figures for vignettes
   * Added pre-commit hooks: `Styler` and checks for `browser()` statements and large files
   * Updated links referencing data dictionary
+  * Added documentation for return_readmit_enc argument in `readmission()` vignette
+
+* **Function enhancements:**
+
+  * Added option to return a column for readmission genc_id for each time window in `readmission()` function
 
 # Rgemini `1.0.2`
 

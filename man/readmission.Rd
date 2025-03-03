@@ -14,6 +14,7 @@ readmission(
   mental = FALSE,
   obstetric = FALSE,
   signout = FALSE,
+  return_readmit_enc = FALSE,
   restricted_cohort = NULL,
   readm_win = c(7, 30)
 )
@@ -69,6 +70,13 @@ obstetric delivery, the (n-1)th episode of care is not considered to be followed
 If \code{TRUE} (default), episodes of care where the last encounter was self sign-out/left against medical advice (LAMA)
 are removed from the denominator. Specifically, if the (n)th episode of care ended in self-signout/LAMA, it is not
 considered in the readmission calculation (\code{readmit(n) = NA}).}
+
+\item{return_readmit_enc}{(\code{logical})\cr
+If \code{TRUE}: The function will additionally return a column
+for each readmission window the user provides, containing the \code{genc_id}
+corresponding to the readmission encounter (i.e., encounter following the index encounter within n days).
+This can be used to analyze characteristics of the readmission encounter (e.g., time of readmission, diagnoses/clinical outcomes at the time of readmission etc.).
+For index encounters where the readmission flag is \code{FALSE}/\code{NA}, \verb{readmit(n)_genc_id} will be returned as \code{NA}.}
 
 \item{restricted_cohort}{(\code{data.frame} or \code{data.table})\cr
 User specified cohort that is a restricted subset of all encounters in DRM table "ipadmdad" (see
