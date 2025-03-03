@@ -102,18 +102,17 @@ plot_summary(
   admdad,
   plot_vars = list(
     `Discharge disposition` = list(
-        plot_var = "discharge_disposition",
-        class = "character",
-        sort = "desc"
+      plot_var = "discharge_disposition",
+      class = "character",
+      sort = "desc"
     ),
     `# Days in ALC` = list(
-        plot_var = "number_of_alc_days",
-        binwidth = 1,
-        breaks = seq(0, 7, 1)
+      plot_var = "number_of_alc_days",
+      binwidth = 1,
+      breaks = seq(0, 7, 1)
     )
   )
 )
-
 
 }
 \seealso{

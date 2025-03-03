@@ -38,7 +38,7 @@
 #' a lack of utilities. Some examples include unsafe living
 #' conditions, safety issues such as a lack of heating, and
 #' if the home isn't safely inhabitable due to repairs in progress.
-#' 
+#'
 #' For more information, please refer to the references in this page.
 #'
 #' @param cohort (`data.frame` or `data.table`)
@@ -47,12 +47,12 @@
 #' (`genc_id`).
 #'
 #' @param ipdiag (`data.table`)
-#' `ipdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' `ipdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #' This table must contain `genc_id` and `diagnosis_code` (as ICD-10-CA
 #' alphanumeric code) in long format.
 #'
 #' @param erdiag (`data.table`)
-#' `erdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' `erdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #' This table must contain `genc_id` and `er_diagnosis_code` (as ICD-10-CA
 #' alphanumeric code) in long format.
 #'
@@ -96,7 +96,6 @@ homelessness <- function(
     cohort,
     ipdiag,
     erdiag) {
-
   ############# CHECK & PREPARE DATA #############
   if (is.null(erdiag)) {
     cat("\n*** Based on the input you provided, only in-patient diagnoses (ipdiag) will be included in the derived homelessness flag.

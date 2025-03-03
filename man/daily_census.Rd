@@ -36,7 +36,7 @@ Should be specified in valid date format (e.g., \code{'yyyy-mm-dd'}).}
 Optional table containing special care unit (SCU) encounters. This is only required if patients who were in an SCU
 should be excluded from the census calculation during time periods where they were in the SCU. The \code{scu_exclude}
 table typically refers to the \code{ipscu} table (see
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI database schema}).
+\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}).
 However, users may want to filter the \code{ipscu} table by specific SCU unit numbers that should be excluded from the
 census calculation. Entries where \code{scu_unit_number = 99} (\code{"No SCU"}) are automatically removed by this function.
 
@@ -147,11 +147,12 @@ a standardized measure of patient counts, rather than a measure of true capacity
 \dontrun{
 drv <- dbDriver("PostgreSQL")
 dbcon <- DBI::dbConnect(drv,
-                        dbname = "db",
-                        host = "domain_name.ca",
-                        port = 1234,
-                        user = getPass("Enter user:"),
-                        password = getPass("password"))
+  dbname = "db",
+  host = "domain_name.ca",
+  port = 1234,
+  user = getPass("Enter user:"),
+  password = getPass("password")
+)
 
 ipadm <- dbGetQuery(dbcon, "select * from admdad") \%>\% data.table()
 

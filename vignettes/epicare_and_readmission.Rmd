@@ -18,7 +18,6 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-
 ```
 
 # Introduction
@@ -45,13 +44,13 @@ The function **`episodes_of_care()`** links together hospitalizations with acute
 > The flowchart below shows how epicares are built:
 
 ```{r, echo=FALSE, out.width = "90%", fig.align = "center"}
-knitr::include_graphics("figures/epicare_flow_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/epicare_flow_2.png", dpi = 100)
 ```
 
 > Example output of `episodes_of_care(db)` (mock data for illustration purposes, not real data):
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center"}
-knitr::include_graphics("figures/epicare_out_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/epicare_out_2.png", dpi = 100)
 ```
 
 
@@ -68,7 +67,7 @@ By default, all records in the `admdad` table are used to calculate readmission.
 > Mock example output of `readmission(db)` (mock data for illustration purposes, not real data. patient_id added to facilitate interpretation):
 
 ```{r, echo=FALSE, out.width = "70%", fig.align = "center"}
-knitr::include_graphics("figures/readmission_out_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/readmission_out_2.png", dpi = 100)
 ```
 
 
@@ -92,21 +91,22 @@ library(getPass)
 
 # Establish database connection
 db <- DBI::dbConnect(drv,
-                     dbname = "db",
-                     host = "172.XX.XX.XXX",
-                     port = 1234,
-                     user = getPass("Enter user:"))
+  dbname = "db",
+  host = "172.XX.XX.XXX",
+  port = 1234,
+  user = getPass("Enter user:")
+)
 
-# Run default readmission calculation (with elective_admit=T and death=T)        
-readm <- readmission(db) 
+# Run default readmission calculation (with elective_admit=T and death=T)
+readm <- readmission(db)
 
 # Compute readmission rate based on readmission output
-denominator <- sum( !is.na( readm$readmit7 ) ) 
-numerator <- sum( readm$readmit7, na.rm=T ) 
-readmission_7d_derived <- numerator/denominator
+denominator <- sum(!is.na(readm$readmit7))
+numerator <- sum(readm$readmit7, na.rm = T)
+readmission_7d_derived <- numerator / denominator
 
 # Compute readmission rate based on readmission output (Alternative)
-readmission_7d_derived <- mean( readm$readmit7, na.rm=T ) 
+readmission_7d_derived <- mean(readm$readmit7, na.rm = T)
 ```
 
 
@@ -125,7 +125,7 @@ readmission_7d_derived <- mean( readm$readmit7, na.rm=T )
 > Hypothetical example of special readmission attribution (compare colored entries in genc_id 103 vs 301, and genc_id 105 vs 201, and see how readmit7 is affected):
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center"}
-knitr::include_graphics("figures/attribution_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/attribution_2.png", dpi = 100)
 ```
 <br>
 
@@ -148,7 +148,7 @@ knitr::include_graphics("figures/attribution_2.png", dpi = 100)
 > Hypothetical example of how buffer period affects 7-day readmission of a patient:
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center"}
-knitr::include_graphics("figures/buffer_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/buffer_2.png", dpi = 100)
 ```
 
 
@@ -159,6 +159,8 @@ knitr::include_graphics("figures/buffer_2.png", dpi = 100)
 - **Readmission time window:** By default, the `readmission()` function computes 7-day and 30-day readmission rates. Users have the option to specify a customized time window using the `readm_win` argument. We recommend to exercise caution when customizing the readmission window, see [*Section 3.3*](#sectionrewin) for details. 
 
 - **Restricted cohort:** By default, readmissions are determined by searching all the data in the database. There may be scenarios where users want to determine readmissions only among records within a restricted cohort. Both the `episodes_of_care()` and `readmission()` functions allow users to input a customized cohort using the `restricted_cohort` argument. We recommend to exercise caution when a restricted cohort is used, see [*Section 3.4*](#sectionrecohort) for details. 
+
+- **Return readmission encounters:** By default, the `readmission()` function only returns TRUE/FALSE based on whether the genc_id was followed by a subsequent readmission. There may be scenarios where the readmission encounter itself is of interest to the user, (e.g. analyzing the exact time-to-readmission, or to analyze diagnosis and/or clinical outcomes of the readmission encounter). In this case, the user can set the `return_readmit_enc` argument as TRUE to return readmission genc_ids (1 additional column per readmission window) if there exists a readmission in that time window. 
 
 
 # Readmission: CIHI flags {#sectionCIHI}
@@ -182,9 +184,9 @@ knitr::include_graphics("figures/buffer_2.png", dpi = 100)
 
 
 ```{r, eval=F}
-res <- readmission (db, elective_admit=T, death=T, MAID = T, palliative=T, chemo=T, mental=T, obstetric = T, signout = T)
-readmission_7d_derived_cihi = mean( res$readmit7, na.rm=T)
-readmission_30d_derived_cihi = mean( res$readmit30, na.rm=T)
+res <- readmission(db, elective_admit = T, death = T, MAID = T, palliative = T, chemo = T, mental = T, obstetric = T, signout = T)
+readmission_7d_derived_cihi <- mean(res$readmit7, na.rm = T)
+readmission_30d_derived_cihi <- mean(res$readmit30, na.rm = T)
 ```
 
 
@@ -193,7 +195,7 @@ readmission_30d_derived_cihi = mean( res$readmit30, na.rm=T)
 > There are 8 CIHI flags, each of which can be set to `TRUE` or `FALSE`. The `elective` and `death` flags are `TRUE` by default. Each flag results in removal of a given episode of care from the numerator and/or denominator as illustrated in the flow chart below. Note that some flags (mental & palliative) result in the removal from both numerator *and* denominator:
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center"}
-knitr::include_graphics("figures/flags_diagram_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/flags_diagram_2.png", dpi = 100)
 ```
 
 
@@ -205,7 +207,7 @@ knitr::include_graphics("figures/flags_diagram_2.png", dpi = 100)
 - Episodes with elective admission are removed from the numerator because they are planned hospitalizations, and therefore, are not reflective of quality of care
 
 ```{r, echo=FALSE, out.width = "65%", fig.align = "center"}
-knitr::include_graphics("figures/elective_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/elective_2.png", dpi = 100)
 ```
 
 
@@ -214,7 +216,7 @@ knitr::include_graphics("figures/elective_2.png", dpi = 100)
 - If the index admission results in death, there cannot be any readmission. Therefore, episodes of care with death are excluded from the denominator (`reamitX = NA`)
 
 ```{r, echo=FALSE, out.width = "65%", fig.align = "center"}
-knitr::include_graphics("figures/death_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/death_2.png", dpi = 100)
 ```
 
 
@@ -226,7 +228,7 @@ knitr::include_graphics("figures/death_2.png", dpi = 100)
 - Note: If `death = TRUE`, the epicare with MAID (which results in death) is additionally removed from the denominator. If `death = FALSE`, the epicare with MAID is kept in the denominator. The general recommendation is to set death to `TRUE` if MAID is `TRUE`.
 
 ```{r, echo=FALSE, out.width = "65%", fig.align = "center"}
-knitr::include_graphics("figures/maid_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/maid_2.png", dpi = 100)
 ```
 
 ### Self sign-out / LAMA flag
@@ -235,7 +237,7 @@ knitr::include_graphics("figures/maid_2.png", dpi = 100)
 - Note: While self sign-out is excluded based on the CIHI definition, coding practices of self sign-out may vary widely across hospitals/physicians (e.g., some physicians may not record self sign-out since it is a patient's right to leave on their own). Please keep that in mind if your analyses involve comparisons of readmission rates between providers. 
 
 ```{r, echo=FALSE, out.width = "65%", fig.align = "center"}
-knitr::include_graphics("figures/sign-out_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/sign-out_2.png", dpi = 100)
 ```
 
 ### Palliative flag
@@ -262,10 +264,10 @@ knitr::include_graphics("figures/sign-out_2.png", dpi = 100)
 
 # Practical examples & special scenarios
 
-> This flow chart provides an overview of how readmission calculations can be customized for different research purposes. Depending on the research context, you may be able to use the derived readmission variables in the DB (see [*Section 3.1*](#sectionderived)). Alternatively, you can run the readmission function with customized CIHI flags ([*Section 3.2*](#sectioncustomCIHI)), customized readmission window ([*Section 3.3*](#sectionrewin)), and/or a restricted readmission cohort ([*Section 3.4*](#sectionrecohort)):
+> This flow chart provides an overview of how readmission calculations can be customized for different research purposes. Depending on the research context, you may be able to use the derived readmission variables in the DB (see [*Section 3.1*](#sectionderived)). Alternatively, you can run the readmission function with customized CIHI flags ([*Section 3.2*](#sectioncustomCIHI)), customized readmission window ([*Section 3.3*](#sectionrewin)), readmission encounters for each time window, and/or a restricted readmission cohort ([*Section 3.4*](#sectionrecohort)):
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center"}
-knitr::include_graphics("figures/customReadm_fig3.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/customReadm_fig3.png", dpi = 100)
 ```
 
 
@@ -284,7 +286,7 @@ knitr::include_graphics("figures/customReadm_fig3.png", dpi = 100)
 
 ```{r, eval = F}
 # get derived readmissions for phase-1 sites
-readm <- dbGetQuery(db, "SELECT readmission_7d_derived FROM derived_variables 
+readm <- dbGetQuery(db, "SELECT readmission_7d_derived FROM derived_variables
                     WHERE hospital_id IN ('SMH', 'SBK', 'UHNTW', 'UHNTG', 'MSH', 'THPC', 'THPM');")
 
 mean(readm$readmission_7d_derived, na.rm = T)
@@ -309,7 +311,7 @@ However, there may be cases where you need to run the `readmission` function on 
 The derived variables in the DB only provide readmission values for the default & CIHI definitions of readmission, which are the most common definitions used in GEMINI research projects/reports. However, if another definition is required for specific research purposes, users can specify customized CIHI flags by setting each of the 8 CIHI flags to either TRUE or FALSE (see [*Section 2*](#sectionCIHI) for details). For example, run this code to exclude MAID (in addition to excluding elective admissions & death which are set to TRUE by default):
 
 ```{r, eval = F}
-readmission(db, MAID=T)
+readmission(db, MAID = T)
 ```
 
 
@@ -321,7 +323,7 @@ By default, the `readmission` function only calculates 7- and 30-day readmission
 **Example:** Get 14-, 90-, and 180- day readmission. 
 
 ```{r, eval = FALSE}
-readm <- readmission(db, readm_win = c(14, 90, 180))  # specify readmission windows in days
+readm <- readmission(db, readm_win = c(14, 90, 180)) # specify readmission windows in days
 ```
 
 All readmission windows should be provided as positive integers. Otherwise, the function will exit with an error message.
@@ -331,8 +333,8 @@ All readmission windows should be provided as positive integers. Otherwise, the 
 The function will show the following warning if more than 25% of the cohort are excluded due to the buffer period and/or due to the CIHI flags:
   
 ```{r, eval = F}
-# Example of readmission rates for data from June 2021, resulting in a high % of encounters in the buffer period 
-readm <- readmission(db, restricted_cohort = admdad[ymd_hm(discharge_date_time) >= "2021-06-01 00:00",])
+# Example of readmission rates for data from June 2021, resulting in a high % of encounters in the buffer period
+readm <- readmission(db, restricted_cohort = admdad[ymd_hm(discharge_date_time) >= "2021-06-01 00:00", ])
 ```
 
 ```{r, echo=F, warning = T}
@@ -361,7 +363,7 @@ In both cases, the `restricted_cohort` should be provided as a `data.table` cont
 A warning message will be shown when the `restricted_cohort` argument is provided to notify the user that all computations in the `readmission` function (including the internal call to `episodes_of_care`) are limited to the provided cohort. Please carefully consider if using a `restricted_cohort` is appropriate/necessary in your case! You can ignore the warning message if you are confident that a `restricted_cohort` is required and you are sure you built your `restricted_cohort` correctly (based on `genc_ids` for REB scenarios vs. based on `epicares` for other scenarios). 
 
 ```{r, echo = F, warning = T}
-warning("Note: Based on the user input, epicares will be computed solely based on the user specified cohort, instead of the default method. The default method computes epicares based on all available data in GEMINI database and is recommended. ",immediate. = TRUE)
+warning("Note: Based on the user input, epicares will be computed solely based on the user specified cohort, instead of the default method. The default method computes epicares based on all available data in GEMINI database and is recommended. ", immediate. = TRUE)
 ```
 
 
@@ -379,7 +381,7 @@ warning("Note: Based on the user input, epicares will be computed solely based o
 
 ```{r, eval = FALSE}
 # note: users needs to define their own GIM_cohort table based on the criteria they want to use to define GIM encounters
-readm <- readmission(db, restricted_cohort = GIM_cohort[hospital_num %in% c(101,102,103,104,105),]) 
+readm <- readmission(db, restricted_cohort = GIM_cohort[hospital_num %in% c(101, 102, 103, 104, 105), ])
 ```
 
 The resulting readmission rates will only include readmissions from and to GIM services at the 5 hospitals that were included. Note that those results may be less reliable than readmissions derived based on the whole DB due to a loss of information about transfers to hospitals/subservices that are not included in the `restricted_cohort`. Specifically, the `readmission` function internally calls the `episodes_of_care` function, which inherits the same `restricted_cohort` that was provided to the `readmission` function. Therefore, any encounters that are not part of the `restricted_cohort` are  excluded from both the reamdission calculations *and* the generation of episodes of care.
@@ -388,7 +390,7 @@ The resulting readmission rates will only include readmissions from and to GIM s
 
 ```{r, eval = FALSE}
 # note: users needs to define their own GIM_cohort table based on the criteria they want to use to define GIM encounters
-epicares <- identify_epicare(db, restricted_cohort = GIM_cohort[hospital_num %in% c(101,102,103,104,105),]) 
+epicares <- identify_epicare(db, restricted_cohort = GIM_cohort[hospital_num %in% c(101, 102, 103, 104, 105), ])
 ```
 
 
@@ -416,17 +418,17 @@ In order to analyze readmissions of GIM patients to GIM services, the `restricte
 ## Calculate epicares based on ALL encounters in DB (to ensure linked transfers are included)
 epicares <- episodes_of_care(db)
 
-## Identify all epicares that have at least 1 GIM encounter 
+## Identify all epicares that have at least 1 GIM encounter
 # note: users needs to define their own GIM_cohort table based on the criteria they want to use to define GIM encounters
-GIM_epicares <- epicares[genc_id %in% GIM_cohort$genc_id, 'epicare']
+GIM_epicares <- epicares[genc_id %in% GIM_cohort$genc_id, "epicare"]
 
 ## Get all encounters associated with GIM epicares (keep all encounters of those epicares, even those without GIM to make sure all linked transfers are accounted for)
-GIM_epicares_all_enc <- epicares[epicare %in% GIM_epicares$epicare, 'genc_id'] 
+GIM_epicares_all_enc <- epicares[epicare %in% GIM_epicares$epicare, "genc_id"]
 
 ## Calculate readmissions to GIM (considering all linked transfers in DB)
 GIM_readm <- readmission(db, restricted_cohort = GIM_epicares_all_enc)
 
-## Get 7-day readmission rate of GIM patients to GIM 
+## Get 7-day readmission rate of GIM patients to GIM
 # note: numerator/denominator are based on unique GIM epicares, not GIM encounters (i.e., there may be several GIM encounters associated with a single GIM epicare, but those are only counted once; readmission is attributed to the last encounter within each GIM epicare)
 mean(GIM_readm$readmit7, na.rm = T)
 ```
@@ -438,21 +440,21 @@ The resulting readmission rates indicate whether there was ANY GIM readmission f
   
 ```{r, eval = FALSE}
 ## Get all encounters with COVID diagnosis
-COVID_enc <- ipdiagnosis[grepl('^U07',diagnosis_code),'genc_id']
+COVID_enc <- ipdiagnosis[grepl("^U07", diagnosis_code), "genc_id"]
 
 ## Calculate epicares based on ALL encounters in DB (to ensure linked transfers are included)
 epicares <- episodes_of_care(db)
 
-## Identify all epicares that have at least 1 COVID encounter 
-COVID_epicares <- epicares[genc_id %in% COVID_enc$genc_id, 'epicare']
+## Identify all epicares that have at least 1 COVID encounter
+COVID_epicares <- epicares[genc_id %in% COVID_enc$genc_id, "epicare"]
 
 ## Get all encounters associated with COVID epicares (keep all encounters of those epicares, even those without COVID diagnosis to make sure all linked transfers are accounted for)
-COVID_epicares_all_enc <- epicares[epicare %in% COVID_epicares$epicare, 'genc_id'] 
+COVID_epicares_all_enc <- epicares[epicare %in% COVID_epicares$epicare, "genc_id"]
 
 ## Calculate readmissions with COVID diagnosis (considering all linked transfers in DB)
 COVID_readm <- readmission(db, restricted_cohort = COVID_epicares_all_enc)
 
-## Get 30-day readmission rate of COVID patients, only counting readmissions that also have a COVID diagnosis 
+## Get 30-day readmission rate of COVID patients, only counting readmissions that also have a COVID diagnosis
 # note: numerator/denominator are based on unique COVID epicares, not COVID encounters (i.e., there may be several COVID encounters associated with a single epicare, but those are only counted once; readmission is attributed to the last encounter within each COVID epicare)
 mean(COVID_readm$readmit30, na.rm = T)
 ```

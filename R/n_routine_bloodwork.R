@@ -77,7 +77,7 @@ n_routine_bloodwork <- function(dbcon,
 
   # check input type and column name
   check_input(dbcon, argtype = "DBI")
-  check_input(cohort, argtype = c("data.table", "data.frame"), colnames =  c("genc_id"))
+  check_input(cohort, argtype = c("data.table", "data.frame"), colnames = c("genc_id"))
   check_input(exclude_ed, argtype = "logical")
   cohort <- coerce_to_datatable(cohort)
 
@@ -87,7 +87,7 @@ n_routine_bloodwork <- function(dbcon,
 
   # speed up query by using temp table with analyze
   DBI::dbSendQuery(dbcon, "Drop table if exists cohort_data;")
-  DBI::dbWriteTable(dbcon, c("pg_temp","cohort_data"), cohort[, .(genc_id)], row.names = FALSE, overwrite = TRUE)
+  DBI::dbWriteTable(dbcon, c("pg_temp", "cohort_data"), cohort[, .(genc_id)], row.names = FALSE, overwrite = TRUE)
   DBI::dbSendQuery(dbcon, "Analyze cohort_data")
 
   # load lab from db
@@ -112,7 +112,7 @@ n_routine_bloodwork <- function(dbcon,
         "and l.test_type_mapped_omop in ('3000963', '3019550')"
       )
     )
-  ) %>% as.data.table
+  ) %>% as.data.table()
 
   # only count tests with a valid
   # to be consistent with MyPracticeReport definition, all results are included

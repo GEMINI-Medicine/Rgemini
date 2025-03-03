@@ -19,7 +19,7 @@
 #'
 #' @param er (`data.table` or `data.frame`)\cr
 #' Table equivalent to the `er` table defined in the
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #' Table must contain fields:
 #' GEMINI Encounter ID (`genc_id`),
 #' ER triage date-time (`triage_date_time` in "yyyy-mm-dd hh:mm" format),
@@ -67,10 +67,12 @@ er_los <- function(cohort, er) {
   ##### Prepare er data #####
   er[, `:=`(
     triage_date_time = convert_dt(
-      triage_date_time, addtl_msg = ""
+      triage_date_time,
+      addtl_msg = ""
     ),
     left_er_date_time = convert_dt(
-      left_er_date_time, addtl_msg = ""
+      left_er_date_time,
+      addtl_msg = ""
     )
   )]
 

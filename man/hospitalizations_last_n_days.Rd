@@ -61,5 +61,4 @@ hospitalizations_last_n_days(cohort)
 hospitalizations_last_n_days(cohort, n_days = 182)
 }
 
-
 }
