@@ -143,8 +143,8 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
     admdad <- DBI::dbGetQuery(dbcon, paste0(
       "select genc_id, patient_id_hashed, age, admit_category, admission_date_time,
                                             discharge_date_time
-      from ", admdad_name)
-    ) %>% as.data.table()
+      from ", admdad_name
+    )) %>% as.data.table()
   }
 
   ############ Prepare data for epicare computation ############
