@@ -97,13 +97,13 @@ to ensure the identification time interval is as intented. See examples below fo
 # ICU admission within the first 24 hours since IP admission
 # (i.e. you are interested in knowing \% of encounters admitted to ICU):
 \dontrun{
- icu_entry(cohort, ipscu, as_outcome = FALSE, entry_since_cutoff = 24)
+icu_entry(cohort, ipscu, as_outcome = FALSE, entry_since_cutoff = 24)
 }
 
 # ICU admission within the first 24 hours since IP admission and with
 # ICU as clinical outcome excluding records with ICU prior to IP admission:
 \dontrun{
- icu_entry(cohort, ipscu, as_outcome = TRUE, entry_since_cutoff = 24)
+icu_entry(cohort, ipscu, as_outcome = TRUE, entry_since_cutoff = 24)
 }
 
 # ICU admission within the first 72 hours since IP admission and with
@@ -112,12 +112,12 @@ to ensure the identification time interval is as intented. See examples below fo
 # patients who were admitted to ICU between the interval of (24, 72] hours
 # since IP admission):
 \dontrun{
- icu_entry(
-   cohort, ipscu, as_outcome = TRUE,
-   exclude_cutoff = 24,
-   entry_since_cutoff = 48 # = 48 instead of 72 because 24+48=72
- )
+icu_entry(
+  cohort, ipscu,
+  as_outcome = TRUE,
+  exclude_cutoff = 24,
+  entry_since_cutoff = 48 # = 48 instead of 72 because 24+48=72
+)
 }
-
 
 }

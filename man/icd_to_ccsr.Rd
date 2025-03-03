@@ -124,11 +124,12 @@ carefully read the documentation to understand how exactly invalid PDX categorie
 \dontrun{
 drv <- dbDriver("PostgreSQL")
 dbcon <- DBI::dbConnect(drv,
-                        dbname = "db",
-                        host = "domain_name.ca",
-                        port = 1234,
-                        user = getPass("Enter user:"),
-                        password = getPass("password"))
+  dbname = "db",
+  host = "domain_name.ca",
+  port = 1234,
+  user = getPass("Enter user:"),
+  password = getPass("password")
+)
 
 dxtable <- dbGetQuery(dbcon, "select * from ipdiagnosis") \%>\% data.table()
 icd_to_ccsr(dbcon, dxtable)

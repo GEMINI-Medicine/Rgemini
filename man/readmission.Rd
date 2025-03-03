@@ -135,21 +135,22 @@ Warnings are produced if
 \dontrun{
 drv <- dbDriver("PostgreSQL")
 dbcon <- DBI::dbConnect(drv,
-                        dbname = "db",
-                        host = "domain_name.ca",
-                        port = 1234,
-                        user = getPass("Enter user:"),
-                        password = getPass("password"))
+  dbname = "db",
+  host = "domain_name.ca",
+  port = 1234,
+  user = getPass("Enter user:"),
+  password = getPass("password")
+)
 
 ## default readmission calculation (with elective = TRUE & death = TRUE by default)
 readmission(dbcon)
 
 ## Readmission calculation following CIHI definition
-readmission(dbcon, elective_admit = TRUE, death = TRUE, MAID = TRUE, palliative = TRUE,
-                   chemo = TRUE, mental = TRUE, obstetric = TRUE, signout = TRUE)
-
+readmission(dbcon,
+  elective_admit = TRUE, death = TRUE, MAID = TRUE, palliative = TRUE,
+  chemo = TRUE, mental = TRUE, obstetric = TRUE, signout = TRUE
+)
 }
-
 
 }
 \references{
