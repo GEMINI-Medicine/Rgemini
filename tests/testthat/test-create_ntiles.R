@@ -57,3 +57,18 @@ test_that("function returns percentiles that are the same length as input vector
   ## confirm length of values == length of n_tile_results
   expect_equal(length(values), length(n_tile_results))
 })
+
+test_that("function has the same number of levels as n", {
+  ## create sample vector
+  set.seed(123)
+  values <- rnorm(100)
+
+  ## set n = 10
+  n <- 10
+
+  ## create ntiles
+  ntile_result <- create_ntiles(x = values, n = n)
+
+  ## check that length of levels(ntile_result) is 10
+  expect_equal(length(levels(ntile_result)), n)
+})

@@ -981,7 +981,8 @@ quiet <- function(func) {
 #' The number of bins to create. For example, for quartiles set `n=4`.
 #'
 #' @return (`factor`)\cr
-#' A factor with labelled bins.
+#' A factor with `n` levels representing the bins (ntiles) of the input values.
+#' The factor returned will be the same length as `x`.
 #'
 #' @export
 #'
