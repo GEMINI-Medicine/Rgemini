@@ -113,11 +113,12 @@ n_routine_bloodwork <- function(dbcon,
     )
   ) %>% as.data.table()
 
-# Convert result_value to numeric after removing special characters
-lab <- lab[, result_value :=
-  as.numeric(stringr::str_replace_all(
-    tolower(result_value),
-    "@([a-z0-9]*)|<|>|less than|greater than|;", ""))]
+  # Convert result_value to numeric after removing special characters
+  lab <- lab[, result_value :=
+    as.numeric(stringr::str_replace_all(
+      tolower(result_value),
+      "@([a-z0-9]*)|<|>|less than|greater than|;", ""
+    ))]
 
   # only count tests with valid numeric result values.
   lab <- lab[, .(n_routine_bloodwork_derived = .N), .(genc_id)]
