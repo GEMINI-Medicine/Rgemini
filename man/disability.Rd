@@ -13,12 +13,12 @@ corresponds to a single encounter. Must contain GEMINI Encounter ID
 (\code{genc_id}).}
 
 \item{ipdiag}{(\code{data.table})
-\code{ipdiagnosis} table as defined in the \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+\code{ipdiagnosis} table as defined in the \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
 This table must contain \code{genc_id} and \code{diagnosis_code} (as ICD-10-CA
 alphanumeric code) in long format.}
 
 \item{erdiag}{(\code{data.table})
-\code{erdiagnosis} table as defined in the \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+\code{erdiagnosis} table as defined in the \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
 This table must contain \code{genc_id} and \code{er_diagnosis_code} (as ICD-10-CA
 alphanumeric code) in long format.
 Typically, ER diagnoses should be included when deriving disability in order

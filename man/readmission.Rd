@@ -80,7 +80,7 @@ For index encounters where the readmission flag is \code{FALSE}/\code{NA}, \verb
 
 \item{restricted_cohort}{(\code{data.frame} or \code{data.table})\cr
 User specified cohort that is a restricted subset of all encounters in DRM table "ipadmdad" (see
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}).
+\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}).
 Must contain \code{genc_id} as the identifier. Default is \code{Null}, which loads the entire "ipadmdad"
 table in the user-provided database (recommended approach).}
 

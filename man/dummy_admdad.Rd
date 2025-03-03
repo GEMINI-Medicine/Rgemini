@@ -19,7 +19,7 @@ With the columns \code{id} and \code{admission_date_time} as described above.
 }
 \description{
 Designed to partially mimic the \code{admdad} table as defined in the
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
 }
 \examples{
 admdad <- dummy_admdad(1, "2023-01-02 00:00")

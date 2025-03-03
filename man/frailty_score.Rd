@@ -13,12 +13,12 @@ Each row corresponds to a single encounter.
 Must contain GEMINI encounter ID (\code{genc_id}), and age of the encounter (\code{age}).}
 
 \item{ipdiag}{(\code{data.table}, \code{data.frame})\cr
-\code{ipdiagnosis} table as defined in the \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+\code{ipdiagnosis} table as defined in the \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
 This table must contain the \code{genc_id} and \code{diagnosis_code} fields in long format.
 The diagnosis codes must be free from any punctuation or special characters.}
 
 \item{erdiag}{(\code{data.table}, \code{data.frame})\cr
-\code{erdiagnosis} table as defined in the \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+\code{erdiagnosis} table as defined in the \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
 This table must contain the \code{genc_id} and \code{er_diagnosis_code} fields in long format.
 The diagnosis codes must be free from punctuation or special characters.}
 

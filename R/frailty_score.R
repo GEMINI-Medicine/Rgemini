@@ -27,12 +27,12 @@
 #' Must contain GEMINI encounter ID (`genc_id`), and age of the encounter (`age`).
 #'
 #' @param ipdiag (`data.table`, `data.frame`)\cr
-#' `ipdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' `ipdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #' This table must contain the `genc_id` and `diagnosis_code` fields in long format.
 #' The diagnosis codes must be free from any punctuation or special characters.
 #'
 #' @param erdiag (`data.table`, `data.frame`)\cr
-#' `erdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' `erdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #' This table must contain the `genc_id` and `er_diagnosis_code` fields in long format.
 #' The diagnosis codes must be free from punctuation or special characters.
 #'

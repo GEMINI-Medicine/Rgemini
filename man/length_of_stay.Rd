@@ -13,7 +13,7 @@ length_of_stay(
 \arguments{
 \item{ipadmdad}{(\code{data.frame} or \code{data.table})\cr
 Table with all relevant encounters of interest from DRM table "ipadmdad" (see
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}).
+\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}).
 Must contain three fields: encounter ID (\code{genc_id}), and two date-time
 variables corresponding to admission and discharge (typically
 \code{admission_date_time} and \code{discharge_date_time}). Date-time variables must be
