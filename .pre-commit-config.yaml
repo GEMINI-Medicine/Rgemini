@@ -2,15 +2,22 @@
 minimum_pre_commit_version: "2.13.0"
 repos:
   - repo: https://github.com/lorenzwalthert/precommit
-    rev: v0.4.3
+    rev: v0.4.3.9003
     hooks:
-      - id: no-browser-statement
+      - id: no-browser-statement # check for browser() in code files
         name: no-browser-statement
         description: Check if a .R file contains a `browser()` statement
         entry: Rscript inst/hooks/exported/no-browser-statement.R
         language: r
         files: '\.[rR]$'
         types: [file]  # Only run when relevant files are present
+      - id: style-files # style all code files
+        name: Style files
+        description: style files with {styler}
+        entry: Rscript inst/hooks/exported/style-files.R
+        language: r
+        files: '(\.[rR]profile|\.[rR]|\.[rR]md|\.[rR]nw|\.[qQ]md)$'
+        exclude: 'renv/activate\.R'
         
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
