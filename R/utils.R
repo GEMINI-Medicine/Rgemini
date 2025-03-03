@@ -965,6 +965,7 @@ quiet <- function(func) {
   invisible(force(suppressMessages(suppressWarnings(func))))
 }
 
+
 #' @title
 #' Create N-tiles
 #'

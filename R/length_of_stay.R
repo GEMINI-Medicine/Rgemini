@@ -28,7 +28,7 @@
 #'
 #' @param ipadmdad (`data.frame` or `data.table`)\cr
 #' Table with all relevant encounters of interest from DRM table "ipadmdad" (see
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/)).
 #' Must contain three fields: encounter ID (`genc_id`), and two date-time
 #' variables corresponding to admission and discharge (typically
 #' `admission_date_time` and `discharge_date_time`). Date-time variables must be
@@ -61,10 +61,12 @@ length_of_stay <- function(ipadmdad,
   )]
 
   res[, ":="(los_hrs_derived = as.numeric(difftime(
-    dis_dtvar, adm_dtvar, units = "hours"
+    dis_dtvar, adm_dtvar,
+    units = "hours"
   )),
   los_days_derived = as.numeric(difftime(
-    dis_dtvar, adm_dtvar, units = "days"
+    dis_dtvar, adm_dtvar,
+    units = "days"
   )),
   adm_dtvar = NULL,
   dis_dtvar = NULL)][]

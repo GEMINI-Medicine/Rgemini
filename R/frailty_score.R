@@ -14,7 +14,7 @@
 #'
 #' The function closely adheres to the CIHI HFRS with the following adaptations:
 #'
-#' - No look-back period: Score is computed at encounter level. The 2-year look-back in the CIHI HFRS is not implemented. 
+#' - No look-back period: Score is computed at encounter level. The 2-year look-back in the CIHI HFRS is not implemented.
 #'  This adaptation systematically underestimates frailty but ensures comparable scores across time and hospitals considering variations in data availability
 #' - Score format: Integer scores are returned representing the sum of the number of frailty conditions.
 #'  These scores can be easily converted to the different formats (i.e. continuous fractions, 8 risk groups, binary) defined by CIHI HFRS.
@@ -27,12 +27,12 @@
 #' Must contain GEMINI encounter ID (`genc_id`), and age of the encounter (`age`).
 #'
 #' @param ipdiag (`data.table`, `data.frame`)\cr
-#' `ipdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' `ipdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #' This table must contain the `genc_id` and `diagnosis_code` fields in long format.
 #' The diagnosis codes must be free from any punctuation or special characters.
 #'
 #' @param erdiag (`data.table`, `data.frame`)\cr
-#' `erdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' `erdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #' This table must contain the `genc_id` and `er_diagnosis_code` fields in long format.
 #' The diagnosis codes must be free from punctuation or special characters.
 #'
@@ -84,61 +84,66 @@
 #' @examples
 #' \dontrun{
 #' cohort_dum <- data.table(
-#'  genc_id = c(1, 2, 3), age = c(64, 65, 80)
+#'   genc_id = c(1, 2, 3), age = c(64, 65, 80)
 #' )
 #' ipdiag_dum <- dummy_diag(
-#'  nid = 3, nrow = 10,
-#'  ipdiagnosis = TRUE,
-#'  pattern = "C20$|R460$" # frailty conditions
+#'   nid = 3, nrow = 10,
+#'   ipdiagnosis = TRUE,
+#'   pattern = "C20$|R460$" # frailty conditions
 #' )
 #' erdiag_dum <- dummy_diag(
-#'  nid = 3, nrow = 5,
-#'  ipdiagnosis = FALSE,
-#'  pattern = "M121$" # not a frailty condition
+#'   nid = 3, nrow = 5,
+#'   ipdiagnosis = FALSE,
+#'   pattern = "M121$" # not a frailty condition
 #' )
 #' # calculate frailty score
 #' frailty_score(cohort_dum, ipdiag_dum, erdiag_dum, component_wise = FALSE)
 #' }
 #'
-#' @importFrom fuzzyjoin regex_left_join 
-#' 
+#' @importFrom fuzzyjoin regex_left_join
+#'
 #' @export
 
-frailty_score  <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
-
+frailty_score <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
   # load CIHI HFRS-ICD mapping from package data folder
   frailty_map <- Rgemini::mapping_cihi_frailty %>%
     mutate(diagnosis_code = gsub("\\.", "", icd10ca)) %>%
     data.table()
 
   # input checks
-  check_input(cohort, c("data.table", "data.frame"), 
-              colnames = c("genc_id", "age"),
-              coltypes = c("", "numeric|integer"))
-  
+  check_input(cohort, c("data.table", "data.frame"),
+    colnames = c("genc_id", "age"),
+    coltypes = c("", "numeric|integer")
+  )
+
   check_input(ipdiag, c("data.table", "data.frame"),
-              colnames = c("genc_id", "diagnosis_code"),
-              coltypes = c("", "character"))
-  
-  if (!is.null(erdiag)){
+    colnames = c("genc_id", "diagnosis_code"),
+    coltypes = c("", "character")
+  )
+
+  if (!is.null(erdiag)) {
     check_input(erdiag, c("data.table", "data.frame"),
-                colnames = c("genc_id", "er_diagnosis_code"),
-                coltypes = c("", "character"))}
-  
+      colnames = c("genc_id", "er_diagnosis_code"),
+      coltypes = c("", "character")
+    )
+  }
+
   cohort <- coerce_to_datatable(cohort)
   ipdiag <- coerce_to_datatable(ipdiag)
-  if (!is.null(erdiag)) {erdiag <- coerce_to_datatable(erdiag)}
+  if (!is.null(erdiag)) {
+    erdiag <- coerce_to_datatable(erdiag)
+  }
   elig_enc <- unique(cohort[age >= 65, ]$genc_id)
 
-    
+
   # clean and merge all diagnosis codes; return a warning if EXPLICITLY set to NULL by user
   if (is.null(erdiag)) {
     warning(
       "\nBased on user input, `erdiag` is set to NULL. This is NOT recommended. The CIHI frailty score was developed and validated based on diagnosis codes from both NACRS and DAD. Excluding erdiagnosis can underestimate the level of frailty (see references in documentation for details).\n"
-      )
-    } else {
+    )
+  } else {
     erdiag <- erdiag[genc_id %in% elig_enc, .(genc_id, er_diagnosis_code)] %>% rename(diagnosis_code = er_diagnosis_code)
-    }
+  }
 
   ipdiag <- ipdiag[genc_id %in% elig_enc, .(genc_id, diagnosis_code)]
 
@@ -154,7 +159,9 @@ frailty_score  <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
   res_score <- frailty[, .(frailty_score_derived = length(unique(frailty_categories))), genc_id]
 
   ## Assign score=0 to encounters w/o diagnosis mapped to frailty conditions
-  res_0 <- alldiag[!(genc_id %in% res_score$genc_id), .(genc_id)] %>% .[, frailty_score_derived := 0] %>% distinct()
+  res_0 <- alldiag[!(genc_id %in% res_score$genc_id), .(genc_id)] %>%
+    .[, frailty_score_derived := 0] %>%
+    distinct()
 
   res <- rbind(res_score, res_0) # combine
 
@@ -162,7 +169,7 @@ frailty_score  <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
   res_component <- frailty[, .(genc_id, diagnosis_code.x, frailty_categories)] %>% rename(diagnosis_code = diagnosis_code.x)
 
   # Warnings on output
-  if (length(elig_enc) < length(unique(cohort$genc_id))) {  # exclusion of encounters w/ age<65
+  if (length(elig_enc) < length(unique(cohort$genc_id))) { # exclusion of encounters w/ age<65
     warning(paste0(
       "\n",
       length(unique(cohort[age < 65, ]$genc_id)), " of ", length(unique(cohort$genc_id)),
@@ -183,8 +190,7 @@ frailty_score  <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
   # Outputs
   if (component_wise) {
     return(res_component)
-    }
+  }
 
   return(res)
-
 }

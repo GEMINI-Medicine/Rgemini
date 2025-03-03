@@ -7,7 +7,7 @@
 
 `Rgemini` (Our GEMINI) is a custom R package that provides a variety of functions to perform data analyses with [GEMINI](https://www.geminimedicine.ca/) data.
 
-All functions have been developed by the GEMINI team and were tested on the current version of the [GEMINI database](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+All functions have been developed by the GEMINI team and were tested on the current version of the [GEMINI database](https://geminimedicine.ca/the-gemini-database/).
 
 ## Installation
 

@@ -27,7 +27,7 @@ library(lemon)
 library(ggplot2)
 library(Rgemini)
 library(lubridate)
-#setwd("~/GitHub/Rgemini/vignettes/")
+# setwd("~/GitHub/Rgemini/vignettes/")
 ```
 
 *  *  *  *
@@ -151,7 +151,7 @@ custom_dates[, max_date := max_date]
 custom_dates <- rbind(lookup_data_coverage, custom_dates, fill = TRUE)
 
 # adjust path according to your Rgemini folder
-source("~/GitHub/Rgemini/R/data_coverage.R") 
+source("~/GitHub/Rgemini/R/data_coverage.R")
 source("~/GitHub/Rgemini/R/utils.R")
 source("~/GitHub/Rgemini/R/plot_over_time.R")
 
@@ -194,7 +194,7 @@ coverage_timeline <- data_coverage(
 
 
 # save timeline plot as png
-ggsave("~/GitHub/Rgemini/vignettes/figures/coverage_timeline_plot.png", width = 8, height = 5)
+ggsave("~/GitHub/Rgemini/vignettes/figures/data_coverage/coverage_timeline_plot.png", width = 8, height = 5)
 coverage_timeline$timeline_plot <- data.frame()
 
 # rename columns for output shown below
@@ -215,9 +215,9 @@ cohort <- cohort[hospital_id != "GRH" | (hospital_id == "GRH" & discharge_date_t
 transf <- dbGetQuery(dbcon, "SELECT genc_id FROM transfusion WHERE hospital_id = 'HRH';") %>%
   data.table()
 cohort[, excl := hospital_id == "HRH" & genc_id %in% transf$genc_id &
-((discharge_date_time > "2019-01-07" & discharge_date_time < "2019-02-10") |
-(discharge_date_time > "2019-02-20" & discharge_date_time < "2019-03-15") | 
-(discharge_date_time > "2019-03-20" & discharge_date_time < "2019-04-05"))]
+  ((discharge_date_time > "2019-01-07" & discharge_date_time < "2019-02-10") |
+    (discharge_date_time > "2019-02-20" & discharge_date_time < "2019-03-15") |
+    (discharge_date_time > "2019-03-20" & discharge_date_time < "2019-04-05"))]
 cohort <- cohort[excl == FALSE, ]
 
 # remove some genc_ids with transfusions from sites 4 & 9 to align transfusion & lab availability (more realistic)
@@ -270,7 +270,7 @@ coverage <- data_coverage(
 )
 
 # save timeline plot as png
-ggsave("~/GitHub/Rgemini/vignettes/figures/coverage_plot.png", width = 8, height = 5)
+ggsave("~/GitHub/Rgemini/vignettes/figures/data_coverage/coverage_plot.png", width = 8, height = 5)
 coverage$coverage_plot <- data.frame()
 
 coverage[[2]]$hospital_id <- NULL
@@ -305,7 +305,7 @@ coverage_cust1 <- data_coverage(
   hospital_group = "hospital_type",
   colors = gemini_colors(3)
 )$timeline_plot
-ggsave("~/GitHub/Rgemini/vignettes/figures/coverage_custom_plot1.png", width = 8, height = 5)
+ggsave("~/GitHub/Rgemini/vignettes/figures/data_coverage/coverage_custom_plot1.png", width = 8, height = 5)
 
 
 ##### Custom dates
@@ -329,7 +329,7 @@ coverage_cust2 <- data_coverage(
 )$timeline_plot +
   ggtitle("Data timeline for 'lab' table with customized dates for site 4\n")
 
-ggsave("~/GitHub/Rgemini/vignettes/figures/coverage_custom_plot2.png", width = 8, height = 5)
+ggsave("~/GitHub/Rgemini/vignettes/figures/data_coverage/coverage_custom_plot2.png", width = 8, height = 5)
 
 # save data to data folder
 save(coverage_enc, coverage_timeline, coverage, file = "~/GitHub/Rgemini/data/dummy_data_coverage.rda")
@@ -397,7 +397,7 @@ coverage <- data_coverage(
 ```
 
 ```{r echo = FALSE, warning = FALSE}
-knitr::include_graphics("figures/coverage_timeline_plot.png")
+knitr::include_graphics("figures/data_coverage/coverage_timeline_plot.png")
 ```
 
 <br></br>
@@ -488,7 +488,7 @@ coverage <- data_coverage(
 ```
 
 ```{r echo = FALSE}
-knitr::include_graphics("figures/coverage_plot.png")
+knitr::include_graphics("figures/data_coverage/coverage_plot.png")
 ```
 
 <br></br>
@@ -568,7 +568,7 @@ coverage <- data_coverage(
 ```
 
 ```{r echo = FALSE}
-knitr::include_graphics("figures/coverage_custom_plot1.png")
+knitr::include_graphics("figures/data_coverage/coverage_custom_plot1.png")
 ```
 
 <br></br>
@@ -597,7 +597,7 @@ coverage <- data_coverage(
 ```
 
 ```{r echo = FALSE}
-knitr::include_graphics("figures/coverage_custom_plot2.png")
+knitr::include_graphics("figures/data_coverage/coverage_custom_plot2.png")
 ```
 
 

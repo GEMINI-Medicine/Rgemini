@@ -72,7 +72,7 @@ considered in the readmission calculation (\code{readmit(n) = NA}).}
 
 \item{restricted_cohort}{(\code{data.frame} or \code{data.table})\cr
 User specified cohort that is a restricted subset of all encounters in DRM table "ipadmdad" (see
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}).
+\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}).
 Must contain \code{genc_id} as the identifier. Default is \code{Null}, which loads the entire "ipadmdad"
 table in the user-provided database (recommended approach).}
 
@@ -135,21 +135,22 @@ Warnings are produced if
 \dontrun{
 drv <- dbDriver("PostgreSQL")
 dbcon <- DBI::dbConnect(drv,
-                        dbname = "db",
-                        host = "domain_name.ca",
-                        port = 1234,
-                        user = getPass("Enter user:"),
-                        password = getPass("password"))
+  dbname = "db",
+  host = "domain_name.ca",
+  port = 1234,
+  user = getPass("Enter user:"),
+  password = getPass("password")
+)
 
 ## default readmission calculation (with elective = TRUE & death = TRUE by default)
 readmission(dbcon)
 
 ## Readmission calculation following CIHI definition
-readmission(dbcon, elective_admit = TRUE, death = TRUE, MAID = TRUE, palliative = TRUE,
-                   chemo = TRUE, mental = TRUE, obstetric = TRUE, signout = TRUE)
-
+readmission(dbcon,
+  elective_admit = TRUE, death = TRUE, MAID = TRUE, palliative = TRUE,
+  chemo = TRUE, mental = TRUE, obstetric = TRUE, signout = TRUE
+)
 }
-
 
 }
 \references{
