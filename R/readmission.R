@@ -630,28 +630,18 @@ readmission <- function(dbcon,
     data[, paste0("readmit", win) := ifelse(seq_len(.N) != .N, NA, get(paste0("readmit", win))), by = epicare]
   })
 
-  ## Get final output variables 
+  ## Get final output variables
   # If return_readmit_enc == TRUE, create readmit genc_id column for each window
-  if (return_readmit_enc == TRUE){
+  if (return_readmit_enc == TRUE) {
     lapply(readm_win, function(win) {
       data[, paste0("readmit", win, "_genc_id") := ifelse(get(paste0("readmit", win)) == TRUE, next_genc_id, NA)]
     })
-    vars <- c(
-      "genc_id", "AT_in_occurred", "AT_out_occurred", "epicare",
-      unlist(lapply(readm_win, function(win) {
-        c(paste0("readmit", win), paste0("readmit", win, "_genc_id"))
-      })) # unlist to return character vector 
-    ) # all readmit 7/30/X... values and genc_ids
-  } else {
-    # case when user doesn't want readmit_genc_ids
-    vars <- c(
-      "genc_id", "AT_in_occurred", "AT_out_occurred", "epicare",
-      lapply(readm_win, function(win) {
-        paste0("readmit", win)
-      })
-    ) # all readmit 7/30/X... values
   }
-
+  
+  vars <- c(
+    "genc_id", "AT_in_occurred", "AT_out_occurred", "epicare",
+    grep("^readmit", names(data), value = TRUE) # all readmit 7/30/X... values
+  )
   dataf <- data[, names(data) %in% vars, with = FALSE]
 
   cat("\nDONE!")
