@@ -70,11 +70,11 @@
 #' are removed from the denominator. Specifically, if the (n)th episode of care ended in self-signout/LAMA, it is not
 #' considered in the readmission calculation (`readmit(n) = NA`).
 #' @param return_readmit_enc (`logical`)\cr
-#' If `TRUE`: The function will additionally return a column 
-#' for each readmission window the user provides, containing the `genc_id` 
-#' corresponding to the readmission encounter (i.e., encounter following the index encounter within n days). 
+#' If `TRUE`: The function will additionally return a column
+#' for each readmission window the user provides, containing the `genc_id`
+#' corresponding to the readmission encounter (i.e., encounter following the index encounter within n days).
 #' This can be used to analyze characteristics of the readmission encounter (e.g., time of readmission, diagnoses/clinical outcomes at the time of readmission etc.).
-#'For index encounters where the readmission flag is `FALSE`/`NA`, `readmit(n)_genc_id` will be returned as `NA`.
+#' For index encounters where the readmission flag is `FALSE`/`NA`, `readmit(n)_genc_id` will be returned as `NA`.
 #' @param restricted_cohort (`data.frame` or `data.table`)\cr
 #' User specified cohort that is a restricted subset of all encounters in DRM table "ipadmdad" (see
 #' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/)).
@@ -627,7 +627,7 @@ readmission <- function(dbcon,
   ### Finalize outputs
   ## keep all encounters from original data set but only last encounter of epicare should have readmit flag
   # (readmit7/30 for all other encounters of epicare are set to readmit7/30 = NA)
-  # This assumption means that the next_genc_id (if it exists) is truly a 
+  # This assumption means that the next_genc_id (if it exists) is truly a
   # readmissison, rather than a transfer
 
   data <- data[order(epicare, discharge_date_time, admission_date_time)]
@@ -643,7 +643,7 @@ readmission <- function(dbcon,
       data[, paste0("readmit", win, "_genc_id") := ifelse(get(paste0("readmit", win)) == TRUE, next_genc_id, NA)]
     })
   }
-  
+
   vars <- c(
     "genc_id", "AT_in_occurred", "AT_out_occurred", "epicare",
     grep("^readmit", names(data), value = TRUE) # all readmit 7/30/X... values
@@ -653,4 +653,3 @@ readmission <- function(dbcon,
   cat("\nDONE!")
   return(dataf)
 }
-
