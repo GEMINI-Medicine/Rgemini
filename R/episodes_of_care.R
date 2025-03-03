@@ -10,7 +10,7 @@
 #' of care outside of readmission.
 #'
 #' Transfer information is obtained from the GEMINI database table `lookup_transfer` (see
-#' [GEMINI database schema](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
+#' [GEMINI database schema](https://geminimedicine.ca/the-gemini-database/)).
 #' By default, the function queries all encounters in the `admdad` table to ensure that any encounters that may be
 #' linked via transfers are accurately grouped into the same episode of care.
 #'
@@ -27,7 +27,7 @@
 #'
 #' @param restricted_cohort (`data.table` | `data.frame`)\cr
 #' User specified cohort that is a restricted subset of all encounters in DRM table "ipadmdad" (see
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/)).
 #' Must contain `genc_id` as the identifier. Default is `Null`, which loads the entire "ipadmdad"
 #' table in the user-provided database (recommended approach).
 #'
@@ -128,6 +128,7 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
         dbcon, c("pg_temp", "temp_data"), restricted_cohort[, .(genc_id)],
         row.names = FALSE, overwrite = TRUE
       )
+
       # Analyze speed up the use of temp table
       DBI::dbSendQuery(dbcon, "Analyze temp_data")
 

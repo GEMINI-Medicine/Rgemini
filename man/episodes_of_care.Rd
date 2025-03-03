@@ -12,7 +12,7 @@ A database connection to any GEMINI database.}
 
 \item{restricted_cohort}{(\code{data.table} | \code{data.frame})\cr
 User specified cohort that is a restricted subset of all encounters in DRM table "ipadmdad" (see
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}).
+\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}).
 Must contain \code{genc_id} as the identifier. Default is \code{Null}, which loads the entire "ipadmdad"
 table in the user-provided database (recommended approach).}
 }
@@ -33,7 +33,7 @@ However, the \code{episodes_of_care} function can also be used independently to 
 of care outside of readmission.
 
 Transfer information is obtained from the GEMINI database table \code{lookup_transfer} (see
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI database schema}).
+\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI database schema}).
 By default, the function queries all encounters in the \code{admdad} table to ensure that any encounters that may be
 linked via transfers are accurately grouped into the same episode of care.
 

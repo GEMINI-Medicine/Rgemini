@@ -44,16 +44,16 @@ set.seed(3)
 gender <- c(sample(c("M", "F"), size = 95, replace = TRUE), rep(NA, times = 5))
 
 exposure <- sample(
-  c("pre-pandemic", "pandemic", "post-pandemic"), 
+  c("pre-pandemic", "pandemic", "post-pandemic"),
   size = 100, replace = TRUE
-  )
+)
 
 age <- rnorm(100, mean = 70, sd = 5)
 
 condition <- sample(
-  c("DVT", "CVD", "DM", "Pneumonia", "Dementia"), 
+  c("DVT", "CVD", "DM", "Pneumonia", "Dementia"),
   size = 100, replace = TRUE, prob = c(0.01, 0.20, 0.4, 0.35, 0.05)
-  )
+)
 
 data <- data.frame(gender = gender, exposure = exposure, age = age, condition = condition)
 ```
@@ -81,10 +81,10 @@ In order to perform cell suppression with `table1()`, *Rgemini* exports `render_
 library(Rgemini)
 
 table1(
-  ~ gender + age + condition | exposure, 
-  data = data, 
+  ~ gender + age + condition | exposure,
+  data = data,
   render = render_cell_suppression.default
-  )
+)
 ```
 &nbsp;
 
@@ -106,11 +106,11 @@ We can specify whether to use a median or mean for continuous variables by speci
 
 ```{r}
 table1(
-  ~ gender + age + condition | exposure, 
-  data = data, 
-  render = render_cell_suppression.default, 
-  continuous_fn = 'median'
-  )
+  ~ gender + age + condition | exposure,
+  data = data,
+  render = render_cell_suppression.default,
+  continuous_fn = "median"
+)
 ```
 &nbsp;
 
@@ -118,10 +118,10 @@ Note however that we can render medians without enabling cell suppression, if de
 
 ```{r}
 table1(
-  ~ gender + age + condition | exposure, 
-  data = data, 
+  ~ gender + age + condition | exposure,
+  data = data,
   render.continuous = render_median.continuous
-  )
+)
 ```
 &nbsp;
 
@@ -129,11 +129,11 @@ We can also specify a render function only for a particular variable type:
 
 ```{r}
 table1(
-  ~ gender + age + condition | exposure, 
-  data = data, 
-  render.continuous = render_cell_suppression.continuous, 
-  continuous_fn = 'median'
-  )
+  ~ gender + age + condition | exposure,
+  data = data,
+  render.continuous = render_cell_suppression.continuous,
+  continuous_fn = "median"
+)
 ```
 &nbsp;
 
@@ -153,10 +153,10 @@ We can apply cell suppression directly to covariates of particular data types by
 
 ```{r}
 table1(
-  ~ gender + age + condition | exposure, 
-  data = data, 
+  ~ gender + age + condition | exposure,
+  data = data,
   render.categorical = render_cell_suppression.categorical
-  )
+)
 ```
 &nbsp;
 
@@ -164,11 +164,11 @@ We may also want to only display a single level for binary variables (such as wi
 
 ```{r}
 table1(
-  ~ gender + age + condition | exposure, 
-  data = data, 
+  ~ gender + age + condition | exposure,
+  data = data,
   render.categorical = render_cell_suppression.categorical,
   single_level_binary = TRUE
-  )
+)
 ```
 
 ### Suppress cells with counts fewer than six only
@@ -177,10 +177,10 @@ Although the default option shows the desired behaviour, *Rgemini* can export a 
 
 ```{r}
 table1(
-  ~ gender + age + condition | exposure, 
-  data = data, 
+  ~ gender + age + condition | exposure,
+  data = data,
   render.categorical = render_strict_cell_suppression.categorical
-  )
+)
 ```
 &nbsp;
 
@@ -190,11 +190,11 @@ Note that to suppress missing values, we use the `render_cell_suppression.missin
 
 ```{r}
 table1(
-  ~ gender + age + condition | exposure, 
-  data = data, 
+  ~ gender + age + condition | exposure,
+  data = data,
   render.categorical = render_strict_cell_suppression.categorical,
   render.missing = render_cell_suppression.missing
-  )
+)
 ```
 &nbsp;
 
@@ -205,10 +205,10 @@ levels(data$gender) <- c("M", "F", "Not Available")
 data$gender[is.na(data$gender)] <- "Not Available"
 
 table1(
-  ~ gender + age + condition | exposure, 
-  data = data, 
+  ~ gender + age + condition | exposure,
+  data = data,
   render.categorical = render_cell_suppression.categorical
-  )
+)
 ```
 &nbsp;
 
@@ -239,10 +239,10 @@ We use `render_cell_suppression.continuous` to suppress any summary statistics f
 
 ```{r}
 table1(
-  ~ age + laps | nobel, 
-  data = continuous_data, 
+  ~ age + laps | nobel,
+  data = continuous_data,
   render.continuous = render_cell_suppression.continuous
-  )
+)
 ```
 &nbsp;
 
@@ -252,11 +252,11 @@ Note in this case however, using the strata totals we can reverse-calculate the 
 
 ```{r}
 table1(
-  ~ age + laps | nobel, 
-  data = continuous_data, 
+  ~ age + laps | nobel,
+  data = continuous_data,
   render.continuous = render_cell_suppression.continuous,
   render.strat = render_cell_suppression.strat
-  )
+)
 ```
 &nbsp;
 
@@ -266,12 +266,12 @@ We encounter a similar issue where we can reverse calculate the strata total usi
 
 ```{r}
 table1(
-  ~ age + laps | nobel, 
-  data = continuous_data, 
+  ~ age + laps | nobel,
+  data = continuous_data,
   render.continuous = render_cell_suppression.continuous,
   render.strat = render_cell_suppression.strat,
   overall = FALSE
-  )
+)
 ```
 &nbsp;
 
@@ -285,10 +285,10 @@ We can also specify the number of digits to round means, medians, or percentages
 
 ```{r}
 table1(
-  ~ gender + age + condition | exposure, 
+  ~ gender + age + condition | exposure,
   data = data,
   digits = 2
-  )
+)
 ```
 &nbsp;
 
@@ -296,12 +296,12 @@ However, the default behaviour of `table1` is to round the *total* number of dig
 
 ```{r}
 table1(
-  ~ gender + age + condition | exposure, 
+  ~ gender + age + condition | exposure,
   data = data,
   render.categorical = render_cell_suppression.categorical,
-  #render.continuous = render.continuous, <- this is implicitly using table1's default continuous rendering function
+  # render.continuous = render.continuous, <- this is implicitly using table1's default continuous rendering function
   digits = 5
-  )
+)
 ```
 &nbsp;
 
@@ -309,13 +309,13 @@ Note above that continuous variables (which are using the default `table1` rende
 
 ```{r}
 table1(
-  ~ gender + age + condition | exposure, 
+  ~ gender + age + condition | exposure,
   data = data,
   render.categorical = render_cell_suppression.categorical,
-  #render.continuous = render.continuous, <- this is implicit
+  # render.continuous = render.continuous, <- this is implicit
   digits = 5,
   rounding.fn = round_pad
-  )
+)
 ```
 &nbsp;
 
@@ -344,8 +344,8 @@ We change both row labels below. In order to do this, we need to use the default
 
 ```{r}
 labels <- list(
-  variables=list(age="Age (years)", gender="Sex", condition="MRDx")
-  )
+  variables = list(age = "Age (years)", gender = "Sex", condition = "MRDx")
+)
 
 strata <- split(data, data$exposure)
 table1(strata, labels = labels)
@@ -385,12 +385,12 @@ Now we perform custom labeling, cell suppression, and adding a column of standar
 
 ```{r}
 table1(
-  strata, 
+  strata,
   labels = labels,
   groupspan = c(2, 2),
   render = render_cell_suppression.default,
   extra.col = list("SMD" = max_pairwise_smd)
-  )
+)
 ```
 &nbsp;
 
@@ -427,7 +427,9 @@ Note that functions defined for extra columns must always take a named list as t
 x <- split(mtcars$disp, mtcars$am)
 
 my_max_col <- function(x, ...) {
-  lapply(x, max) %>% unlist() %>% max()
+  lapply(x, max) %>%
+    unlist() %>%
+    max()
 }
 
 my_max_col(x)

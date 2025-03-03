@@ -18,15 +18,15 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  include = TRUE, 
-  eval = TRUE, 
-  echo = TRUE, 
-  warning = FALSE, 
-  message = FALSE, 
+  include = TRUE,
+  eval = TRUE,
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
   collapse = TRUE,
-  cache = FALSE, 
+  cache = FALSE,
   tidy = FALSE,
-  fig.height = 6, 
+  fig.height = 6,
   fig.width = 8,
   fig.align = "left"
 )
@@ -130,7 +130,7 @@ For example, here we plot gender separately for each hospital:
 
 ```{r}
 plot_summary(
-  ipadmdad, 
+  ipadmdad,
   plot_vars = "gender",
   facet_group = "hospital_num"
 )
@@ -164,7 +164,7 @@ plot_summary(
   prct = TRUE,
   show_stats = FALSE,
   color = "lightgrey",
-  nrow = 1, ncol = 3, 
+  nrow = 1, ncol = 3,
   align = "h",
   base_size = 10
 )
@@ -193,7 +193,7 @@ By default, the `plot_over_time()` function plots the mean of a user-specified `
 
 ```{r}
 plot_over_time(
-  data = ipadmdad, 
+  data = ipadmdad,
   plot_var = "age"
 )
 ```
@@ -235,7 +235,7 @@ plot_over_time(
   data = ipadmdad,
   plot_var = "gender",
   plot_cat = "F"
-  #func = "%" # not required in this case because gender is a character variable, so the function infers that func should be "%"
+  # func = "%" # not required in this case because gender is a character variable, so the function infers that func should be "%"
 )
 ```
 
@@ -295,7 +295,7 @@ For example, we could plot the number of encounters that were discharged each fi
 plot_over_time(
   data = ipadmdad,
   func = "n",
-  #time_var = "discharge_date_time", # default
+  # time_var = "discharge_date_time", # default
   time_int = "fisc_year"
 )
 ```
@@ -345,8 +345,8 @@ In all plots shown above, individual hospitals are shown in different subplots. 
 plot_over_time(
   ipadmdad,
   plot_var = "age",
-  facet_group = NULL#,
-  #line_group = "hospital_num" # default
+  facet_group = NULL # ,
+  # line_group = "hospital_num" # default
 )
 ```
 
@@ -363,8 +363,9 @@ Users can apply an additional layer of grouping based on color. For example, you
 ```{r}
 # assign (random) hospital grouping variable
 ipadmdad[, hospital_type := sample(
-  c("Academic", "Community"), prob = c(.4, .6), 1, replace = TRUE
-), by = hospital_num] 
+  c("Academic", "Community"),
+  prob = c(.4, .6), 1, replace = TRUE
+), by = hospital_num]
 
 plot_over_time(
   ipadmdad,
@@ -418,8 +419,8 @@ plot_over_time(
   facet_group = NULL,
   colors = c("#86b9b0", "#c266a7"),
   ylimits = c(63, 83)
-) + 
-  annotate("text", x = as.Date("2020-03-01"), y = 80, label = "1st COVID wave", color = "#022061") + 
+) +
+  annotate("text", x = as.Date("2020-03-01"), y = 80, label = "1st COVID wave", color = "#022061") +
   annotate("segment", x = as.Date("2020-03-01"), xend = as.Date("2020-03-01"), y = 63, yend = 79, color = "#022061", linetype = 2)
 ```
 
@@ -580,10 +581,10 @@ You can apply any necessary adjustments to the returned ggplot and/or run `plotl
 my_plot <- plot_over_time(data = ipadmdad, plot_var = "age")
 
 # adjust space for x-axis title
-my_plot <- my_plot + labs(x = "\nDischarge Month") 
+my_plot <- my_plot + labs(x = "\nDischarge Month")
 
 # apply additional formatting using layout()
-ggplotly(my_plot) %>%  
+ggplotly(my_plot) %>%
   layout(legend = list(x = 1, y = 0.5)) # change legend position
 ```
 

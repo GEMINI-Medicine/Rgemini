@@ -41,7 +41,6 @@ plot_theme <- function(
     ) +
       theme(
         plot.margin = unit(c(2, 0.05, 0.05, 0.05), "lines"),
-
         plot.title = element_text(
           face = "bold",
           size = rel(1),
@@ -49,23 +48,19 @@ plot_theme <- function(
           vjust = rel(10),
           margin = unit(c(0, 0, 0, 0), "lines")
         ),
-
         plot.subtitle = element_text(
           size = rel(0.9),
           hjust = 0.5,
           vjust = rel(8),
           margin = unit(c(0, 0, 0, 0), "lines")
         ),
-
         panel.background = element_rect(colour = NA),
         plot.background = element_rect(colour = NA),
         panel.border = element_rect(colour = NA),
-
         axis.title = element_text(face = "bold", size = rel(1)),
         axis.text = element_text(size = rel(0.8), colour = "grey30"),
         axis.line.x = element_line(colour = "grey10"),
         axis.line.y = element_line(colour = "grey10"),
-
         panel.grid.major =
           if (any(grepl("maj", show_grid, ignore.case = TRUE))) {
             element_line(color = "grey85", linetype = 2)
@@ -78,7 +73,6 @@ plot_theme <- function(
           } else {
             element_blank()
           },
-
         legend.position = "right",
         legend.justification = "center",
         legend.key = element_rect(colour = NA),
@@ -91,7 +85,6 @@ plot_theme <- function(
         ## top strip for facet wrap plots
         strip.background = element_rect(fill = "grey85", colour = NA),
         strip.text = element_text(face = "bold", size = rel(0.75)),
-
         ...
       ))
 
@@ -121,7 +114,6 @@ plot_theme <- function(
 #' @export
 #'
 gemini_colors <- function(palette = 1) {
-
   ## NOTE for developers:
   # When adding new colors, please check for colorblind accessibility using this
   # website: https://www.color-blindness.com/coblis-color-blindness-simulator/
@@ -249,7 +241,6 @@ gemini_colors <- function(palette = 1) {
 #' @export
 #'
 plot_color_palettes <- function(plot_palettes = "all") {
-
   palettes <- gemini_colors(plot_palettes)
 
   ## plotting function
@@ -288,7 +279,6 @@ plot_color_palettes <- function(plot_palettes = "all") {
   } else {
     # for a single palette
     fig <- plot_pal(palettes, plot_palettes, NULL)
-
   }
 
   return(fig)
@@ -314,5 +304,3 @@ scale_fill_gemini <- function(palette = 1) {
 scale_color_gemini <- function(palette = 1) {
   scale_color_manual(values = gemini_colors(palette))
 }
-
-

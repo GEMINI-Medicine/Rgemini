@@ -95,7 +95,7 @@ coerce_to_datatable <- function(data) {
 #' "ipintervention_subset"). This strict search (as opposed to a more flexible
 #' regex search) is used to allow for a broad range of table names to be
 #' searched while avoiding false positive matches.
-#' 
+#'
 #'
 #' @section HPC datacuts with materialized views:
 #' For HPC datacuts created from `gemini_h4h_template_v4_0_0` (or newer),
@@ -947,12 +947,12 @@ compare_sets <- function(x,
   y_only <- length(unique(setdiff(y, x)))
   data.table(in_both, x_only, y_only)
 }
- 
+
 #' @title Suppress errors/messages/warnings
 #'
 #' @description
 #' Run function without showing any errors/warnings/printed messages.
-#' 
+#'
 #' Note that certain messages (e.g., from RPostgreSQL) cannot be suppressed.
 #'
 #' @param func

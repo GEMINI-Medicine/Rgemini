@@ -18,7 +18,6 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-
 ```
 
 # Overview
@@ -46,20 +45,20 @@ library(getPass)
 
 # Establish database connection
 db <- DBI::dbConnect(drv,
-                     dbname = "DB_name",
-                     host = "172.XX.XX.XXX",
-                     port = 1234,
-                     user = getPass("Enter user:"),
-                     password = getPass("Enter Password:"))
+  dbname = "DB_name",
+  host = "172.XX.XX.XXX",
+  port = 1234,
+  user = getPass("Enter user:"),
+  password = getPass("Enter Password:")
+)
 
 # query admdad table containing cohort (could be filtered further if necessary)
-admdad <- dbGetQuery(db, "SELECT genc_id, hospital_num, admission_date_time, discharge_date_time FROM admdad;") 
+admdad <- dbGetQuery(db, "SELECT genc_id, hospital_num, admission_date_time, discharge_date_time FROM admdad;")
 
-# Run default daily_census calculation         
-census_output <- daily_census(cohort = admdad) 
+# Run default daily_census calculation
+census_output <- daily_census(cohort = admdad)
 
 head(census_output, 10)
-
 ```
 
 > **Mock output table (for illustration purposes, not real data):**
@@ -70,16 +69,15 @@ library(dplyr)
 
 data(dummy_census, package = "Rgemini")
 dummy_census <- dummy_census %>% data.table()
-dummy_census[ , hospital_num := as.factor(hospital_num)]
+dummy_census[, hospital_num := as.factor(hospital_num)]
 
 # dummy date includes larger time period and grouping variables, let's ignore them for now
-census_output <- dummy_census[as.Date(date_time) < '2017-04-01', .(census = sum(census)), by = c("date_time","hospital_num")]
+census_output <- dummy_census[as.Date(date_time) < "2017-04-01", .(census = sum(census)), by = c("date_time", "hospital_num")]
 census_output <- census_output[order(date_time)]
-census_output[ , capacity_ratio := census / median(census), by = hospital_num]
+census_output[, capacity_ratio := census / median(census), by = hospital_num]
 
 # show output example
-head(census_output,10) %>% knitr::kable(align=c('c','c','c','c'))
-
+head(census_output, 10) %>% knitr::kable(align = c("c", "c", "c", "c"))
 ```
 
 This table shows an example output for data from 5 hospitals from April 2016 - April 2017. Each row corresponds to a unique combination of `date_time` (with a reference time of 8am, by default) and hospital ID (`hospital_num`). The `census` variable indicates the count of patients that were occupying a bed at 8am each day at a given hospital. The `capacity_ratio` refers to a relative measure of bed occupancy, which by default is calculated as `census/median(census)`. 
@@ -90,12 +88,11 @@ Based on this table, users could extract further information, such as the median
 library(data.table) #  we are using data.table operations below, but users could also use tidyverse to analyze the function output
 
 # Compute median census at each site
-median_census <- census_output[ , .(median_census = median(census)), by = hospital_num] 
-
+median_census <- census_output[, .(median_census = median(census)), by = hospital_num]
 ```
 
 ```{r, eval=T, echo=F}
-median_census %>% knitr::kable(align=c('c','c'))
+median_census %>% knitr::kable(align = c("c", "c"))
 ```
 
 
@@ -105,22 +102,22 @@ Additionally, users could plot `census` and `capacity_ratio` over time, separate
 library(ggplot2)
 
 # Plot census over time
-ggplot(census_output, aes(x=as.Date(date_time), y=census, group = hospital_num, color=hospital_num)) +
-  geom_line(linewidth=1.5,show.legend = TRUE) +
-  scale_x_date(name = 'Date', breaks = seq(min(as.Date(census_output$date_time)), max(as.Date(census_output$date_time)), by="1 months"), date_labels = "%b\n%Y") +
-  ggtitle("Mock figure: Daily census by hospital") + theme_classic()
-
+ggplot(census_output, aes(x = as.Date(date_time), y = census, group = hospital_num, color = hospital_num)) +
+  geom_line(linewidth = 1.5, show.legend = TRUE) +
+  scale_x_date(name = "Date", breaks = seq(min(as.Date(census_output$date_time)), max(as.Date(census_output$date_time)), by = "1 months"), date_labels = "%b\n%Y") +
+  ggtitle("Mock figure: Daily census by hospital") +
+  theme_classic()
 ```
 
 
 ```{r, eval=T,fig.height=5,fig.width=8,out.width = "80%", fig.align = "center"}
 # Plot capacity ratio over time
-ggplot(census_output, aes(x=as.Date(date_time), y=capacity_ratio, group = hospital_num, color=hospital_num)) +
-  geom_line(linewidth=1.5,show.legend = TRUE) +
-  scale_x_date(name = 'Date', breaks = seq(min(as.Date(census_output$date_time)), max(as.Date(census_output$date_time)), by="1 months"), date_labels = "%b\n%Y") +
-  ggtitle("Mock figure: Daily capacity ratio by hospital") + theme_classic() +
-  geom_hline(yintercept=1)
-
+ggplot(census_output, aes(x = as.Date(date_time), y = capacity_ratio, group = hospital_num, color = hospital_num)) +
+  geom_line(linewidth = 1.5, show.legend = TRUE) +
+  scale_x_date(name = "Date", breaks = seq(min(as.Date(census_output$date_time)), max(as.Date(census_output$date_time)), by = "1 months"), date_labels = "%b\n%Y") +
+  ggtitle("Mock figure: Daily capacity ratio by hospital") +
+  theme_classic() +
+  geom_hline(yintercept = 1)
 ```
 
 Note that `capacity_ratio` fluctuates around 1 (= typical occupancy) where values > 1 correspond to days with higher occupancy than usual.
@@ -136,8 +133,7 @@ For example, to calculate the census from June 1, 2016 - Dec 31, 2016:
 
 ```{r, eval=F}
 # Compute census for specific time period
-census_output <- daily_census(admdad, time_period = c("2016-06-01","2016-12-31")) 
-
+census_output <- daily_census(admdad, time_period = c("2016-06-01", "2016-12-31"))
 ```
 
 Note that in this case, the `capacity_ratio` is calculated based on the typical occupancy observed during that same time period (i.e., between June-Dec 2016). 
@@ -152,11 +148,10 @@ Note: The SCU table typically refers to the `ipscu` table in the GEMINI database
 
 ```{r, eval=F}
 # exclude SCU encounters from census
-scu <- dbGetQuery(db, "SELECT * FROM ipscu;") 
+scu <- dbGetQuery(db, "SELECT * FROM ipscu;")
 
 # Compute census excluding SCU
-census_output <- daily_census(admdad, scu_exclude = scu) 
-
+census_output <- daily_census(admdad, scu_exclude = scu)
 ```
 
 
@@ -168,10 +163,10 @@ Here is a simple example where census is grouped by patients' gender and age (<6
 
 ```{r, eval=F}
 # Create age category
-admdad$age_cat <- ifelse(admdad$age <= 65,'<=65','>65')
+admdad$age_cat <- ifelse(admdad$age <= 65, "<=65", ">65")
 
 # Compute census by gender & age categories
-census_output <- daily_census(admdad, group_var = c("gender","age_cat")) 
+census_output <- daily_census(admdad, group_var = c("gender", "age_cat"))
 
 head(census_output, 10)
 ```
@@ -179,7 +174,7 @@ head(census_output, 10)
 > **Mock output table showing census grouping by age & gender categories:**
 
 ```{r, eval=T, echo=FALSE}
-head(dummy_census) %>% knitr::kable(align=c('c','c'))
+head(dummy_census) %>% knitr::kable(align = c("c", "c"))
 ```
 
 Note that `capacity_ratio` in this mock example should not be interpreted as a real "capacity" indicator, but rather, as a measure of whether on a given day there were more (>1) or less (<1) patients of a certain age/gender than on a typical day. `Capacity_ratio` is more useful for grouping variables that correspond to separate medical entities, such as different medical subservices or wards, where `capacity_ratio` can serve as an indicator of system load vs. capacity. Nevertheless, grouping variables that are based on patient characteristics (age, gender, diagnosis group, illness severity etc.) could be useful to analyse the case mix of hospitalized patients during certain periods of time. 
@@ -191,8 +186,7 @@ By default, `capacity_ratio` is defined as `census/median(census)`, which is cal
 
 ```{r, eval=F}
 # Get occupancy relative to max capacity (estimated based on max(census))
-census_output <- daily_census(admdad, capacity_func = "max") 
-
+census_output <- daily_census(admdad, capacity_func = "max")
 ```
 
 
@@ -202,8 +196,7 @@ By default, the census is calculated at 8am each day during the study period. Fo
 
 ```{r, eval=F}
 # Calculate census at 2.30pm each day
-census_output <- daily_census(admdad, time_of_day = "14:30:00") 
-
+census_output <- daily_census(admdad, time_of_day = "14:30:00")
 ```
 
 ## `buffer` 
@@ -211,14 +204,13 @@ census_output <- daily_census(admdad, time_of_day = "14:30:00")
 For time periods that are towards the end of the data availability timeline of a given hospital, users may observe a pattern similar to this, where census counts suddenly drop at the end of the specified time period:
 
 ```{r, result = 'asis', echo=F,eval=T,fig.height=5,fig.width=8,out.width = "80%", fig.align = "center",warning=F}
+census_output <- dummy_census[date_time >= "2017-04-01", .(census = sum(census)), by = c("date_time", "hospital_num")]
 
-census_output <- dummy_census[date_time >= '2017-04-01', .(census = sum(census)), by = c("date_time","hospital_num")]
-
-ggplot(census_output, aes(x=as.Date(date_time), y=census, group = hospital_num, color=hospital_num)) +
-  geom_line(linewidth=1.5,show.legend = TRUE) +
-  scale_x_date(name = 'Date', breaks = seq(min(as.Date(census_output$date_time)), max(as.Date(census_output$date_time)), by="1 months"), date_labels = "%b\n%Y") +
-  ggtitle("Mock figure: Daily census by hospital - truncation bias (no buffer period)") + theme_classic()
-
+ggplot(census_output, aes(x = as.Date(date_time), y = census, group = hospital_num, color = hospital_num)) +
+  geom_line(linewidth = 1.5, show.legend = TRUE) +
+  scale_x_date(name = "Date", breaks = seq(min(as.Date(census_output$date_time)), max(as.Date(census_output$date_time)), by = "1 months"), date_labels = "%b\n%Y") +
+  ggtitle("Mock figure: Daily census by hospital - truncation bias (no buffer period)") +
+  theme_classic()
 ```
 
 This effect is due to a truncation bias that can occur if the end of the specified time period (here April 2018) is close to the last available date in the overall cohort (e.g., the cohort only contains encounters up to April 2018 in this example). Note that cohorts are typically defined by *discharge* date. That is, if a cohort includes data from April 2017 - April 2018, it will only include encounters that were *discharged* during that time. As a result, there may be patients who were admitted during the last week of April 2018, but were not discharged prior to the end of the month. Therefore, they are not part of the cohort, and cannot be counted towards the census. 
@@ -228,22 +220,20 @@ To prevent this from biasing the `census` and `capacity_ratio` estimates, the fu
 The default setting of `buffer = 30` will result in the following output, which removes the truncation bias shown in the previous figure by setting the last 30 days of the time period to `NA`:  
 
 ```{r, result = 'asis', echo=F,eval=T,fig.height=5,fig.width=8,out.width = "80%", fig.align = "center",warning=F}
+census_output[census_output[, tail(.I, 30), by = hospital_num]$V1]$census <- NA
 
-census_output[census_output[,tail(.I,30),by=hospital_num]$V1]$census <- NA
-
-ggplot(census_output, aes(x=as.Date(date_time), y=census, group = hospital_num, color=hospital_num)) +
-  geom_line(linewidth=1.5,show.legend = TRUE) +
-  scale_x_date(name = 'Date', breaks = seq(min(as.Date(census_output$date_time)), max(as.Date(census_output$date_time)), by="1 months"), date_labels = "%b\n%Y") +
-  ggtitle("Mock figure: Daily census by hospital - buffer period applied to last 30 days") + theme_classic()
-
+ggplot(census_output, aes(x = as.Date(date_time), y = census, group = hospital_num, color = hospital_num)) +
+  geom_line(linewidth = 1.5, show.legend = TRUE) +
+  scale_x_date(name = "Date", breaks = seq(min(as.Date(census_output$date_time)), max(as.Date(census_output$date_time)), by = "1 months"), date_labels = "%b\n%Y") +
+  ggtitle("Mock figure: Daily census by hospital - buffer period applied to last 30 days") +
+  theme_classic()
 ```
 
 Users can specify other buffer periods (in full days) based on their cohort (and the typical length of stay observed in that cohort). For example, to set the buffer period to 10 days, run the following code:
 
 ```{r, eval=F}
 # specify buffer of 10 days at end of time period
-census_output <- daily_census(admdad, buffer = 10) 
-
+census_output <- daily_census(admdad, buffer = 10)
 ```
 
 Note: In this example, if users specify a `time_period` input that ends 10 days earlier than the latest available data, the buffer period will be ignored and all available data will be used to calculate census for the time period of interest. In other words, the actual buffer period that is applied within the function depends on a combination of the specified time period, data availability per site, and the buffer argument in order to ensure that the maximum amount of available data are used in the census calculation. 
@@ -260,9 +250,8 @@ In addition to the flexibility provided by the function itself, users may want t
 
 ```{r, eval=F}
 # calculate capacity_ratio based on median census *per year*
-census_output[ , year := year(census_output$date_time)]
-census_output[ , capacity_ratio_yoy := census/median(census), by = c("hospital_num","year")]
-
+census_output[, year := year(census_output$date_time)]
+census_output[, capacity_ratio_yoy := census / median(census), by = c("hospital_num", "year")]
 ```
 
 Similarly, users could define other indicators of typical occupancy that are currently not supported by the function (e.g., trimmed means).

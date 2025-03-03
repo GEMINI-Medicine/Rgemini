@@ -14,7 +14,7 @@ Default to "comorbidity" the 2011 version of ICD-10 codes implemented in
 the R \href{https://ellessenne.github.io/comorbidity/index.html}{comorbidity} package.
 If \code{source} is \code{icd_lookup}, ICD-10-CA codes will be sampled from the
 \code{lookup_icd10_ca_description} table in the GEMINI database,
-see details in \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.}
+see details in the \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.}
 
 \item{dbcon}{(\code{DBIConnection})\cr
 A database connection to any GEMINI database. Required when \code{source} is \code{icd_lookup}.}
