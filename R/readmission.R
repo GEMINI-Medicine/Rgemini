@@ -71,8 +71,10 @@
 #' considered in the readmission calculation (`readmit(n) = NA`).
 #' @param return_readmit_enc (`logical`)\cr
 #' If `TRUE`: The function will additionally return a column 
-#' for each readmission window the user provides, containing the genc_id 
-#' corresponding to the readmission, if readmit(n) = TRUE.
+#' for each readmission window the user provides, containing the `genc_id` 
+#' corresponding to the readmission encounter (i.e., encounter following the index encounter within n days). 
+#' This can be used to analyze characteristics of the readmission encounter (e.g., time of readmission, diagnoses/clinical outcomes at the time of readmission etc.).
+#'For index encounters where the readmission flag is `FALSE`/`NA`, `readmit(n)_genc_id` will be returned as `NA`.
 #' @param restricted_cohort (`data.frame` or `data.table`)\cr
 #' User specified cohort that is a restricted subset of all encounters in DRM table "ipadmdad" (see
 #' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
