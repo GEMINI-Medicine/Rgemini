@@ -46,7 +46,7 @@ gender <- c(sample(c("M", "F"), size = 95, replace = TRUE), rep(NA, times = 5))
 exposure <- sample(
   c("pre-pandemic", "pandemic", "post-pandemic"),
   size = 100, replace = TRUE
-)
+) |> factor(levels = c("pre-pandemic", "pandemic", "post-pandemic"))
 
 age <- rnorm(100, mean = 70, sd = 5)
 
@@ -96,9 +96,11 @@ True zeros risk identifying no patient, and therefore we do not hide valuable in
 
 2. **Cells that originally had 6 or more patients are also suppressed.**
 
-Consider the group of patients in the post-pandemic subgroup. Note that patients with CVD post-pandemic were suppressed even though there were originally seven patients in that subgroup. Why is that? Had we only suppressed patients with DVT (one patient), knowing the total number of patients post-pandemic (37), we could have reverse-calculated the number of patients with DVT (with reasonable precision). 
+Consider the group of patients in the pre-pandemic subgroup. Note that patients with CVD pre-pandemic were suppressed even though there were originally seven patients in that subgroup. Why is that? Had we only suppressed patients with DVT (one patient), knowing the total number of patients pre-pandemic (37), we could have reverse-calculated the number of patients with DVT (with reasonable precision). 
 
 Therefore the algorithm is designed to continue suppressing successively larger groups until the total number of suppressed patients is six or more, such that they cannot be reverse-calculated with reasonable precision. The default option shows the desired behaviour and the most conservative with respect to patient privacy.
+
+Note that in this case, the number of DM patients in post-pandemic group can still be reverse-calculated, as the total number of DM patients is 37, while the other two groups have 15 each. To prevent this, we can consider removing the "Overall" column by setting `overall = FALSE` in `table1()` function call. See the [suppressing "Overall" column](#suppress-overall-count) section for an example.
 
 ## Customizing output for continuous variables - change to medians
 
@@ -357,7 +359,7 @@ table1(strata, labels = labels)
 Next we change the strata labels. To change strata labels we change the names of the levels of the factor variable corresponding to the strata
 
 ```{r}
-levels(data$exposure) <- c("During Pandemic", "After Pandemic", "Before Pandemic")
+levels(data$exposure) <- c("Before Pandemic", "During Pandemic", "After Pandemic")
 strata <- split(data, data$exposure)
 
 table1(strata, labels = labels)
@@ -369,12 +371,12 @@ table1(strata, labels = labels)
 Next we also add grouping to the strata variable, specifying group names in the `labels` list, as well as a `groupspan` which is used span a label over multiple groups in the `table1` call. We also add standardized mean differences using `extra.col` to put it all together.
 
 ```{r}
-labels$groups <- list("After COVID", "")
+labels$groups <- list("", "Since COVID")
 
 extra_col <- list()
 extra_col$`SMD` <- max_pairwise_smd
 
-table1(strata, labels = labels, groupspan = c(2, 1), extra.col = extra_col)
+table1(strata, labels = labels, groupspan = c(1, 2), extra.col = extra_col)
 ```
 &nbsp;
 
@@ -387,7 +389,7 @@ Now we perform custom labeling, cell suppression, and adding a column of standar
 table1(
   strata,
   labels = labels,
-  groupspan = c(2, 2),
+  groupspan = c(1, 2),
   render = render_cell_suppression.default,
   extra.col = list("SMD" = max_pairwise_smd)
 )
