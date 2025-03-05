@@ -54,7 +54,7 @@ db <- DBI::dbConnect(
   port = 1234,
   user = getPass::getPass("Enter Username"),
   password = getPass::getPass("Enter Password")
-  )
+)
 
 cohort <- DBI::dbGetQuery(db, "SELECT genc_id FROM public.admdad LIMIT 200;")
 

@@ -6,7 +6,7 @@
 \title{Dummy ipdiagnosis data}
 \description{
 This mimics the GEMINI ipdiagnosis table. And is generated with the \code{dummy_diag} function.
-See the \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}
+See the \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}
 for details.
 }
 \keyword{internal}

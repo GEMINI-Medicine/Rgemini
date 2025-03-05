@@ -47,12 +47,10 @@
 #' hospitalizations_last_n_days(cohort, n_days = 182)
 #' }
 #'
-#'
 hospitalizations_last_n_days <- function(cohort,
                                          n_days = 30,
-                                         admit_dt="admission_date_time",
-                                         discharge_dt="discharge_date_time") {
-
+                                         admit_dt = "admission_date_time",
+                                         discharge_dt = "discharge_date_time") {
   cohort <- coerce_to_datatable(cohort)
 
   # check cohort for correct variables
@@ -62,16 +60,16 @@ hospitalizations_last_n_days <- function(cohort,
   }
 
   # confirm that both date-time variables are included in the input cohort
-  if(any(!c(admit_dt, discharge_dt) %in% names(cohort))){
+  if (any(!c(admit_dt, discharge_dt) %in% names(cohort))) {
     stop("Input cohort table is missing at least one date variable.\n  Please confirm that the variables are in the table and are correctly named.")
   }
 
   # confirm that admission date-time & discharge date-time are in proper format
-  if(any(suppressWarnings(is.na(ymd_hm(cohort[, get(admit_dt)]))))){
+  if (any(suppressWarnings(is.na(ymd_hm(cohort[, get(admit_dt)]))))) {
     stop("One or more admission_date_time values are not in correct format (YYYY-MM-DD HH:MM). Please confirm that they are correctly formatted.")
   }
 
-  if(any(suppressWarnings(is.na(ymd_hm(cohort[, get(discharge_dt)]))))){
+  if (any(suppressWarnings(is.na(ymd_hm(cohort[, get(discharge_dt)]))))) {
     stop("One or more discharge_date_time values are not in correct format (YYYY-MM-DD HH:MM). Please confirm that they are correctly formatted.")
   }
 
@@ -80,10 +78,10 @@ hospitalizations_last_n_days <- function(cohort,
   dat <- cohort[, .(genc_id, patient_id_hashed, admission_date_time = get(admit_dt), discharge_date_time = get(discharge_dt))]
 
   # if patient_id_hashed is missing, set to NA
-  dat[, patient_id_hashed := ifelse(is.na(patient_id_hashed) | patient_id_hashed =="", NA, patient_id_hashed)]
+  dat[, patient_id_hashed := ifelse(is.na(patient_id_hashed) | patient_id_hashed == "", NA, patient_id_hashed)]
 
   # convert admission and discharge date-times to dates
-  dat[, ":=" (admission_date_time = ymd_hm(admission_date_time), discharge_date_time = ymd_hm(discharge_date_time))]
+  dat[, ":="(admission_date_time = ymd_hm(admission_date_time), discharge_date_time = ymd_hm(discharge_date_time))]
 
   # group by patient_id_hashed, order by admission date-time and discharge date-time
   dat <- dat %>%
@@ -93,18 +91,20 @@ hospitalizations_last_n_days <- function(cohort,
     data.table()
 
   # Determine the last 2 discharge date-times (if applicable) for each genc_id, using patient_id_hashed
-  dat[, ":=" (prev_disch1 = shift(discharge_date_time, type = "lead", n = 1),
-              prev_disch2 = shift(discharge_date_time, type = "lead", n = 2)), by=patient_id_hashed]
+  dat[, ":="(prev_disch1 = shift(discharge_date_time, type = "lead", n = 1),
+    prev_disch2 = shift(discharge_date_time, type = "lead", n = 2)), by = patient_id_hashed]
 
   # Find the difference in time between the encounter's admission date-time and previous 2 discharge date-times.
   # then divide the number of days by 365.25 (one year)
-  dat[, ":=" (td1 = as.numeric(difftime(admission_date_time, prev_disch1, units="days")/365.25),
-              td2 = as.numeric(difftime(admission_date_time, prev_disch2, units="days")/365.25))]
+  dat[, ":="(td1 = as.numeric(difftime(admission_date_time, prev_disch1, units = "days") / 365.25),
+    td2 = as.numeric(difftime(admission_date_time, prev_disch2, units = "days") / 365.25))]
 
   # Determine the number of hospitalizations within the window. If window/365 is less than difference between the admission date-time
   # and 2 discharges ago: 2+, if window/365 is less than the difference between admission date-time and previous discharge: 1, else: 0.
-  dat[, n_hospitalizations := dplyr::case_when(td2 <= n_days/365 ~ "2+",
-                                             td1 <= n_days/365 ~ "1", is.na(td1) | td1 > n_days/365 ~ "0")] %>%
+  dat[, n_hospitalizations := dplyr::case_when(
+    td2 <= n_days / 365 ~ "2+",
+    td1 <= n_days / 365 ~ "1", is.na(td1) | td1 > n_days / 365 ~ "0"
+  )] %>%
     .[is.na(patient_id_hashed), n_hospitalizations := NA]
 
   # select genc_id and n_hospitalizations

@@ -63,10 +63,9 @@
 #' @export
 #'
 
-n_rbc_transfusions <-function(dbcon,
-                              cohort,
-                              exclude_ed = FALSE) {
-
+n_rbc_transfusions <- function(dbcon,
+                               cohort,
+                               exclude_ed = FALSE) {
   # warning messages
   mapping_message("RBC transfusions")
   coverage_message("transfusion/lab")
@@ -76,19 +75,20 @@ n_rbc_transfusions <-function(dbcon,
   # input check
   check_input(dbcon, argtype = "DBI")
   check_input(cohort,
-              argtype = c("data.table", "data.frame"),
-              colnames = c("genc_id", "hospital_num"))
-  check_input(exclude_ed, argtype  = "logical")
+    argtype = c("data.table", "data.frame"),
+    colnames = c("genc_id", "hospital_num")
+  )
+  check_input(exclude_ed, argtype = "logical")
   cohort <- coerce_to_datatable(cohort)
 
   ## If relevant: Show warning notifying user of hospital exclusion
-  if (any(c(105,106) %in% unique(cohort$hospital_num))) {
+  if (any(c(105, 106) %in% unique(cohort$hospital_num))) {
     cat(paste0(
       "Excluding hospitals with known transfusion data quality issues. ",
       "Please refer to the function documentation for more details.\n",
       nrow(cohort[hospital_num %in% c(105, 106)]), " genc_ids in the input cohort ",
-      "are from these hospitals, and they are excluded from the output table.\n\n"))
-
+      "are from these hospitals, and they are excluded from the output table.\n\n"
+    ))
   }
   cohort_subset <- cohort[hospital_num %ni% c(105, 106)]
 
@@ -99,7 +99,7 @@ n_rbc_transfusions <-function(dbcon,
 
   # speed up query by using temp table with analyze
   DBI::dbSendQuery(dbcon, "Drop table if exists cohort_data;")
-  DBI::dbWriteTable(dbcon, c("pg_temp","cohort_data"), cohort_subset[, .(genc_id)], row.names = FALSE, overwrite = TRUE)
+  DBI::dbWriteTable(dbcon, c("pg_temp", "cohort_data"), cohort_subset[, .(genc_id)], row.names = FALSE, overwrite = TRUE)
   DBI::dbSendQuery(dbcon, "Analyze cohort_data")
 
   # load transfusion from db
@@ -123,7 +123,7 @@ n_rbc_transfusions <-function(dbcon,
         "and t.blood_product_mapped_omop in ('4022173','4137859','4144461')"
       )
     )
-  ) %>% as.data.table
+  ) %>% as.data.table()
 
   # load hemoglobin from db
   hemoglobin <- dbGetQuery(
@@ -145,44 +145,54 @@ n_rbc_transfusions <-function(dbcon,
   # exclude other non-numeric hgb result values
   hemoglobin[, result_value := as.numeric(
     stringr::str_replace_all(tolower(result_value), "@([a-z0-9]*)|<|>|less than|;", "")
-    )]
+  )]
   # non-equi merge to match transfusion with hgb value in 48 hours
   trans_with_hgb <- transfusion[hemoglobin[!is.na(result_value)],
-                                .(genc_id,
-                                  issue_date_time = x.issue_date_time,
-                                  issue_date_time_pre48 = x.issue_date_time_pre48,
-                                  result_value = i.result_value,
-                                  collection_date_time = i.collection_date_time),
-                                on = .(
-                                  genc_id,
-                                  issue_date_time >= collection_date_time,
-                                  issue_date_time_pre48 <= collection_date_time
-                                )] %>%
+    .(genc_id,
+      issue_date_time = x.issue_date_time,
+      issue_date_time_pre48 = x.issue_date_time_pre48,
+      result_value = i.result_value,
+      collection_date_time = i.collection_date_time
+    ),
+    on = .(
+      genc_id,
+      issue_date_time >= collection_date_time,
+      issue_date_time_pre48 <= collection_date_time
+    )
+  ] %>%
     .[!is.na(issue_date_time)]
 
   # keep only latest hemoglobin value before transfusion
   trans_with_hgb[, time_diff := as.numeric(difftime(issue_date_time,
-                                                    collection_date_time,
-                                                    units = "hours"))]
-  setorderv(trans_with_hgb,
-            c("genc_id",
-              "issue_date_time",
-              "time_diff",
-              "result_value"),
-            c(1, 1, 1, 1))
+    collection_date_time,
+    units = "hours"
+  ))]
+  setorderv(
+    trans_with_hgb,
+    c(
+      "genc_id",
+      "issue_date_time",
+      "time_diff",
+      "result_value"
+    ),
+    c(1, 1, 1, 1)
+  )
   trans_with_hgb <- unique(trans_with_hgb,
-                           by = c("genc_id", "issue_date_time"))
+    by = c("genc_id", "issue_date_time")
+  )
 
   # calculate transfusion and appropriate transfusion number
   n_trans <- trans_with_hgb[, .(n_rbc_transfusion_derived = .N), genc_id]
   prehgbless80 <- trans_with_hgb[result_value < 80, .(n_app_rbc_transfusion_derived = .N), genc_id]
 
-  res <- Reduce(function(x, y) merge(x,y, by = "genc_id", all.x= T),
-                x = list(cohort_subset[, .(genc_id)],
-                         n_trans,
-                         prehgbless80))
+  res <- Reduce(function(x, y) merge(x, y, by = "genc_id", all.x = T),
+    x = list(
+      cohort_subset[, .(genc_id)],
+      n_trans,
+      prehgbless80
+    )
+  )
   res[is.na(res)] <- 0
 
   return(res)
-
 }

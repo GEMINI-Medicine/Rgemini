@@ -147,9 +147,11 @@ plot_over_time <- function(
 
   ## show warning if plot_var is the same as any of the grouping variables (unless when plotting counts)
   if (!is.null(plot_var) && plot_var %in% c(time_var, line_group, color_group, facet_group) &&
-      !grepl("^n$|count", func, ignore.case = TRUE)) {
-    warning(paste0("User-specified plot_var '", plot_var, "' is also used as a grouping variable.\n",
-                   "Please check your inputs and specify a plot_var that is different from the variables used for grouping."))
+    !grepl("^n$|count", func, ignore.case = TRUE)) {
+    warning(paste0(
+      "User-specified plot_var '", plot_var, "' is also used as a grouping variable.\n",
+      "Please check your inputs and specify a plot_var that is different from the variables used for grouping."
+    ))
   }
 
   ## When specifying a color_group, any line_group variable generally needs to be nested within color_group
@@ -162,8 +164,8 @@ plot_over_time <- function(
         "line_group variable `", line_group,
         "` is not fully nested within color_group `", color_group, "`.\n",
         "Note that color grouping cannot be applied within lines, but only across lines.\n",
-        "Please ensure that you specified the correct grouping variables.\n")
-      )
+        "Please ensure that you specified the correct grouping variables.\n"
+      ))
     }
   }
 
@@ -178,7 +180,8 @@ plot_over_time <- function(
 
     # convert date-time and show warning for missing/invalid entries
     data[, paste(time_var) := convert_dt(
-      get(time_var), orders = c("ymd HMS"), truncated = 3, dt_varname = time_var
+      get(time_var),
+      orders = c("ymd HMS"), truncated = 3, dt_varname = time_var
     )]
 
     if (grepl("month", time_int, ignore.case = TRUE)) {
@@ -217,7 +220,7 @@ plot_over_time <- function(
 
   ##### Plot colors #####
   ## If single color is specified, will be used across all group levels
-  if (length(colors) == 1 && length(unique(data[[color_group]])) > 1) {
+  if (!is.null(color_group) && length(colors) == 1 && length(unique(data[[color_group]])) > 1) {
     colors <- rep(colors, length(unique(data[[color_group]])))
   }
   ## If not enough color values specified for all grouping levels, duplicate values
@@ -443,9 +446,9 @@ plot_over_time <- function(
         group_by(across(all_of(grouping_overall[grouping_overall != time_int]))) %>%
         arrange(get(time_int)) %>%
         mutate(isolated = ifelse(
-          (is.na(lag(outcome)) & is.na(lead(outcome))) |  # points surrounded by NA
-            (row_number() == 1 & is.na(lead(outcome))) |  # 1st point and next = NA
-            (row_number() == n() & is.na(lag(outcome))),  # last point and previous = NA
+          (is.na(lag(outcome)) & is.na(lead(outcome))) | # points surrounded by NA
+            (row_number() == 1 & is.na(lead(outcome))) | # 1st point and next = NA
+            (row_number() == n() & is.na(lag(outcome))), # last point and previous = NA
           TRUE,
           FALSE
         )) %>%
@@ -495,7 +498,6 @@ plot_over_time <- function(
                 ((!is.null(facet_group) && !is.null(line_group) && line_group == facet_group))))
           )
       } else {
-
         ## when no smoothing is applied, individual line will be shown, however,
         # only for uninterrupted time periods that can be connected with geom_line
         # e.g., single time point or points surrounded by NA are removed by geom_line
@@ -505,9 +507,9 @@ plot_over_time <- function(
           group_by(across(all_of(grouping[grouping != time_int]))) %>%
           arrange(get(time_int)) %>%
           mutate(isolated = ifelse(
-            (is.na(lag(outcome)) & is.na(lead(outcome))) |  # points surrounded by NA
-              (row_number() == 1 & is.na(lead(outcome))) |  # 1st point and next = NA
-              (row_number() == n() & is.na(lag(outcome))),  # last point and previous = NA
+            (is.na(lag(outcome)) & is.na(lead(outcome))) | # points surrounded by NA
+              (row_number() == 1 & is.na(lead(outcome))) | # 1st point and next = NA
+              (row_number() == n() & is.na(lag(outcome))), # last point and previous = NA
             TRUE,
             FALSE
           )) %>%
@@ -516,11 +518,12 @@ plot_over_time <- function(
 
         ## show warning
         if (nrow(isolated_points) > 0) {
-          warning(paste("Due to gaps in the data timeline for certain groups,",
-                        "there are some data points that can't be connected via geom_line().",
-                        "These data points have been plotted with geom_point() instead.",
-                        "Please consider removing categories with interrupted data availability."))
-
+          warning(paste(
+            "Due to gaps in the data timeline for certain groups,",
+            "there are some data points that can't be connected via geom_line().",
+            "These data points have been plotted with geom_point() instead.",
+            "Please consider removing categories with interrupted data availability."
+          ))
         }
 
         ## add isolated points with geom_point
@@ -529,14 +532,14 @@ plot_over_time <- function(
           size = line_width,
           alpha = ifelse(
             show_overall && ((is.null(facet_group) ||
-                                ((!is.null(facet_group) && !is.null(line_group) && (facet_group != line_group)) &&
-                                   (is.null(color_group) || (
-                                     (!is.null(color_group) && !is.null(line_group) && (color_group != line_group))
-                                   )))) &&
-                               length(unique(res[[line_group]])) > 1), 0.2, 1
+              ((!is.null(facet_group) && !is.null(line_group) && (facet_group != line_group)) &&
+                (is.null(color_group) || (
+                  (!is.null(color_group) && !is.null(line_group) && (color_group != line_group))
+                )))) &&
+              length(unique(res[[line_group]])) > 1), 0.2, 1
           ),
-          show.legend = FALSE)
-
+          show.legend = FALSE
+        )
       }
 
       fig <- fig + suppressWarnings( # suppress warnings to ignore `method` when no smoothing is applied
@@ -661,7 +664,7 @@ plot_over_time <- function(
             )
           )
         ),
-        date_labels = ifelse(is.null(facet_group), "%b-%Y", "%m/%y")
+        date_labels = ifelse(is.null(facet_group), "%b %Y", "%m/%y")
       )
     }
 
