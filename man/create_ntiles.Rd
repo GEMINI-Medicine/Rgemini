@@ -20,7 +20,11 @@ The factor returned will be the same length as \code{x}.
 }
 \description{
 This function bins continuous variables into quantiles
-(quartiles, deciles, etc.) of the user's choosing.
+(quartiles, deciles, etc.) of the user's choosing. Bins are
+created according to the interval \verb{(low breakpoint, high breakpoint]}.
+If individual values are tied around a breakpoint, they will be grouped
+into the same (lower) bin, unlike dplyr::ntile(), which ignores ties to
+create equally-sized bins.
 Note: The function will quit if any breakpoints are
 duplicated (e.g. 1st quartile identical to 2nd quartile).
 }
