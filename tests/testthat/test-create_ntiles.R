@@ -36,8 +36,8 @@ test_that("function quits when given non-numeric variable", {
   expect_error(create_ntiles(c("A", "B", "C", "D", "E"), 5))
 })
 
-test_that("function quits when n < 0", {
-  ## set n < 0
+test_that("function quits when n < 2", {
+  ## set n = -1
   expect_error(create_ntiles(rnorm(100), -1))
 })
 

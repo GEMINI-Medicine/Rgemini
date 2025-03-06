@@ -971,7 +971,11 @@ quiet <- function(func) {
 #'
 #' @description
 #' This function bins continuous variables into quantiles
-#' (quartiles, deciles, etc.) of the user's choosing.
+#' (quartiles, deciles, etc.) of the user's choosing. Bins are
+#' created according to the interval `(low breakpoint, high breakpoint]`.
+#' If individual values are tied around a breakpoint, they will be grouped
+#' into the same (lower) bin, unlike dplyr::ntile(), which ignores ties to
+#' create equally-sized bins.
 #' Note: The function will quit if any breakpoints are
 #' duplicated (e.g. 1st quartile identical to 2nd quartile).
 #'
@@ -994,16 +998,21 @@ quiet <- function(func) {
 #' deciles <- create_ntiles(values, 10)
 #'
 create_ntiles <- function(x, n) {
-  ## check that variable is numeric
-  if (!is.numeric(x)) stop("Variable must be numeric.")
+  ## check that x is numeric
+  check_input(
+    x, "numeric"
+  )
 
-  ## check that n is positive and numeric
-  if (!is.numeric(n) || n < 0) stop("n must be a positive integer.")
+  ## check that n is positive integer between 2-Inf
+  check_input(
+    n, "integer",
+    interval = c(2, Inf)
+  )
 
   ## create breaks
   probs <- seq(0, 1, length.out = n + 1)
 
-  ## split into quartiles
+  ## split into quantiles
   ntiles <- quantile(x, probs = probs)
 
   ## check for duplicates
@@ -1015,6 +1024,9 @@ create_ntiles <- function(x, n) {
 
   ## assign labels for ntiles
   results <- cut(x, breaks = ntiles, include.lowest = TRUE, labels = seq_len(n))
+
+  ## display ntiles
+  print(ntiles)
 
   ## return output
   return(results)
