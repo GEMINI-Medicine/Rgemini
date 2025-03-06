@@ -7,7 +7,7 @@
 #' are defined by OMOP codes. Sodium is the code 3019550. Hemoglobin is 3000963.
 #'
 #' @details
-#' This function takes a list of admissions and an GEMINI databse connection to
+#' This function takes a list of admissions and a GEMINI database connection to
 #' generate numeric fields counting the number of Sodium and Hemoglobin tests
 #' for each admission.
 #'
@@ -17,8 +17,10 @@
 #' number of routine bloodwork tests is one of the performance metrics in
 #' [MyPracticeReport](https://www.hqontario.ca/Quality-Improvement/Practice-Reports/MyPractice-General-Medicine).
 #'
-#' Function does NOT removes tests without valid numeric result value to include
-#' all tests where blood was drawn from the patients.
+#' Note that this function removes tests without a valid numeric result value.
+#' This is to ensure that any non-performed/cancelled tests are not included in
+#' the counts since non-performed tests are not part of GEMINI's data reference
+#' model.
 #'
 #' @section Warning:
 #' Function returns data.table with id field `genc_id` and one numeric field
@@ -63,7 +65,6 @@
 #'
 #' @export
 #'
-
 n_routine_bloodwork <- function(dbcon,
                                 cohort,
                                 exclude_ed = FALSE) {
@@ -114,10 +115,15 @@ n_routine_bloodwork <- function(dbcon,
     )
   ) %>% as.data.table()
 
-  # only count tests with a valid
-  # to be consistent with MyPracticeReport definition, all results are included
-  # without restricting to numeric result values.
-  lab <- lab[, .(n_routine_bloodwork_derived = .N), .(genc_id)]
+  # Convert result_value to numeric after removing special characters
+  lab <- lab[, result_value :=
+    as.numeric(stringr::str_replace_all(
+      tolower(result_value),
+      "@([a-z0-9]*)|<|>|less than|greater than|;", ""
+    ))]
+
+  # only count tests with valid numeric result values.
+  lab <- lab[!is.na(result_value), .(n_routine_bloodwork_derived = .N), .(genc_id)]
 
   # merge with provided admission list
   res <-

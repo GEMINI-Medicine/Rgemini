@@ -20,6 +20,7 @@
 
 * **Function enhancements:**
   * Added option to return a column for readmission genc_id for each time window in `readmission()` function
+  * Only include lab tests with valid numeric results in `n_routine_bloodwork`
   * Removed redundant AT check in `episodes_of_care `(only use mapped institution types from `lookup_transfer)`
 
 # Rgemini `1.0.2`
