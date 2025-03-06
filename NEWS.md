@@ -1,11 +1,10 @@
 # Rgemini `develop`
 
-**New functions:**
-	* `cohort_creation()` to generate cohort and show number (%) of entries at each inclusion/exclusion step
-  * New function `neighbourhood_ses()` deriving neighbourhood-level variables from the Statistics Canada Census & Ontario Marginalization Index
-  * `data_coverage()` function to facilitate data coverage checks
-  * Utility function `quiet()` to run any functions without warning/error/print messages
+* **New functions:**
   * `cohort_creation()` to generate cohort and show number (%) of entries at each inclusion/exclusion step
+  * `neighbourhood_ses()` deriving neighbourhood-level variables from the Statistics Canada Census & Ontario Marginalization Index
+  * `data_coverage()` function to facilitate data coverage checks
+  *  Utility function `quiet()` to run any functions without warning/error/print messages
   * `compare_sets()` to find the number of unique and common elements in two sets
   * `create_ntiles()` to bin numeric variables into user-specified quantiles
 
@@ -21,6 +20,7 @@
 
 * **Function enhancements:**
   * Added option to return a column for readmission genc_id for each time window in `readmission()` function
+  * Removed redundant AT check in `episodes_of_care `(only use mapped institution types from `lookup_transfer)`
 
 # Rgemini `1.0.2`
 
