@@ -31,6 +31,7 @@ reference:
   - n_missing
   - n_rbc_transfusions
   - n_routine_bloodwork
+  - neighbourhood_ses
   - readmission
   - season
   - stat_holidays_ON
@@ -79,6 +80,7 @@ reference:
   - compare_sets
   - coverage_message
   - convert_dt
+  - create_ntiles
   - find_db_tablename
   - fix_var_str
   - lunique
