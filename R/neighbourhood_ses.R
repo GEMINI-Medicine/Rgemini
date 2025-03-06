@@ -68,12 +68,15 @@
 #' language and better reflect the census measures associated with each dimension.
 #'
 #' All ON-Marg variables are available as continuous factor scores as well as
-#' quintiles. Higher scores represent a higher degree of marginalization.
+#' quintiles. Higher scores represent a higher degree of marginalization
+#' (i.e., Q1 = least marginalized, Q5 = most marginalized). For continuous scores,
+#' negative (positive) values indicate that the observation falls below (above)
+#' the average level of the factor.
 #'
 #' @section Missing values:
 #' Some encounters could not be linked to Statistics Canada data due to missing/
 #' invalid postal codes, or due to the fact that they reside in an area not
-#' covereded by the census. These encounters will be returned with `da_uid = NA`.
+#' covered by the census. These encounters will be returned with `da_uid = NA`.
 #'
 #' Additionally, Statistics Canada suppresses results from certain DAs due to
 #' low response rates or data quality issues. The corresponding census/ON-Marg
