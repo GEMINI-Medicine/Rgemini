@@ -155,10 +155,12 @@
 neighbourhood_ses <- function(dbcon, cohort, census_year) {
   ## check user inputs
   check_input(cohort, c("data.table", "data.frame"), colnames = "genc_id")
-  cohort <- coerce_to_datatable(cohort)
   check_input(dbcon, argtype = "DBI")
   # only 2016 & 2021 census are currently available
   check_input(census_year, c("numeric", "character"), categories = c(2016, 2021))
+
+  ## convert to data.table
+  cohort <- coerce_to_datatable(cohort)
 
   ## write a temp table to improve querying efficiency
   DBI::dbExecute(dbcon, "SET client_min_messages TO WARNING;") # suppress SQL notices
