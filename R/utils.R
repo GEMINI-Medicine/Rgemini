@@ -964,3 +964,70 @@ quiet <- function(func) {
   on.exit(sink())
   invisible(force(suppressMessages(suppressWarnings(func))))
 }
+
+
+#' @title
+#' Create N-tiles
+#'
+#' @description
+#' This function bins continuous variables into quantiles
+#' (quartiles, deciles, etc.) of the user's choosing. Bins are
+#' created according to the interval `(low breakpoint, high breakpoint]`.
+#' If individual values are tied around a breakpoint, they will be grouped
+#' into the same (lower) bin, unlike dplyr::ntile(), which ignores ties to
+#' create equally-sized bins.
+#' Note: The function will quit if any breakpoints are
+#' duplicated (e.g. 1st quartile identical to 2nd quartile).
+#'
+#' @param x (`vector`)\cr
+#' A vector of numeric values.
+#'
+#' @param n (`integer`)\cr
+#' The number of bins to create. For example, for quartiles set `n=4`.
+#'
+#' @return (`factor`)\cr
+#' A factor with `n` levels representing the bins (ntiles) of the input values.
+#' The factor returned will be the same length as `x`.
+#'
+#' @export
+#'
+#' @examples
+#' set.seed(123)
+#' values <- rnorm(100)
+#' quartiles <- create_ntiles(values, 4)
+#' deciles <- create_ntiles(values, 10)
+#'
+create_ntiles <- function(x, n) {
+  ## check that x is numeric
+  check_input(
+    x, "numeric"
+  )
+
+  ## check that n is positive integer between 2-Inf
+  check_input(
+    n, "integer",
+    interval = c(2, Inf)
+  )
+
+  ## create breaks
+  probs <- seq(0, 1, length.out = n + 1)
+
+  ## split into quantiles
+  ntiles <- quantile(x, probs = probs)
+
+  ## check for duplicates
+  if (anyDuplicated(ntiles)) {
+    percentile_names <- paste0(probs * 100, "%")
+    formatted_ntiles <- paste(percentile_names, ntiles, sep = ": ", collapse = "\n")
+    stop(paste("Duplicated percentiles detected:\n", formatted_ntiles))
+  }
+
+  ## assign labels for ntiles
+  results <- cut(x, breaks = ntiles, include.lowest = TRUE, labels = seq_len(n))
+
+  ## display ntiles
+  print(ntiles)
+
+  ## return output
+  return(results)
+}
