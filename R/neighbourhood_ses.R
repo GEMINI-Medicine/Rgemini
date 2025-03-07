@@ -170,10 +170,13 @@ neighbourhood_ses <- function(dbcon, cohort, census_year) {
     row.names = FALSE, overwrite = TRUE
   )
 
+  ## identify table name for locality variables (DAs)
+  locality_table <- find_db_tablename(dbcon, "locality_variables")
+
   ## query relevant DB table based on census year
   if (census_year == 2021) {
     # return error if table does not exist
-    table_name <- tryCatch(
+    statcan_table <- tryCatch(
       {
         find_db_tablename(dbcon, "lookup_statcan_v2021")
       },
@@ -196,8 +199,8 @@ neighbourhood_ses <- function(dbcon, cohort, census_year) {
       \"households_dwellings_q_DA21\", \"material_resources_q_DA21\", \"age_labourforce_q_DA21\",
       \"racialized_NC_pop_q_DA21\"
       FROM temp_data tmp
-      left join locality_variables l on l.genc_id = tmp.genc_id
-      left join ", table_name, " s on l.da21uid = s.da21uid;"
+      left join ", locality_table, " l on l.genc_id = tmp.genc_id
+      left join ", statcan_table, " s on l.da21uid = s.da21uid;"
       )
     ) %>%
       as.data.table()
@@ -205,7 +208,7 @@ neighbourhood_ses <- function(dbcon, cohort, census_year) {
     # in DB versions < drm_cleandb_v3/H4H_template_v4, the 2016 statcan table was simply called
     # 'lookup_statcan'; for later versions, it's called 'lookup_statcan_v2016'
     # either version should exist in most DBs, but if not, an error will be returned
-    table_name <- tryCatch(
+    statcan_table <- tryCatch(
       {
         find_db_tablename(dbcon, "lookup_statcan")
       },
@@ -222,8 +225,8 @@ neighbourhood_ses <- function(dbcon, cohort, census_year) {
       s.instability_da16, s.deprivation_da16, s.dependency_da16, s.ethniccon_da16,
       s.instability_q_da16, s.deprivation_q_da16, s.dependency_q_da16, s.ethniccon_q_da16
       FROM temp_data tmp
-      left join locality_variables l on l.genc_id = tmp.genc_id
-      left join ", table_name, " s on l.da16uid = s.da16uid; ")
+      left join ", locality_table, " l on l.genc_id = tmp.genc_id
+      left join ", statcan_table, " s on l.da16uid = s.da16uid; ")
     ) %>%
       as.data.table()
   }
