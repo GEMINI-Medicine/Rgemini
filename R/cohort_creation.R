@@ -107,6 +107,10 @@ cohort_creation <- function(
   Rgemini:::check_input(list(exclusion_flag, show_prct), "logical")
   if (!is.null(group_var)) {
     Rgemini:::check_input(group_var, "character")
+    ## check if group columns exist in all cohort list items
+    lapply(cohort, function(cohort) {
+      check_input(cohort, "data.table", colnames = group_var)
+    })
   }
 
   if (length(cohort) != length(labels) || length(cohort) != length(exclusion_flag)) {
@@ -124,7 +128,7 @@ cohort_creation <- function(
   # sequentially and are combined by AND
   cohort_clean <- list(cohort[[1]]) # baseline cohort
 
-  # identify single key column to speed up merging
+  # identify key columns to speed up merging
   key_col <- Reduce(intersect, lapply(cohort, colnames))
 
   for (i in seq(2, length(cohort))) {
@@ -181,7 +185,7 @@ cohort_creation <- function(
 
     if (!is.null(group_var)) {
       if (length(unique(unique(cohort[[1]][[group_var]]))) == 1) {
-        colnames(cohort_tab) <- paste(group_var, "=", as.character(unique(cohort[[1]][[group_var]])))
+        colnames(cohort_tab) <- as.character(unique(cohort[[1]][[group_var]]))
       }
     }
 
@@ -194,15 +198,10 @@ cohort_creation <- function(
 
   ## add columns by subgroup (if group_var specified)
   if (!is.null(group_var)) {
-    ## check if group columns exist in all cohort list items
-    lapply(cohort_clean, function(cohort) {
-      check_input(cohort, c("data.table", "data.frame"), colnames = group_var)
-    })
-
-    groups <- unique(cohort_clean[[1]][[group_var]])
+    groups <- sort(unique(cohort_clean[[1]][[group_var]]))
     grouped_list <- list()
-    for (i in groups) {
-      grouped_list[[i]] <- lapply(cohort_clean, function(x) x[get(group_var) == i])
+    for (k in seq_along(groups)) {
+      grouped_list[[k]] <- lapply(cohort_clean, function(x) x[get(group_var) == groups[k]])
     }
     cohort_tab_grouped <- lapply(
       grouped_list, create_cohort,
