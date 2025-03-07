@@ -4,10 +4,10 @@
   * `data_coverage()` function to facilitate data coverage checks
   * `cohort_creation()` to generate cohort and show number (%) of entries at each inclusion/exclusion step
   * `neighbourhood_ses()` deriving neighbourhood-level variables from the Statistics Canada Census & Ontario Marginalization Index
-  *  *Utility functions:*
-   * `quiet()` to run any functions without warning/error/print messages
-   * `compare_sets()` to find the number of unique and common elements in two sets
-   * `create_ntiles()` to bin numeric variables into user-specified quantiles
+  *  **Utility functions:**
+    * `quiet()` to run any functions without warning/error/print messages
+    * `compare_sets()` to find the number of unique and common elements in two sets
+    * `create_ntiles()` to bin numeric variables into user-specified quantiles
 
 * **Function enhancements:**
   * Added option to return readmission `genc_id` in `readmission()` function
