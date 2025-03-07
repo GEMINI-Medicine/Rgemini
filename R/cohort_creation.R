@@ -203,7 +203,7 @@ cohort_creation <- function(
       grouped_list, create_cohort,
       exclusion_flag = exclusion_flag, group_var = group_var, ...
     )
-    cohort_tab_grouped <- do.call(cbind, cohort_tab_grouped)
+    cohort_tab_grouped <- bind_cols(cohort_tab_grouped)
     cohort_tab <- cbind(cohort_tab, cohort_tab_grouped)
   }
 
