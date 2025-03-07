@@ -194,6 +194,11 @@ cohort_creation <- function(
 
   ## add columns by subgroup (if group_var specified)
   if (!is.null(group_var)) {
+    ## check if group columns exist in all cohort list items
+    lapply(cohort_clean, function(cohort) {
+      check_input(cohort, c("data.table", "data.frame"), colnames = group_var)
+    })
+
     groups <- unique(cohort_clean[[1]][[group_var]])
     grouped_list <- list()
     for (i in groups) {
