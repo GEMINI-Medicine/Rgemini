@@ -1,27 +1,27 @@
-# Rgemini `develop`
+# Rgemini `1.1.0`
 
 * **New functions:**
+  * `data_coverage()` function to facilitate data coverage checks
   * `cohort_creation()` to generate cohort and show number (%) of entries at each inclusion/exclusion step
   * `neighbourhood_ses()` deriving neighbourhood-level variables from the Statistics Canada Census & Ontario Marginalization Index
-  * `data_coverage()` function to facilitate data coverage checks
-  *  Utility function `quiet()` to run any functions without warning/error/print messages
-  * `compare_sets()` to find the number of unique and common elements in two sets
-  * `create_ntiles()` to bin numeric variables into user-specified quantiles
-
-* **Bug fixes:**
-  * Minor bug fix in `plot_over_time` to allow custom line color without specifying color grouping variable
-
-* **Documentation updates:**
-  * Improved documentation in `readmission()` vignette
-  * Improved organization of figures for vignettes
-  * Added pre-commit hooks: `Styler` and checks for `browser()` statements and large files
-  * Updated links referencing data dictionary
-  * Added documentation for return_readmit_enc argument in `readmission()` vignette
+  *  *Utility functions:*
+   * `quiet()` to run any functions without warning/error/print messages
+   * `compare_sets()` to find the number of unique and common elements in two sets
+   * `create_ntiles()` to bin numeric variables into user-specified quantiles
 
 * **Function enhancements:**
-  * Added option to return a column for readmission genc_id for each time window in `readmission()` function
-  * Only include lab tests with valid numeric results in `n_routine_bloodwork`
-  * Removed redundant AT check in `episodes_of_care `(only use mapped institution types from `lookup_transfer)`
+  * Added option to return readmission `genc_id` in `readmission()` function
+  * Aligned `n_routine_bloodwork()` with DRM by only returning lab tests with valid numeric results 
+  * Removed redundant check for acute-care transfers in `episodes_of_care()` (only use mapped institution types from `lookup_transfer`)
+   
+* **Bug fixes:**
+  * Minor bug fix in `plot_over_time()` to allow custom line color without specifying color grouping variable
+
+* **Documentation updates:**
+  * Added pre-commit hooks: Run `styler` and check for `browser()` statements & large files
+  * Improved documentation in `readmission()` vignette
+  * Updated all links referencing the data dictionary
+  * Improved organization of figures for vignettes
 
 # Rgemini `1.0.2`
 
