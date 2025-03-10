@@ -37,16 +37,19 @@ NULL
 #' Coverage data
 #' @name coverage
 #' @docType data
+#' @keywords internal
 NULL
 
 #' Dummy data for `data_coverage` function
 #' Coverage data
 #' @name coverage_enc
 #' @docType data
+#' @keywords internal
 NULL
 
 #' Dummy data for `data_coverage` function
 #' Coverage data
 #' @name coverage_timeline
 #' @docType data
+#' @keywords internal
 NULL
