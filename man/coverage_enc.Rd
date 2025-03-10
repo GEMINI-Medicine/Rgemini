@@ -9,3 +9,4 @@ Coverage data}
 Dummy data for \code{data_coverage} function
 Coverage data
 }
+\keyword{internal}
