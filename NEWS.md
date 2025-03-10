@@ -9,16 +9,11 @@
     * `compare_sets()` to find the number of unique and common elements in two sets
     * `create_ntiles()` to bin numeric variables into user-specified quantiles
 
-
 * **Function enhancements:**
   * Added option to return readmission `genc_id` in `readmission()` function
   * Aligned `n_routine_bloodwork()` with DRM by only returning lab tests with valid numeric results 
   * Removed redundant check for acute-care transfers in `episodes_of_care()` (only use mapped institution types from `lookup_transfer`)
-    
-
-* **Bug fixes:**
-  * Minor bug fix in `plot_over_time()` to allow custom line color without specifying color grouping variable
-
+  * Enabled custom line color without specifying color grouping variable in `plot_over_time()`
 
 * **Documentation updates:**
   * Added pre-commit hooks: Run `styler` and check for `browser()` statements & large files
