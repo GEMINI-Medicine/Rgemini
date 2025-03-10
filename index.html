@@ -75,17 +75,13 @@
 <p>The <code>Rgemini</code> package is automatically installed for all HPC4Health users working with GEMINI data. If you run into any issues using <code>Rgemini</code> functions or require a specific package version, please submit a ticket on HPC4Health.</p>
 </div>
 <div class="section level3">
-<h3 id="gemini-team-members">GEMINI team members<a class="anchor" aria-label="anchor" href="#gemini-team-members"></a>
-</h3>
-<p>For users within the GEMINI team, please <code>git clone</code> the <code>Rgemini</code> repository to your home directory on NORA, then run <code>devtools::install("/path/to/repo", repos = NULL, type="source")</code>.</p>
-</div>
-<div class="section level3">
 <h3 id="other-users">Other users<a class="anchor" aria-label="anchor" href="#other-users"></a>
 </h3>
 <p>All other users can install the package from GitHub using the following:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"GEMINI-Medicine/Rgemini"</span>, build_vignettes <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p>If the installation method above does not work, please try one of the following:</p>
+<p>Alternatively, you can <code>git clone</code> the <code>Rgemini</code> repository from the <code>main</code> branch, and then run <code>devtools::install("/path/to/repo", repos = NULL, type="source")</code>.</p>
+<p>If the installation methods above do not work, please try one of the following:</p>
 <ol style="list-style-type: decimal">
 <li>Install using <code>pak::pkg_install("GEMINI-Medicine/Rgemini")</code>.</li>
 <li>Download the latest source tarball from the <a href="https://github.com/GEMINI-Medicine/Rgemini/tags" class="external-link">package releases</a> to some directory such as <code>/path/to/tarball</code> and run <code>install.packages("/path/to/tarball", repos = NULL, type="source")</code>.</li>
