@@ -557,7 +557,6 @@ dummy_admdad <- function(id, admtime) {
 #'
 NULL
 
-
 #' @title
 #' Dummy daily census data
 #'
@@ -569,7 +568,6 @@ NULL
 #' @docType data
 #'
 NULL
-
 
 #' @title
 #' Dummy CCSR data
