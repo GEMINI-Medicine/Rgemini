@@ -13,7 +13,7 @@ a single encounter. Must contain GEMINI Encounter ID (\code{genc_id}).}
 
 \item{ipscu}{(\code{data.table} or \code{data.frame})\cr
 Table equivalent to the \code{ipscu} table defined in the
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
 Table must contain fields:
 GEMINI Encounter ID (\code{genc_id}),
 SCU admission time (\code{scu_admit_date_time} in "yyyy-mm-dd hh:mm" format),
@@ -48,10 +48,10 @@ Step-Down Units are not considered as ICUs.
 Therefore, this function excludes below CIHI defined Step-Down Units numbers
 from calculation:
 \itemize{
-\item{90 : }{Step-Down Medical Unit}
-\item{93 : }{Combined Medical/Surgical Step-Down Unit}
-\item{95 : }{Step-Down Surgical Unit}
-\item{99 : }{No SCU}
+\item 90: Step-Down Medical Unit
+\item 93: Combined Medical/Surgical Step-Down Unit
+\item 95: Step-Down Surgical Unit
+\item 99: No SCU
 }
 
 Please refer to the CIHI DAD abstracting manual for more details.
@@ -72,6 +72,6 @@ make sure the list of encounters aligns in both tables.
 \examples{
 # Compute ICU LoS for all encounters in ipadmdad:
 \dontrun{
-icu_los (cohort=ipadmdad, ipscu=ipscu)
+icu_los(cohort = ipadmdad, ipscu = ipscu)
 }
 }

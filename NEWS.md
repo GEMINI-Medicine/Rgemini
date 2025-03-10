@@ -1,3 +1,27 @@
+# Rgemini `1.1.0`
+
+* **New functions:**
+  * `data_coverage()` function to facilitate data coverage checks
+  * `cohort_creation()` to generate cohort and show number (%) of entries at each inclusion/exclusion step
+  * `neighbourhood_ses()` deriving neighbourhood-level variables from the Statistics Canada Census & Ontario Marginalization Index
+  * **Utility functions:**
+    * `quiet()` to run any functions without warning/error/print messages
+    * `compare_sets()` to find the number of unique and common elements in two sets
+    * `create_ntiles()` to bin numeric variables into user-specified quantiles
+
+* **Function enhancements:**
+  * Added option to return readmission `genc_id` in `readmission()` function
+  * Aligned `n_routine_bloodwork()` with DRM by only returning lab tests with valid numeric results 
+  * Removed redundant check for acute-care transfers in `episodes_of_care()` (only use mapped institution types from `lookup_transfer`)
+  * Enabled custom line color without specifying color grouping variable in `plot_over_time()`
+
+* **Documentation updates:**
+  * Added pre-commit hooks: Run `styler` and check for `browser()` statements & large files
+  * Improved documentation in `readmission()` vignette
+  * Updated all links referencing the data dictionary
+  * Improved organization of figures for vignettes
+
+
 # Rgemini `1.0.2`
 
 * Small bug fix in `find_db_tablename()` for materialized views (H4H >= v4)
@@ -29,6 +53,7 @@
 * **Function enhancements:**
 
   * `n_imaging`, `n_routine_bloodwork()` and `n_rbc_transfusion()` refactored and updated to be able to exclude clinical records in ED
+  * `n_imaging`, `n_routine_bloodwork` and `n_rbc_transfusion` refactored and updated to be able to exclude clinical records in ED
   * Inclusion of all routine blood tests (regardless of result value) in `n_routine_bloodwork()`
   * Option to derive ICU entries as a clinical outcome with customizable time windows in `icu_entry()`
   * For functions with date-time inputs: Allow for character and POSIXct inputs

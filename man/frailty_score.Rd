@@ -13,12 +13,12 @@ Each row corresponds to a single encounter.
 Must contain GEMINI encounter ID (\code{genc_id}), and age of the encounter (\code{age}).}
 
 \item{ipdiag}{(\code{data.table}, \code{data.frame})\cr
-\code{ipdiagnosis} table as defined in the \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+\code{ipdiagnosis} table as defined in the \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
 This table must contain the \code{genc_id} and \code{diagnosis_code} fields in long format.
 The diagnosis codes must be free from any punctuation or special characters.}
 
 \item{erdiag}{(\code{data.table}, \code{data.frame})\cr
-\code{erdiagnosis} table as defined in the \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+\code{erdiagnosis} table as defined in the \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
 This table must contain the \code{genc_id} and \code{er_diagnosis_code} fields in long format.
 The diagnosis codes must be free from punctuation or special characters.}
 
@@ -51,13 +51,12 @@ When none of the frailty conditions is present in an individual, a score of zero
 
 The function closely adheres to the CIHI HFRS with the following adaptations:
 \itemize{
-\item{No look-back period: }{Score is computed at encounter level. The 2-year look-back in the CIHI HFRS is not implemented.
-This adaptation systematically underestimates frailty but ensures comparable scores across time and hospitals considering variations in data availability}
-\item{Score format: }{Integer scores are returned representing the sum of the number of frailty conditions.
+\item No look-back period: Score is computed at encounter level. The 2-year look-back in the CIHI HFRS is not implemented.
+This adaptation systematically underestimates frailty but ensures comparable scores across time and hospitals considering variations in data availability
+\item Score format: Integer scores are returned representing the sum of the number of frailty conditions.
 These scores can be easily converted to the different formats (i.e. continuous fractions, 8 risk groups, binary) defined by CIHI HFRS.
 For example, dividing the returned score by 36 (maximum number of conditions possible) gives the continuous CIHI HFRS.
 Users interested in further categorizing the scores should refer to \href{https://doi.org/10.1503/cmaj.220926}{Amuah et al, 2023}.
-}
 }
 }
 \section{Warnings}{
@@ -89,9 +88,20 @@ Users interested in the UK version should refer to the original publications for
 
 \examples{
 \dontrun{
-cohort_dum <- data.table(genc_id=c(1, 2, 3), age=c(64, 65, 80))
-ipdiag_dum <- dummy_diag(nid=3, nrow=10, ipdiagnosis=TRUE, pattern = "C20$|R460$") # frailty conditions
-erdiag_dum <- dummy_diag(nid=3, nrow=5, ipdiagnosis=FALSE, pattern = "M121$") # not a frailty condition
+cohort_dum <- data.table(
+  genc_id = c(1, 2, 3), age = c(64, 65, 80)
+)
+ipdiag_dum <- dummy_diag(
+  nid = 3, nrow = 10,
+  ipdiagnosis = TRUE,
+  pattern = "C20$|R460$" # frailty conditions
+)
+erdiag_dum <- dummy_diag(
+  nid = 3, nrow = 5,
+  ipdiagnosis = FALSE,
+  pattern = "M121$" # not a frailty condition
+)
+# calculate frailty score
 frailty_score(cohort_dum, ipdiag_dum, erdiag_dum, component_wise = FALSE)
 }
 
@@ -99,8 +109,8 @@ frailty_score(cohort_dum, ipdiag_dum, erdiag_dum, component_wise = FALSE)
 \references{
 We recommend referencing both original articles (UK HFRS and CIHI HFRS) when using this function:
 \itemize{
-\item{UK HFRS: Gilbert T, et al. Lancet, 2018. http://dx.doi.org/10.1016/S0140-6736(18)30668-8}
-\item{CIHI HFRS: Amuah JE, et al. CMAJ, 2023. https://doi.org/10.1503/cmaj.220926}
-\item{\href{https://www.cihi.ca/sites/default/files/document/cihi-hospital-frailty-risk-measure-meth-notes-en.pdf}{CIHI methodology notes}}
+\item UK HFRS: Gilbert T, et al. Lancet, 2018. http://dx.doi.org/10.1016/S0140-6736(18)30668-8
+\item CIHI HFRS: Amuah JE, et al. CMAJ, 2023. https://doi.org/10.1503/cmaj.220926
+\item \href{https://www.cihi.ca/sites/default/files/document/cihi-hospital-frailty-risk-measure-meth-notes-en.pdf}{CIHI methodology notes}
 }
 }

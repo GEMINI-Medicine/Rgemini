@@ -41,7 +41,7 @@
 #' Optional table containing special care unit (SCU) encounters. This is only required if patients who were in an SCU
 #' should be excluded from the census calculation during time periods where they were in the SCU. The `scu_exclude`
 #' table typically refers to the `ipscu` table (see
-#' [GEMINI database schema](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/)).
 #' However, users may want to filter the `ipscu` table by specific SCU unit numbers that should be excluded from the
 #' census calculation. Entries where `scu_unit_number = 99` (`"No SCU"`) are automatically removed by this function.
 #'
@@ -136,11 +136,12 @@
 #' \dontrun{
 #' drv <- dbDriver("PostgreSQL")
 #' dbcon <- DBI::dbConnect(drv,
-#'                         dbname = "db",
-#'                         host = "domain_name.ca",
-#'                         port = 1234,
-#'                         user = getPass("Enter user:"),
-#'                         password = getPass("password"))
+#'   dbname = "db",
+#'   host = "domain_name.ca",
+#'   port = 1234,
+#'   user = getPass("Enter user:"),
+#'   password = getPass("password")
+#' )
 #'
 #' ipadm <- dbGetQuery(dbcon, "select * from admdad") %>% data.table()
 #'
@@ -155,7 +156,6 @@ daily_census <- function(cohort,
                          buffer = 30,
                          time_of_day = "08:00:00",
                          include_zero = TRUE) {
-
   ## If no time_period input provided, use min/max discharge dates
   if (is.null(time_period)) {
     time_period_start <- min(as.Date(cohort$discharge_date_time), na.rm = TRUE)
@@ -268,10 +268,12 @@ daily_census <- function(cohort,
 
   ## make sure dates are in correct format
   cohort[, admission_date_time := convert_dt(
-    admission_date_time, addtl_msg = "These entries cannot be counted towards the census and will be removed.\n"
+    admission_date_time,
+    addtl_msg = "These entries cannot be counted towards the census and will be removed.\n"
   )]
   cohort[, discharge_date_time := convert_dt(
-    discharge_date_time, addtl_msg = "These entries cannot be counted towards the census and will be removed.\n"
+    discharge_date_time,
+    addtl_msg = "These entries cannot be counted towards the census and will be removed.\n"
   )]
 
   ## Filter cohort by relevant time period
@@ -321,17 +323,19 @@ daily_census <- function(cohort,
       scu_admit_date_time > scu_discharge_date_time, ]
     if (nrow(check_scu) > 0) {
       warning(
-        paste("Identified a total of", nrow(check_scu),
-        "rows with invalid or missing SCU admission or discharge date-time in `scu_exclude`.\n",
-        "Invalid values might be due to unexpected date-time formats (e.g., missing timestamps)",
-        "or can be due to `scu_admit_date_time` > `scu_discharge_date_time`.",
-        "These entries cannot be excluded from the census calculation, and therefore, the",
-        "corresponding `genc_ids` will be counted towards the census during each day of their",
-        "hospitalization, potentially resulting in an overestimate of the daily census.\n",
-        "Please consider pre-processing/imputing invalid date-times.",
-        "For example, for entries with missing timestamp in `scu_discharge_date_time`, you",
-        "may want to impute timestamps with a value > 8:00am (i.e., assume genc_id was still",
-        "in ICU at 8:00am on a given day)."),
+        paste(
+          "Identified a total of", nrow(check_scu),
+          "rows with invalid or missing SCU admission or discharge date-time in `scu_exclude`.\n",
+          "Invalid values might be due to unexpected date-time formats (e.g., missing timestamps)",
+          "or can be due to `scu_admit_date_time` > `scu_discharge_date_time`.",
+          "These entries cannot be excluded from the census calculation, and therefore, the",
+          "corresponding `genc_ids` will be counted towards the census during each day of their",
+          "hospitalization, potentially resulting in an overestimate of the daily census.\n",
+          "Please consider pre-processing/imputing invalid date-times.",
+          "For example, for entries with missing timestamp in `scu_discharge_date_time`, you",
+          "may want to impute timestamps with a value > 8:00am (i.e., assume genc_id was still",
+          "in ICU at 8:00am on a given day)."
+        ),
         immediate. = TRUE
       )
     }

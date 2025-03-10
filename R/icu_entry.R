@@ -16,12 +16,11 @@
 #'
 #' Therefore, this function excludes below CIHI defined Step-Down Units numbers
 #' from calculation:
-#' \itemize{
-#'  \item{90 : }{Step-Down Medical Unit}
-#'  \item{93 : }{Combined Medical/Surgical Step-Down Unit}
-#'  \item{95 : }{Step-Down Surgical Unit}
-#'  \item{99 : }{No SCU}
-#' }
+#'
+#' - 90: Step-Down Medical Unit
+#' - 93: Combined Medical/Surgical Step-Down Unit
+#' - 95: Step-Down Surgical Unit
+#' - 99: No SCU
 #'
 #' Please refer to the CIHI DAD abstracting manual for more details.
 #'
@@ -33,7 +32,7 @@
 #'
 #' @param ipscu (`data.table`, `data.frame`)\cr
 #' Table equivalent to the `ipscu` table defined in the
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #' Table must contain fields:
 #' GEMINI Encounter ID (`genc_id`), SCU admission time (`scu_admit_date_time`), and SCU number (`scu_unit_number`).
 #'
@@ -80,26 +79,32 @@
 #' @export
 #'
 #' @examples
-#' ## ICU admission within the first 24 hours since IP admission (i.e. you are interested in knowing % of encounters admitted to ICU):
+#' # ICU admission within the first 24 hours since IP admission
+#' # (i.e. you are interested in knowing % of encounters admitted to ICU):
 #' \dontrun{
-#'  icu_entry (cohort, ipscu, as_outcome=FALSE, entry_since_cutoff=24)
+#' icu_entry(cohort, ipscu, as_outcome = FALSE, entry_since_cutoff = 24)
 #' }
 #'
-#' ## ICU admission within the first 24 hours since IP admission, as a clinical outcome
-#' ## excluding records with ICU entries prior to IP admission:
+#' # ICU admission within the first 24 hours since IP admission and with
+#' # ICU as clinical outcome excluding records with ICU prior to IP admission:
 #' \dontrun{
-#'  icu_entry (cohort, ipscu, as_outcome=TRUE, entry_since_cutoff=24)
+#' icu_entry(cohort, ipscu, as_outcome = TRUE, entry_since_cutoff = 24)
 #' }
 #'
-#' ## ICU admission within the first 72 hours since IP admission, as a clinical outcome
-#' ## excluding records with ICU entries prior to the first 24 hours of IP admission (i.e. you are interested in knowing
-#' ## patients who were admitted to ICU between the interval of (24, 72] hours since IP admission):
+#' # ICU admission within the first 72 hours since IP admission and with
+#' # ICU as a clinical outcome excluding records with ICU prior to the
+#' # first 24 hours of IP admission (i.e. you are interested in knowing
+#' # patients who were admitted to ICU between the interval of (24, 72] hours
+#' # since IP admission):
 #' \dontrun{
-#'  icu_entry (cohort, ipscu, as_outcome=TRUE, exclude_cutoff=24, entry_since_cutoff=48) # Note: entry_since_cutoff=48 (instead of 72) because 24+48=72
+#' icu_entry(
+#'   cohort, ipscu,
+#'   as_outcome = TRUE,
+#'   exclude_cutoff = 24,
+#'   entry_since_cutoff = 48 # = 48 instead of 72 because 24+48=72
+#' )
 #' }
 #'
-#'
-
 icu_entry <- function(cohort, ipscu, as_outcome = FALSE, exclude_cutoff = 0, entry_since_cutoff = c(24, 48, 72)) {
   ###### Check user inputs ######
   ## table provided as data.frame/data.table
@@ -145,7 +150,8 @@ icu_entry <- function(cohort, ipscu, as_outcome = FALSE, exclude_cutoff = 0, ent
     dplyr::mutate(across(where(is.character), na_if, "")) %>%
     .[!trimws(as.character(scu_unit_number)) %in% c("90", "93", "95", "99")] %>%
     .[, .(genc_id, scu_admit_date_time)] %>%
-    dplyr::left_join(res, by = "genc_id") %>% data.table()
+    dplyr::left_join(res, by = "genc_id") %>%
+    data.table()
 
   ###### show warning for those with invalid entry time  ######
   ## convert scu_admit_date_time into correct format / show warning for missing values
@@ -169,11 +175,10 @@ icu_entry <- function(cohort, ipscu, as_outcome = FALSE, exclude_cutoff = 0, ent
   }
 
   ##### Define cutoff time (i.e time point since which icu entry will be considered. Records prior to this cutoff are removed).
-  ipscu[, exclude_time_cutoff := admission_date_time + lubridate::hours(exclude_cutoff)] #Default to admission_date_time (ipatient admission time).
+  ipscu[, exclude_time_cutoff := admission_date_time + lubridate::hours(exclude_cutoff)] # Default to admission_date_time (ipatient admission time).
 
   ###### icu as an outcome or not ######
   if (as_outcome == TRUE) {
-
     cutoff_msg <- ifelse(exclude_cutoff == 0, "inpatient admission time", paste(exclude_cutoff, "hours post-ipadmission"))
     message(paste0(
       "Based on user input, deriving ICU entry as a clinical outcome. \n",
@@ -200,11 +205,14 @@ icu_entry <- function(cohort, ipscu, as_outcome = FALSE, exclude_cutoff = 0, ent
   ## derive ICU entry within a specified time window since the cutoff time.
   #  for genc_ids with any missing/invalid scu_admit_date_time, return NA
   lapply(entry_since_cutoff, function(x) {
-    res[!genc_id %in% all_missing$genc_id,
-        paste0("icu_entry_in_", x, "hr_derived") :=
-          ifelse(genc_id %in% ipscu[scu_admit_date_time <= (exclude_time_cutoff + lubridate::hours(x)), genc_id],
-                 TRUE,
-                 FALSE)]
+    res[
+      !genc_id %in% all_missing$genc_id,
+      paste0("icu_entry_in_", x, "hr_derived") :=
+        ifelse(genc_id %in% ipscu[scu_admit_date_time <= (exclude_time_cutoff + lubridate::hours(x)), genc_id],
+          TRUE,
+          FALSE
+        )
+    ]
   })
 
   ###### Clean up output ######

@@ -12,15 +12,13 @@
 #' Imaging table in the database should include field that classifies each test
 #' into below 7 categories.
 #'
-#' \itemize{
-#'  \item{1 : }{X-Ray}
-#'  \item{2 : }{CT}
-#'  \item{3 : }{MRI}
-#'  \item{4 : }{Ultrasound}
-#'  \item{5 : }{Other}
-#'  \item{6 : }{Interventional radiology procedures}
-#'  \item{7 : }{Echo (Excluded)}
-#' }
+#' - 1: X-Ray
+#' - 2: CT
+#' - 3: MRI
+#' - 4: Ultrasound
+#' - 5: Other
+#' - 6: Interventional radiology procedures
+#' - 7: Echo (Excluded)
 #'
 #' Therefore, this function should be run after some standardization efforts on
 #' imaging table (performed by GEMINI team). Currently, the number of advanced
@@ -76,7 +74,7 @@ n_imaging <- function(dbcon,
 
   # check input type and column name
   check_input(dbcon, argtype = "DBI")
-  check_input(cohort, argtype = c("data.table", "data.frame"), colnames =  c("genc_id"))
+  check_input(cohort, argtype = c("data.table", "data.frame"), colnames = c("genc_id"))
   check_input(exclude_ed, argtype = "logical")
   cohort <- coerce_to_datatable(cohort)
 
@@ -87,15 +85,15 @@ n_imaging <- function(dbcon,
 
   # speed up query by using temp table with analyze
   DBI::dbSendQuery(dbcon, "Drop table if exists cohort_data;")
-  DBI::dbWriteTable(dbcon, c("pg_temp","cohort_data"), cohort[, .(genc_id)], row.names = FALSE, overwrite = TRUE)
+  DBI::dbWriteTable(dbcon, c("pg_temp", "cohort_data"), cohort[, .(genc_id)], row.names = FALSE, overwrite = TRUE)
   DBI::dbSendQuery(dbcon, "Analyze cohort_data")
 
   # query db to pull imaging data
   imaging <- dbGetQuery(
     dbcon,
     ifelse(exclude_ed == TRUE,
-           # filter by admission date time and exclude tests before admission
-           paste("with temp as (
+      # filter by admission date time and exclude tests before admission
+      paste("with temp as (
               select r.*, a.admission_date_time,
               case when r.ordered_date_time is null or r.ordered_date_time = '' or
               r.ordered_date_time = ' ' then r.performed_date_time >= a.admission_date_time
@@ -106,8 +104,8 @@ n_imaging <- function(dbcon,
             from temp
             where case_result = 'true'"),
 
-           # not filter by admission date time
-           paste("select genc_id, modality_mapped from", radiology_table,  "r
+      # not filter by admission date time
+      paste("select genc_id, modality_mapped from", radiology_table, "r
                   where exists (select 1 from cohort_data c where c.genc_id=r.genc_id)")
     )
   ) %>% as.data.table()

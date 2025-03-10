@@ -69,9 +69,15 @@
 #' If `TRUE` (default), episodes of care where the last encounter was self sign-out/left against medical advice (LAMA)
 #' are removed from the denominator. Specifically, if the (n)th episode of care ended in self-signout/LAMA, it is not
 #' considered in the readmission calculation (`readmit(n) = NA`).
+#' @param return_readmit_enc (`logical`)\cr
+#' If `TRUE`: The function will additionally return a column
+#' for each readmission window the user provides, containing the `genc_id`
+#' corresponding to the readmission encounter (i.e., encounter following the index encounter within n days).
+#' This can be used to analyze characteristics of the readmission encounter (e.g., time of readmission, diagnoses/clinical outcomes at the time of readmission etc.).
+#' For index encounters where the readmission flag is `FALSE`/`NA`, `readmit(n)_genc_id` will be returned as `NA`.
 #' @param restricted_cohort (`data.frame` or `data.table`)\cr
 #' User specified cohort that is a restricted subset of all encounters in DRM table "ipadmdad" (see
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/)).
 #' Must contain `genc_id` as the identifier. Default is `Null`, which loads the entire "ipadmdad"
 #' table in the user-provided database (recommended approach).
 #'
@@ -111,21 +117,22 @@
 #' \dontrun{
 #' drv <- dbDriver("PostgreSQL")
 #' dbcon <- DBI::dbConnect(drv,
-#'                         dbname = "db",
-#'                         host = "domain_name.ca",
-#'                         port = 1234,
-#'                         user = getPass("Enter user:"),
-#'                         password = getPass("password"))
+#'   dbname = "db",
+#'   host = "domain_name.ca",
+#'   port = 1234,
+#'   user = getPass("Enter user:"),
+#'   password = getPass("password")
+#' )
 #'
 #' ## default readmission calculation (with elective = TRUE & death = TRUE by default)
 #' readmission(dbcon)
 #'
 #' ## Readmission calculation following CIHI definition
-#' readmission(dbcon, elective_admit = TRUE, death = TRUE, MAID = TRUE, palliative = TRUE,
-#'                    chemo = TRUE, mental = TRUE, obstetric = TRUE, signout = TRUE)
-#'
+#' readmission(dbcon,
+#'   elective_admit = TRUE, death = TRUE, MAID = TRUE, palliative = TRUE,
+#'   chemo = TRUE, mental = TRUE, obstetric = TRUE, signout = TRUE
+#' )
 #' }
-#'
 #'
 #' @export
 
@@ -139,17 +146,17 @@ readmission <- function(dbcon,
                         mental = FALSE,
                         obstetric = FALSE,
                         signout = FALSE,
+                        return_readmit_enc = FALSE,
                         restricted_cohort = NULL,
                         readm_win = c(7, 30)) {
-
-
   ## check user inputs
   check_input(dbcon, "DBI")
   check_input(list(elective_admit, death, MAID, palliative, chemo, mental, obstetric, signout), "logical")
   check_input(readm_win, "integer", interval = c(1, Inf)) # readmission window needs to be positive integer
-  if (!is.null(restricted_cohort)){
+  if (!is.null(restricted_cohort)) {
     check_input(restricted_cohort, c("data.table", "data.frame"),
-                colnames = "genc_id")
+      colnames = "genc_id"
+    )
   }
 
   ## Warning if death == FALSE
@@ -157,7 +164,8 @@ readmission <- function(dbcon,
     warning("By default, the `death` flag should always be set to `TRUE`.
     This is because, by definition, patients who died in hospital cannot be readmitted.
     We strongly recommend changing your input to `death = TRUE` to exclude patients who died from the readmission cohort.",
-            immediate. = TRUE)
+      immediate. = TRUE
+    )
   }
 
   ## Warning if elective == FALSE
@@ -165,7 +173,8 @@ readmission <- function(dbcon,
     warning("By default, the `elective` flag should always be set to `TRUE`.
     This is because elective readmissions are planned, and are therefore not considered to be true readmissions.
     We strongly recommend changing your input to `elective = TRUE` to avoid counting elective episodes of care as readmissions.",
-            immediate. = TRUE)
+      immediate. = TRUE
+    )
   }
 
   cat("\nThis function may take a few minutes to run...\n")
@@ -175,11 +184,11 @@ readmission <- function(dbcon,
   # Note: restricted cohort is the same in episodes_of_care & readmission function
   epicares <- episodes_of_care(dbcon = dbcon, restricted_cohort = restricted_cohort)
 
-  #load epicare as a temptable
-  DBI::dbSendQuery(dbcon,"Drop table if exists epicares_data;")
-  DBI::dbWriteTable(dbcon, c("pg_temp","epicares_data"), epicares[,.(genc_id)], row.names = F, overwrite = T)
-  #Analyze speed up the use of temp table
-  DBI::dbSendQuery(dbcon,"Analyze epicares_data")
+  # load epicare as a temptable
+  DBI::dbSendQuery(dbcon, "Drop table if exists epicares_data;")
+  DBI::dbWriteTable(dbcon, c("pg_temp", "epicares_data"), epicares[, .(genc_id)], row.names = F, overwrite = T)
+  # Analyze speed up the use of temp table
+  DBI::dbSendQuery(dbcon, "Analyze epicares_data")
 
   ############ Get additional DB variables ######################
   cat("Querying database ...\n")
@@ -188,12 +197,12 @@ readmission <- function(dbcon,
   admdad_name <- find_db_tablename(dbcon, "admdad", verbose = FALSE)
 
   # find variable name corresponding to hospital identifier (hospital_id/hospital_num)
- # to do minimial changes to querying one row to get all the column names instead
-  admdad_cols <- dbGetQuery(dbcon, paste0("SELECT * from ",admdad_name," limit 1;")) %>% data.table()
+  # to do minimial changes to querying one row to get all the column names instead
+  admdad_cols <- dbGetQuery(dbcon, paste0("SELECT * from ", admdad_name, " limit 1;")) %>% data.table()
 
-  admdad_cols<-data.table(column_name=colnames(admdad_cols))
+  admdad_cols <- data.table(column_name = colnames(admdad_cols))
 
-  hospital_var <- admdad_cols[column_name %in% c("hospital_id","hospital_num")]$column_name[1] # if multiple, use first identified variable
+  hospital_var <- admdad_cols[column_name %in% c("hospital_id", "hospital_num")]$column_name[1] # if multiple, use first identified variable
 
   admdad <- DBI::dbGetQuery(dbcon, paste0(
     "select genc_id, ", hospital_var, ", admission_date_time, discharge_date_time, admit_category, discharge_disposition
@@ -233,8 +242,14 @@ readmission <- function(dbcon,
   ############  Convert date-times into appropriate format   ############
   data[, discharge_date_time := convert_dt(discharge_date_time)]
   data[, admission_date_time := convert_dt(admission_date_time)]
+
   data <- data[order(patient_id_hashed, discharge_date_time, admission_date_time)]
 
+  # store next related genc_id, even if it's in the same episode of care
+  # for now
+  if (return_readmit_enc == TRUE) {
+    data[, next_genc_id := shift(genc_id, type = "lead"), by = patient_id_hashed]
+  }
 
   ## readmit coding by encounter based on time_to_next_admission
   # 7-/30-/X-day readmission = TRUE if time_to_next_admission is within 7/30/X days, otherwise readmission = FALSE
@@ -318,13 +333,13 @@ readmission <- function(dbcon,
     ## Identify MAID epicare: consider whole epicare as maid=TRUE if ANY encounter of the epicare has maid=TRUE
     # MAID epicare after FY18-19
     epi_maid_post <- data[discharge_date_time >= lubridate::ymd_hm("2018-04-01 00:00") &
-                            discharge_disposition == 73]$epicare
+      discharge_disposition == 73]$epicare
 
     # MAID epicare before FY18-19
     cci_maid <- ipintervention[intervention_code %in% c("1ZZ35HAP7", "1ZZ35HAP1", "1ZZ35HAN3"), ] # MAID intervention
     cci_maid <- merge(cci_maid, data[, c("genc_id", "discharge_date_time")], by = "genc_id", all.x = TRUE)
     cci_maid <- cci_maid[discharge_date_time < lubridate::ymd_hm("2018-04-01 00:00") &
-                           genc_id %in% data[discharge_disposition == 7, genc_id]]
+      genc_id %in% data[discharge_disposition == 7, genc_id]]
     ids <- cci_maid[, lunique(intervention_code), genc_id] %>% .[V1 == 3, genc_id]
     epi_maid_pre <- data[genc_id %in% ids]$epicare
 
@@ -433,8 +448,10 @@ readmission <- function(dbcon,
     ## Define mental health encounters based on cmg/diagnosis codes
 
     # if cmg present, use cmg (takes priority over ICD codes)
-    cmg_codes <- c("704", "670", "671", "672", "673", "678", "683", "684", "685", "686", "687", "689",
-                   "691", "693", "694", "697", "698", "702", "703", "707", "708", "709")
+    cmg_codes <- c(
+      "704", "670", "671", "672", "673", "678", "683", "684", "685", "686", "687", "689",
+      "691", "693", "694", "697", "698", "702", "703", "707", "708", "709"
+    )
     cmg_mental <- ipcmg[cmg %in% cmg_codes]
 
     # Get diagnosis codes for mental health
@@ -474,7 +491,8 @@ readmission <- function(dbcon,
       "F986", "F988", "F989", "F99", "G300", "G301", "G3080", "G3081", "G3082", "G3088", "G309", "G312", "Q900", "Q901",
       "Q902", "Q909", "Q910", "Q911", "Q912", "Q913", "Q914", "Q915", "Q916", "Q917", "Q930", "Q931", "Q932", "Q933",
       "Q934", "Q935", "Q936", "Q937", "Q938", "Q939", "R440", "R442", "R480", "R481", "R482", "R488", "R54", "Z004",
-      "Z032", "Z046", "Z133", "Z134", "Z502", "Z503", "Z504", "Z730", "Z733")
+      "Z032", "Z046", "Z133", "Z134", "Z502", "Z503", "Z504", "Z730", "Z733"
+    )
 
     # if cmg field is missing OR genc_id not found in ipcmg, use diagnosis code + type= M or 6 in ipdiagnosis
     cmg_na <- ipcmg[is.na(cmg) | cmg == ""]
@@ -514,7 +532,8 @@ readmission <- function(dbcon,
     ## Get ICD-10-CA codes for obstetric delivery
     icd_obs <- ipdiagnosis[grepl(
       "^Z37|(^O(1[0-6]|2[1-9]|3[0-7]|4[0-6]|48|6[0-9]|7[0-5]|8[5-9]|9[0-2]|95|98|99)[0-9]{2}[1-2])", # obstetrics codes
-      diagnosis_code), c("genc_id", "diagnosis_code")]
+      diagnosis_code
+    ), c("genc_id", "diagnosis_code")]
 
     ## Identify episodes of care that have ANY encounter with obstetric delivery
     epi_obs <- data[genc_id %in% icd_obs$genc_id]$epicare
@@ -586,7 +605,7 @@ readmission <- function(dbcon,
   na_rate_buffer <- lapply(readm_win, function(win) {
     # get % epicares where last encounter is past buffer period, separately for each readmission window
     round(100 * nrow(check_idx[discharge_date_time > get(paste0("buffer", win))]) /
-            lunique(data$epicare), digits = 1)
+      lunique(data$epicare), digits = 1)
   })
   if (any(na_rate_overall > 25)) {
     warning(
@@ -608,20 +627,27 @@ readmission <- function(dbcon,
   ### Finalize outputs
   ## keep all encounters from original data set but only last encounter of epicare should have readmit flag
   # (readmit7/30 for all other encounters of epicare are set to readmit7/30 = NA)
+  # This assumption means that the next_genc_id (if it exists) is truly a
+  # readmissison, rather than a transfer
+
   data <- data[order(epicare, discharge_date_time, admission_date_time)]
   lapply(readm_win, function(win) {
     # if last encounter of epicare, keep readmit value, otherwise set to NA
     data[, paste0("readmit", win) := ifelse(seq_len(.N) != .N, NA, get(paste0("readmit", win))), by = epicare]
   })
 
-  ## get final output variables
+  ## Get final output variables
+  # If return_readmit_enc == TRUE, create readmit genc_id column for each window
+  if (return_readmit_enc == TRUE) {
+    lapply(readm_win, function(win) {
+      data[, paste0("readmit", win, "_genc_id") := ifelse(get(paste0("readmit", win)) == TRUE, next_genc_id, NA)]
+    })
+  }
+
   vars <- c(
     "genc_id", "AT_in_occurred", "AT_out_occurred", "epicare",
-    lapply(readm_win, function(win) {
-      paste0("readmit", win)
-    })
-  ) # all readmit 7/30/X... values
-
+    grep("^readmit", names(data), value = TRUE) # all readmit 7/30/X... values
+  )
   dataf <- data[, names(data) %in% vars, with = FALSE]
 
   cat("\nDONE!")

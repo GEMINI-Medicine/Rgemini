@@ -85,18 +85,17 @@
 #'   admdad,
 #'   plot_vars = list(
 #'     `Discharge disposition` = list(
-#'         plot_var = "discharge_disposition",
-#'         class = "character",
-#'         sort = "desc"
+#'       plot_var = "discharge_disposition",
+#'       class = "character",
+#'       sort = "desc"
 #'     ),
 #'     `# Days in ALC` = list(
-#'         plot_var = "number_of_alc_days",
-#'         binwidth = 1,
-#'         breaks = seq(0, 7, 1)
+#'       plot_var = "number_of_alc_days",
+#'       binwidth = 1,
+#'       breaks = seq(0, 7, 1)
 #'     )
 #'   )
 #' )
-#'
 #'
 #' @seealso `vignette("plotting_data_exploration", package = "Rgemini")`
 #'
@@ -114,8 +113,8 @@ plot_summary <- function(data,
   if (is.null(plot_vars)) {
     plot_vars <- colnames(data)[
       !grepl("genc_id|patient_id|epicare|_date|date_|_time|time_|cpso",
-             colnames(data),
-             ignore.case = TRUE
+        colnames(data),
+        ignore.case = TRUE
       ) &
         !colnames(data) %in% c(
           "admitting_physician", "mrp",
@@ -171,7 +170,7 @@ plot_summary <- function(data,
 
 
   ## if variables are provided as character vector, turn into list
-  if (class(plot_vars) == "character") {
+  if (is(plot_vars, "character")) {
     plot_vars <- setNames(lapply(plot_vars, function(x) list()), plot_vars)
 
     ## add plot_var as list item
@@ -259,18 +258,17 @@ plot_summary <- function(data,
         paste(
           "No non-missing values found in variable '", var$plot_var,
           "'. Skipping this variable. Please carefully check your 'data' input."
-        ), immediate. = TRUE
+        ),
+        immediate. = TRUE
       )
       return(NULL)
     } else {
-
-
       ######## CREATE PLOTS ########
       ## for numeric variables
       if (any(
         var$class %in% c("numeric", "integer"),
         is.null(var$class) &&
-        class(data[[var$plot_var]]) %in% c("numeric", "integer")
+          class(data[[var$plot_var]]) %in% c("numeric", "integer")
       )) {
         ## plot histogram
         sub_fig <- ggplot(
@@ -278,7 +276,8 @@ plot_summary <- function(data,
             x = get(var$plot_var),
             y = if (prct == TRUE) { # if showing %, calculate % within each subplot
               (after_stat(count)) / tapply(
-                after_stat(count), after_stat(PANEL), sum)[after_stat(PANEL)]
+                after_stat(count), after_stat(PANEL), sum
+              )[after_stat(PANEL)]
             } else {
               after_stat(count)
             }
@@ -361,7 +360,8 @@ plot_summary <- function(data,
             },
             y = if (prct == TRUE) { # if showing %, calculate % within each subplot
               (after_stat(count)) / tapply(
-                after_stat(count), after_stat(PANEL), sum)[after_stat(PANEL)]
+                after_stat(count), after_stat(PANEL), sum
+              )[after_stat(PANEL)]
             } else {
               after_stat(count)
             }
@@ -377,8 +377,13 @@ plot_summary <- function(data,
           sub_fig <- sub_fig +
             geom_text(
               stat = "count", aes(
-                label = if (length(unique(data[[var$plot_var]])) <= 20) paste0(round(100 * after_stat(count) /  tapply(
-                  after_stat(count), after_stat(PANEL), sum)[after_stat(PANEL)], 1), "%") else ""
+                label = if (length(unique(data[[var$plot_var]])) <= 20) {
+                  paste0(round(100 * after_stat(count) / tapply(
+                    after_stat(count), after_stat(PANEL), sum
+                  )[after_stat(PANEL)], 1), "%")
+                } else {
+                  ""
+                }
               ),
               size = base_size / 5,
               vjust = -0.5,
@@ -397,7 +402,8 @@ plot_summary <- function(data,
             var$varlabel
           } else {
             (paste0(var$varlabel, " - By ", facet_group))
-          }) +
+          }
+        ) +
         scale_y_continuous(
           name = if (prct == TRUE) "p" else "count",
           labels = if (prct == TRUE) scales::percent else rescale_none,
@@ -410,7 +416,7 @@ plot_summary <- function(data,
       ## if more than 10 x-tick labels (or tick labels with > 5 characters),
       # add angle for better visibility
       if (length(ggplot_build(sub_fig)$layout$panel_params[[1]]$x$breaks) > 10 ||
-          any(nchar(unique(as.character(data[[var$plot_var]])))) > 5) {
+        any(nchar(unique(as.character(data[[var$plot_var]])))) > 5) {
         sub_fig <- sub_fig +
           theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
       }
@@ -424,7 +430,7 @@ plot_summary <- function(data,
   ## create figure for each variable
   sub_figs <- lapply(plot_vars, plot_subplots, data = data)
   if (length(plot_vars) == 1 && !is.null(facet_group)) {
-    fig <- sub_figs[[1]] + lemon::facet_rep_wrap(~get(facet_group), scales = "fixed", ...)
+    fig <- sub_figs[[1]] + lemon::facet_rep_wrap(~ get(facet_group), scales = "fixed", ...)
 
     ## show message when prct = TRUE (% are calculated within each facet level)
     if (prct == TRUE) {
@@ -435,15 +441,14 @@ plot_summary <- function(data,
         "To compare overall counts between facet levels, please specify `prct = FALSE`.\n\n"
       ))
     }
-
-
   } else {
-
     ## show warning if more than 1 plot_var and user provided facet_group (not supported)
     if (!is.null(facet_group)) {
       warning(
-        paste0("Ignoring facet_group variable `", facet_group, "` because `length(plot_vars) > 1`.\n",
-               "Grouping by a facet variable is currently only supported when specifying a single `plot_vars` variable."),
+        paste0(
+          "Ignoring facet_group variable `", facet_group, "` because `length(plot_vars) > 1`.\n",
+          "Grouping by a facet variable is currently only supported when specifying a single `plot_vars` variable."
+        ),
         immediate. = TRUE
       )
     }

@@ -46,7 +46,6 @@ NULL
 #'
 #' @examples
 #' lunique(c(1, 1, 2, 2, 2, 3))
-
 lunique <- function(x) {
   length(unique(x))
 }
@@ -97,7 +96,8 @@ coerce_to_datatable <- function(data) {
 #' regex search) is used to allow for a broad range of table names to be
 #' searched while avoiding false positive matches.
 #'
-#' @section HPC datacuts with materialized views
+#'
+#' @section HPC datacuts with materialized views:
 #' For HPC datacuts created from `gemini_h4h_template_v4_0_0` (or newer),
 #' users only have access to materialized views and not tables. For these
 #' datacuts, users need to set the schema right after establishing a DB
@@ -153,7 +153,6 @@ find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
 
   ## Define search criteria for different tables
   search_fn <- function(table_names, table = drm_table) {
-
     # check for DRM direct match with table name or table + _subset suffix
     # note: a previous version of this function used a more flexible regex
     # search, however, the table names are fairly fixed so we can use this
@@ -182,8 +181,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
       )$table_name
       table_name <- search_fn(tables)
     }
-  }
-  else{ # This is when there are materialized views under a given schema
+  } else { # This is when there are materialized views under a given schema
     dbSendQuery(dbcon, paste0("Set schema '", schema_name, "';")) # Set the right schema
 
     tables <- dbGetQuery(
@@ -205,7 +203,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
   # error if no table found
   if (length(table_name) == 0) {
     stop(paste0(
-      "No table corresponding to '", drm_table," under schema '", schema_name,
+      "No table corresponding to '", drm_table, " under schema '", schema_name,
       "' identified in database '", db_name, "'.
       Please make sure your database contains the relevant table/view."
     ))
@@ -248,22 +246,19 @@ find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
 #' `hospital_id` or `hospital_num`, with preference given to `hospital_id` if it exists.
 #'
 return_hospital_field <- function(db) {
-
   admdad <- find_db_tablename(db, "admdad", verbose = FALSE)
 
   # find variable name corresponding to hospital identifier (hospital_id/hospital_num)
   # to do minimial changes to querying one row to get all the column names instead
 
-  admdad_cols <- dbGetQuery(db, paste0("SELECT * from ",admdad," limit 1;")) %>% data.table()
+  admdad_cols <- dbGetQuery(db, paste0("SELECT * from ", admdad, " limit 1;")) %>% data.table()
 
-  fields<-colnames(admdad_cols)
+  fields <- colnames(admdad_cols)
 
   if ("hospital_id" %in% fields) {
     return("hospital_id")
-
   } else if ("hospital_num" %in% fields) {
     return("hospital_num")
-
   } else {
     error("A field corresponding to the hospital was not found.")
   }
@@ -457,7 +452,6 @@ check_input <- function(arginput, argtype,
 
   ## Function defining all input checks
   run_checks <- function(arginput, argname) {
-
     ###### CHECK 1 (for all input types): Check if type is correct
     ## For DB connections
     if (any(grepl("dbi|con|posgre|sql", argtype, ignore.case = TRUE))) {
@@ -490,13 +484,14 @@ check_input <- function(arginput, argtype,
 
       ## For all other inputs
     } else if ((any(argtype == "integer") && !all(is_integer(arginput))) ||
-               (!any(argtype == "integer") && !any(class(arginput) %in% argtype) &&
-                (!(any(argtype == "numeric") && all(is_integer(arginput)))))) { # in case argtype is "numeric" and provided input is "integer", don't show error
+      (!any(argtype == "integer") && !any(class(arginput) %in% argtype) &&
+        (!(any(argtype == "numeric") &&
+          all(is_integer(arginput)))))) { # in case argtype is "numeric" and provided input is "integer", don't show error
       stop(
         paste0(
           "Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
           argname, "' needs to be of type '", paste(argtype,
-                                                    collapse = "' or '"
+            collapse = "' or '"
           ), "'.",
           "\nPlease refer to the function documentation for more details."
         ),
@@ -529,7 +524,7 @@ check_input <- function(arginput, argtype,
           paste0(
             "Invalid user input in '", as.character(sys.calls()[[1]])[1],
             "': '", argname, "' needs to be either '", paste0(
-              paste(categories[1:length(categories) - 1], collapse = "', '"),
+              paste(categories[seq_along(categories) - 1], collapse = "', '"),
               "' or '", categories[length(categories)]
             ), "'.",
             "\nPlease refer to the function documentation for more details."
@@ -560,7 +555,6 @@ check_input <- function(arginput, argtype,
     ###### CHECK 5 (for data.table/data.frame inputs):
     ###### Check if nrow() > 0 & if relevant columns exist [optional]
     if (any(argtype %in% c("data.frame", "data.table")) && !is.null(colnames)) {
-
       if (nrow(arginput) == 0) {
         stop(
           paste0(
@@ -597,8 +591,8 @@ check_input <- function(arginput, argtype,
       # ignore coltypes without specification ("")
       check_col_type <- function(col, coltype) {
         if (coltype != "" && !any(grepl(coltype,
-                                        class(as.data.table(arginput)[[col]]),
-                                        ignore.case = TRUE
+          class(as.data.table(arginput)[[col]]),
+          ignore.case = TRUE
         ))) {
           stop(
             paste0(
@@ -656,7 +650,8 @@ check_input <- function(arginput, argtype,
 #'
 mapping_message <- function(what, addtl = NULL) {
   msg <- paste0(
-    "\n***Note:***\nThe output of this function is based on manual mapping of ", what, " by a GEMINI Subject Matter Expert.\n",
+    "\n***Note:***\nThe output of this function is based on manual mapping of ", what,
+    " by a GEMINI Subject Matter Expert.\n",
     "Please carefully check mapping coverage for your cohort of interest, or contact the GEMINI team if you require additional support.\n",
     addtl
   )
@@ -775,7 +770,6 @@ convert_dt <- function(dt_var,
                        dt_varname = NULL,
                        addtl_msg = NULL,
                        ...) {
-
   ## initialize all counts of missing/invalid entries
   n_missing_dt <- n_invalid_dt <- n_date_only <- n_zeros <- 0
 
@@ -846,7 +840,6 @@ convert_dt <- function(dt_var,
         )
       }
     }
-
   } else {
     # if date-time variable was already pre-processed into POSIXct/POSIXt by
     # user, return variable as is
@@ -882,22 +875,22 @@ convert_dt <- function(dt_var,
     if (is.null(addtl_msg) || !addtl_msg %in% c("", " ", "\n")) {
       warning(
         ifelse(is.null(addtl_msg),
-               paste0("Please carefully consider how to deal with missing/invalid date-time",
-                      " entries and perform any additional pre-processing prior to running",
-                      " the function `", as.character(sys.calls()[[1]])[1],
-                      "` (e.g., impute missing dates/timestamps etc.).\n"
-               ),
-               addtl_msg
-        ), immediate. = TRUE, call. = FALSE
+          paste0(
+            "Please carefully consider how to deal with missing/invalid date-time",
+            " entries and perform any additional pre-processing prior to running",
+            " the function `", as.character(sys.calls()[[1]])[1],
+            "` (e.g., impute missing dates/timestamps etc.).\n"
+          ),
+          addtl_msg
+        ),
+        immediate. = TRUE, call. = FALSE
       )
     } else {
       cat("\n")
     }
-
   }
 
   return(dt_var_res)
-
 }
 
 
@@ -912,4 +905,129 @@ convert_dt <- function(dt_var,
 #'
 fix_var_str <- function(str) {
   str <- tools::toTitleCase(gsub("[_.]", " ", str))
+}
+
+#' @title Compare two sets to get the number of unique and common elements in each set
+#' @description
+#' This function takes in two vectors and returns the number
+#' of overlapping elements, along with the number of unique elements.
+#' The function can compare sets of characters, numerics, and dates.
+#' @param x (`vector`) \cr
+#' The first set to be compared
+#' @param y (`vector`) \cr
+#' The second set to be compared
+#' @param dates (`logical`)\cr
+#' If set to TRUE, will attempt to convert x & y into dates, and then compare. Set to FALSE by default.
+#' @param orders (`vector`)\cr
+#' Allows user to specify potential date or date-time formats they would like
+#' to compare. The function will check for `"ymd"`, `"ymd HM"`, and `"ymd HMS"`
+#' by default.
+#'
+#' For example, users can set `orders = "dmy"` to compare vectors in `dmy`
+#' format.
+#'
+#' @return (`data.table`)\cr
+#' A table showing the number of elements in both vectors, in the first vector only, and in the second vector only
+#'
+#' @export
+#'
+#' @examples
+#' compare_sets(c(1:10), c(5:10), dates = FALSE)
+compare_sets <- function(x,
+                         y,
+                         dates = FALSE,
+                         orders = c("ymd", "ymd HM", "ymd HMS")) {
+  if (dates == TRUE) {
+    x <- convert_dt(x, orders = orders)
+    y <- convert_dt(y, orders = orders)
+  }
+
+  in_both <- length(intersect(x, y))
+  x_only <- length(unique(setdiff(x, y)))
+  y_only <- length(unique(setdiff(y, x)))
+  data.table(in_both, x_only, y_only)
+}
+
+#' @title Suppress errors/messages/warnings
+#'
+#' @description
+#' Run function without showing any errors/warnings/printed messages.
+#'
+#' Note that certain messages (e.g., from RPostgreSQL) cannot be suppressed.
+#'
+#' @param func
+#' Function to be run quietly
+#'
+#' @export
+quiet <- function(func) {
+  sink(tempfile(), type = "out")
+  on.exit(sink())
+  invisible(force(suppressMessages(suppressWarnings(func))))
+}
+
+
+#' @title
+#' Create N-tiles
+#'
+#' @description
+#' This function bins continuous variables into quantiles
+#' (quartiles, deciles, etc.) of the user's choosing. Bins are
+#' created according to the interval `(low breakpoint, high breakpoint]`.
+#' If individual values are tied around a breakpoint, they will be grouped
+#' into the same (lower) bin, unlike dplyr::ntile(), which ignores ties to
+#' create equally-sized bins.
+#' Note: The function will quit if any breakpoints are
+#' duplicated (e.g. 1st quartile identical to 2nd quartile).
+#'
+#' @param x (`vector`)\cr
+#' A vector of numeric values.
+#'
+#' @param n (`integer`)\cr
+#' The number of bins to create. For example, for quartiles set `n=4`.
+#'
+#' @return (`factor`)\cr
+#' A factor with `n` levels representing the bins (ntiles) of the input values.
+#' The factor returned will be the same length as `x`.
+#'
+#' @export
+#'
+#' @examples
+#' set.seed(123)
+#' values <- rnorm(100)
+#' quartiles <- create_ntiles(values, 4)
+#' deciles <- create_ntiles(values, 10)
+#'
+create_ntiles <- function(x, n) {
+  ## check that x is numeric
+  check_input(
+    x, "numeric"
+  )
+
+  ## check that n is positive integer between 2-Inf
+  check_input(
+    n, "integer",
+    interval = c(2, Inf)
+  )
+
+  ## create breaks
+  probs <- seq(0, 1, length.out = n + 1)
+
+  ## split into quantiles
+  ntiles <- quantile(x, probs = probs)
+
+  ## check for duplicates
+  if (anyDuplicated(ntiles)) {
+    percentile_names <- paste0(probs * 100, "%")
+    formatted_ntiles <- paste(percentile_names, ntiles, sep = ": ", collapse = "\n")
+    stop(paste("Duplicated percentiles detected:\n", formatted_ntiles))
+  }
+
+  ## assign labels for ntiles
+  results <- cut(x, breaks = ntiles, include.lowest = TRUE, labels = seq_len(n))
+
+  ## display ntiles
+  print(ntiles)
+
+  ## return output
+  return(results)
 }

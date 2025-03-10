@@ -12,7 +12,7 @@ A database connection to any GEMINI database.}
 
 \item{restricted_cohort}{(\code{data.table} | \code{data.frame})\cr
 User specified cohort that is a restricted subset of all encounters in DRM table "ipadmdad" (see
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}).
+\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}).
 Must contain \code{genc_id} as the identifier. Default is \code{Null}, which loads the entire "ipadmdad"
 table in the user-provided database (recommended approach).}
 }
@@ -33,7 +33,7 @@ However, the \code{episodes_of_care} function can also be used independently to 
 of care outside of readmission.
 
 Transfer information is obtained from the GEMINI database table \code{lookup_transfer} (see
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI database schema}).
+\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI database schema}).
 By default, the function queries all encounters in the \code{admdad} table to ensure that any encounters that may be
 linked via transfers are accurately grouped into the same episode of care.
 
@@ -51,20 +51,22 @@ service within GEMINI. Episodes involving inter-facility transfers are linked re
 care transfer is assumed to have occurred if either of the following criteria are met (see
 \href{https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital}{CIHI guidelines}:
 \itemize{
-\item{An admission occurs within 7 hours after discharge, regardless of whether the transfer is coded by hospitals. OR}
+\item{An admission occurs within 7 hours after discharge, regardless of whether the transfer is
+coded by hospitals. OR}
 \item{An admission occurs within 7-12 hours after discharge, and at least one hospital has coded the transfer.}
 }
 
-Acute transfers that are coded by hospitals (\code{AT_in_coded} and \code{AT_out_coded}) are defined by the DAD fields
-\code{institution_from} and \code{institution_to}:
-\code{AT_in_coded}/\code{AT_out_coded} is \code{TRUE}, when '\code{institution_from == "AT"} or '\code{institution_to == "AT"}. All
-remaining entries are set to \code{FALSE}.
+Acute transfers that are coded by hospitals (\code{AT_in_coded} and \code{AT_out_coded}) are based on GEMINI-derived
+mappings of institution types that can be found in the \code{lookup_transfer} table. The mapped institution types are
+derived from the raw institution codes in \code{admdad} (DAD fields \code{institution_from} and \code{institution_to}):
+\code{AT_in_coded}/\code{AT_out_coded} is \code{TRUE}, when the mapped institution from/to type is "AT". All remaining
+entries are set to \code{FALSE}.
 
 Acute transfers that actually occurred (\code{AT_in_occurred} and \code{AT_out_occurred}) are defined as follows:
 \code{AT_in_occurred}/\code{AT_out_occurred} is \code{TRUE} when admission is within 7 hrs of discharge regardless of transfer
 coding, or, admission is within 7-12hrs of discharge and at least one hospital coded the transfer.
-\code{AT_in_occurred}/\code{AT_out_occurred} is \code{NA} when the transfer was coded but admission time since previous discharge is unknown.
-This is because it cannot be determined if the transfer actually took place or not.
+\code{AT_in_occurred}/\code{AT_out_occurred} is \code{NA} when the transfer was coded but admission time since
+previous discharge is unknown. This is because it cannot be determined if the transfer actually took place or not.
 \code{AT_in_occurred}/\code{AT_out_occurred} is \code{FALSE}, for all remaining entries.
 
 Each episode of care (\code{epicare}) is defined by linked transfers identified based on \code{AT_in_occurred}/
@@ -81,11 +83,12 @@ concepts is needed for proper use of the function: transfer coded vs. transfer o
 \dontrun{
 drv <- dbDriver("PostgreSQL")
 dbcon <- DBI::dbConnect(drv,
-                        dbname = "db",
-                        host = "domain_name.ca",
-                        port = 1234,
-                        user = getPass("Enter user:"),
-                        password = getPass("password"))
+  dbname = "db",
+  host = "domain_name.ca",
+  port = 1234,
+  user = getPass("Enter user:"),
+  password = getPass("password")
+)
 
 epicare_table <- episodes_of_care(dbcon)
 }

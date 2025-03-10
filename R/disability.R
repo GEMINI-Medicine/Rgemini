@@ -26,12 +26,12 @@
 #' (`genc_id`).
 #'
 #' @param ipdiag (`data.table`)
-#' `ipdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' `ipdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #' This table must contain `genc_id` and `diagnosis_code` (as ICD-10-CA
 #' alphanumeric code) in long format.
 #'
 #' @param erdiag (`data.table`)
-#' `erdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' `erdiagnosis` table as defined in the [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #' This table must contain `genc_id` and `er_diagnosis_code` (as ICD-10-CA
 #' alphanumeric code) in long format.
 #' Typically, ER diagnoses should be included when deriving disability in order
@@ -106,13 +106,12 @@
 #' }
 #'
 #' @references
-#' Brown HK, et al. JAMA Netw Open, 2021. https://doi.org/10.1001/jamanetworkopen.2020.34993 
+#' Brown HK, et al. JAMA Netw Open, 2021. https://doi.org/10.1001/jamanetworkopen.2020.34993
 #'
 #' @importFrom fuzzyjoin regex_left_join
 #' @export
 #'
 disability <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
-
   ############# CHECK & PREPARE DATA #############
   if (is.null(erdiag)) {
     cat("\n*** Based on the input you provided, only in-patient diagnoses (ipdiag) will be included in the derived disability indicator.
@@ -124,12 +123,14 @@ disability <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
 
   ## check that ipdiag/erdiag contains genc_id & diagnosis_code
   check_input(ipdiag, c("data.table", "data.frame"),
-              colnames = c("genc_id", "diagnosis_code"),
-              coltypes = c("", "character"))
-  if (!is.null(erdiag)){
-   check_input(erdiag, c("data.table", "data.frame"),
-               colnames = c("genc_id", "er_diagnosis_code"),
-               coltypes = c("", "character"))
+    colnames = c("genc_id", "diagnosis_code"),
+    coltypes = c("", "character")
+  )
+  if (!is.null(erdiag)) {
+    check_input(erdiag, c("data.table", "data.frame"),
+      colnames = c("genc_id", "er_diagnosis_code"),
+      coltypes = c("", "character")
+    )
   }
 
 
@@ -143,15 +144,14 @@ disability <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
   }
 
   ## Read file with disability codes from data folder
-  data(mapping_disability, package = "Rgemini")
-  disability_codes <- mapping_disability %>% data.table()
+  disability_codes <- Rgemini::mapping_disability %>% data.table()
 
   ## Get encounters with disability
   res_component <- diagnoses %>%
     regex_left_join(disability_codes, by = "diagnosis_code", ignore_case = TRUE) %>% # identify any codes starting with mapped codes
     data.table() %>%
     .[!is.na(disability_category), .(genc_id, diagnosis_code.x, disability_category)] # filter to encounters with diagnosis mapped to frailty conditions
-  setnames(res_component, 'diagnosis_code.x', 'diagnosis_code')
+  setnames(res_component, "diagnosis_code.x", "diagnosis_code")
 
   ## Prepare output based on component-wise flag
   if (component_wise == FALSE) {
@@ -162,18 +162,14 @@ disability <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
       data.table()
 
     res[, disability := ifelse(!genc_id %in% diagnoses$genc_id, NA, # if no diagnosis code at all for genc_id, set flag to NA
-                               ifelse(genc_id %in% res_component$genc_id, TRUE, FALSE))] # if entry in mapped diagnosis codes, set disability to TRUE, otherwise: FALSE
+      ifelse(genc_id %in% res_component$genc_id, TRUE, FALSE)
+    )] # if entry in mapped diagnosis codes, set disability to TRUE, otherwise: FALSE
 
     return(res)
-
   } else {
-
     ## Return component-wise output with disability categories (sort by genc_id)
     res_component <- res_component[order(genc_id, diagnosis_code)]
     res_component <- res_component[genc_id %in% cohort$genc_id, ]
     return(res_component)
-
   }
-
 }
-

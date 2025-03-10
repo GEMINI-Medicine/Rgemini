@@ -23,7 +23,7 @@ a single encounter. Must contain the following columns:
 
 \item{ipscu}{(\code{data.table}, \code{data.frame})\cr
 Table equivalent to the \code{ipscu} table defined in the
-\href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
 Table must contain fields:
 GEMINI Encounter ID (\code{genc_id}), SCU admission time (\code{scu_admit_date_time}), and SCU number (\code{scu_unit_number}).}
 
@@ -69,10 +69,10 @@ Step-Down Units are not considered as ICUs.
 Therefore, this function excludes below CIHI defined Step-Down Units numbers
 from calculation:
 \itemize{
-\item{90 : }{Step-Down Medical Unit}
-\item{93 : }{Combined Medical/Surgical Step-Down Unit}
-\item{95 : }{Step-Down Surgical Unit}
-\item{99 : }{No SCU}
+\item 90: Step-Down Medical Unit
+\item 93: Combined Medical/Surgical Step-Down Unit
+\item 95: Step-Down Surgical Unit
+\item 99: No SCU
 }
 
 Please refer to the CIHI DAD abstracting manual for more details.
@@ -94,23 +94,30 @@ please read function documentation carefully when specifying a non-default value
 to ensure the identification time interval is as intented. See examples below for common use cases.
 }
 \examples{
-## ICU admission within the first 24 hours since IP admission (i.e. you are interested in knowing \% of encounters admitted to ICU):
+# ICU admission within the first 24 hours since IP admission
+# (i.e. you are interested in knowing \% of encounters admitted to ICU):
 \dontrun{
- icu_entry (cohort, ipscu, as_outcome=FALSE, entry_since_cutoff=24)
+icu_entry(cohort, ipscu, as_outcome = FALSE, entry_since_cutoff = 24)
 }
 
-## ICU admission within the first 24 hours since IP admission, as a clinical outcome
-## excluding records with ICU entries prior to IP admission:
+# ICU admission within the first 24 hours since IP admission and with
+# ICU as clinical outcome excluding records with ICU prior to IP admission:
 \dontrun{
- icu_entry (cohort, ipscu, as_outcome=TRUE, entry_since_cutoff=24)
+icu_entry(cohort, ipscu, as_outcome = TRUE, entry_since_cutoff = 24)
 }
 
-## ICU admission within the first 72 hours since IP admission, as a clinical outcome
-## excluding records with ICU entries prior to the first 24 hours of IP admission (i.e. you are interested in knowing
-## patients who were admitted to ICU between the interval of (24, 72] hours since IP admission):
+# ICU admission within the first 72 hours since IP admission and with
+# ICU as a clinical outcome excluding records with ICU prior to the
+# first 24 hours of IP admission (i.e. you are interested in knowing
+# patients who were admitted to ICU between the interval of (24, 72] hours
+# since IP admission):
 \dontrun{
- icu_entry (cohort, ipscu, as_outcome=TRUE, exclude_cutoff=24, entry_since_cutoff=48) # Note: entry_since_cutoff=48 (instead of 72) because 24+48=72
+icu_entry(
+  cohort, ipscu,
+  as_outcome = TRUE,
+  exclude_cutoff = 24,
+  entry_since_cutoff = 48 # = 48 instead of 72 because 24+48=72
+)
 }
-
 
 }

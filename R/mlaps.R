@@ -1,4 +1,3 @@
-
 LAPS_OMOP_CONCEPTS <- c(
   3019550, # Sodium
   3024641, # Blood Urea Nitrogen (BUN)
@@ -12,7 +11,7 @@ LAPS_OMOP_CONCEPTS <- c(
   3013826, # Glucose Random
   3040151, # Glucose Random
   3018251, # Glucose Random
-  3006140  # Bilirubin
+  3006140 # Bilirubin
 )
 
 
@@ -114,7 +113,7 @@ laps_assign_test <- function(x, breaks, points) {
 #'   port = 1234,
 #'   user = getPass::getPass("Enter Username"),
 #'   password = getPass::getPass("Enter Password")
-#'   )
+#' )
 #'
 #' cohort <- DBI::dbGetQuery(db, "SELECT genc_id FROM public.admdad LIMIT 200;")
 #'
@@ -128,21 +127,20 @@ laps_assign_test <- function(x, breaks, points) {
 #' https://doi.org/10.1101/2023.01.06.23284273
 #'
 loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_wise = FALSE) {
-
   hospital_field <- return_hospital_field(db)
   # find table corresponding to admdad
   admdad_table <- find_db_tablename(db, "admdad", verbose = FALSE)
 
-  #Ensure cohort is a data.table/data.frame with genc_id and
+  # Ensure cohort is a data.table/data.frame with genc_id and
   # write a temp table if cohort is not NULL
-  if (!is.null(cohort)){
+  if (!is.null(cohort)) {
     check_input(cohort, c("data.table", "data.frame"),
-                colnames = "genc_id")
-    DBI::dbSendQuery(db,"Drop table if exists cohort_data;")
-    DBI::dbWriteTable(db, c("pg_temp","cohort_data"), cohort[,.(genc_id)], row.names = F, overwrite = T)
-    #Analyze speed up the use of temp table
-    DBI::dbSendQuery(db,"Analyze cohort_data")
-
+      colnames = "genc_id"
+    )
+    DBI::dbSendQuery(db, "Drop table if exists cohort_data;")
+    DBI::dbWriteTable(db, c("pg_temp", "cohort_data"), cohort[, .(genc_id)], row.names = F, overwrite = T)
+    # Analyze speed up the use of temp table
+    DBI::dbSendQuery(db, "Analyze cohort_data")
   }
 
   admdad <- DBI::dbGetQuery(
@@ -188,7 +186,7 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
           paste0("AND l.", hospital_field, " = '", hospital_id, "'"),
           "AND EXTRACT(YEAR FROM a.discharge_date_time::DATE) = ", year,
           if (!is.null(cohort)) {
-            paste("and exists (select 1 from cohort_data c where c.genc_id=l.genc_id)" )
+            paste("and exists (select 1 from cohort_data c where c.genc_id=l.genc_id)")
           }
         )
       ) %>%
@@ -257,14 +255,13 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
 #'
 #' @references
 #' When the function is used, please cite the following:
-#'\itemize{
+#' \itemize{
 #'  \item{Escobar G, et al. Med Care, 2008. https://doi.org/10.1097/MLR.0b013e3181589bb6}
 #'  \item{Roberts SB, et al. J Gen Intern Med, 2023. https://doi.org/10.1007/s11606-023-08245-w}
 #'  \item{Roberts SB, et al. medRxiv (preprint), 2023. https://doi.org/10.1101/2023.01.06.23284273}
 #' }
 #'
 mlaps <- function(ipadmdad, lab, hours_after_admission = 0, component_wise = FALSE) {
-
   mapping_message("lab tests")
 
   lab <- lab %>%
@@ -281,8 +278,8 @@ mlaps <- function(ipadmdad, lab, hours_after_admission = 0, component_wise = FAL
       # special treatment at some sites where Hematocrit results are expressed as a %. Hematocrit results are fractions, thus always <=1. Values > 1, if not converted, can contribute 23pts to the score.
       !is.na(result_unit) & result_unit == "%" & test_type_mapped_omop == 3009542 | is.na(result_unit) & result_value > 1 & test_type_mapped_omop == 3009542,
       as.numeric(result_value) / 100,
-      result_value)
-    ) %>%
+      result_value
+    )) %>%
     mutate(
       score = case_when(
         test_type_mapped_omop == 3019550 ~ # Sodium
@@ -351,8 +348,9 @@ mlaps <- function(ipadmdad, lab, hours_after_admission = 0, component_wise = FAL
             breaks = c(0, 34.21, 51.31, 85.52, 136.83, Inf),
             points = c(0, 10, 16, 22, 32)
           )
-        #,.default = NA # requires a particular version of dplyr, using default behaviour (ignore cases without match)
-      )) %>%
+        # ,.default = NA # requires a particular version of dplyr, using default behaviour (ignore cases without match)
+      )
+    ) %>%
     mutate(
       test_type_mapped_omop = ifelse(
         # recode 3 types of glucose tests as one type of test
@@ -382,7 +380,7 @@ mlaps <- function(ipadmdad, lab, hours_after_admission = 0, component_wise = FAL
   bun_creatinine <- bun %>%
     full_join(creatinine, by = c("genc_id" = "genc_id")) %>%
     mutate(
-      score = ifelse(max_bun/min_creatinine < 0.1, 0, 6),
+      score = ifelse(max_bun / min_creatinine < 0.1, 0, 6),
       test_type_mapped_omop = "BUN/Creatinine"
     ) %>%
     select(genc_id, test_type_mapped_omop, score)

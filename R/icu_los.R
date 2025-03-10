@@ -23,12 +23,10 @@
 #'
 #' Therefore, this function excludes below CIHI defined Step-Down Units numbers
 #' from calculation:
-#' \itemize{
-#'  \item{90 : }{Step-Down Medical Unit}
-#'  \item{93 : }{Combined Medical/Surgical Step-Down Unit}
-#'  \item{95 : }{Step-Down Surgical Unit}
-#'  \item{99 : }{No SCU}
-#' }
+#' - 90: Step-Down Medical Unit
+#' - 93: Combined Medical/Surgical Step-Down Unit
+#' - 95: Step-Down Surgical Unit
+#' - 99: No SCU
 #'
 #' Please refer to the CIHI DAD abstracting manual for more details.
 #'
@@ -38,7 +36,7 @@
 #'
 #' @param ipscu (`data.table` or `data.frame`)\cr
 #' Table equivalent to the `ipscu` table defined in the
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #' Table must contain fields:
 #' GEMINI Encounter ID (`genc_id`),
 #' SCU admission time (`scu_admit_date_time` in "yyyy-mm-dd hh:mm" format),
@@ -66,27 +64,29 @@
 #' @examples
 #' # Compute ICU LoS for all encounters in ipadmdad:
 #' \dontrun{
-#' icu_los (cohort=ipadmdad, ipscu=ipscu)
+#' icu_los(cohort = ipadmdad, ipscu = ipscu)
 #' }
-
 icu_los <- function(cohort, ipscu) {
-
   ###### Check user inputs ######
   ## table provided as data.frame/data.table
   if (!any(class(cohort) %in% c("data.frame", "data.table"))) {
-    stop("Invalid user input for cohort. Please provide a data.frame or a data.table.")}
+    stop("Invalid user input for cohort. Please provide a data.frame or a data.table.")
+  }
 
   if (!any(class(ipscu) %in% c("data.frame", "data.table"))) {
-    stop("Invalid user input for ipscu Please provide a data.frame or a data.table.")}
+    stop("Invalid user input for ipscu Please provide a data.frame or a data.table.")
+  }
 
   ## table contains required fields
   if (any(!"genc_id" %in% names(cohort))) {
     stop("Input cohort is missing the required variable 'genc_id'.
-          Refer to function documentation for details.")}
+          Refer to function documentation for details.")
+  }
 
   if (any(!c("genc_id", "scu_admit_date_time", "scu_discharge_date_time", "scu_unit_number") %in% names(ipscu))) {
     stop("Input ipscu is missing at least one of the required variables.
-          Refer to function documentation for details.")}
+          Refer to function documentation for details.")
+  }
 
   ###### Prepare data ######
   ## coerce tables to data.table as function uses data.table syntax

@@ -10,7 +10,7 @@
 #' of care outside of readmission.
 #'
 #' Transfer information is obtained from the GEMINI database table `lookup_transfer` (see
-#' [GEMINI database schema](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
+#' [GEMINI database schema](https://geminimedicine.ca/the-gemini-database/)).
 #' By default, the function queries all encounters in the `admdad` table to ensure that any encounters that may be
 #' linked via transfers are accurately grouped into the same episode of care.
 #'
@@ -27,7 +27,7 @@
 #'
 #' @param restricted_cohort (`data.table` | `data.frame`)\cr
 #' User specified cohort that is a restricted subset of all encounters in DRM table "ipadmdad" (see
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/)).
 #' Must contain `genc_id` as the identifier. Default is `Null`, which loads the entire "ipadmdad"
 #' table in the user-provided database (recommended approach).
 #'
@@ -37,20 +37,22 @@
 #' care transfer is assumed to have occurred if either of the following criteria are met (see
 #' [CIHI guidelines](https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital):
 #' \itemize{
-#'   \item{An admission occurs within 7 hours after discharge, regardless of whether the transfer is coded by hospitals. OR}
+#'   \item{An admission occurs within 7 hours after discharge, regardless of whether the transfer is
+#' coded by hospitals. OR}
 #'   \item{An admission occurs within 7-12 hours after discharge, and at least one hospital has coded the transfer.}
 #' }
 #'
-#' Acute transfers that are coded by hospitals (`AT_in_coded` and `AT_out_coded`) are defined by the DAD fields
-#' `institution_from` and `institution_to`:
-#' `AT_in_coded`/`AT_out_coded` is `TRUE`, when '`institution_from == "AT"` or '`institution_to == "AT"`. All
-#' remaining entries are set to `FALSE`.
+#' Acute transfers that are coded by hospitals (`AT_in_coded` and `AT_out_coded`) are based on GEMINI-derived
+#' mappings of institution types that can be found in the `lookup_transfer` table. The mapped institution types are
+#' derived from the raw institution codes in `admdad` (DAD fields `institution_from` and `institution_to`):
+#' `AT_in_coded`/`AT_out_coded` is `TRUE`, when the mapped institution from/to type is "AT". All remaining
+#' entries are set to `FALSE`.
 #'
 #' Acute transfers that actually occurred (`AT_in_occurred` and `AT_out_occurred`) are defined as follows:
 #' `AT_in_occurred`/`AT_out_occurred` is `TRUE` when admission is within 7 hrs of discharge regardless of transfer
 #' coding, or, admission is within 7-12hrs of discharge and at least one hospital coded the transfer.
-#' `AT_in_occurred`/`AT_out_occurred` is `NA` when the transfer was coded but admission time since previous discharge is unknown.
-#' This is because it cannot be determined if the transfer actually took place or not.
+#' `AT_in_occurred`/`AT_out_occurred` is `NA` when the transfer was coded but admission time since
+#' previous discharge is unknown. This is because it cannot be determined if the transfer actually took place or not.
 #' `AT_in_occurred`/`AT_out_occurred` is `FALSE`, for all remaining entries.
 #'
 #' Each episode of care (`epicare`) is defined by linked transfers identified based on `AT_in_occurred`/
@@ -82,27 +84,28 @@
 #' \dontrun{
 #' drv <- dbDriver("PostgreSQL")
 #' dbcon <- DBI::dbConnect(drv,
-#'                         dbname = "db",
-#'                         host = "domain_name.ca",
-#'                         port = 1234,
-#'                         user = getPass("Enter user:"),
-#'                         password = getPass("password"))
+#'   dbname = "db",
+#'   host = "domain_name.ca",
+#'   port = 1234,
+#'   user = getPass("Enter user:"),
+#'   password = getPass("password")
+#' )
 #'
 #' epicare_table <- episodes_of_care(dbcon)
 #' }
 #'
 episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
-
   ## check user inputs
   check_input(dbcon, "DBI")
-  if (!is.null(restricted_cohort)){
+  if (!is.null(restricted_cohort)) {
     check_input(restricted_cohort, c("data.table", "data.frame"),
-                colnames = "genc_id")
+      colnames = "genc_id"
+    )
   }
 
   ############ Load lookup_transfer ############
-  lookup_transfer_name<-find_db_tablename(dbcon, "lookup_transfer", verbose = FALSE)
-  lookup_transfer <- DBI::dbGetQuery(dbcon, paste0("select * from ", lookup_transfer_name, ";"))%>% as.data.table()
+  lookup_transfer_name <- find_db_tablename(dbcon, "lookup_transfer", verbose = FALSE)
+  lookup_transfer <- DBI::dbGetQuery(dbcon, paste0("select * from ", lookup_transfer_name, ";")) %>% as.data.table()
 
   ############ Load whole admdad table (default) ############
   ## find relevant table name corresponding to admdad
@@ -112,26 +115,36 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
     if (!"genc_id" %in% names(restricted_cohort)) {
       stop("genc_id is required in user specified cohort")
     } else {
-      warning("Note: Based on the user input, epicares will be computed solely based on the user specified cohort, instead of the default method.
-              The default method computes epicares based on all available data in GEMINI database and is recommended.\n ",
+      warning(
+        "Note: Based on the user input, epicares will be computed solely based on the user specified cohort,
+        instead of the default method. The default method computes epicares based on all available data in the
+        GEMINI database and is recommended.\n ",
         immediate. = TRUE
       )
 
       ## write a temp table to improve querying efficiency
-      DBI::dbSendQuery(dbcon,"Drop table if exists temp_data;")
-      DBI::dbWriteTable(dbcon, c("pg_temp","temp_data"), restricted_cohort[,.(genc_id)], row.names = F, overwrite = T)
-      #Analyze speed up the use of temp table
-      DBI::dbSendQuery(dbcon,"Analyze temp_data")
+      DBI::dbSendQuery(dbcon, "Drop table if exists temp_data;")
+      DBI::dbWriteTable(
+        dbcon, c("pg_temp", "temp_data"), restricted_cohort[, .(genc_id)],
+        row.names = FALSE, overwrite = TRUE
+      )
 
-      admdad <- DBI::dbGetQuery(dbcon, paste0("select genc_id, patient_id_hashed, age, admit_category, admission_date_time,
-                                            discharge_date_time, institution_from_type, institution_to_type
+      # Analyze speed up the use of temp table
+      DBI::dbSendQuery(dbcon, "Analyze temp_data")
+
+      admdad <- DBI::dbGetQuery(dbcon, paste0(
+        "select genc_id, patient_id_hashed, age, admit_category, admission_date_time,
+                                            discharge_date_time
                                             from ", admdad_name,
-                                            " a where exists (select 1 from temp_data t where t.genc_id=a.genc_id); ")) %>% as.data.table()
+        " a where exists (select 1 from temp_data t where t.genc_id=a.genc_id); "
+      )) %>% as.data.table()
     }
   } else {
-    admdad <- DBI::dbGetQuery(dbcon, paste0("select genc_id, patient_id_hashed, age, admit_category, admission_date_time,
-                                          discharge_date_time, institution_from_type, institution_to_type
-                                          from ", admdad_name)) %>% as.data.table()
+    admdad <- DBI::dbGetQuery(dbcon, paste0(
+      "select genc_id, patient_id_hashed, age, admit_category, admission_date_time,
+                                            discharge_date_time
+      from ", admdad_name
+    )) %>% as.data.table()
   }
 
   ############ Prepare data for epicare computation ############
@@ -154,23 +167,24 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
   data$AT_in_coded <- FALSE
   data$AT_out_coded <- FALSE
 
-  ## identify acute-care transfers ("AT") based on
-  # 1) raw institution_from/to_type in admdad and 
-  # 2) mapped AT transfers according to lookup_transfer (relevant column names depend on DB version of lookup_transfer table)
+  ## identify acute-care transfers ("AT") based on mapped AT transfers
+  #  according to lookup_transfer (GEMINI-mapped insitution types)
+  #  relevant column names depend on DB version of lookup_transfer table
   if ("acute_transfer_in" %in% colnames(lookup_transfer)) {
-    # For DB versions <= report/drm DB v2 [H4H_template v3]: filter lookup_transfer for acute_transfer_in/out = "AT"
-    data[institution_from_type == "AT" | acute_transfer_in == "AT", AT_in_coded := TRUE]
-    data[institution_to_type == "AT" | acute_transfer_out == "AT", AT_out_coded := TRUE]
+    # For DB versions <= report/drm DB v2 [H4H_template v3]:
+    # filter lookup_transfer for acute_transfer_in/out = "AT"
+    data[acute_transfer_in == "AT", AT_in_coded := TRUE]
+    data[acute_transfer_out == "AT", AT_out_coded := TRUE]
   } else {
-    # For DB versions > report/drm DB v2 [H4H_template v3]: filter lookup_transfer for institution_from/to_type_mns = "AT"
-    data[institution_from_type == "AT" | institution_from_type_mns == "AT", AT_in_coded := TRUE]
-    data[institution_to_type == "AT" | institution_to_type_mns == "AT", AT_out_coded := TRUE]
+    # For DB versions > report/drm DB v2 [H4H_template v3]:
+    # filter lookup_transfer for institution_from/to_type_mns = "AT"
+    data[institution_from_type_mns == "AT", AT_in_coded := TRUE]
+    data[institution_to_type_mns == "AT", AT_out_coded := TRUE]
   }
 
   ############  Compute `time_to_next_admission`, `time_since_last_admission`  ############
   ## Defined as time difference between admission date-time of (n+1)th encounter minus
   ## discharge date-time of (n)th encounter
-  
   data[, time_to_next_admission := as.numeric(difftime(
     data.table::shift(admission_date_time, type = "lead"), # (n+1)th encounter
     discharge_date_time, # (n)th encounter

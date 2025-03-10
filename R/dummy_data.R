@@ -10,7 +10,7 @@
 #' the R [comorbidity](https://ellessenne.github.io/comorbidity/index.html) package.
 #' If `source` is `icd_lookup`, ICD-10-CA codes will be sampled from the
 #' `lookup_icd10_ca_description` table in the GEMINI database,
-#' see details in [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' see details in the [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #'
 #' @param dbcon (`DBIConnection`)\cr
 #' A database connection to any GEMINI database. Required when `source` is `icd_lookup`.
@@ -92,19 +92,18 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #' @details
 #' To ensure simulated table resembles "ip(er)diagnosis" table, the following characteristics are applied to fields:
 #'
-#' \itemize{
-#'  \item{`genc_id`: } {Numerical identification of encounters starting from 1. The number of unique encounters is defined by `nid`. The total number of rows is defined by `nrow`,
-#'   where the number of rows for each encounter is random, but each encounter has at least one row.}
-#'  \item{`hospital_num`: }{Numerical identification of hospitals from 1 to 5. All rows of an encounter are linked to a single hospital}
-#'  \item{`diagnosis_code`: }{"ipdiagnosis" table only. Simulated ICD-10 diagnosis codes. Each encounter can be associated with multiple diagnosis codes in long format.}
-#'  \item{`diagnosis_type`: }{"ipdiagnosis" table only. The first row of each encounter is consistently assigned to the diagnosis type "M".
+#' - `genc_id`: Numerical identification of encounters starting from 1. The number of unique encounters is defined by `nid`. The total number of rows is defined by `nrow`,
+#'   where the number of rows for each encounter is random, but each encounter has at least one row.
+#' - `hospital_num`: Numerical identification of hospitals from 1 to 5. All rows of an encounter are linked to a single hospital
+#' - `diagnosis_code`: "ipdiagnosis" table only. Simulated ICD-10 diagnosis codes. Each encounter can be associated with multiple diagnosis codes in long format.
+#' - `diagnosis_type`: "ipdiagnosis" table only. The first row of each encounter is consistently assigned to the diagnosis type "M".
 #'                            For the remaining rows, if `diagnosis_type` is specified by users, diagnosis types are sampled randomly from values provided;
-#'                            if `diagnosis_type` is NULL, diagnosis types are sampled from ("1", "2", "3", "4", "5", "6", "9", "W", "X", and "Y"), with sampling probability proportionate to their prevalence in the "ipdiagnosis" table.}
-#'  \item{`diagnosis_cluster`: }{"ipdiagnosis" table only. Proportionally sampled from values that have a prevalence of more than 1% in the "diagnosis_cluster" field of the "ipdiagnosis" table, which are ("", "A", "B").}
-#'  \item{`diagnosis_prefix`: }{"ipdiagnosis" table only. Proportionally sampled from values that have a prevalence of more than 1% in the "diagnosis_prefix" field of the "ipdiagnosis" table, which are ("", "N", "Q", "6").}
-#'  \item{`er_diagnosis_code`: }{"erdiagnosis" table only. Simulated ICD-10 diagnosis codes. Each encounter can be associated with multiple diagnosis codes in long format. }
-#'  \item{`er_diagnosis_type`: }{"erdiagnosis" table only. Proportionally sampled from values that have a prevalence of more than 1% in the "er_diagnosis_type" field of the "erdiagnosis" table, which are ("", "M", "9", "3", "O").}
-#' }
+#'                            if `diagnosis_type` is NULL, diagnosis types are sampled from ("1", "2", "3", "4", "5", "6", "9", "W", "X", and "Y"), with sampling probability proportionate to their prevalence in the "ipdiagnosis" table.
+#' - `diagnosis_cluster`: "ipdiagnosis" table only. Proportionally sampled from values that have a prevalence of more than 1% in the "diagnosis_cluster" field of the "ipdiagnosis" table, which are ("", "A", "B").
+#' - `diagnosis_prefix`: "ipdiagnosis" table only. Proportionally sampled from values that have a prevalence of more than 1% in the "diagnosis_prefix" field of the "ipdiagnosis" table, which are ("", "N", "Q", "6").
+#' - `er_diagnosis_code`: "erdiagnosis" table only. Simulated ICD-10 diagnosis codes. Each encounter can be associated with multiple diagnosis codes in long format.
+#' - `er_diagnosis_type`: "erdiagnosis" table only. Proportionally sampled from values that have a prevalence of more than 1% in the "er_diagnosis_type" field of the "erdiagnosis" table, which are ("", "M", "9", "3", "O").
+#'
 #'
 #' @note The following fields `(er)diagnosis_code`, `(er)diagnosis_type`, `diagnosis_cluster`, `diagnosis_prefix` are simulated independently.
 #' Therefore, the simulated combinations may not reflect the interrelationships of these fields in actual data.
@@ -118,7 +117,7 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #'
 #' @param ipdiagnosis (`logical`)\cr Default to "TRUE" and returns simulated "ipdiagnosis" table.
 #' If FALSE, returns simulated "erdiagnosis" table.
-#' See tables in [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' See tables in [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #'
 #' @param diagnosis_type (`character vector`)\cr The type(s) of diagnosis to return.
 #' Possible diagnosis types are ("M", 1", "2", "3", "4", "5", "6", "9", "W", "X", and "Y").
@@ -218,7 +217,7 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 #' @description
 #' This function creates a dummy dataset with a subset of variables that
 #' are contained in the GEMINI "ipadmdad" table (see details in
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)).
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/)).
 #'
 #' The simulated encounter-level variables that are returned by this function
 #' are currently: Admission date-time, discharge date-time, age, gender,
@@ -477,7 +476,7 @@ dummy_ipadmdad <- function(n = 1000,
 #'
 #' @description
 #' Designed to mimic the most important elements of the GEMINI lab table as defined in the
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #'
 #' @param id (`numeric`)\cr
 #' A single identifier that is repeated to match the length of `value`.
@@ -519,7 +518,7 @@ dummy_lab <- function(id, omop, value, unit, mintime) {
 #'
 #' @description
 #' Designed to partially mimic the `admdad` table as defined in the
-#' [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5).
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #'
 #' @param id (`numeric`)\cr
 #' A single identifier that is repeated to match the length of `value`.
@@ -549,7 +548,7 @@ dummy_admdad <- function(id, admtime) {
 #'
 #' @description
 #' This mimics the GEMINI ipdiagnosis table. And is generated with the `dummy_diag` function.
-#' See the [GEMINI Data Repository Dictionary](https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5)
+#' See the [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/)
 #' for details.
 #'
 #' @keywords internal
@@ -583,4 +582,3 @@ NULL
 #' @docType data
 #'
 NULL
-

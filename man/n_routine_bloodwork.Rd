@@ -36,7 +36,7 @@ Hemoglobin tests) for each hospital admission. Sodium and Hemoglobin tests
 are defined by OMOP codes. Sodium is the code 3019550. Hemoglobin is 3000963.
 }
 \details{
-This function takes a list of admissions and an GEMINI databse connection to
+This function takes a list of admissions and a GEMINI database connection to
 generate numeric fields counting the number of Sodium and Hemoglobin tests
 for each admission.
 
@@ -46,8 +46,10 @@ standardization efforts on lab table (performed by GEMINI). Currently, the
 number of routine bloodwork tests is one of the performance metrics in
 \href{https://www.hqontario.ca/Quality-Improvement/Practice-Reports/MyPractice-General-Medicine}{MyPracticeReport}.
 
-Function does NOT removes tests without valid numeric result value to include
-all tests where blood was drawn from the patients.
+Note that this function removes tests without a valid numeric result value.
+This is to ensure that any non-performed/cancelled tests are not included in
+the counts since non-performed tests are not part of GEMINI's data reference
+model.
 }
 \section{Warning}{
 

@@ -13,12 +13,12 @@ corresponds to a single encounter. Must contain GEMINI Encounter ID
 (\code{genc_id}).}
 
 \item{ipdiag}{(\code{data.table})
-\code{ipdiagnosis} table as defined in the \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+\code{ipdiagnosis} table as defined in the \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
 This table must contain \code{genc_id} and \code{diagnosis_code} (as ICD-10-CA
 alphanumeric code) in long format.}
 
 \item{erdiag}{(\code{data.table})
-\code{erdiagnosis} table as defined in the \href{https://drive.google.com/uc?export=download&id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5}{GEMINI Data Repository Dictionary}.
+\code{erdiagnosis} table as defined in the \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
 This table must contain \code{genc_id} and \code{er_diagnosis_code} (as ICD-10-CA
 alphanumeric code) in long format.
 Typically, ER diagnoses should be included when deriving the COVID flags in
@@ -61,24 +61,23 @@ not available, or not performed.
 \details{
 Below is the current ICD-10-CA diagnosis codes related to COVID-19.
 For more details, please refer to the references in this page.
-
 \itemize{
-\item{U07.1 : }{For confirmed cases of COVID-19, assign U07.1
-Emergency use of U07.1 (COVID-19, virus identified)}
-\item{U07.2 : }{For suspected cases of COVID-19, assign U07.2
-Emergency use of U07.2 (COVID-19, virus not identified)}
-\item{U07.3 : }{Multisystem inflammatory syndrome associated
-with COVID-19}
-\item{U07.4 : }{post COVID-19 condition}
-\item{U07.5 : }{personal history of COVID-19}
-\item{U07.6 : }{Need for immunization against COVID-19.
+\item U07.1: For confirmed cases of COVID-19, assign U07.1
+Emergency use of U07.1 (COVID-19, virus identified)
+\item U07.2: For suspected cases of COVID-19, assign U07.2
+Emergency use of U07.2 (COVID-19, virus not identified)
+\item U07.3: Multisystem inflammatory syndrome associated
+with COVID-19
+\item U07.4: post COVID-19 condition
+\item U07.5: personal history of COVID-19
+\item U07.6: Need for immunization against COVID-19.
 This code is for use when a person encounters health services
-for the sole purpose of receiving the COVID-19 vaccine.}
-\item{U07.7 : }{COVID-19 vaccines causing adverse effect in therapeutic use.
+for the sole purpose of receiving the COVID-19 vaccine.
+\item U07.7: COVID-19 vaccines causing adverse effect in therapeutic use.
 This emergency use code is an external cause code.
 This code would normally be located at the ICD-10-CA block Y40-Y59 Drugs,
 medicaments and biological substances causing
-adverse effects in therapeutic use.}
+adverse effects in therapeutic use.
 }
 }
 \section{Note}{
