@@ -27,7 +27,7 @@ type_mrdx to FALSE."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,6 +40,7 @@ type_mrdx to FALSE."></head><body>
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/cell_suppression_and_table1.html">Cell Suppression and Table 1</a></li>
     <li><a class="dropdown-item" href="../articles/daily_census.html">Daily Census</a></li>
+    <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
@@ -99,7 +100,7 @@ A database connection to any GEMINI database.</p></dd>
 <dd><p>(<code>data.frame</code> | <code>data.table</code>)
 Table containing ICD-10-CA diagnosis codes of interest. Typically, this refers to the <code>ipdiagnosis</code> table, which
 contains the CIHI in-patient diagnoses for each encounter (see
-<a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI database schema</a>).</p>
+<a href="https://geminimedicine.ca/the-gemini-database/" class="external-link">GEMINI database schema</a>).</p>
 <p>If a different type of diagnosis table is provided as input (e.g., <code>erdiagnosis</code>), please make sure the table
 contains a column named <code>diagnosis_code</code> (<code>character</code>) where each row refers to a single, alphanumeric diagnosis
 code consisting of 3-7 characters. If <code>type_mrdx</code> is set to <code>TRUE</code>, the following additional columns are required:</p><ul><li><p><code>genc_id</code> (<code>integer</code>): GEMINI encounter ID</p></li>
@@ -195,11 +196,12 @@ The vignette provides further context and some example code illustrating how to 
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="va">drv</span> <span class="op">&lt;-</span> <span class="fu">dbDriver</span><span class="op">(</span><span class="st">"PostgreSQL"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">dbcon</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="va">drv</span>,</span></span>
-<span class="r-in"><span>                        dbname <span class="op">=</span> <span class="st">"db"</span>,</span></span>
-<span class="r-in"><span>                        host <span class="op">=</span> <span class="st">"domain_name.ca"</span>,</span></span>
-<span class="r-in"><span>                        port <span class="op">=</span> <span class="fl">1234</span>,</span></span>
-<span class="r-in"><span>                        user <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter user:"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>                        password <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"password"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  dbname <span class="op">=</span> <span class="st">"db"</span>,</span></span>
+<span class="r-in"><span>  host <span class="op">=</span> <span class="st">"domain_name.ca"</span>,</span></span>
+<span class="r-in"><span>  port <span class="op">=</span> <span class="fl">1234</span>,</span></span>
+<span class="r-in"><span>  user <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter user:"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  password <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"password"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">dxtable</span> <span class="op">&lt;-</span> <span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">dbcon</span>, <span class="st">"select * from ipdiagnosis"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">icd_to_ccsr</span><span class="op">(</span><span class="va">dbcon</span>, <span class="va">dxtable</span><span class="op">)</span></span></span>

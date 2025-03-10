@@ -9,7 +9,7 @@ in hospital based on the CIHI DAD field discharge disposition"></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -22,6 +22,7 @@ in hospital based on the CIHI DAD field discharge disposition"></head><body>
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/cell_suppression_and_table1.html">Cell Suppression and Table 1</a></li>
     <li><a class="dropdown-item" href="../articles/daily_census.html">Daily Census</a></li>
+    <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
@@ -60,7 +61,7 @@ in hospital based on the CIHI DAD field discharge disposition</p>
 <dl><dt id="arg-ipadmdad">ipadmdad<a class="anchor" aria-label="anchor" href="#arg-ipadmdad"></a></dt>
 <dd><p>(<code>data.frame</code> or <code>data.table</code>)<br>
 Table with all relevant encounters of interest from DRM table "ipadmdad" (see
-<a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>).
+<a href="https://geminimedicine.ca/the-gemini-database/" class="external-link">GEMINI Data Repository Dictionary</a>).
 Must contain two fields: <code>genc_id</code> and <code>discharge_disposition</code>.</p></dd>
 
 
@@ -83,11 +84,10 @@ discharge disposition.</p>
 (Group 05, Field 05 As of 19/20 CIHI DAD) and generates a boolean
 variable indicating whether the patient has deceased during hospital stay.</p>
 <p>The current version of the function captures the four possible
-values indicating that a patient has deceased in hospital:</p>
-<ul><li><p>7 :  Died (Deprecated post 2017)</p></li>
-<li><p>72 : Died in Facility</p></li>
-<li><p>73 : Medical Assistance in Dying</p></li>
-<li><p>74 : Suicide in Facility (Excluded in calculation by default;
+values indicating that a patient has deceased in hospital:</p><ul><li><p>7: Died (Deprecated post 2017)</p></li>
+<li><p>72: Died in Facility</p></li>
+<li><p>73: Medical Assistance in Dying</p></li>
+<li><p>74: Suicide in Facility (Excluded in calculation by default;
 can be included by setting <code>suicide</code> argument to <code>TRUE</code>)</p></li>
 </ul></div>
     <div class="section level2">

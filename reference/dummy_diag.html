@@ -13,7 +13,7 @@ accepts arguments passed to sample_icd() for customizing the sampling scheme."><
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -26,6 +26,7 @@ accepts arguments passed to sample_icd() for customizing the sampling scheme."><
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/cell_suppression_and_table1.html">Cell Suppression and Table 1</a></li>
     <li><a class="dropdown-item" href="../articles/daily_census.html">Daily Census</a></li>
+    <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
@@ -74,7 +75,7 @@ accepts arguments passed to <code><a href="sample_icd.html">sample_icd()</a></co
 <dt id="arg-ipdiagnosis">ipdiagnosis<a class="anchor" aria-label="anchor" href="#arg-ipdiagnosis"></a></dt>
 <dd><p>(<code>logical</code>)<br> Default to "TRUE" and returns simulated "ipdiagnosis" table.
 If FALSE, returns simulated "erdiagnosis" table.
-See tables in <a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>.</p></dd>
+See tables in <a href="https://geminimedicine.ca/the-gemini-database/" class="external-link">GEMINI Data Repository Dictionary</a>.</p></dd>
 
 
 <dt id="arg-diagnosis-type">diagnosis_type<a class="anchor" aria-label="anchor" href="#arg-diagnosis-type"></a></dt>
@@ -95,8 +96,7 @@ and other fields found in the respective diagnosis table.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>To ensure simulated table resembles "ip(er)diagnosis" table, the following characteristics are applied to fields:</p>
-<ul><li><p><code>genc_id</code>:  Numerical identification of encounters starting from 1. The number of unique encounters is defined by <code>nid</code>. The total number of rows is defined by <code>nrow</code>,
+    <p>To ensure simulated table resembles "ip(er)diagnosis" table, the following characteristics are applied to fields:</p><ul><li><p><code>genc_id</code>: Numerical identification of encounters starting from 1. The number of unique encounters is defined by <code>nid</code>. The total number of rows is defined by <code>nrow</code>,
 where the number of rows for each encounter is random, but each encounter has at least one row.</p></li>
 <li><p><code>hospital_num</code>: Numerical identification of hospitals from 1 to 5. All rows of an encounter are linked to a single hospital</p></li>
 <li><p><code>diagnosis_code</code>: "ipdiagnosis" table only. Simulated ICD-10 diagnosis codes. Each encounter can be associated with multiple diagnosis codes in long format.</p></li>

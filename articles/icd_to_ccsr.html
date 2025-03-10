@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,6 +35,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/cell_suppression_and_table1.html">Cell Suppression and Table 1</a></li>
     <li><a class="dropdown-item" href="../articles/daily_census.html">Daily Census</a></li>
+    <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
@@ -142,17 +143,18 @@ diagnosis codes assigned to each <code>genc_id</code>.</p>
 <span></span>
 <span><span class="co"># Establish database connection</span></span>
 <span><span class="va">db</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="va">drv</span>,</span>
-<span>                     dbname <span class="op">=</span> <span class="st">"DB_name"</span>,</span>
-<span>                     host <span class="op">=</span> <span class="st">"172.XX.XX.XXX"</span>,</span>
-<span>                     port <span class="op">=</span> <span class="fl">1234</span>,</span>
-<span>                     user <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter user:"</span><span class="op">)</span>,</span>
-<span>                     password <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter Password:"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  dbname <span class="op">=</span> <span class="st">"DB_name"</span>,</span>
+<span>  host <span class="op">=</span> <span class="st">"172.XX.XX.XXX"</span>,</span>
+<span>  port <span class="op">=</span> <span class="fl">1234</span>,</span>
+<span>  user <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter user:"</span><span class="op">)</span>,</span>
+<span>  password <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter Password:"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># query relevant columns of ipdiagnosis table</span></span>
-<span><span class="va">ipdiagnosis</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbGetQuery.html" class="external-link">dbGetQuery</a></span><span class="op">(</span><span class="va">db</span>, <span class="st">"SELECT genc_id, diagnosis_code, diagnosis_type FROM ipdiagnosis;"</span><span class="op">)</span> </span>
+<span><span class="va">ipdiagnosis</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbGetQuery.html" class="external-link">dbGetQuery</a></span><span class="op">(</span><span class="va">db</span>, <span class="st">"SELECT genc_id, diagnosis_code, diagnosis_type FROM ipdiagnosis;"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Run default version of icd_to_ccsr         </span></span>
-<span><span class="va">ipdiagnosis_ccsr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/icd_to_ccsr.html">icd_to_ccsr</a></span><span class="op">(</span><span class="va">db</span>, dxtable <span class="op">=</span> <span class="va">ipdiagnosis</span><span class="op">)</span> </span>
+<span><span class="co"># Run default version of icd_to_ccsr</span></span>
+<span><span class="va">ipdiagnosis_ccsr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/icd_to_ccsr.html">icd_to_ccsr</a></span><span class="op">(</span><span class="va">db</span>, dxtable <span class="op">=</span> <span class="va">ipdiagnosis</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ipdiagnosis_ccsr</span>, <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
 <blockquote>
@@ -571,7 +573,7 @@ definition of MRDx</a>; see page 13). If users want to obtain CCSR
 categories for any diagnosis types, the input argument
 <code>type_mrdx</code> can be set to <code>FALSE</code>, as follows:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ipdiagnosis_ccsr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/icd_to_ccsr.html">icd_to_ccsr</a></span><span class="op">(</span><span class="va">db</span>, <span class="va">ipdiagnosis</span>, `type_mrdx` <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> </span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">ipdiagnosis_ccsr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/icd_to_ccsr.html">icd_to_ccsr</a></span><span class="op">(</span><span class="va">db</span>, <span class="va">ipdiagnosis</span>, `type_mrdx` <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p>In that case, the function will not apply any filtering by diagnosis
 type, and instead, will return all rows from the original input table.
 Note that this output contains multiple rows per <code>genc_id</code>,
@@ -1943,10 +1945,11 @@ default categories among GIM patients can be obtained as follows:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-datatable.com" class="external-link">data.table</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">ccsr_summary</span> <span class="op">&lt;-</span> <span class="va">ipdiagnosis_ccsr</span><span class="op">[</span>, <span class="fu">.</span><span class="op">(</span>N <span class="op">=</span> <span class="va">.N</span>, `% patients` <span class="op">=</span> <span class="va">.N</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">ipdiagnosis_ccsr</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span><span class="op">)</span>, </span>
-<span>                                 by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ccsr_default"</span>,<span class="st">"ccsr_default_desc"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">ccsr_summary</span> <span class="op">&lt;-</span> <span class="va">ipdiagnosis_ccsr</span><span class="op">[</span>, <span class="fu">.</span><span class="op">(</span>N <span class="op">=</span> <span class="va">.N</span>, `% patients` <span class="op">=</span> <span class="va">.N</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">ipdiagnosis_ccsr</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ccsr_default"</span>, <span class="st">"ccsr_default_desc"</span><span class="op">)</span></span>
+<span><span class="op">]</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ccsr_summary</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">N</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">]</span>,<span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ccsr_summary</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">N</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">]</span>, <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
 <blockquote>
 <p><strong>Mock output table showing top 5 most frequent CCSR default
 categories in a GIM cohort:</strong></p>
@@ -2077,7 +2080,7 @@ category</strong>:</li>
 </ol>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># option 1: filter by CCSR default category only</span></span>
-<span><span class="va">ipdiagnosis_ccsr</span> <span class="op">&lt;-</span> <span class="va">ipdiagnosis_ccsr</span><span class="op">[</span><span class="va">ccsr_default</span><span class="op">==</span><span class="st">"INF002"</span>,<span class="op">]</span></span></code></pre></div>
+<span><span class="va">ipdiagnosis_ccsr</span> <span class="op">&lt;-</span> <span class="va">ipdiagnosis_ccsr</span><span class="op">[</span><span class="va">ccsr_default</span> <span class="op">==</span> <span class="st">"INF002"</span>, <span class="op">]</span></span></code></pre></div>
 <ol start="2" style="list-style-type: decimal">
 <li>Filter encounters where INF002 is among <strong>any of the CCSR 1-6
 categories (recommended)</strong>:</li>
@@ -2085,8 +2088,10 @@ categories (recommended)</strong>:</li>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># option 2: filter by CCSR 1-6 (includes default category)</span></span>
 <span><span class="va">ipdiagnosis_ccsr</span> <span class="op">&lt;-</span> <span class="va">ipdiagnosis_ccsr</span><span class="op">[</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="va">ipdiagnosis_ccsr</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ccsr_1"</span>,<span class="st">"ccsr_2"</span>,<span class="st">"ccsr_3"</span>,<span class="st">"ccsr_4"</span>,<span class="st">"ccsr_5"</span>,<span class="st">"ccsr_6"</span><span class="op">)</span><span class="op">]</span> <span class="op">==</span> <span class="st">"INF002"</span>, </span>
-<span>          na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span>,<span class="op">]</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="va">ipdiagnosis_ccsr</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ccsr_1"</span>, <span class="st">"ccsr_2"</span>, <span class="st">"ccsr_3"</span>, <span class="st">"ccsr_4"</span>, <span class="st">"ccsr_5"</span>, <span class="st">"ccsr_6"</span><span class="op">)</span><span class="op">]</span> <span class="op">==</span> <span class="st">"INF002"</span>,</span>
+<span>    na.rm <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  <span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span>,</span>
+<span><span class="op">]</span></span></code></pre></div>
 <p>The difference between the two approaches is that the CCSR default
 category is meant as the main disease category. Focusing on that single
 category is usually only relevant if users need to ensure that each

@@ -25,7 +25,7 @@ searched while avoiding false positive matches.'></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,6 +38,7 @@ searched while avoiding false positive matches.'></head><body>
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/cell_suppression_and_table1.html">Cell Suppression and Table 1</a></li>
     <li><a class="dropdown-item" href="../articles/daily_census.html">Daily Census</a></li>
+    <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
@@ -103,6 +104,22 @@ Whether or not to show a message indicating which DB table was found.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>(<code>character</code>)<br>
 Returns the full name of the relevant DB table as a character.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="hpc-datacuts-with-materialized-views">HPC datacuts with materialized views<a class="anchor" aria-label="anchor" href="#hpc-datacuts-with-materialized-views"></a></h2>
+
+
+<p>For HPC datacuts created from <code>gemini_h4h_template_v4_0_0</code> (or newer),
+users only have access to materialized views and not tables. For these
+datacuts, users need to set the schema right after establishing a DB
+connection as follows:</p>
+<p>db &lt;- DBI::dbConnect(drv,
+dbname = "db",
+host = "domain_name.ca",
+port = 1234,
+user = "user",
+password = getPass("Enter Password:"))</p>
+<p>dbSendQuery(db, "Set schema 'test_datacut'");</p>
     </div>
 
     <div class="section level2">

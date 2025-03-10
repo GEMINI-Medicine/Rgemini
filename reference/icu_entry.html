@@ -9,7 +9,7 @@ hospital stay using CIHI Discharge Abstract Database (DAD) fields."></head><body
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -22,6 +22,7 @@ hospital stay using CIHI Discharge Abstract Database (DAD) fields."></head><body
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/cell_suppression_and_table1.html">Cell Suppression and Table 1</a></li>
     <li><a class="dropdown-item" href="../articles/daily_census.html">Daily Census</a></li>
+    <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
@@ -74,7 +75,7 @@ a single encounter. Must contain the following columns:</p><ul><li><p><code>genc
 <dt id="arg-ipscu">ipscu<a class="anchor" aria-label="anchor" href="#arg-ipscu"></a></dt>
 <dd><p>(<code>data.table</code>, <code>data.frame</code>)<br>
 Table equivalent to the <code>ipscu</code> table defined in the
-<a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>.
+<a href="https://geminimedicine.ca/the-gemini-database/" class="external-link">GEMINI Data Repository Dictionary</a>.
 Table must contain fields:
 GEMINI Encounter ID (<code>genc_id</code>), SCU admission time (<code>scu_admit_date_time</code>), and SCU number (<code>scu_unit_number</code>).</p></dd>
 
@@ -121,10 +122,10 @@ and within specified time window since hospital admission.</p>
 <p>By definition in DAD (Group 13, Field 02), SCUs include ICUs and Step-Down Units.
 Step-Down Units are not considered as ICUs.</p>
 <p>Therefore, this function excludes below CIHI defined Step-Down Units numbers
-from calculation:</p><ul><li><p>90 : Step-Down Medical Unit</p></li>
-<li><p>93 : Combined Medical/Surgical Step-Down Unit</p></li>
-<li><p>95 : Step-Down Surgical Unit</p></li>
-<li><p>99 : No SCU</p></li>
+from calculation:</p><ul><li><p>90: Step-Down Medical Unit</p></li>
+<li><p>93: Combined Medical/Surgical Step-Down Unit</p></li>
+<li><p>95: Step-Down Surgical Unit</p></li>
+<li><p>99: No SCU</p></li>
 </ul><p>Please refer to the CIHI DAD abstracting manual for more details.</p>
     </div>
     <div class="section level2">
@@ -146,24 +147,31 @@ to ensure the identification time interval is as intented. See examples below fo
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co">## ICU admission within the first 24 hours since IP admission (i.e. you are interested in knowing % of encounters admitted to ICU):</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># ICU admission within the first 24 hours since IP admission</span></span></span>
+<span class="r-in"><span><span class="co"># (i.e. you are interested in knowing % of encounters admitted to ICU):</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span> <span class="fu">icu_entry</span> <span class="op">(</span><span class="va">cohort</span>, <span class="va">ipscu</span>, as_outcome<span class="op">=</span><span class="cn">FALSE</span>, entry_since_cutoff<span class="op">=</span><span class="fl">24</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">icu_entry</span><span class="op">(</span><span class="va">cohort</span>, <span class="va">ipscu</span>, as_outcome <span class="op">=</span> <span class="cn">FALSE</span>, entry_since_cutoff <span class="op">=</span> <span class="fl">24</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co">## ICU admission within the first 24 hours since IP admission, as a clinical outcome</span></span></span>
-<span class="r-in"><span><span class="co">## excluding records with ICU entries prior to IP admission:</span></span></span>
+<span class="r-in"><span><span class="co"># ICU admission within the first 24 hours since IP admission and with</span></span></span>
+<span class="r-in"><span><span class="co"># ICU as clinical outcome excluding records with ICU prior to IP admission:</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span> <span class="fu">icu_entry</span> <span class="op">(</span><span class="va">cohort</span>, <span class="va">ipscu</span>, as_outcome<span class="op">=</span><span class="cn">TRUE</span>, entry_since_cutoff<span class="op">=</span><span class="fl">24</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">icu_entry</span><span class="op">(</span><span class="va">cohort</span>, <span class="va">ipscu</span>, as_outcome <span class="op">=</span> <span class="cn">TRUE</span>, entry_since_cutoff <span class="op">=</span> <span class="fl">24</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co">## ICU admission within the first 72 hours since IP admission, as a clinical outcome</span></span></span>
-<span class="r-in"><span><span class="co">## excluding records with ICU entries prior to the first 24 hours of IP admission (i.e. you are interested in knowing</span></span></span>
-<span class="r-in"><span><span class="co">## patients who were admitted to ICU between the interval of (24, 72] hours since IP admission):</span></span></span>
+<span class="r-in"><span><span class="co"># ICU admission within the first 72 hours since IP admission and with</span></span></span>
+<span class="r-in"><span><span class="co"># ICU as a clinical outcome excluding records with ICU prior to the</span></span></span>
+<span class="r-in"><span><span class="co"># first 24 hours of IP admission (i.e. you are interested in knowing</span></span></span>
+<span class="r-in"><span><span class="co"># patients who were admitted to ICU between the interval of (24, 72] hours</span></span></span>
+<span class="r-in"><span><span class="co"># since IP admission):</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span> <span class="fu">icu_entry</span> <span class="op">(</span><span class="va">cohort</span>, <span class="va">ipscu</span>, as_outcome<span class="op">=</span><span class="cn">TRUE</span>, exclude_cutoff<span class="op">=</span><span class="fl">24</span>, entry_since_cutoff<span class="op">=</span><span class="fl">48</span><span class="op">)</span> <span class="co"># Note: entry_since_cutoff=48 (instead of 72) because 24+48=72</span></span></span>
+<span class="r-in"><span><span class="fu">icu_entry</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">cohort</span>, <span class="va">ipscu</span>,</span></span>
+<span class="r-in"><span>  as_outcome <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  exclude_cutoff <span class="op">=</span> <span class="fl">24</span>,</span></span>
+<span class="r-in"><span>  entry_since_cutoff <span class="op">=</span> <span class="fl">48</span> <span class="co"># = 48 instead of 72 because 24+48=72</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
-<span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

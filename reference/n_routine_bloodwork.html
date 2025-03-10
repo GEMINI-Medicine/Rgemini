@@ -11,7 +11,7 @@ are defined by OMOP codes. Sodium is the code 3019550. Hemoglobin is 3000963."><
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,6 +24,7 @@ are defined by OMOP codes. Sodium is the code 3019550. Hemoglobin is 3000963."><
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/cell_suppression_and_table1.html">Cell Suppression and Table 1</a></li>
     <li><a class="dropdown-item" href="../articles/daily_census.html">Daily Census</a></li>
+    <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
@@ -92,7 +93,7 @@ additional derived numeric field labelled as "n_routine_bloodwork_derived"</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>This function takes a list of admissions and an GEMINI databse connection to
+    <p>This function takes a list of admissions and a GEMINI database connection to
 generate numeric fields counting the number of Sodium and Hemoglobin tests
 for each admission.</p>
 <p>Lab table in the database should include field that classifies each test into
@@ -100,8 +101,10 @@ a few different categories. Therefore, this function should be run after some
 standardization efforts on lab table (performed by GEMINI). Currently, the
 number of routine bloodwork tests is one of the performance metrics in
 <a href="https://www.hqontario.ca/Quality-Improvement/Practice-Reports/MyPractice-General-Medicine" class="external-link">MyPracticeReport</a>.</p>
-<p>Function does NOT removes tests without valid numeric result value to include
-all tests where blood was drawn from the patients.</p>
+<p>Note that this function removes tests without a valid numeric result value.
+This is to ensure that any non-performed/cancelled tests are not included in
+the counts since non-performed tests are not part of GEMINI's data reference
+model.</p>
     </div>
     <div class="section level2">
     <h2 id="warning">Warning<a class="anchor" aria-label="anchor" href="#warning"></a></h2>

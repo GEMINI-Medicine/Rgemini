@@ -39,7 +39,7 @@ or readmission rates for a restricted cohort (see below)."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,6 +52,7 @@ or readmission rates for a restricted cohort (see below)."></head><body>
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/cell_suppression_and_table1.html">Cell Suppression and Table 1</a></li>
     <li><a class="dropdown-item" href="../articles/daily_census.html">Daily Census</a></li>
+    <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
@@ -81,7 +82,7 @@ readmissions. Therefore, the criteria for transfers used in this function are ba
 However, the <code>episodes_of_care</code> function can also be used independently to compute episodes
 of care outside of readmission.</p>
 <p>Transfer information is obtained from the GEMINI database table <code>lookup_transfer</code> (see
-<a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI database schema</a>).
+<a href="https://geminimedicine.ca/the-gemini-database/" class="external-link">GEMINI database schema</a>).
 By default, the function queries all encounters in the <code>admdad</code> table to ensure that any encounters that may be
 linked via transfers are accurately grouped into the same episode of care.</p>
 <p>Note: Users do not typically need to calculate episodes of care themselves, but rather should use the derived
@@ -110,7 +111,7 @@ A database connection to any GEMINI database.</p></dd>
 <dt id="arg-restricted-cohort">restricted_cohort<a class="anchor" aria-label="anchor" href="#arg-restricted-cohort"></a></dt>
 <dd><p>(<code>data.table</code> | <code>data.frame</code>)<br>
 User specified cohort that is a restricted subset of all encounters in DRM table "ipadmdad" (see
-<a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>).
+<a href="https://geminimedicine.ca/the-gemini-database/" class="external-link">GEMINI Data Repository Dictionary</a>).
 Must contain <code>genc_id</code> as the identifier. Default is <code>Null</code>, which loads the entire "ipadmdad"
 table in the user-provided database (recommended approach).</p></dd>
 
@@ -129,17 +130,19 @@ Nine columns are returned: <code>genc_id</code>, <code>patient_id_hashed</code>,
     <p>An episode of care refers to all contiguous inpatient hospitalizations admitted to any medical or intensive care
 service within GEMINI. Episodes involving inter-facility transfers are linked regardless of diagnosis. An acute
 care transfer is assumed to have occurred if either of the following criteria are met (see
-<a href="https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital" class="external-link">CIHI guidelines</a>:</p><ul><li><p>An admission occurs within 7 hours after discharge, regardless of whether the transfer is coded by hospitals. OR</p></li>
+<a href="https://www.cihi.ca/en/indicators/all-patients-readmitted-to-hospital" class="external-link">CIHI guidelines</a>:</p><ul><li><p>An admission occurs within 7 hours after discharge, regardless of whether the transfer is
+coded by hospitals. OR</p></li>
 <li><p>An admission occurs within 7-12 hours after discharge, and at least one hospital has coded the transfer.</p></li>
-</ul><p>Acute transfers that are coded by hospitals (<code>AT_in_coded</code> and <code>AT_out_coded</code>) are defined by the DAD fields
-<code>institution_from</code> and <code>institution_to</code>:
-<code>AT_in_coded</code>/<code>AT_out_coded</code> is <code>TRUE</code>, when '<code>institution_from == "AT"</code> or '<code>institution_to == "AT"</code>. All
-remaining entries are set to <code>FALSE</code>.</p>
+</ul><p>Acute transfers that are coded by hospitals (<code>AT_in_coded</code> and <code>AT_out_coded</code>) are based on GEMINI-derived
+mappings of institution types that can be found in the <code>lookup_transfer</code> table. The mapped institution types are
+derived from the raw institution codes in <code>admdad</code> (DAD fields <code>institution_from</code> and <code>institution_to</code>):
+<code>AT_in_coded</code>/<code>AT_out_coded</code> is <code>TRUE</code>, when the mapped institution from/to type is "AT". All remaining
+entries are set to <code>FALSE</code>.</p>
 <p>Acute transfers that actually occurred (<code>AT_in_occurred</code> and <code>AT_out_occurred</code>) are defined as follows:
 <code>AT_in_occurred</code>/<code>AT_out_occurred</code> is <code>TRUE</code> when admission is within 7 hrs of discharge regardless of transfer
 coding, or, admission is within 7-12hrs of discharge and at least one hospital coded the transfer.
-<code>AT_in_occurred</code>/<code>AT_out_occurred</code> is <code>NA</code> when the transfer was coded but admission time since previous discharge is unknown.
-This is because it cannot be determined if the transfer actually took place or not.
+<code>AT_in_occurred</code>/<code>AT_out_occurred</code> is <code>NA</code> when the transfer was coded but admission time since
+previous discharge is unknown. This is because it cannot be determined if the transfer actually took place or not.
 <code>AT_in_occurred</code>/<code>AT_out_occurred</code> is <code>FALSE</code>, for all remaining entries.</p>
 <p>Each episode of care (<code>epicare</code>) is defined by linked transfers identified based on <code>AT_in_occurred</code>/
 <code>AT_out_occurred</code>. A unique numeric ID is assigned to each unique episode of care. That is, contiguous encounters
@@ -166,11 +169,12 @@ concepts is needed for proper use of the function: transfer coded vs. transfer o
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="va">drv</span> <span class="op">&lt;-</span> <span class="fu">dbDriver</span><span class="op">(</span><span class="st">"PostgreSQL"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">dbcon</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="va">drv</span>,</span></span>
-<span class="r-in"><span>                        dbname <span class="op">=</span> <span class="st">"db"</span>,</span></span>
-<span class="r-in"><span>                        host <span class="op">=</span> <span class="st">"domain_name.ca"</span>,</span></span>
-<span class="r-in"><span>                        port <span class="op">=</span> <span class="fl">1234</span>,</span></span>
-<span class="r-in"><span>                        user <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter user:"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>                        password <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"password"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  dbname <span class="op">=</span> <span class="st">"db"</span>,</span></span>
+<span class="r-in"><span>  host <span class="op">=</span> <span class="st">"domain_name.ca"</span>,</span></span>
+<span class="r-in"><span>  port <span class="op">=</span> <span class="fl">1234</span>,</span></span>
+<span class="r-in"><span>  user <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter user:"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  password <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"password"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">epicare_table</span> <span class="op">&lt;-</span> <span class="fu">episodes_of_care</span><span class="op">(</span><span class="va">dbcon</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>

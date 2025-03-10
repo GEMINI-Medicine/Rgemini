@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -20,6 +20,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/cell_suppression_and_table1.html">Cell Suppression and Table 1</a></li>
     <li><a class="dropdown-item" href="../articles/daily_census.html">Daily Census</a></li>
+    <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
@@ -40,6 +41,43 @@
 
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.0" id="rgemini-110">Rgemini <code>1.1.0</code>
+<a class="anchor" aria-label="anchor" href="#rgemini-110"></a></h2>
+<ul><li>
+<strong>New functions:</strong>
+<ul><li>
+<code><a href="../reference/data_coverage.html">data_coverage()</a></code> function to facilitate data coverage checks</li>
+<li>
+<code><a href="../reference/cohort_creation.html">cohort_creation()</a></code> to generate cohort and show number (%) of entries at each inclusion/exclusion step</li>
+<li>
+<code><a href="../reference/neighbourhood_ses.html">neighbourhood_ses()</a></code> deriving neighbourhood-level variables from the Statistics Canada Census &amp; Ontario Marginalization Index</li>
+<li>
+<strong>Utility functions:</strong>
+<ul><li>
+<code><a href="../reference/quiet.html">quiet()</a></code> to run any functions without warning/error/print messages</li>
+<li>
+<code><a href="../reference/compare_sets.html">compare_sets()</a></code> to find the number of unique and common elements in two sets</li>
+<li>
+<code><a href="../reference/create_ntiles.html">create_ntiles()</a></code> to bin numeric variables into user-specified quantiles</li>
+</ul></li>
+</ul></li>
+<li>
+<strong>Function enhancements:</strong>
+<ul><li>Added option to return readmission <code>genc_id</code> in <code><a href="../reference/readmission.html">readmission()</a></code> function</li>
+<li>Aligned <code><a href="../reference/n_routine_bloodwork.html">n_routine_bloodwork()</a></code> with DRM by only returning lab tests with valid numeric results</li>
+<li>Removed redundant check for acute-care transfers in <code><a href="../reference/episodes_of_care.html">episodes_of_care()</a></code> (only use mapped institution types from <code>lookup_transfer</code>)</li>
+<li>Enabled custom line color without specifying color grouping variable in <code><a href="../reference/plot_over_time.html">plot_over_time()</a></code>
+</li>
+</ul></li>
+<li>
+<strong>Documentation updates:</strong>
+<ul><li>Added pre-commit hooks: Run <code>styler</code> and check for <code><a href="https://rdrr.io/r/base/browser.html" class="external-link">browser()</a></code> statements &amp; large files</li>
+<li>Improved documentation in <code><a href="../reference/readmission.html">readmission()</a></code> vignette</li>
+<li>Updated all links referencing the data dictionary</li>
+<li>Improved organization of figures for vignettes</li>
+</ul></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.2" id="rgemini-102">Rgemini <code>1.0.2</code>
 <a class="anchor" aria-label="anchor" href="#rgemini-102"></a></h2>
@@ -83,6 +121,8 @@
 <p><strong>Function enhancements:</strong></p>
 <ul><li>
 <code>n_imaging</code>, <code><a href="../reference/n_routine_bloodwork.html">n_routine_bloodwork()</a></code> and <code>n_rbc_transfusion()</code> refactored and updated to be able to exclude clinical records in ED</li>
+<li>
+<code>n_imaging</code>, <code>n_routine_bloodwork</code> and <code>n_rbc_transfusion</code> refactored and updated to be able to exclude clinical records in ED</li>
 <li>Inclusion of all routine blood tests (regardless of result value) in <code><a href="../reference/n_routine_bloodwork.html">n_routine_bloodwork()</a></code>
 </li>
 <li>Option to derive ICU entries as a clinical outcome with customizable time windows in <code><a href="../reference/icu_entry.html">icu_entry()</a></code>

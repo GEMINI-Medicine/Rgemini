@@ -37,7 +37,7 @@ not available, or not performed."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,6 +50,7 @@ not available, or not performed."></head><body>
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/cell_suppression_and_table1.html">Cell Suppression and Table 1</a></li>
     <li><a class="dropdown-item" href="../articles/daily_census.html">Daily Census</a></li>
+    <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
@@ -108,14 +109,14 @@ corresponds to a single encounter. Must contain GEMINI Encounter ID
 
 <dt id="arg-ipdiag">ipdiag<a class="anchor" aria-label="anchor" href="#arg-ipdiag"></a></dt>
 <dd><p>(<code>data.table</code>)
-<code>ipdiagnosis</code> table as defined in the <a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>.
+<code>ipdiagnosis</code> table as defined in the <a href="https://geminimedicine.ca/the-gemini-database/" class="external-link">GEMINI Data Repository Dictionary</a>.
 This table must contain <code>genc_id</code> and <code>diagnosis_code</code> (as ICD-10-CA
 alphanumeric code) in long format.</p></dd>
 
 
 <dt id="arg-erdiag">erdiag<a class="anchor" aria-label="anchor" href="#arg-erdiag"></a></dt>
 <dd><p>(<code>data.table</code>)
-<code>erdiagnosis</code> table as defined in the <a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>.
+<code>erdiagnosis</code> table as defined in the <a href="https://geminimedicine.ca/the-gemini-database/" class="external-link">GEMINI Data Repository Dictionary</a>.
 This table must contain <code>genc_id</code> and <code>er_diagnosis_code</code> (as ICD-10-CA
 alphanumeric code) in long format.
 Typically, ER diagnoses should be included when deriving the COVID flags in
@@ -138,19 +139,18 @@ make sure list of admissions (or patient) aligns in both tables.</p>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Below is the current ICD-10-CA diagnosis codes related to COVID-19.
-For more details, please refer to the references in this page.</p>
-<ul><li><p>U07.1 : For confirmed cases of COVID-19, assign U07.1
+For more details, please refer to the references in this page.</p><ul><li><p>U07.1: For confirmed cases of COVID-19, assign U07.1
 Emergency use of U07.1 (COVID-19, virus identified)</p></li>
-<li><p>U07.2 : For suspected cases of COVID-19, assign U07.2
+<li><p>U07.2: For suspected cases of COVID-19, assign U07.2
 Emergency use of U07.2 (COVID-19, virus not identified)</p></li>
-<li><p>U07.3 : Multisystem inflammatory syndrome associated
+<li><p>U07.3: Multisystem inflammatory syndrome associated
 with COVID-19</p></li>
-<li><p>U07.4 : post COVID-19 condition</p></li>
-<li><p>U07.5 : personal history of COVID-19</p></li>
-<li><p>U07.6 : Need for immunization against COVID-19.
+<li><p>U07.4: post COVID-19 condition</p></li>
+<li><p>U07.5: personal history of COVID-19</p></li>
+<li><p>U07.6: Need for immunization against COVID-19.
 This code is for use when a person encounters health services
 for the sole purpose of receiving the COVID-19 vaccine.</p></li>
-<li><p>U07.7 : COVID-19 vaccines causing adverse effect in therapeutic use.
+<li><p>U07.7: COVID-19 vaccines causing adverse effect in therapeutic use.
 This emergency use code is an external cause code.
 This code would normally be located at the ICD-10-CA block Y40-Y59 Drugs,
 medicaments and biological substances causing

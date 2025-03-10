@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,6 +35,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/cell_suppression_and_table1.html">Cell Suppression and Table 1</a></li>
     <li><a class="dropdown-item" href="../articles/daily_census.html">Daily Census</a></li>
+    <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
@@ -110,16 +111,16 @@ various functions described below.</p>
 <span><span class="va">gender</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"M"</span>, <span class="st">"F"</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">95</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>, times <span class="op">=</span> <span class="fl">5</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">exposure</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pre-pandemic"</span>, <span class="st">"pandemic"</span>, <span class="st">"post-pandemic"</span><span class="op">)</span>, </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pre-pandemic"</span>, <span class="st">"pandemic"</span>, <span class="st">"post-pandemic"</span><span class="op">)</span>,</span>
 <span>  size <span class="op">=</span> <span class="fl">100</span>, replace <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span>  <span class="op">)</span></span>
+<span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span>levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pre-pandemic"</span>, <span class="st">"pandemic"</span>, <span class="st">"post-pandemic"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">age</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">100</span>, mean <span class="op">=</span> <span class="fl">70</span>, sd <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">condition</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DVT"</span>, <span class="st">"CVD"</span>, <span class="st">"DM"</span>, <span class="st">"Pneumonia"</span>, <span class="st">"Dementia"</span><span class="op">)</span>, </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DVT"</span>, <span class="st">"CVD"</span>, <span class="st">"DM"</span>, <span class="st">"Pneumonia"</span>, <span class="st">"Dementia"</span><span class="op">)</span>,</span>
 <span>  size <span class="op">=</span> <span class="fl">100</span>, replace <span class="op">=</span> <span class="cn">TRUE</span>, prob <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.01</span>, <span class="fl">0.20</span>, <span class="fl">0.4</span>, <span class="fl">0.35</span>, <span class="fl">0.05</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>gender <span class="op">=</span> <span class="va">gender</span>, exposure <span class="op">=</span> <span class="va">exposure</span>, age <span class="op">=</span> <span class="va">age</span>, condition <span class="op">=</span> <span class="va">condition</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -137,9 +138,9 @@ characteristics, stratifying by the exposure variable:</p>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
 <th class="rowlabel firstrow lastrow"></th>
+<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">pandemic<br><span class="stratn">(N=34)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">post-pandemic<br><span class="stratn">(N=29)</span></span></th>
-<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">Overall<br><span class="stratn">(N=100)</span></span></th>
 </tr></thead>
 <tbody>
@@ -152,23 +153,23 @@ characteristics, stratifying by the exposure variable:</p>
 </tr>
 <tr>
 <td class="rowlabel">F</td>
+<td>18 (48.6%)</td>
 <td>20 (58.8%)</td>
 <td>15 (51.7%)</td>
-<td>18 (48.6%)</td>
 <td>53 (53.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">M</td>
+<td>18 (48.6%)</td>
 <td>12 (35.3%)</td>
 <td>12 (41.4%)</td>
-<td>18 (48.6%)</td>
 <td>42 (42.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Missing</td>
+<td class="lastrow">1 (2.7%)</td>
 <td class="lastrow">2 (5.9%)</td>
 <td class="lastrow">2 (6.9%)</td>
-<td class="lastrow">1 (2.7%)</td>
 <td class="lastrow">5 (5.0%)</td>
 </tr>
 <tr>
@@ -180,16 +181,16 @@ characteristics, stratifying by the exposure variable:</p>
 </tr>
 <tr>
 <td class="rowlabel">Mean (SD)</td>
+<td>70.2 (5.93)</td>
 <td>69.5 (5.53)</td>
 <td>69.7 (5.69)</td>
-<td>70.2 (5.93)</td>
 <td>69.8 (5.68)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Median [Min, Max]</td>
+<td class="lastrow">70.3 [60.1, 82.3]</td>
 <td class="lastrow">68.5 [61.4, 83.4]</td>
 <td class="lastrow">70.6 [58.0, 79.7]</td>
-<td class="lastrow">70.3 [60.1, 82.3]</td>
 <td class="lastrow">70.2 [58.0, 83.4]</td>
 </tr>
 <tr>
@@ -201,38 +202,38 @@ characteristics, stratifying by the exposure variable:</p>
 </tr>
 <tr>
 <td class="rowlabel">CVD</td>
+<td>7 (18.9%)</td>
 <td>5 (14.7%)</td>
 <td>7 (24.1%)</td>
-<td>7 (18.9%)</td>
 <td>19 (19.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel">Dementia</td>
-<td>2 (5.9%)</td>
-<td>2 (6.9%)</td>
-<td>0 (0%)</td>
-<td>4 (4.0%)</td>
-</tr>
-<tr>
 <td class="rowlabel">DM</td>
+<td>15 (40.5%)</td>
 <td>15 (44.1%)</td>
 <td>7 (24.1%)</td>
-<td>15 (40.5%)</td>
 <td>37 (37.0%)</td>
+</tr>
+<tr>
+<td class="rowlabel">DVT</td>
+<td>1 (2.7%)</td>
+<td>0 (0%)</td>
+<td>2 (6.9%)</td>
+<td>3 (3.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
+<td>14 (37.8%)</td>
 <td>12 (35.3%)</td>
 <td>11 (37.9%)</td>
-<td>14 (37.8%)</td>
 <td>37 (37.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel lastrow">DVT</td>
+<td class="rowlabel lastrow">Dementia</td>
 <td class="lastrow">0 (0%)</td>
+<td class="lastrow">2 (5.9%)</td>
 <td class="lastrow">2 (6.9%)</td>
-<td class="lastrow">1 (2.7%)</td>
-<td class="lastrow">3 (3.0%)</td>
+<td class="lastrow">4 (4.0%)</td>
 </tr>
 </tbody>
 </table></div>
@@ -256,16 +257,16 @@ to protect these patients’ privacy.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://gemini-medicine.github.io/Rgemini/">Rgemini</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
-<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
-<span>  data <span class="op">=</span> <span class="va">data</span>, </span>
+<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">data</span>,</span>
 <span>  render <span class="op">=</span> <span class="va">render_cell_suppression.default</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
 <th class="rowlabel firstrow lastrow"></th>
+<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">pandemic<br><span class="stratn">(N=34)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">post-pandemic<br><span class="stratn">(N=29)</span></span></th>
-<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">Overall<br><span class="stratn">(N=100)</span></span></th>
 </tr></thead>
 <tbody>
@@ -278,16 +279,16 @@ to protect these patients’ privacy.</p>
 </tr>
 <tr>
 <td class="rowlabel">F</td>
+<td>18 (48.6%)</td>
 <td>20 (58.8%)</td>
 <td>15 (51.7%)</td>
-<td>18 (48.6%)</td>
 <td>53 (53.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">M</td>
+<td>18 (48.6%)</td>
 <td>12 (35.3%)</td>
 <td>12 (41.4%)</td>
-<td>18 (48.6%)</td>
 <td>42 (42.0%)</td>
 </tr>
 <tr>
@@ -313,9 +314,9 @@ to protect these patients’ privacy.</p>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Mean (SD)</td>
+<td class="lastrow">70.220 (± 5.929)</td>
 <td class="lastrow">69.527 (± 5.527)</td>
 <td class="lastrow">69.723 (± 5.695)</td>
-<td class="lastrow">70.220 (± 5.929)</td>
 <td class="lastrow">69.840 (± 5.677)</td>
 </tr>
 <tr>
@@ -328,33 +329,33 @@ to protect these patients’ privacy.</p>
 <tr>
 <td class="rowlabel">CVD</td>
 <td>(suppressed)</td>
-<td>7 (24.1%)</td>
 <td>(suppressed)</td>
+<td>7 (24.1%)</td>
 <td>19 (19.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel">Dementia</td>
+<td class="rowlabel">DM</td>
+<td>15 (40.5%)</td>
+<td>15 (44.1%)</td>
 <td>(suppressed)</td>
+<td>37 (37.0%)</td>
+</tr>
+<tr>
+<td class="rowlabel">DVT</td>
 <td>(suppressed)</td>
 <td>0 (0.0%)</td>
 <td>(suppressed)</td>
-</tr>
-<tr>
-<td class="rowlabel">DM</td>
-<td>15 (44.1%)</td>
 <td>(suppressed)</td>
-<td>15 (40.5%)</td>
-<td>37 (37.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
+<td>14 (37.8%)</td>
 <td>12 (35.3%)</td>
 <td>11 (37.9%)</td>
-<td>14 (37.8%)</td>
 <td>37 (37.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel lastrow">DVT</td>
+<td class="rowlabel lastrow">Dementia</td>
 <td class="lastrow">0 (0.0%)</td>
 <td class="lastrow">(suppressed)</td>
 <td class="lastrow">(suppressed)</td>
@@ -374,17 +375,24 @@ re-identification.</p>
 <li><strong>Cells that originally had 6 or more patients are also
 suppressed.</strong></li>
 </ol>
-<p>Consider the group of patients in the post-pandemic subgroup. Note
-that patients with CVD post-pandemic were suppressed even though there
+<p>Consider the group of patients in the pre-pandemic subgroup. Note
+that patients with CVD pre-pandemic were suppressed even though there
 were originally seven patients in that subgroup. Why is that? Had we
 only suppressed patients with DVT (one patient), knowing the total
-number of patients post-pandemic (37), we could have reverse-calculated
+number of patients pre-pandemic (37), we could have reverse-calculated
 the number of patients with DVT (with reasonable precision).</p>
 <p>Therefore the algorithm is designed to continue suppressing
 successively larger groups until the total number of suppressed patients
 is six or more, such that they cannot be reverse-calculated with
 reasonable precision. The default option shows the desired behaviour and
 the most conservative with respect to patient privacy.</p>
+<p>Note that in this case, the number of DM patients in post-pandemic
+group can still be reverse-calculated, as the total number of DM
+patients is 37, while the other two groups have 15 each. To prevent
+this, we can consider removing the “Overall” column by setting
+<code>overall = FALSE</code> in <code><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1()</a></code> function call. See
+the <a href="#suppress-overall-count">suppressing “Overall” column</a>
+section for an example.</p>
 </div>
 <div class="section level3">
 <h3 id="customizing-output-for-continuous-variables---change-to-medians">Customizing output for continuous variables - change to medians<a class="anchor" aria-label="anchor" href="#customizing-output-for-continuous-variables---change-to-medians"></a>
@@ -393,17 +401,17 @@ the most conservative with respect to patient privacy.</p>
 variables by specifying a <code>continuous_fn</code>.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
-<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
-<span>  data <span class="op">=</span> <span class="va">data</span>, </span>
-<span>  render <span class="op">=</span> <span class="va">render_cell_suppression.default</span>, </span>
-<span>  continuous_fn <span class="op">=</span> <span class="st">'median'</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">data</span>,</span>
+<span>  render <span class="op">=</span> <span class="va">render_cell_suppression.default</span>,</span>
+<span>  continuous_fn <span class="op">=</span> <span class="st">"median"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
 <th class="rowlabel firstrow lastrow"></th>
+<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">pandemic<br><span class="stratn">(N=34)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">post-pandemic<br><span class="stratn">(N=29)</span></span></th>
-<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">Overall<br><span class="stratn">(N=100)</span></span></th>
 </tr></thead>
 <tbody>
@@ -416,16 +424,16 @@ variables by specifying a <code>continuous_fn</code>.</p>
 </tr>
 <tr>
 <td class="rowlabel">F</td>
+<td>18 (48.6%)</td>
 <td>20 (58.8%)</td>
 <td>15 (51.7%)</td>
-<td>18 (48.6%)</td>
 <td>53 (53.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">M</td>
+<td>18 (48.6%)</td>
 <td>12 (35.3%)</td>
 <td>12 (41.4%)</td>
-<td>18 (48.6%)</td>
 <td>42 (42.0%)</td>
 </tr>
 <tr>
@@ -451,9 +459,9 @@ variables by specifying a <code>continuous_fn</code>.</p>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Median [Q1, Q3]</td>
+<td class="lastrow">70.341 [65.556, 74.247]</td>
 <td class="lastrow">68.478 [65.871, 72.230]</td>
 <td class="lastrow">70.639 [65.050, 73.640]</td>
-<td class="lastrow">70.341 [65.556, 74.247]</td>
 <td class="lastrow">70.180 [65.335, 73.544]</td>
 </tr>
 <tr>
@@ -466,33 +474,33 @@ variables by specifying a <code>continuous_fn</code>.</p>
 <tr>
 <td class="rowlabel">CVD</td>
 <td>(suppressed)</td>
-<td>7 (24.1%)</td>
 <td>(suppressed)</td>
+<td>7 (24.1%)</td>
 <td>19 (19.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel">Dementia</td>
+<td class="rowlabel">DM</td>
+<td>15 (40.5%)</td>
+<td>15 (44.1%)</td>
 <td>(suppressed)</td>
+<td>37 (37.0%)</td>
+</tr>
+<tr>
+<td class="rowlabel">DVT</td>
 <td>(suppressed)</td>
 <td>0 (0.0%)</td>
 <td>(suppressed)</td>
-</tr>
-<tr>
-<td class="rowlabel">DM</td>
-<td>15 (44.1%)</td>
 <td>(suppressed)</td>
-<td>15 (40.5%)</td>
-<td>37 (37.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
+<td>14 (37.8%)</td>
 <td>12 (35.3%)</td>
 <td>11 (37.9%)</td>
-<td>14 (37.8%)</td>
 <td>37 (37.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel lastrow">DVT</td>
+<td class="rowlabel lastrow">Dementia</td>
 <td class="lastrow">0 (0.0%)</td>
 <td class="lastrow">(suppressed)</td>
 <td class="lastrow">(suppressed)</td>
@@ -505,16 +513,16 @@ variables by specifying a <code>continuous_fn</code>.</p>
 suppression, if desired.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
-<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
-<span>  data <span class="op">=</span> <span class="va">data</span>, </span>
+<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">data</span>,</span>
 <span>  render.continuous <span class="op">=</span> <span class="va">render_median.continuous</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
 <th class="rowlabel firstrow lastrow"></th>
+<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">pandemic<br><span class="stratn">(N=34)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">post-pandemic<br><span class="stratn">(N=29)</span></span></th>
-<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">Overall<br><span class="stratn">(N=100)</span></span></th>
 </tr></thead>
 <tbody>
@@ -527,23 +535,23 @@ suppression, if desired.</p>
 </tr>
 <tr>
 <td class="rowlabel">F</td>
+<td>18 (48.6%)</td>
 <td>20 (58.8%)</td>
 <td>15 (51.7%)</td>
-<td>18 (48.6%)</td>
 <td>53 (53.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">M</td>
+<td>18 (48.6%)</td>
 <td>12 (35.3%)</td>
 <td>12 (41.4%)</td>
-<td>18 (48.6%)</td>
 <td>42 (42.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Missing</td>
+<td class="lastrow">1 (2.7%)</td>
 <td class="lastrow">2 (5.9%)</td>
 <td class="lastrow">2 (6.9%)</td>
-<td class="lastrow">1 (2.7%)</td>
 <td class="lastrow">5 (5.0%)</td>
 </tr>
 <tr>
@@ -555,9 +563,9 @@ suppression, if desired.</p>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Median [Q1, Q3]</td>
+<td class="lastrow">70.341 [65.556, 74.247]</td>
 <td class="lastrow">68.478 [65.871, 72.230]</td>
 <td class="lastrow">70.639 [65.050, 73.640]</td>
-<td class="lastrow">70.341 [65.556, 74.247]</td>
 <td class="lastrow">70.180 [65.335, 73.544]</td>
 </tr>
 <tr>
@@ -569,38 +577,38 @@ suppression, if desired.</p>
 </tr>
 <tr>
 <td class="rowlabel">CVD</td>
+<td>7 (18.9%)</td>
 <td>5 (14.7%)</td>
 <td>7 (24.1%)</td>
-<td>7 (18.9%)</td>
 <td>19 (19.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel">Dementia</td>
-<td>2 (5.9%)</td>
-<td>2 (6.9%)</td>
-<td>0 (0%)</td>
-<td>4 (4.0%)</td>
-</tr>
-<tr>
 <td class="rowlabel">DM</td>
+<td>15 (40.5%)</td>
 <td>15 (44.1%)</td>
 <td>7 (24.1%)</td>
-<td>15 (40.5%)</td>
 <td>37 (37.0%)</td>
+</tr>
+<tr>
+<td class="rowlabel">DVT</td>
+<td>1 (2.7%)</td>
+<td>0 (0%)</td>
+<td>2 (6.9%)</td>
+<td>3 (3.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
+<td>14 (37.8%)</td>
 <td>12 (35.3%)</td>
 <td>11 (37.9%)</td>
-<td>14 (37.8%)</td>
 <td>37 (37.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel lastrow">DVT</td>
+<td class="rowlabel lastrow">Dementia</td>
 <td class="lastrow">0 (0%)</td>
+<td class="lastrow">2 (5.9%)</td>
 <td class="lastrow">2 (6.9%)</td>
-<td class="lastrow">1 (2.7%)</td>
-<td class="lastrow">3 (3.0%)</td>
+<td class="lastrow">4 (4.0%)</td>
 </tr>
 </tbody>
 </table></div>
@@ -609,17 +617,17 @@ suppression, if desired.</p>
 type:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
-<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
-<span>  data <span class="op">=</span> <span class="va">data</span>, </span>
-<span>  render.continuous <span class="op">=</span> <span class="va">render_cell_suppression.continuous</span>, </span>
-<span>  continuous_fn <span class="op">=</span> <span class="st">'median'</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">data</span>,</span>
+<span>  render.continuous <span class="op">=</span> <span class="va">render_cell_suppression.continuous</span>,</span>
+<span>  continuous_fn <span class="op">=</span> <span class="st">"median"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
 <th class="rowlabel firstrow lastrow"></th>
+<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">pandemic<br><span class="stratn">(N=34)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">post-pandemic<br><span class="stratn">(N=29)</span></span></th>
-<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">Overall<br><span class="stratn">(N=100)</span></span></th>
 </tr></thead>
 <tbody>
@@ -632,23 +640,23 @@ type:</p>
 </tr>
 <tr>
 <td class="rowlabel">F</td>
+<td>18 (48.6%)</td>
 <td>20 (58.8%)</td>
 <td>15 (51.7%)</td>
-<td>18 (48.6%)</td>
 <td>53 (53.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">M</td>
+<td>18 (48.6%)</td>
 <td>12 (35.3%)</td>
 <td>12 (41.4%)</td>
-<td>18 (48.6%)</td>
 <td>42 (42.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Missing</td>
+<td class="lastrow">1 (2.7%)</td>
 <td class="lastrow">2 (5.9%)</td>
 <td class="lastrow">2 (6.9%)</td>
-<td class="lastrow">1 (2.7%)</td>
 <td class="lastrow">5 (5.0%)</td>
 </tr>
 <tr>
@@ -660,9 +668,9 @@ type:</p>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Median [Q1, Q3]</td>
+<td class="lastrow">70.341 [65.556, 74.247]</td>
 <td class="lastrow">68.478 [65.871, 72.230]</td>
 <td class="lastrow">70.639 [65.050, 73.640]</td>
-<td class="lastrow">70.341 [65.556, 74.247]</td>
 <td class="lastrow">70.180 [65.335, 73.544]</td>
 </tr>
 <tr>
@@ -674,38 +682,38 @@ type:</p>
 </tr>
 <tr>
 <td class="rowlabel">CVD</td>
+<td>7 (18.9%)</td>
 <td>5 (14.7%)</td>
 <td>7 (24.1%)</td>
-<td>7 (18.9%)</td>
 <td>19 (19.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel">Dementia</td>
-<td>2 (5.9%)</td>
-<td>2 (6.9%)</td>
-<td>0 (0%)</td>
-<td>4 (4.0%)</td>
-</tr>
-<tr>
 <td class="rowlabel">DM</td>
+<td>15 (40.5%)</td>
 <td>15 (44.1%)</td>
 <td>7 (24.1%)</td>
-<td>15 (40.5%)</td>
 <td>37 (37.0%)</td>
+</tr>
+<tr>
+<td class="rowlabel">DVT</td>
+<td>1 (2.7%)</td>
+<td>0 (0%)</td>
+<td>2 (6.9%)</td>
+<td>3 (3.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
+<td>14 (37.8%)</td>
 <td>12 (35.3%)</td>
 <td>11 (37.9%)</td>
-<td>14 (37.8%)</td>
 <td>37 (37.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel lastrow">DVT</td>
+<td class="rowlabel lastrow">Dementia</td>
 <td class="lastrow">0 (0%)</td>
+<td class="lastrow">2 (5.9%)</td>
 <td class="lastrow">2 (6.9%)</td>
-<td class="lastrow">1 (2.7%)</td>
-<td class="lastrow">3 (3.0%)</td>
+<td class="lastrow">4 (4.0%)</td>
 </tr>
 </tbody>
 </table></div>
@@ -732,16 +740,16 @@ data types by supplying these custom renderer functions.</p>
 </h4>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
-<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
-<span>  data <span class="op">=</span> <span class="va">data</span>, </span>
+<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">data</span>,</span>
 <span>  render.categorical <span class="op">=</span> <span class="va">render_cell_suppression.categorical</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
 <th class="rowlabel firstrow lastrow"></th>
+<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">pandemic<br><span class="stratn">(N=34)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">post-pandemic<br><span class="stratn">(N=29)</span></span></th>
-<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">Overall<br><span class="stratn">(N=100)</span></span></th>
 </tr></thead>
 <tbody>
@@ -754,23 +762,23 @@ data types by supplying these custom renderer functions.</p>
 </tr>
 <tr>
 <td class="rowlabel">F</td>
+<td>18 (48.6%)</td>
 <td>20 (58.8%)</td>
 <td>15 (51.7%)</td>
-<td>18 (48.6%)</td>
 <td>53 (53.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">M</td>
+<td>18 (48.6%)</td>
 <td>12 (35.3%)</td>
 <td>12 (41.4%)</td>
-<td>18 (48.6%)</td>
 <td>42 (42.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Missing</td>
+<td class="lastrow">1 (2.7%)</td>
 <td class="lastrow">2 (5.9%)</td>
 <td class="lastrow">2 (6.9%)</td>
-<td class="lastrow">1 (2.7%)</td>
 <td class="lastrow">5 (5.0%)</td>
 </tr>
 <tr>
@@ -782,16 +790,16 @@ data types by supplying these custom renderer functions.</p>
 </tr>
 <tr>
 <td class="rowlabel">Mean (SD)</td>
+<td>70.2 (5.93)</td>
 <td>69.5 (5.53)</td>
 <td>69.7 (5.69)</td>
-<td>70.2 (5.93)</td>
 <td>69.8 (5.68)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Median [Min, Max]</td>
+<td class="lastrow">70.3 [60.1, 82.3]</td>
 <td class="lastrow">68.5 [61.4, 83.4]</td>
 <td class="lastrow">70.6 [58.0, 79.7]</td>
-<td class="lastrow">70.3 [60.1, 82.3]</td>
 <td class="lastrow">70.2 [58.0, 83.4]</td>
 </tr>
 <tr>
@@ -804,33 +812,33 @@ data types by supplying these custom renderer functions.</p>
 <tr>
 <td class="rowlabel">CVD</td>
 <td>(suppressed)</td>
-<td>7 (24.1%)</td>
 <td>(suppressed)</td>
+<td>7 (24.1%)</td>
 <td>19 (19.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel">Dementia</td>
+<td class="rowlabel">DM</td>
+<td>15 (40.5%)</td>
+<td>15 (44.1%)</td>
 <td>(suppressed)</td>
+<td>37 (37.0%)</td>
+</tr>
+<tr>
+<td class="rowlabel">DVT</td>
 <td>(suppressed)</td>
 <td>0 (0.0%)</td>
 <td>(suppressed)</td>
-</tr>
-<tr>
-<td class="rowlabel">DM</td>
-<td>15 (44.1%)</td>
 <td>(suppressed)</td>
-<td>15 (40.5%)</td>
-<td>37 (37.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
+<td>14 (37.8%)</td>
 <td>12 (35.3%)</td>
 <td>11 (37.9%)</td>
-<td>14 (37.8%)</td>
 <td>37 (37.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel lastrow">DVT</td>
+<td class="rowlabel lastrow">Dementia</td>
 <td class="lastrow">0 (0.0%)</td>
 <td class="lastrow">(suppressed)</td>
 <td class="lastrow">(suppressed)</td>
@@ -844,17 +852,17 @@ data types by supplying these custom renderer functions.</p>
 <code>single_level_binary</code> variable.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
-<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
-<span>  data <span class="op">=</span> <span class="va">data</span>, </span>
+<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">data</span>,</span>
 <span>  render.categorical <span class="op">=</span> <span class="va">render_cell_suppression.categorical</span>,</span>
 <span>  single_level_binary <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
 <th class="rowlabel firstrow lastrow"></th>
+<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">pandemic<br><span class="stratn">(N=34)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">post-pandemic<br><span class="stratn">(N=29)</span></span></th>
-<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">Overall<br><span class="stratn">(N=100)</span></span></th>
 </tr></thead>
 <tbody>
@@ -867,16 +875,16 @@ data types by supplying these custom renderer functions.</p>
 </tr>
 <tr>
 <td class="rowlabel">F</td>
+<td>18 (48.6%)</td>
 <td>20 (58.8%)</td>
 <td>15 (51.7%)</td>
-<td>18 (48.6%)</td>
 <td>53 (53.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Missing</td>
+<td class="lastrow">1 (2.7%)</td>
 <td class="lastrow">2 (5.9%)</td>
 <td class="lastrow">2 (6.9%)</td>
-<td class="lastrow">1 (2.7%)</td>
 <td class="lastrow">5 (5.0%)</td>
 </tr>
 <tr>
@@ -888,16 +896,16 @@ data types by supplying these custom renderer functions.</p>
 </tr>
 <tr>
 <td class="rowlabel">Mean (SD)</td>
+<td>70.2 (5.93)</td>
 <td>69.5 (5.53)</td>
 <td>69.7 (5.69)</td>
-<td>70.2 (5.93)</td>
 <td>69.8 (5.68)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Median [Min, Max]</td>
+<td class="lastrow">70.3 [60.1, 82.3]</td>
 <td class="lastrow">68.5 [61.4, 83.4]</td>
 <td class="lastrow">70.6 [58.0, 79.7]</td>
-<td class="lastrow">70.3 [60.1, 82.3]</td>
 <td class="lastrow">70.2 [58.0, 83.4]</td>
 </tr>
 <tr>
@@ -910,33 +918,33 @@ data types by supplying these custom renderer functions.</p>
 <tr>
 <td class="rowlabel">CVD</td>
 <td>(suppressed)</td>
-<td>7 (24.1%)</td>
 <td>(suppressed)</td>
+<td>7 (24.1%)</td>
 <td>19 (19.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel">Dementia</td>
+<td class="rowlabel">DM</td>
+<td>15 (40.5%)</td>
+<td>15 (44.1%)</td>
 <td>(suppressed)</td>
+<td>37 (37.0%)</td>
+</tr>
+<tr>
+<td class="rowlabel">DVT</td>
 <td>(suppressed)</td>
 <td>0 (0.0%)</td>
 <td>(suppressed)</td>
-</tr>
-<tr>
-<td class="rowlabel">DM</td>
-<td>15 (44.1%)</td>
 <td>(suppressed)</td>
-<td>15 (40.5%)</td>
-<td>37 (37.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
+<td>14 (37.8%)</td>
 <td>12 (35.3%)</td>
 <td>11 (37.9%)</td>
-<td>14 (37.8%)</td>
 <td>37 (37.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel lastrow">DVT</td>
+<td class="rowlabel lastrow">Dementia</td>
 <td class="lastrow">0 (0.0%)</td>
 <td class="lastrow">(suppressed)</td>
 <td class="lastrow">(suppressed)</td>
@@ -953,16 +961,16 @@ data types by supplying these custom renderer functions.</p>
 cells with counts fewer than six as needed.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
-<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
-<span>  data <span class="op">=</span> <span class="va">data</span>, </span>
+<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">data</span>,</span>
 <span>  render.categorical <span class="op">=</span> <span class="va">render_strict_cell_suppression.categorical</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
 <th class="rowlabel firstrow lastrow"></th>
+<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">pandemic<br><span class="stratn">(N=34)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">post-pandemic<br><span class="stratn">(N=29)</span></span></th>
-<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">Overall<br><span class="stratn">(N=100)</span></span></th>
 </tr></thead>
 <tbody>
@@ -975,23 +983,23 @@ cells with counts fewer than six as needed.</p>
 </tr>
 <tr>
 <td class="rowlabel">F</td>
+<td>18 (48.6%)</td>
 <td>20 (58.8%)</td>
 <td>15 (51.7%)</td>
-<td>18 (48.6%)</td>
 <td>53 (53.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">M</td>
+<td>18 (48.6%)</td>
 <td>12 (35.3%)</td>
 <td>12 (41.4%)</td>
-<td>18 (48.6%)</td>
 <td>42 (42.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Missing</td>
+<td class="lastrow">1 (2.7%)</td>
 <td class="lastrow">2 (5.9%)</td>
 <td class="lastrow">2 (6.9%)</td>
-<td class="lastrow">1 (2.7%)</td>
 <td class="lastrow">5 (5.0%)</td>
 </tr>
 <tr>
@@ -1003,16 +1011,16 @@ cells with counts fewer than six as needed.</p>
 </tr>
 <tr>
 <td class="rowlabel">Mean (SD)</td>
+<td>70.2 (5.93)</td>
 <td>69.5 (5.53)</td>
 <td>69.7 (5.69)</td>
-<td>70.2 (5.93)</td>
 <td>69.8 (5.68)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Median [Min, Max]</td>
+<td class="lastrow">70.3 [60.1, 82.3]</td>
 <td class="lastrow">68.5 [61.4, 83.4]</td>
 <td class="lastrow">70.6 [58.0, 79.7]</td>
-<td class="lastrow">70.3 [60.1, 82.3]</td>
 <td class="lastrow">70.2 [58.0, 83.4]</td>
 </tr>
 <tr>
@@ -1024,34 +1032,34 @@ cells with counts fewer than six as needed.</p>
 </tr>
 <tr>
 <td class="rowlabel">CVD</td>
+<td>7 (18.9%)</td>
 <td>&lt; 6 obs. (suppressed)</td>
 <td>7 (24.1%)</td>
-<td>7 (18.9%)</td>
 <td>19 (19.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel">Dementia</td>
-<td>&lt; 6 obs. (suppressed)</td>
+<td class="rowlabel">DM</td>
+<td>15 (40.5%)</td>
+<td>15 (44.1%)</td>
+<td>7 (24.1%)</td>
+<td>37 (37.0%)</td>
+</tr>
+<tr>
+<td class="rowlabel">DVT</td>
 <td>&lt; 6 obs. (suppressed)</td>
 <td>0 (0.0%)</td>
 <td>&lt; 6 obs. (suppressed)</td>
-</tr>
-<tr>
-<td class="rowlabel">DM</td>
-<td>15 (44.1%)</td>
-<td>7 (24.1%)</td>
-<td>15 (40.5%)</td>
-<td>37 (37.0%)</td>
+<td>&lt; 6 obs. (suppressed)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
+<td>14 (37.8%)</td>
 <td>12 (35.3%)</td>
 <td>11 (37.9%)</td>
-<td>14 (37.8%)</td>
 <td>37 (37.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel lastrow">DVT</td>
+<td class="rowlabel lastrow">Dementia</td>
 <td class="lastrow">0 (0.0%)</td>
 <td class="lastrow">&lt; 6 obs. (suppressed)</td>
 <td class="lastrow">&lt; 6 obs. (suppressed)</td>
@@ -1068,17 +1076,17 @@ cells with counts fewer than six as needed.</p>
 <code><a href="../reference/render_cell_suppression.missing.html">render_cell_suppression.missing()</a></code> function:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
-<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
-<span>  data <span class="op">=</span> <span class="va">data</span>, </span>
+<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">data</span>,</span>
 <span>  render.categorical <span class="op">=</span> <span class="va">render_strict_cell_suppression.categorical</span>,</span>
 <span>  render.missing <span class="op">=</span> <span class="va">render_cell_suppression.missing</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
 <th class="rowlabel firstrow lastrow"></th>
+<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">pandemic<br><span class="stratn">(N=34)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">post-pandemic<br><span class="stratn">(N=29)</span></span></th>
-<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">Overall<br><span class="stratn">(N=100)</span></span></th>
 </tr></thead>
 <tbody>
@@ -1091,16 +1099,16 @@ cells with counts fewer than six as needed.</p>
 </tr>
 <tr>
 <td class="rowlabel">F</td>
+<td>18 (48.6%)</td>
 <td>20 (58.8%)</td>
 <td>15 (51.7%)</td>
-<td>18 (48.6%)</td>
 <td>53 (53.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">M</td>
+<td>18 (48.6%)</td>
 <td>12 (35.3%)</td>
 <td>12 (41.4%)</td>
-<td>18 (48.6%)</td>
 <td>42 (42.0%)</td>
 </tr>
 <tr>
@@ -1126,16 +1134,16 @@ cells with counts fewer than six as needed.</p>
 </tr>
 <tr>
 <td class="rowlabel">Mean (SD)</td>
+<td>70.2 (5.93)</td>
 <td>69.5 (5.53)</td>
 <td>69.7 (5.69)</td>
-<td>70.2 (5.93)</td>
 <td>69.8 (5.68)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Median [Min, Max]</td>
+<td class="lastrow">70.3 [60.1, 82.3]</td>
 <td class="lastrow">68.5 [61.4, 83.4]</td>
 <td class="lastrow">70.6 [58.0, 79.7]</td>
-<td class="lastrow">70.3 [60.1, 82.3]</td>
 <td class="lastrow">70.2 [58.0, 83.4]</td>
 </tr>
 <tr>
@@ -1147,34 +1155,34 @@ cells with counts fewer than six as needed.</p>
 </tr>
 <tr>
 <td class="rowlabel">CVD</td>
+<td>7 (18.9%)</td>
 <td>&lt; 6 obs. (suppressed)</td>
 <td>7 (24.1%)</td>
-<td>7 (18.9%)</td>
 <td>19 (19.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel">Dementia</td>
-<td>&lt; 6 obs. (suppressed)</td>
+<td class="rowlabel">DM</td>
+<td>15 (40.5%)</td>
+<td>15 (44.1%)</td>
+<td>7 (24.1%)</td>
+<td>37 (37.0%)</td>
+</tr>
+<tr>
+<td class="rowlabel">DVT</td>
 <td>&lt; 6 obs. (suppressed)</td>
 <td>0 (0.0%)</td>
 <td>&lt; 6 obs. (suppressed)</td>
-</tr>
-<tr>
-<td class="rowlabel">DM</td>
-<td>15 (44.1%)</td>
-<td>7 (24.1%)</td>
-<td>15 (40.5%)</td>
-<td>37 (37.0%)</td>
+<td>&lt; 6 obs. (suppressed)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
+<td>14 (37.8%)</td>
 <td>12 (35.3%)</td>
 <td>11 (37.9%)</td>
-<td>14 (37.8%)</td>
 <td>37 (37.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel lastrow">DVT</td>
+<td class="rowlabel lastrow">Dementia</td>
 <td class="lastrow">0 (0.0%)</td>
 <td class="lastrow">&lt; 6 obs. (suppressed)</td>
 <td class="lastrow">&lt; 6 obs. (suppressed)</td>
@@ -1195,16 +1203,16 @@ more conservative
 <span><span class="va">data</span><span class="op">$</span><span class="va">gender</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">gender</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"Not Available"</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
-<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
-<span>  data <span class="op">=</span> <span class="va">data</span>, </span>
+<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">data</span>,</span>
 <span>  render.categorical <span class="op">=</span> <span class="va">render_cell_suppression.categorical</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
 <th class="rowlabel firstrow lastrow"></th>
+<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">pandemic<br><span class="stratn">(N=34)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">post-pandemic<br><span class="stratn">(N=29)</span></span></th>
-<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">Overall<br><span class="stratn">(N=100)</span></span></th>
 </tr></thead>
 <tbody>
@@ -1217,9 +1225,9 @@ more conservative
 </tr>
 <tr>
 <td class="rowlabel">F</td>
+<td>18 (48.6%)</td>
 <td>20 (58.8%)</td>
 <td>15 (51.7%)</td>
-<td>18 (48.6%)</td>
 <td>53 (53.0%)</td>
 </tr>
 <tr>
@@ -1245,16 +1253,16 @@ more conservative
 </tr>
 <tr>
 <td class="rowlabel">Mean (SD)</td>
+<td>70.2 (5.93)</td>
 <td>69.5 (5.53)</td>
 <td>69.7 (5.69)</td>
-<td>70.2 (5.93)</td>
 <td>69.8 (5.68)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Median [Min, Max]</td>
+<td class="lastrow">70.3 [60.1, 82.3]</td>
 <td class="lastrow">68.5 [61.4, 83.4]</td>
 <td class="lastrow">70.6 [58.0, 79.7]</td>
-<td class="lastrow">70.3 [60.1, 82.3]</td>
 <td class="lastrow">70.2 [58.0, 83.4]</td>
 </tr>
 <tr>
@@ -1267,33 +1275,33 @@ more conservative
 <tr>
 <td class="rowlabel">CVD</td>
 <td>(suppressed)</td>
-<td>7 (24.1%)</td>
 <td>(suppressed)</td>
+<td>7 (24.1%)</td>
 <td>19 (19.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel">Dementia</td>
+<td class="rowlabel">DM</td>
+<td>15 (40.5%)</td>
+<td>15 (44.1%)</td>
 <td>(suppressed)</td>
+<td>37 (37.0%)</td>
+</tr>
+<tr>
+<td class="rowlabel">DVT</td>
 <td>(suppressed)</td>
 <td>0 (0.0%)</td>
 <td>(suppressed)</td>
-</tr>
-<tr>
-<td class="rowlabel">DM</td>
-<td>15 (44.1%)</td>
 <td>(suppressed)</td>
-<td>15 (40.5%)</td>
-<td>37 (37.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
+<td>14 (37.8%)</td>
 <td>12 (35.3%)</td>
 <td>11 (37.9%)</td>
-<td>14 (37.8%)</td>
 <td>37 (37.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel lastrow">DVT</td>
+<td class="rowlabel lastrow">Dementia</td>
 <td class="lastrow">0 (0.0%)</td>
 <td class="lastrow">(suppressed)</td>
 <td class="lastrow">(suppressed)</td>
@@ -1380,10 +1388,10 @@ the example below.</p>
 any summary statistics for groups with a size smaller than six.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
-<span>  <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">laps</span> <span class="op">|</span> <span class="va">nobel</span>, </span>
-<span>  data <span class="op">=</span> <span class="va">continuous_data</span>, </span>
+<span>  <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">laps</span> <span class="op">|</span> <span class="va">nobel</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">continuous_data</span>,</span>
 <span>  render.continuous <span class="op">=</span> <span class="va">render_cell_suppression.continuous</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
 <th class="rowlabel firstrow lastrow"></th>
@@ -1428,11 +1436,11 @@ the strata as well using <code>render_cell_suppression.strat</code>.</p>
 </h5>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
-<span>  <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">laps</span> <span class="op">|</span> <span class="va">nobel</span>, </span>
-<span>  data <span class="op">=</span> <span class="va">continuous_data</span>, </span>
+<span>  <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">laps</span> <span class="op">|</span> <span class="va">nobel</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">continuous_data</span>,</span>
 <span>  render.continuous <span class="op">=</span> <span class="va">render_cell_suppression.continuous</span>,</span>
 <span>  render.strat <span class="op">=</span> <span class="va">render_cell_suppression.strat</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
 <th class="rowlabel firstrow lastrow"></th>
@@ -1477,12 +1485,12 @@ strata total using the overall count. Therefore in this scenario we
 could consider removing the “Overall” count:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
-<span>  <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">laps</span> <span class="op">|</span> <span class="va">nobel</span>, </span>
-<span>  data <span class="op">=</span> <span class="va">continuous_data</span>, </span>
+<span>  <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">laps</span> <span class="op">|</span> <span class="va">nobel</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">continuous_data</span>,</span>
 <span>  render.continuous <span class="op">=</span> <span class="va">render_cell_suppression.continuous</span>,</span>
 <span>  render.strat <span class="op">=</span> <span class="va">render_cell_suppression.strat</span>,</span>
 <span>  overall <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
 <th class="rowlabel firstrow lastrow"></th>
@@ -1533,16 +1541,16 @@ percentages to using the <code>digits</code> argument. Note that
 <code>digits</code> argument.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
-<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
+<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">data</span>,</span>
 <span>  digits <span class="op">=</span> <span class="fl">2</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
 <th class="rowlabel firstrow lastrow"></th>
+<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N= 37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">pandemic<br><span class="stratn">(N= 34)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">post-pandemic<br><span class="stratn">(N= 29)</span></span></th>
-<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N= 37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">Overall<br><span class="stratn">(N=100)</span></span></th>
 </tr></thead>
 <tbody>
@@ -1555,23 +1563,23 @@ percentages to using the <code>digits</code> argument. Note that
 </tr>
 <tr>
 <td class="rowlabel">F</td>
+<td>18 (48.6%)</td>
 <td>20 (58.8%)</td>
 <td>15 (51.7%)</td>
-<td>18 (48.6%)</td>
 <td>53 (53.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">M</td>
+<td>18 (48.6%)</td>
 <td>12 (35.3%)</td>
 <td>12 (41.4%)</td>
-<td>18 (48.6%)</td>
 <td>42 (42.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Not Available</td>
+<td class="lastrow">1 (2.7%)</td>
 <td class="lastrow">2 (5.9%)</td>
 <td class="lastrow">2 (6.9%)</td>
-<td class="lastrow">1 (2.7%)</td>
 <td class="lastrow">5 (5.0%)</td>
 </tr>
 <tr>
@@ -1583,16 +1591,16 @@ percentages to using the <code>digits</code> argument. Note that
 </tr>
 <tr>
 <td class="rowlabel">Mean (SD)</td>
+<td>70 (5.9)</td>
 <td>70 (5.5)</td>
 <td>70 (5.7)</td>
-<td>70 (5.9)</td>
 <td>70 (5.7)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Median [Min, Max]</td>
+<td class="lastrow">70 [60, 82]</td>
 <td class="lastrow">68 [61, 83]</td>
 <td class="lastrow">71 [58, 80]</td>
-<td class="lastrow">70 [60, 82]</td>
 <td class="lastrow">70 [58, 83]</td>
 </tr>
 <tr>
@@ -1604,38 +1612,38 @@ percentages to using the <code>digits</code> argument. Note that
 </tr>
 <tr>
 <td class="rowlabel">CVD</td>
+<td>7 (18.9%)</td>
 <td>5 (14.7%)</td>
 <td>7 (24.1%)</td>
-<td>7 (18.9%)</td>
 <td>19 (19.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel">Dementia</td>
-<td>2 (5.9%)</td>
-<td>2 (6.9%)</td>
-<td>0 (0%)</td>
-<td>4 (4.0%)</td>
-</tr>
-<tr>
 <td class="rowlabel">DM</td>
+<td>15 (40.5%)</td>
 <td>15 (44.1%)</td>
 <td>7 (24.1%)</td>
-<td>15 (40.5%)</td>
 <td>37 (37.0%)</td>
+</tr>
+<tr>
+<td class="rowlabel">DVT</td>
+<td>1 (2.7%)</td>
+<td>0 (0%)</td>
+<td>2 (6.9%)</td>
+<td>3 (3.0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
+<td>14 (37.8%)</td>
 <td>12 (35.3%)</td>
 <td>11 (37.9%)</td>
-<td>14 (37.8%)</td>
 <td>37 (37.0%)</td>
 </tr>
 <tr>
-<td class="rowlabel lastrow">DVT</td>
+<td class="rowlabel lastrow">Dementia</td>
 <td class="lastrow">0 (0%)</td>
+<td class="lastrow">2 (5.9%)</td>
 <td class="lastrow">2 (6.9%)</td>
-<td class="lastrow">1 (2.7%)</td>
-<td class="lastrow">3 (3.0%)</td>
+<td class="lastrow">4 (4.0%)</td>
 </tr>
 </tbody>
 </table></div>
@@ -1650,18 +1658,18 @@ is that if combining default <code>table1</code> render functions with
 way that rounding is handled (by default).</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
-<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
+<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">data</span>,</span>
 <span>  render.categorical <span class="op">=</span> <span class="va">render_cell_suppression.categorical</span>,</span>
-<span>  <span class="co">#render.continuous = render.continuous, &lt;- this is implicitly using table1's default continuous rendering function</span></span>
+<span>  <span class="co"># render.continuous = render.continuous, &lt;- this is implicitly using table1's default continuous rendering function</span></span>
 <span>  digits <span class="op">=</span> <span class="fl">5</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
 <th class="rowlabel firstrow lastrow"></th>
+<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=    37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">pandemic<br><span class="stratn">(N=    34)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">post-pandemic<br><span class="stratn">(N=    29)</span></span></th>
-<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=    37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">Overall<br><span class="stratn">(N=   100)</span></span></th>
 </tr></thead>
 <tbody>
@@ -1674,9 +1682,9 @@ way that rounding is handled (by default).</p>
 </tr>
 <tr>
 <td class="rowlabel">F</td>
+<td>18 (48.64865%)</td>
 <td>20 (58.82353%)</td>
 <td>15 (51.72414%)</td>
-<td>18 (48.64865%)</td>
 <td>53 (53.00000%)</td>
 </tr>
 <tr>
@@ -1702,16 +1710,16 @@ way that rounding is handled (by default).</p>
 </tr>
 <tr>
 <td class="rowlabel">Mean (SD)</td>
+<td>70.220 (5.9286)</td>
 <td>69.527 (5.5269)</td>
 <td>69.723 (5.6948)</td>
-<td>70.220 (5.9286)</td>
 <td>69.840 (5.6769)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Median [Min, Max]</td>
+<td class="lastrow">70.341 [60.088, 82.320]</td>
 <td class="lastrow">68.478 [61.378, 83.383]</td>
 <td class="lastrow">70.639 [57.982, 79.651]</td>
-<td class="lastrow">70.341 [60.088, 82.320]</td>
 <td class="lastrow">70.180 [57.982, 83.383]</td>
 </tr>
 <tr>
@@ -1724,33 +1732,33 @@ way that rounding is handled (by default).</p>
 <tr>
 <td class="rowlabel">CVD</td>
 <td>(suppressed)</td>
-<td>7 (24.13793%)</td>
 <td>(suppressed)</td>
+<td>7 (24.13793%)</td>
 <td>19 (19.00000%)</td>
 </tr>
 <tr>
-<td class="rowlabel">Dementia</td>
+<td class="rowlabel">DM</td>
+<td>15 (40.54054%)</td>
+<td>15 (44.11765%)</td>
 <td>(suppressed)</td>
+<td>37 (37.00000%)</td>
+</tr>
+<tr>
+<td class="rowlabel">DVT</td>
 <td>(suppressed)</td>
 <td>0 (0.00000%)</td>
 <td>(suppressed)</td>
-</tr>
-<tr>
-<td class="rowlabel">DM</td>
-<td>15 (44.11765%)</td>
 <td>(suppressed)</td>
-<td>15 (40.54054%)</td>
-<td>37 (37.00000%)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
+<td>14 (37.83784%)</td>
 <td>12 (35.29412%)</td>
 <td>11 (37.93103%)</td>
-<td>14 (37.83784%)</td>
 <td>37 (37.00000%)</td>
 </tr>
 <tr>
-<td class="rowlabel lastrow">DVT</td>
+<td class="rowlabel lastrow">Dementia</td>
 <td class="lastrow">0 (0.00000%)</td>
 <td class="lastrow">(suppressed)</td>
 <td class="lastrow">(suppressed)</td>
@@ -1771,19 +1779,19 @@ argument <code>rounding.fn = round_pad</code>, which will tell the
 <em>after the decimal place</em>.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
-<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>, </span>
+<span>  <span class="op">~</span> <span class="va">gender</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">condition</span> <span class="op">|</span> <span class="va">exposure</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">data</span>,</span>
 <span>  render.categorical <span class="op">=</span> <span class="va">render_cell_suppression.categorical</span>,</span>
-<span>  <span class="co">#render.continuous = render.continuous, &lt;- this is implicit</span></span>
+<span>  <span class="co"># render.continuous = render.continuous, &lt;- this is implicit</span></span>
 <span>  digits <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  rounding.fn <span class="op">=</span> <span class="va">round_pad</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
 <th class="rowlabel firstrow lastrow"></th>
+<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=    37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">pandemic<br><span class="stratn">(N=    34)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">post-pandemic<br><span class="stratn">(N=    29)</span></span></th>
-<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=    37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">Overall<br><span class="stratn">(N=   100)</span></span></th>
 </tr></thead>
 <tbody>
@@ -1796,9 +1804,9 @@ argument <code>rounding.fn = round_pad</code>, which will tell the
 </tr>
 <tr>
 <td class="rowlabel">F</td>
+<td>18 (48.64865%)</td>
 <td>20 (58.82353%)</td>
 <td>15 (51.72414%)</td>
-<td>18 (48.64865%)</td>
 <td>53 (53.00000%)</td>
 </tr>
 <tr>
@@ -1824,16 +1832,16 @@ argument <code>rounding.fn = round_pad</code>, which will tell the
 </tr>
 <tr>
 <td class="rowlabel">Mean (SD)</td>
+<td>70.22003 (5.92857)</td>
 <td>69.52687 (5.52689)</td>
 <td>69.72315 (5.69476)</td>
-<td>70.22003 (5.92857)</td>
 <td>69.84026 (5.67689)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Median [Min, Max]</td>
+<td class="lastrow">70.34099 [60.08826, 82.32028]</td>
 <td class="lastrow">68.47784 [61.37828, 83.38316]</td>
 <td class="lastrow">70.63923 [57.98168, 79.65122]</td>
-<td class="lastrow">70.34099 [60.08826, 82.32028]</td>
 <td class="lastrow">70.18004 [57.98168, 83.38316]</td>
 </tr>
 <tr>
@@ -1846,33 +1854,33 @@ argument <code>rounding.fn = round_pad</code>, which will tell the
 <tr>
 <td class="rowlabel">CVD</td>
 <td>(suppressed)</td>
-<td>7 (24.13793%)</td>
 <td>(suppressed)</td>
+<td>7 (24.13793%)</td>
 <td>19 (19.00000%)</td>
 </tr>
 <tr>
-<td class="rowlabel">Dementia</td>
+<td class="rowlabel">DM</td>
+<td>15 (40.54054%)</td>
+<td>15 (44.11765%)</td>
 <td>(suppressed)</td>
+<td>37 (37.00000%)</td>
+</tr>
+<tr>
+<td class="rowlabel">DVT</td>
 <td>(suppressed)</td>
 <td>0 (0.00000%)</td>
 <td>(suppressed)</td>
-</tr>
-<tr>
-<td class="rowlabel">DM</td>
-<td>15 (44.11765%)</td>
 <td>(suppressed)</td>
-<td>15 (40.54054%)</td>
-<td>37 (37.00000%)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
+<td>14 (37.83784%)</td>
 <td>12 (35.29412%)</td>
 <td>11 (37.93103%)</td>
-<td>14 (37.83784%)</td>
 <td>37 (37.00000%)</td>
 </tr>
 <tr>
-<td class="rowlabel lastrow">DVT</td>
+<td class="rowlabel lastrow">Dementia</td>
 <td class="lastrow">0 (0.00000%)</td>
 <td class="lastrow">(suppressed)</td>
 <td class="lastrow">(suppressed)</td>
@@ -1902,9 +1910,9 @@ columns to append to the table. Usage is as follows:</p>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
 <th class="rowlabel firstrow lastrow"></th>
+<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">pandemic<br><span class="stratn">(N=34)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">post-pandemic<br><span class="stratn">(N=29)</span></span></th>
-<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">Overall<br><span class="stratn">(N=100)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">Maximum Standardized Mean Difference</span></th>
 </tr></thead>
@@ -1919,25 +1927,25 @@ columns to append to the table. Usage is as follows:</p>
 </tr>
 <tr>
 <td class="rowlabel">F</td>
+<td>18 (48.6%)</td>
 <td>20 (58.8%)</td>
 <td>15 (51.7%)</td>
-<td>18 (48.6%)</td>
 <td>53 (53.0%)</td>
 <td></td>
 </tr>
 <tr>
 <td class="rowlabel">M</td>
+<td>18 (48.6%)</td>
 <td>12 (35.3%)</td>
 <td>12 (41.4%)</td>
-<td>18 (48.6%)</td>
 <td>42 (42.0%)</td>
 <td></td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Not Available</td>
+<td class="lastrow">1 (2.7%)</td>
 <td class="lastrow">2 (5.9%)</td>
 <td class="lastrow">2 (6.9%)</td>
-<td class="lastrow">1 (2.7%)</td>
 <td class="lastrow">5 (5.0%)</td>
 <td class="lastrow"></td>
 </tr>
@@ -1951,17 +1959,17 @@ columns to append to the table. Usage is as follows:</p>
 </tr>
 <tr>
 <td class="rowlabel">Mean (SD)</td>
+<td>70.2 (5.93)</td>
 <td>69.5 (5.53)</td>
 <td>69.7 (5.69)</td>
-<td>70.2 (5.93)</td>
 <td>69.8 (5.68)</td>
 <td></td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Median [Min, Max]</td>
+<td class="lastrow">70.3 [60.1, 82.3]</td>
 <td class="lastrow">68.5 [61.4, 83.4]</td>
 <td class="lastrow">70.6 [58.0, 79.7]</td>
-<td class="lastrow">70.3 [60.1, 82.3]</td>
 <td class="lastrow">70.2 [58.0, 83.4]</td>
 <td class="lastrow"></td>
 </tr>
@@ -1975,42 +1983,42 @@ columns to append to the table. Usage is as follows:</p>
 </tr>
 <tr>
 <td class="rowlabel">CVD</td>
+<td>7 (18.9%)</td>
 <td>5 (14.7%)</td>
 <td>7 (24.1%)</td>
-<td>7 (18.9%)</td>
 <td>19 (19.0%)</td>
 <td></td>
 </tr>
 <tr>
-<td class="rowlabel">Dementia</td>
-<td>2 (5.9%)</td>
-<td>2 (6.9%)</td>
-<td>0 (0%)</td>
-<td>4 (4.0%)</td>
+<td class="rowlabel">DM</td>
+<td>15 (40.5%)</td>
+<td>15 (44.1%)</td>
+<td>7 (24.1%)</td>
+<td>37 (37.0%)</td>
 <td></td>
 </tr>
 <tr>
-<td class="rowlabel">DM</td>
-<td>15 (44.1%)</td>
-<td>7 (24.1%)</td>
-<td>15 (40.5%)</td>
-<td>37 (37.0%)</td>
+<td class="rowlabel">DVT</td>
+<td>1 (2.7%)</td>
+<td>0 (0%)</td>
+<td>2 (6.9%)</td>
+<td>3 (3.0%)</td>
 <td></td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
+<td>14 (37.8%)</td>
 <td>12 (35.3%)</td>
 <td>11 (37.9%)</td>
-<td>14 (37.8%)</td>
 <td>37 (37.0%)</td>
 <td></td>
 </tr>
 <tr>
-<td class="rowlabel lastrow">DVT</td>
+<td class="rowlabel lastrow">Dementia</td>
 <td class="lastrow">0 (0%)</td>
+<td class="lastrow">2 (5.9%)</td>
 <td class="lastrow">2 (6.9%)</td>
-<td class="lastrow">1 (2.7%)</td>
-<td class="lastrow">3 (3.0%)</td>
+<td class="lastrow">4 (4.0%)</td>
 <td class="lastrow"></td>
 </tr>
 </tbody>
@@ -2034,17 +2042,17 @@ here.</p>
 the default (i.e. “non-formula”) interface to <code>table1</code>:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">labels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  variables<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>age<span class="op">=</span><span class="st">"Age (years)"</span>, gender<span class="op">=</span><span class="st">"Sex"</span>, condition<span class="op">=</span><span class="st">"MRDx"</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
+<span>  variables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>age <span class="op">=</span> <span class="st">"Age (years)"</span>, gender <span class="op">=</span> <span class="st">"Sex"</span>, condition <span class="op">=</span> <span class="st">"MRDx"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">strata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html" class="external-link">split</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">data</span><span class="op">$</span><span class="va">exposure</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span><span class="va">strata</span>, labels <span class="op">=</span> <span class="va">labels</span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
 <th class="rowlabel firstrow lastrow"></th>
+<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">pandemic<br><span class="stratn">(N=34)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">post-pandemic<br><span class="stratn">(N=29)</span></span></th>
-<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
 </tr></thead>
 <tbody>
 <tr>
@@ -2055,15 +2063,15 @@ the default (i.e. “non-formula”) interface to <code>table1</code>:</p>
 </tr>
 <tr>
 <td class="rowlabel">Mean (SD)</td>
+<td>70.2 (5.93)</td>
 <td>69.5 (5.53)</td>
 <td>69.7 (5.69)</td>
-<td>70.2 (5.93)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Median [Min, Max]</td>
+<td class="lastrow">70.3 [60.1, 82.3]</td>
 <td class="lastrow">68.5 [61.4, 83.4]</td>
 <td class="lastrow">70.6 [58.0, 79.7]</td>
-<td class="lastrow">70.3 [60.1, 82.3]</td>
 </tr>
 <tr>
 <td class="rowlabel firstrow">Sex</td>
@@ -2073,21 +2081,21 @@ the default (i.e. “non-formula”) interface to <code>table1</code>:</p>
 </tr>
 <tr>
 <td class="rowlabel">F</td>
+<td>18 (48.6%)</td>
 <td>20 (58.8%)</td>
 <td>15 (51.7%)</td>
-<td>18 (48.6%)</td>
 </tr>
 <tr>
 <td class="rowlabel">M</td>
+<td>18 (48.6%)</td>
 <td>12 (35.3%)</td>
 <td>12 (41.4%)</td>
-<td>18 (48.6%)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Not Available</td>
+<td class="lastrow">1 (2.7%)</td>
 <td class="lastrow">2 (5.9%)</td>
 <td class="lastrow">2 (6.9%)</td>
-<td class="lastrow">1 (2.7%)</td>
 </tr>
 <tr>
 <td class="rowlabel firstrow">MRDx</td>
@@ -2097,33 +2105,33 @@ the default (i.e. “non-formula”) interface to <code>table1</code>:</p>
 </tr>
 <tr>
 <td class="rowlabel">CVD</td>
+<td>7 (18.9%)</td>
 <td>5 (14.7%)</td>
 <td>7 (24.1%)</td>
-<td>7 (18.9%)</td>
-</tr>
-<tr>
-<td class="rowlabel">Dementia</td>
-<td>2 (5.9%)</td>
-<td>2 (6.9%)</td>
-<td>0 (0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">DM</td>
+<td>15 (40.5%)</td>
 <td>15 (44.1%)</td>
 <td>7 (24.1%)</td>
-<td>15 (40.5%)</td>
+</tr>
+<tr>
+<td class="rowlabel">DVT</td>
+<td>1 (2.7%)</td>
+<td>0 (0%)</td>
+<td>2 (6.9%)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
+<td>14 (37.8%)</td>
 <td>12 (35.3%)</td>
 <td>11 (37.9%)</td>
-<td>14 (37.8%)</td>
 </tr>
 <tr>
-<td class="rowlabel lastrow">DVT</td>
+<td class="rowlabel lastrow">Dementia</td>
 <td class="lastrow">0 (0%)</td>
+<td class="lastrow">2 (5.9%)</td>
 <td class="lastrow">2 (6.9%)</td>
-<td class="lastrow">1 (2.7%)</td>
 </tr>
 </tbody>
 </table></div>
@@ -2136,16 +2144,16 @@ the default (i.e. “non-formula”) interface to <code>table1</code>:</p>
 the names of the levels of the factor variable corresponding to the
 strata</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">exposure</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"During Pandemic"</span>, <span class="st">"After Pandemic"</span>, <span class="st">"Before Pandemic"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">exposure</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Before Pandemic"</span>, <span class="st">"During Pandemic"</span>, <span class="st">"After Pandemic"</span><span class="op">)</span></span>
 <span><span class="va">strata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html" class="external-link">split</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">data</span><span class="op">$</span><span class="va">exposure</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span><span class="va">strata</span>, labels <span class="op">=</span> <span class="va">labels</span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead><tr>
 <th class="rowlabel firstrow lastrow"></th>
-<th class="firstrow lastrow"><span class="stratlabel">pandemic<br><span class="stratn">(N=34)</span></span></th>
-<th class="firstrow lastrow"><span class="stratlabel">post-pandemic<br><span class="stratn">(N=29)</span></span></th>
-<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
+<th class="firstrow lastrow"><span class="stratlabel">Before Pandemic<br><span class="stratn">(N=37)</span></span></th>
+<th class="firstrow lastrow"><span class="stratlabel">During Pandemic<br><span class="stratn">(N=34)</span></span></th>
+<th class="firstrow lastrow"><span class="stratlabel">After Pandemic<br><span class="stratn">(N=29)</span></span></th>
 </tr></thead>
 <tbody>
 <tr>
@@ -2156,15 +2164,15 @@ strata</p>
 </tr>
 <tr>
 <td class="rowlabel">Mean (SD)</td>
+<td>70.2 (5.93)</td>
 <td>69.5 (5.53)</td>
 <td>69.7 (5.69)</td>
-<td>70.2 (5.93)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Median [Min, Max]</td>
+<td class="lastrow">70.3 [60.1, 82.3]</td>
 <td class="lastrow">68.5 [61.4, 83.4]</td>
 <td class="lastrow">70.6 [58.0, 79.7]</td>
-<td class="lastrow">70.3 [60.1, 82.3]</td>
 </tr>
 <tr>
 <td class="rowlabel firstrow">Sex</td>
@@ -2174,21 +2182,21 @@ strata</p>
 </tr>
 <tr>
 <td class="rowlabel">F</td>
+<td>18 (48.6%)</td>
 <td>20 (58.8%)</td>
 <td>15 (51.7%)</td>
-<td>18 (48.6%)</td>
 </tr>
 <tr>
 <td class="rowlabel">M</td>
+<td>18 (48.6%)</td>
 <td>12 (35.3%)</td>
 <td>12 (41.4%)</td>
-<td>18 (48.6%)</td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Not Available</td>
+<td class="lastrow">1 (2.7%)</td>
 <td class="lastrow">2 (5.9%)</td>
 <td class="lastrow">2 (6.9%)</td>
-<td class="lastrow">1 (2.7%)</td>
 </tr>
 <tr>
 <td class="rowlabel firstrow">MRDx</td>
@@ -2198,33 +2206,33 @@ strata</p>
 </tr>
 <tr>
 <td class="rowlabel">CVD</td>
+<td>7 (18.9%)</td>
 <td>5 (14.7%)</td>
 <td>7 (24.1%)</td>
-<td>7 (18.9%)</td>
-</tr>
-<tr>
-<td class="rowlabel">Dementia</td>
-<td>2 (5.9%)</td>
-<td>2 (6.9%)</td>
-<td>0 (0%)</td>
 </tr>
 <tr>
 <td class="rowlabel">DM</td>
+<td>15 (40.5%)</td>
 <td>15 (44.1%)</td>
 <td>7 (24.1%)</td>
-<td>15 (40.5%)</td>
+</tr>
+<tr>
+<td class="rowlabel">DVT</td>
+<td>1 (2.7%)</td>
+<td>0 (0%)</td>
+<td>2 (6.9%)</td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
+<td>14 (37.8%)</td>
 <td>12 (35.3%)</td>
 <td>11 (37.9%)</td>
-<td>14 (37.8%)</td>
 </tr>
 <tr>
-<td class="rowlabel lastrow">DVT</td>
+<td class="rowlabel lastrow">Dementia</td>
 <td class="lastrow">0 (0%)</td>
+<td class="lastrow">2 (5.9%)</td>
 <td class="lastrow">2 (6.9%)</td>
-<td class="lastrow">1 (2.7%)</td>
 </tr>
 </tbody>
 </table></div>
@@ -2239,24 +2247,24 @@ names in the <code>labels</code> list, as well as a
 in the <code>table1</code> call. We also add standardized mean
 differences using <code>extra.col</code> to put it all together.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">labels</span><span class="op">$</span><span class="va">groups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"After COVID"</span>, <span class="st">""</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">labels</span><span class="op">$</span><span class="va">groups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">""</span>, <span class="st">"Since COVID"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">extra_col</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">extra_col</span><span class="op">$</span><span class="va">`SMD`</span> <span class="op">&lt;-</span> <span class="va">max_pairwise_smd</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span><span class="va">strata</span>, labels <span class="op">=</span> <span class="va">labels</span>, groupspan <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>, extra.col <span class="op">=</span> <span class="va">extra_col</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span><span class="va">strata</span>, labels <span class="op">=</span> <span class="va">labels</span>, groupspan <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, extra.col <span class="op">=</span> <span class="va">extra_col</span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead>
 <tr>
 <th class="grouplabel"></th>
-<th colspan="2" class="grouplabel"><div>After COVID</div></th>
 <th colspan="1" class="grouplabel"></th>
+<th colspan="2" class="grouplabel"><div>Since COVID</div></th>
 </tr>
 <tr>
 <th class="rowlabel firstrow lastrow"></th>
-<th class="firstrow lastrow"><span class="stratlabel">pandemic<br><span class="stratn">(N=34)</span></span></th>
-<th class="firstrow lastrow"><span class="stratlabel">post-pandemic<br><span class="stratn">(N=29)</span></span></th>
-<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
+<th class="firstrow lastrow"><span class="stratlabel">Before Pandemic<br><span class="stratn">(N=37)</span></span></th>
+<th class="firstrow lastrow"><span class="stratlabel">During Pandemic<br><span class="stratn">(N=34)</span></span></th>
+<th class="firstrow lastrow"><span class="stratlabel">After Pandemic<br><span class="stratn">(N=29)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">SMD</span></th>
 </tr>
 </thead>
@@ -2270,16 +2278,16 @@ differences using <code>extra.col</code> to put it all together.</p>
 </tr>
 <tr>
 <td class="rowlabel">Mean (SD)</td>
+<td>70.2 (5.93)</td>
 <td>69.5 (5.53)</td>
 <td>69.7 (5.69)</td>
-<td>70.2 (5.93)</td>
 <td></td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Median [Min, Max]</td>
+<td class="lastrow">70.3 [60.1, 82.3]</td>
 <td class="lastrow">68.5 [61.4, 83.4]</td>
 <td class="lastrow">70.6 [58.0, 79.7]</td>
-<td class="lastrow">70.3 [60.1, 82.3]</td>
 <td class="lastrow"></td>
 </tr>
 <tr>
@@ -2291,23 +2299,23 @@ differences using <code>extra.col</code> to put it all together.</p>
 </tr>
 <tr>
 <td class="rowlabel">F</td>
+<td>18 (48.6%)</td>
 <td>20 (58.8%)</td>
 <td>15 (51.7%)</td>
-<td>18 (48.6%)</td>
 <td></td>
 </tr>
 <tr>
 <td class="rowlabel">M</td>
+<td>18 (48.6%)</td>
 <td>12 (35.3%)</td>
 <td>12 (41.4%)</td>
-<td>18 (48.6%)</td>
 <td></td>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Not Available</td>
+<td class="lastrow">1 (2.7%)</td>
 <td class="lastrow">2 (5.9%)</td>
 <td class="lastrow">2 (6.9%)</td>
-<td class="lastrow">1 (2.7%)</td>
 <td class="lastrow"></td>
 </tr>
 <tr>
@@ -2319,37 +2327,37 @@ differences using <code>extra.col</code> to put it all together.</p>
 </tr>
 <tr>
 <td class="rowlabel">CVD</td>
+<td>7 (18.9%)</td>
 <td>5 (14.7%)</td>
 <td>7 (24.1%)</td>
-<td>7 (18.9%)</td>
-<td></td>
-</tr>
-<tr>
-<td class="rowlabel">Dementia</td>
-<td>2 (5.9%)</td>
-<td>2 (6.9%)</td>
-<td>0 (0%)</td>
 <td></td>
 </tr>
 <tr>
 <td class="rowlabel">DM</td>
+<td>15 (40.5%)</td>
 <td>15 (44.1%)</td>
 <td>7 (24.1%)</td>
-<td>15 (40.5%)</td>
+<td></td>
+</tr>
+<tr>
+<td class="rowlabel">DVT</td>
+<td>1 (2.7%)</td>
+<td>0 (0%)</td>
+<td>2 (6.9%)</td>
 <td></td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
+<td>14 (37.8%)</td>
 <td>12 (35.3%)</td>
 <td>11 (37.9%)</td>
-<td>14 (37.8%)</td>
 <td></td>
 </tr>
 <tr>
-<td class="rowlabel lastrow">DVT</td>
+<td class="rowlabel lastrow">Dementia</td>
 <td class="lastrow">0 (0%)</td>
+<td class="lastrow">2 (5.9%)</td>
 <td class="lastrow">2 (6.9%)</td>
-<td class="lastrow">1 (2.7%)</td>
 <td class="lastrow"></td>
 </tr>
 </tbody>
@@ -2365,24 +2373,24 @@ differences using <code>extra.col</code> to put it all together.</p>
 of standardized mean differences as follows:</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html" class="external-link">table1</a></span><span class="op">(</span></span>
-<span>  <span class="va">strata</span>, </span>
+<span>  <span class="va">strata</span>,</span>
 <span>  labels <span class="op">=</span> <span class="va">labels</span>,</span>
-<span>  groupspan <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>  groupspan <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span>
 <span>  render <span class="op">=</span> <span class="va">render_cell_suppression.default</span>,</span>
 <span>  extra.col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"SMD"</span> <span class="op">=</span> <span class="va">max_pairwise_smd</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="Rtable1"><table class="table Rtable1">
 <thead>
 <tr>
 <th class="grouplabel"></th>
-<th colspan="2" class="grouplabel"><div>After COVID</div></th>
-<th colspan="2" class="grouplabel"></th>
+<th colspan="1" class="grouplabel"></th>
+<th colspan="2" class="grouplabel"><div>Since COVID</div></th>
 </tr>
 <tr>
 <th class="rowlabel firstrow lastrow"></th>
-<th class="firstrow lastrow"><span class="stratlabel">pandemic<br><span class="stratn">(N=34)</span></span></th>
-<th class="firstrow lastrow"><span class="stratlabel">post-pandemic<br><span class="stratn">(N=29)</span></span></th>
-<th class="firstrow lastrow"><span class="stratlabel">pre-pandemic<br><span class="stratn">(N=37)</span></span></th>
+<th class="firstrow lastrow"><span class="stratlabel">Before Pandemic<br><span class="stratn">(N=37)</span></span></th>
+<th class="firstrow lastrow"><span class="stratlabel">During Pandemic<br><span class="stratn">(N=34)</span></span></th>
+<th class="firstrow lastrow"><span class="stratlabel">After Pandemic<br><span class="stratn">(N=29)</span></span></th>
 <th class="firstrow lastrow"><span class="stratlabel">SMD</span></th>
 </tr>
 </thead>
@@ -2396,9 +2404,9 @@ of standardized mean differences as follows:</p>
 </tr>
 <tr>
 <td class="rowlabel lastrow">Mean (SD)</td>
+<td class="lastrow">70.220 (± 5.929)</td>
 <td class="lastrow">69.527 (± 5.527)</td>
 <td class="lastrow">69.723 (± 5.695)</td>
-<td class="lastrow">70.220 (± 5.929)</td>
 <td class="lastrow"></td>
 </tr>
 <tr>
@@ -2410,9 +2418,9 @@ of standardized mean differences as follows:</p>
 </tr>
 <tr>
 <td class="rowlabel">F</td>
+<td>18 (48.6%)</td>
 <td>20 (58.8%)</td>
 <td>15 (51.7%)</td>
-<td>18 (48.6%)</td>
 <td></td>
 </tr>
 <tr>
@@ -2439,33 +2447,33 @@ of standardized mean differences as follows:</p>
 <tr>
 <td class="rowlabel">CVD</td>
 <td>(suppressed)</td>
+<td>(suppressed)</td>
 <td>7 (24.1%)</td>
-<td>(suppressed)</td>
-<td></td>
-</tr>
-<tr>
-<td class="rowlabel">Dementia</td>
-<td>(suppressed)</td>
-<td>(suppressed)</td>
-<td>0 (0.0%)</td>
 <td></td>
 </tr>
 <tr>
 <td class="rowlabel">DM</td>
+<td>15 (40.5%)</td>
 <td>15 (44.1%)</td>
 <td>(suppressed)</td>
-<td>15 (40.5%)</td>
+<td></td>
+</tr>
+<tr>
+<td class="rowlabel">DVT</td>
+<td>(suppressed)</td>
+<td>0 (0.0%)</td>
+<td>(suppressed)</td>
 <td></td>
 </tr>
 <tr>
 <td class="rowlabel">Pneumonia</td>
+<td>14 (37.8%)</td>
 <td>12 (35.3%)</td>
 <td>11 (37.9%)</td>
-<td>14 (37.8%)</td>
 <td></td>
 </tr>
 <tr>
-<td class="rowlabel lastrow">DVT</td>
+<td class="rowlabel lastrow">Dementia</td>
 <td class="lastrow">0 (0.0%)</td>
 <td class="lastrow">(suppressed)</td>
 <td class="lastrow">(suppressed)</td>
@@ -2520,7 +2528,9 @@ stratifying variable, such as in the example below:</p>
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html" class="external-link">split</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">$</span><span class="va">disp</span>, <span class="va">mtcars</span><span class="op">$</span><span class="va">am</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">my_max_col</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">max</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">max</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="fu">my_max_col</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>

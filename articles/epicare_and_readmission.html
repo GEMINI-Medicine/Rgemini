@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,6 +35,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/cell_suppression_and_table1.html">Cell Suppression and Table 1</a></li>
     <li><a class="dropdown-item" href="../articles/daily_census.html">Daily Census</a></li>
+    <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
@@ -137,16 +138,16 @@ cohort.</li>
 <blockquote>
 <p>The flowchart below shows how epicares are built:</p>
 </blockquote>
-<p><img src="figures%2Fepicare_flow_2.png" width="90%" style="display: block; margin: auto;"></p>
+<p><img src="figures%2Fepicare_and_readmission%2Fepicare_flow_2.png" width="90%" style="display: block; margin: auto;"></p>
 <blockquote>
 <p>Example output of <code>episodes_of_care(db)</code> (mock data for
 illustration purposes, not real data):</p>
 </blockquote>
-<p><img src="figures%2Fepicare_out_2.png" width="100%" style="display: block; margin: auto;"></p>
+<p><img src="figures%2Fepicare_and_readmission%2Fepicare_out_2.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
-<h3 id="readmission">
-<code>readmission()</code><a class="anchor" aria-label="anchor" href="#readmission"></a>
+<h3 id="sectionIntro">
+<code>readmission()</code><a class="anchor" aria-label="anchor" href="#sectionIntro"></a>
 </h3>
 <p>The function <strong><code><a href="../reference/readmission.html">readmission()</a></code></strong> computes
 whether or not a patient associated with an epicare was readmitted to a
@@ -175,7 +176,7 @@ readmission on a user specified cohort.</p>
 illustration purposes, not real data. patient_id added to facilitate
 interpretation):</p>
 </blockquote>
-<p><img src="figures%2Freadmission_out_2.png" width="70%" style="display: block; margin: auto;"></p>
+<p><img src="figures%2Fepicare_and_readmission%2Freadmission_out_2.png" width="70%" style="display: block; margin: auto;"></p>
 <div class="section level4">
 <h4 id="general-readmission-rate-calculation">General readmission rate calculation<a class="anchor" aria-label="anchor" href="#general-readmission-rate-calculation"></a>
 </h4>
@@ -219,27 +220,29 @@ exclude NAs when calculating readmission rates:</p>
 <span></span>
 <span><span class="co"># Establish database connection</span></span>
 <span><span class="va">db</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="va">drv</span>,</span>
-<span>                     dbname <span class="op">=</span> <span class="st">"db"</span>,</span>
-<span>                     host <span class="op">=</span> <span class="st">"172.XX.XX.XXX"</span>,</span>
-<span>                     port <span class="op">=</span> <span class="fl">1234</span>,</span>
-<span>                     user <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter user:"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  dbname <span class="op">=</span> <span class="st">"db"</span>,</span>
+<span>  host <span class="op">=</span> <span class="st">"172.XX.XX.XXX"</span>,</span>
+<span>  port <span class="op">=</span> <span class="fl">1234</span>,</span>
+<span>  user <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter user:"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Run default readmission calculation (with elective_admit=T and death=T)        </span></span>
-<span><span class="va">readm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readmission.html">readmission</a></span><span class="op">(</span><span class="va">db</span><span class="op">)</span> </span>
+<span><span class="co"># Run default readmission calculation (with elective_admit=T and death=T)</span></span>
+<span><span class="va">readm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readmission.html">readmission</a></span><span class="op">(</span><span class="va">db</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Compute readmission rate based on readmission output</span></span>
-<span><span class="va">denominator</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span> <span class="va">readm</span><span class="op">$</span><span class="va">readmit7</span> <span class="op">)</span> <span class="op">)</span> </span>
-<span><span class="va">numerator</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span> <span class="va">readm</span><span class="op">$</span><span class="va">readmit7</span>, na.rm<span class="op">=</span><span class="cn">T</span> <span class="op">)</span> </span>
-<span><span class="va">readmission_7d_derived</span> <span class="op">&lt;-</span> <span class="va">numerator</span><span class="op">/</span><span class="va">denominator</span></span>
+<span><span class="va">denominator</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">readm</span><span class="op">$</span><span class="va">readmit7</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">numerator</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">readm</span><span class="op">$</span><span class="va">readmit7</span>, na.rm <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
+<span><span class="va">readmission_7d_derived</span> <span class="op">&lt;-</span> <span class="va">numerator</span> <span class="op">/</span> <span class="va">denominator</span></span>
 <span></span>
 <span><span class="co"># Compute readmission rate based on readmission output (Alternative)</span></span>
-<span><span class="va">readmission_7d_derived</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span> <span class="va">readm</span><span class="op">$</span><span class="va">readmit7</span>, na.rm<span class="op">=</span><span class="cn">T</span> <span class="op">)</span> </span></code></pre></div>
+<span><span class="va">readmission_7d_derived</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">readm</span><span class="op">$</span><span class="va">readmit7</span>, na.rm <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="gemini-specific-considerations">GEMINI specific considerations<a class="anchor" aria-label="anchor" href="#gemini-specific-considerations"></a>
 </h4>
-<p><strong>1. Readmission attribution when end of episode is
-unknown</strong></p>
+<div class="section level5">
+<h5 id="sectionATout">Readmission attribution when end of episode is unknown<a class="anchor" aria-label="anchor" href="#sectionATout"></a>
+</h5>
 <ul>
 <li><p>When the last hospitalization of an epicare has transfer out
 coded (<code>AT_out_coded</code>==T) and
@@ -266,9 +269,11 @@ than errors.</li>
 colored entries in genc_id 103 vs 301, and genc_id 105 vs 201, and see
 how readmit7 is affected):</p>
 </blockquote>
-<p><img src="figures%2Fattribution_2.png" width="100%" style="display: block; margin: auto;"><br></p>
-<p><strong>2. Buffer period based on each hospital’s data
-availability</strong> {#sectionBuffer}</p>
+<p><img src="figures%2Fepicare_and_readmission%2Fattribution_2.png" width="100%" style="display: block; margin: auto;"><br></p>
+</div>
+<div class="section level5">
+<h5 id="sectionBuffer">Buffer period based on each hospital’s data availability<a class="anchor" aria-label="anchor" href="#sectionBuffer"></a>
+</h5>
 <ul>
 <li><p>A patient needs to be discharged from hospital before appearing
 in GEMINI database. If a patient was readmitted to a hospital but has
@@ -307,7 +312,8 @@ recognize that complete elimination may not be feasible.</li>
 <p>Hypothetical example of how buffer period affects 7-day readmission
 of a patient:</p>
 </blockquote>
-<p><img src="figures%2Fbuffer_2.png" width="100%" style="display: block; margin: auto;"></p>
+<p><img src="figures%2Fepicare_and_readmission%2Fbuffer_2.png" width="100%" style="display: block; margin: auto;"></p>
+</div>
 </div>
 <div class="section level4">
 <h4 id="customizable-features">Customizable features<a class="anchor" aria-label="anchor" href="#customizable-features"></a>
@@ -326,6 +332,16 @@ within a restricted cohort. Both the <code><a href="../reference/episodes_of_car
 <code><a href="../reference/readmission.html">readmission()</a></code> functions allow users to input a customized
 cohort using the <code>restricted_cohort</code> argument. We recommend
 to exercise caution when a restricted cohort is used, see <a href="#sectionrecohort"><em>Section 3.4</em></a> for details.</p></li>
+<li><p><strong>Return readmission encounters:</strong> By default, the
+<code><a href="../reference/readmission.html">readmission()</a></code> function only returns TRUE/FALSE based on
+whether the genc_id was followed by a subsequent readmission. There may
+be scenarios where the readmission encounter itself is of interest to
+the user, (e.g. analyzing the exact time-to-readmission, or to analyze
+diagnosis and/or clinical outcomes of the readmission encounter). In
+this case, the user can set the <code>return_readmit_enc</code> argument
+as TRUE to return readmission genc_ids (1 additional column per
+readmission window) if there exists a readmission in that time
+window.</p></li>
 </ul>
 </div>
 </div>
@@ -386,22 +402,23 @@ corresponding flag sections for your reference</li>
 </li>
 </ul>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readmission.html">readmission</a></span> <span class="op">(</span><span class="va">db</span>, elective_admit<span class="op">=</span><span class="cn">T</span>, death<span class="op">=</span><span class="cn">T</span>, MAID <span class="op">=</span> <span class="cn">T</span>, palliative<span class="op">=</span><span class="cn">T</span>, chemo<span class="op">=</span><span class="cn">T</span>, mental<span class="op">=</span><span class="cn">T</span>, obstetric <span class="op">=</span> <span class="cn">T</span>, signout <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
-<span><span class="va">readmission_7d_derived_cihi</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span> <span class="va">res</span><span class="op">$</span><span class="va">readmit7</span>, na.rm<span class="op">=</span><span class="cn">T</span><span class="op">)</span></span>
-<span><span class="va">readmission_30d_derived_cihi</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span> <span class="va">res</span><span class="op">$</span><span class="va">readmit30</span>, na.rm<span class="op">=</span><span class="cn">T</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readmission.html">readmission</a></span><span class="op">(</span><span class="va">db</span>, elective_admit <span class="op">=</span> <span class="cn">T</span>, death <span class="op">=</span> <span class="cn">T</span>, MAID <span class="op">=</span> <span class="cn">T</span>, palliative <span class="op">=</span> <span class="cn">T</span>, chemo <span class="op">=</span> <span class="cn">T</span>, mental <span class="op">=</span> <span class="cn">T</span>, obstetric <span class="op">=</span> <span class="cn">T</span>, signout <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
+<span><span class="va">readmission_7d_derived_cihi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">readmit7</span>, na.rm <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
+<span><span class="va">readmission_30d_derived_cihi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">readmit30</span>, na.rm <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="overview-of-numerator-denominator-removal-by-flag">Overview of numerator &amp; denominator removal by flag<a class="anchor" aria-label="anchor" href="#overview-of-numerator-denominator-removal-by-flag"></a>
 </h3>
 <blockquote>
-<p>There are 8 CIHI flags, each of which can be set to TRUE or FALSE.
-Elective admission and death flags are active by default. Activating a
-given flag (e.g., chemo and/or self sign-out flag) results in removal
-from numerator and/or denominator as illustrated in the flow chart
-below. Note that some flags (mental &amp; palliative) result in the
-removal from both numerator and denominator:</p>
+<p>There are 8 CIHI flags, each of which can be set to <code>TRUE</code>
+or <code>FALSE</code>. The <code>elective</code> and <code>death</code>
+flags are <code>TRUE</code> by default. Each flag results in removal of
+a given episode of care from the numerator and/or denominator as
+illustrated in the flow chart below. Note that some flags (mental &amp;
+palliative) result in the removal from both numerator <em>and</em>
+denominator:</p>
 </blockquote>
-<p><img src="figures%2Fflags_diagram_2.png" width="100%" style="display: block; margin: auto;"></p>
+<p><img src="figures%2Fepicare_and_readmission%2Fflags_diagram_2.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="flag-details">Flag details<a class="anchor" aria-label="anchor" href="#flag-details"></a>
@@ -412,116 +429,126 @@ tables) below are mock final outputs of <code>readmission.R</code></p>
 <h4 id="elective-flag">Elective flag<a class="anchor" aria-label="anchor" href="#elective-flag"></a>
 </h4>
 <ul>
-<li>An episode is elective if its admit_category is ‘L’</li>
 <li>An episode of care is considered elective if the
 <strong>FIRST</strong> encounter of that episode is elective
-(admit_category = ‘L’)</li>
-<li>An episode with elective admissions is removed from the
-numerator</li>
+(<code>admit_category = 'L'</code>)</li>
+<li>Episodes with elective admission are removed from the numerator
+because they are planned hospitalizations, and therefore, are not
+reflective of quality of care</li>
 </ul>
-<p><img src="figures%2Felective_2.png" width="65%" style="display: block; margin: auto;"></p>
+<p><img src="figures%2Fepicare_and_readmission%2Felective_2.png" width="65%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level4">
 <h4 id="death-flag">Death flag<a class="anchor" aria-label="anchor" href="#death-flag"></a>
 </h4>
 <ul>
-<li>An episode ends with death if this episode has discharge as death
-(DAD Discharge Disposition Code = 07, 72, 73, 74)</li>
+<li>Episodes of care ending in death are indicated by DAD Discharge
+Disposition Codes 07, 72, 73, and 74</li>
 <li>If the index admission results in death, there cannot be any
 readmission. Therefore, episodes of care with death are excluded from
-the denominator (reamitX=NA)</li>
+the denominator (<code>reamitX = NA</code>)</li>
 </ul>
-<p><img src="figures%2Fdeath_2.png" width="65%" style="display: block; margin: auto;"></p>
+<p><img src="figures%2Fepicare_and_readmission%2Fdeath_2.png" width="65%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level4">
 <h4 id="maid-flag">MAID flag<a class="anchor" aria-label="anchor" href="#maid-flag"></a>
 </h4>
 <ul>
 <li>Rationale for exclusion: MAID (medical assistance in dying) is
-planned and doesn’t reflect quality of care</li>
-<li>After 2018-04-01: An episode is MAID if its discharge
-disposition=73</li>
+planned, and therefore, readmissions involving MAID are not reflective
+of quality of care</li>
+<li>After 2018-04-01: An episode is MAID if its discharge disposition =
+73</li>
 <li>Before 2018-04-01: An episode is MAID if <strong>ANY</strong>
-genc_id of an epicare has discharge disposition=7 <strong>AND</strong>
-all 3 records of drugs (1st drug lets patient relax, 2nd drug stops
-heart beat, 3rd drug stops brain function; indicated by
-intervention_codes loaded)</li>
+<code>genc_id</code> of an epicare has discharge disposition = 7
+<strong>AND</strong> all 3 records of drugs (1st drug lets patient
+relax, 2nd drug stops heart beat, 3rd drug stops brain function;
+indicated by intervention codes)</li>
 <li>If an epicare has <strong>ANY</strong> encounter with MAID, it is
-not considered to be a true readmission and is removed from
+not considered to be a true readmission and is removed from the
 numerator.</li>
-<li>Note: If death = T, the epicare with MAID (which results in death)
-is additionally removed from the denominator. If death = F, the epicare
-with MAID is kept in the denominator. The general recommendation is to
-set death to T if MAID is T.</li>
+<li>Note: If <code>death = TRUE</code>, the epicare with MAID (which
+results in death) is additionally removed from the denominator. If
+<code>death = FALSE</code>, the epicare with MAID is kept in the
+denominator. The general recommendation is to set death to
+<code>TRUE</code> if MAID is <code>TRUE</code>.</li>
 </ul>
-<p><img src="figures%2Fmaid_2.png" width="65%" style="display: block; margin: auto;"></p>
+<p><img src="figures%2Fepicare_and_readmission%2Fmaid_2.png" width="65%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level4">
-<h4 id="self-sign-out-lama-flag">self sign-out / LAMA flag<a class="anchor" aria-label="anchor" href="#self-sign-out-lama-flag"></a>
+<h4 id="self-sign-out-lama-flag">Self sign-out / LAMA flag<a class="anchor" aria-label="anchor" href="#self-sign-out-lama-flag"></a>
 </h4>
 <ul>
-<li>Rationale for exclusion: self sign-out doesn’t reflect physicians’
-decisions to discharge and doesn’t reflect quality of care</li>
+<li>Rationale for exclusion: Self sign-out does not reflect physicians’
+decisions to discharge, and therefore, readmission should not be
+attributed to discharging physician/hospital</li>
 <li>When <strong>LAST</strong> encounter of episode of care has
 discharge disposition = self sign-out (i.e. LAMA - left against medical
 advice: 61, 62, 65, 66, 67), the episode is removed from denominator to
 avoid attribution of potential readmission to physician</li>
-<li>Note: While self sign-out is excluded based on CIHI definition,
-GEMINI DB doesn’t capture different physician practices or philosophies
-regarding self sign-out (eg. Amol never codes self sign-out since he
-believes it’s patients’ right to leave on their own), or self sign-out
-information only recorded on paper.</li>
+<li>Note: While self sign-out is excluded based on the CIHI definition,
+coding practices of self sign-out may vary widely across
+hospitals/physicians (e.g., some physicians may not record self sign-out
+since it is a patient’s right to leave on their own). Please keep that
+in mind if your analyses involve comparisons of readmission rates
+between providers.</li>
 </ul>
-<p><img src="figures%2Fsign-out_2.png" width="65%" style="display: block; margin: auto;"></p>
+<p><img src="figures%2Fepicare_and_readmission%2Fsign-out_2.png" width="65%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level4">
-<h4 id="palliative-flag">palliative flag<a class="anchor" aria-label="anchor" href="#palliative-flag"></a>
+<h4 id="palliative-flag">Palliative flag<a class="anchor" aria-label="anchor" href="#palliative-flag"></a>
 </h4>
 <ul>
-<li>Rationale for exclusion: palliative care is not acute care and can
-be scheduled to some extent, therefore, it doesn’t reflect quality of
-care</li>
-<li>An episode is palliative care if it has diagnosis code of
-(ICD-10-CA: Z51.5) as type MRDx</li>
+<li>Rationale for exclusion: Palliative care is not considered acute
+care, and therefore, readmissions involving palliative care are not
+reflective of quality of care; additionally, encounters with palliative
+care typically result in death, and thus, the patient is not eligible
+for readmission calculations (see <code>death</code> flag above)</li>
+<li>An episode is palliative care if it has an ICD-10-CA diagnosis code
+of Z51.5 as type MRDx</li>
 <li>When an episode of care includes <strong>ANY</strong> encounter with
 palliative care as most responsible discharge diagnosis, it is removed
 from numerator and denominator</li>
 </ul>
 </div>
 <div class="section level4">
-<h4 id="chemo-flag">chemo flag<a class="anchor" aria-label="anchor" href="#chemo-flag"></a>
+<h4 id="chemo-flag">Chemo flag<a class="anchor" aria-label="anchor" href="#chemo-flag"></a>
 </h4>
 <ul>
-<li>Rationale for exclusion: same as palliative flag</li>
-<li>An episode has chemotherapy if it has diagnosis code of (ICD-10-CA:
-Z51.1) as type (M), (1), (C), (W), (X) or (Y)</li>
-<li>When an episode of care (epicare) includes <strong>ANY</strong>
-encounter with chemotherapy, the entire epicare is considered as a
-chemotherapy episode.</li>
+<li>Rationale for exclusion: Chemotherapy is planned, and therefore, any
+readmissions involving chemotherapy are not reflective of quality of
+care</li>
+<li>An episode has chemotherapy if it has an ICD-10-CA diagnosis code of
+Z51.1 as type M, 1, C, W, X or Y</li>
+<li>When an episode of care includes <strong>ANY</strong> encounter with
+chemotherapy, the entire epicare is considered as a chemotherapy
+episode.</li>
 <li>Readmission with chemotherapy is not considered a true readmission,
 and it is removed from numerator.</li>
 </ul>
 </div>
 <div class="section level4">
-<h4 id="mental-health-flag">mental health flag<a class="anchor" aria-label="anchor" href="#mental-health-flag"></a>
+<h4 id="mental-health-flag">Mental health flag<a class="anchor" aria-label="anchor" href="#mental-health-flag"></a>
 </h4>
 <ul>
-<li>Rationale for exclusion: same as palliative flag</li>
-<li>An episode is mental health if it falls under MCC=17</li>
+<li>Rationale for exclusion: Admissions for mental health diagnoses are
+not considered acute care</li>
+<li>An episode is mental health if it falls under MCC = 17</li>
 <li>When an episode of care includes <strong>ANY</strong> encounter with
 a mental health diagnosis, it is removed from numerator and
 denominator</li>
 </ul>
 </div>
 <div class="section level4">
-<h4 id="obstetric-delivery">obstetric delivery<a class="anchor" aria-label="anchor" href="#obstetric-delivery"></a>
+<h4 id="obstetric-delivery">Obstetric delivery<a class="anchor" aria-label="anchor" href="#obstetric-delivery"></a>
 </h4>
 <ul>
-<li>Rationale for exclusion: same as palliative flag</li>
-<li>An episode is obstetric delivery if it has diagnosis codes of
-(ICD-10-CA: O10–O16, O21–O29, O30–O37, O40–O46, O48, O60–O69, O70–O75,
+<li>Rationale for exclusion: Admissions for obstetric delivery are
+planned</li>
+<li>An episode is obstetric delivery if it has an ICD-10-CA diagnosis
+codes of: O10–O16, O21–O29, O30–O37, O40–O46, O48, O60–O69, O70–O75,
 O85–O89, O90–O92, O95, O98, O99 with a sixth digit of 1 or 2; or Z37
-recorded in any diagnosis field)</li>
+recorded in any diagnosis field</li>
 <li>Episodes of care that have <strong>ANY</strong> encounter with
 obstetric delivery are not considered a true readmission, and are
 therefore removed from numerator</li>
@@ -539,11 +566,10 @@ research context, you may be able to use the derived readmission
 variables in the DB (see <a href="#sectionderived"><em>Section
 3.1</em></a>). Alternatively, you can run the readmission function with
 customized CIHI flags (<a href="#sectioncustomCIHI"><em>Section
-3.2</em></a>), customized readmission window (<a href="#sectionrewin"><em>Section 3.3</em></a>), and/or a restricted
-readmission cohort (<a href="#sectionrecohort"><em>Section
-3.4</em></a>):</p>
+3.2</em></a>), customized readmission window (<a href="#sectionrewin"><em>Section 3.3</em></a>), readmission encounters
+for each time window, and/or a restricted readmission cohort (<a href="#sectionrecohort"><em>Section 3.4</em></a>):</p>
 </blockquote>
-<p><img src="figures%2FcustomReadm_fig3.png" width="100%" style="display: block; margin: auto;"></p>
+<p><img src="figures%2Fepicare_and_readmission%2FcustomReadm_fig3.png" width="100%" style="display: block; margin: auto;"></p>
 <div class="section level3">
 <h3 id="sectionderived">Using derived variables in DB<a class="anchor" aria-label="anchor" href="#sectionderived"></a>
 </h3>
@@ -569,7 +595,7 @@ and death):
 phase-1 sites:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get derived readmissions for phase-1 sites</span></span>
-<span><span class="va">readm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbGetQuery.html" class="external-link">dbGetQuery</a></span><span class="op">(</span><span class="va">db</span>, <span class="st">"SELECT readmission_7d_derived FROM derived_variables </span></span>
+<span><span class="va">readm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbGetQuery.html" class="external-link">dbGetQuery</a></span><span class="op">(</span><span class="va">db</span>, <span class="st">"SELECT readmission_7d_derived FROM derived_variables</span></span>
 <span><span class="st">                    WHERE hospital_id IN ('SMH', 'SBK', 'UHNTW', 'UHNTG', 'MSH', 'THPC', 'THPM');"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">readm</span><span class="op">$</span><span class="va">readmission_7d_derived</span>, na.rm <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
@@ -603,7 +629,7 @@ for details). For example, run this code to exclude MAID (in addition to
 excluding elective admissions &amp; death which are set to TRUE by
 default):</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/readmission.html">readmission</a></span><span class="op">(</span><span class="va">db</span>, MAID<span class="op">=</span><span class="cn">T</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/readmission.html">readmission</a></span><span class="op">(</span><span class="va">db</span>, MAID <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="sectionrewin">Specifying custom readmission window<a class="anchor" aria-label="anchor" href="#sectionrewin"></a>
@@ -614,7 +640,7 @@ and 30-day readmission. Users can provide an additional input argument
 interest (in days).</p>
 <p><strong>Example:</strong> Get 14-, 90-, and 180- day readmission.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">readm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readmission.html">readmission</a></span><span class="op">(</span><span class="va">db</span>, readm_win <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">14</span>, <span class="fl">90</span>, <span class="fl">180</span><span class="op">)</span><span class="op">)</span>  <span class="co"># specify readmission windows in days</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">readm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readmission.html">readmission</a></span><span class="op">(</span><span class="va">db</span>, readm_win <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">14</span>, <span class="fl">90</span>, <span class="fl">180</span><span class="op">)</span><span class="op">)</span> <span class="co"># specify readmission windows in days</span></span></code></pre></div>
 <p>All readmission windows should be provided as positive integers.
 Otherwise, the function will exit with an error message.</p>
 <p><strong>Note:</strong> Large readmission windows can lead to the
@@ -631,8 +657,8 @@ of interest is towards the end of the data availability timeline (e.g.,
 cohort are excluded due to the buffer period and/or due to the CIHI
 flags:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Example of readmission rates for data from June 2021, resulting in a high % of encounters in the buffer period </span></span>
-<span><span class="va">readm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readmission.html">readmission</a></span><span class="op">(</span><span class="va">db</span>, restricted_cohort <span class="op">=</span> <span class="va">admdad</span><span class="op">[</span><span class="fu">ymd_hm</span><span class="op">(</span><span class="va">discharge_date_time</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="st">"2021-06-01 00:00"</span>,<span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># Example of readmission rates for data from June 2021, resulting in a high % of encounters in the buffer period</span></span>
+<span><span class="va">readm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readmission.html">readmission</a></span><span class="op">(</span><span class="va">db</span>, restricted_cohort <span class="op">=</span> <span class="va">admdad</span><span class="op">[</span><span class="fu">ymd_hm</span><span class="op">(</span><span class="va">discharge_date_time</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="st">"2021-06-01 00:00"</span>, <span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; Warning: Up to 41.3% of episodes of care have been removed from the denominator. This can be due to</span></span>
 <span><span class="co">#&gt;         1) some CIHI flags (death/palliative/mental/signout) or</span></span>
 <span><span class="co">#&gt;         2) removal due to the buffer period, which is 30 days + readmission window.</span></span>
@@ -701,7 +727,7 @@ important to ensure that only those encounters are included in the
 should be ignored.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># note: users needs to define their own GIM_cohort table based on the criteria they want to use to define GIM encounters</span></span>
-<span><span class="va">readm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readmission.html">readmission</a></span><span class="op">(</span><span class="va">db</span>, restricted_cohort <span class="op">=</span> <span class="va">GIM_cohort</span><span class="op">[</span><span class="va">hospital_num</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">101</span>,<span class="fl">102</span>,<span class="fl">103</span>,<span class="fl">104</span>,<span class="fl">105</span><span class="op">)</span>,<span class="op">]</span><span class="op">)</span> </span></code></pre></div>
+<span><span class="va">readm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readmission.html">readmission</a></span><span class="op">(</span><span class="va">db</span>, restricted_cohort <span class="op">=</span> <span class="va">GIM_cohort</span><span class="op">[</span><span class="va">hospital_num</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">101</span>, <span class="fl">102</span>, <span class="fl">103</span>, <span class="fl">104</span>, <span class="fl">105</span><span class="op">)</span>, <span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <p>The resulting readmission rates will only include readmissions from
 and to GIM services at the 5 hospitals that were included. Note that
 those results may be less reliable than readmissions derived based on
@@ -723,7 +749,7 @@ analyses are compliant with the REB. For example, to derive episodes of
 care for GIM encounters at 5 hospitals:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># note: users needs to define their own GIM_cohort table based on the criteria they want to use to define GIM encounters</span></span>
-<span><span class="va">epicares</span> <span class="op">&lt;-</span> <span class="fu">identify_epicare</span><span class="op">(</span><span class="va">db</span>, restricted_cohort <span class="op">=</span> <span class="va">GIM_cohort</span><span class="op">[</span><span class="va">hospital_num</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">101</span>,<span class="fl">102</span>,<span class="fl">103</span>,<span class="fl">104</span>,<span class="fl">105</span><span class="op">)</span>,<span class="op">]</span><span class="op">)</span> </span></code></pre></div>
+<span><span class="va">epicares</span> <span class="op">&lt;-</span> <span class="fu">identify_epicare</span><span class="op">(</span><span class="va">db</span>, restricted_cohort <span class="op">=</span> <span class="va">GIM_cohort</span><span class="op">[</span><span class="va">hospital_num</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">101</span>, <span class="fl">102</span>, <span class="fl">103</span>, <span class="fl">104</span>, <span class="fl">105</span><span class="op">)</span>, <span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <p>If you are unsure about which encounters are covered by your
 project’s REB protocol, please contact your manager!</p>
 </div>
@@ -765,17 +791,17 @@ transfer information.</p>
 <code class="sourceCode R"><span><span class="co">## Calculate epicares based on ALL encounters in DB (to ensure linked transfers are included)</span></span>
 <span><span class="va">epicares</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/episodes_of_care.html">episodes_of_care</a></span><span class="op">(</span><span class="va">db</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co">## Identify all epicares that have at least 1 GIM encounter </span></span>
+<span><span class="co">## Identify all epicares that have at least 1 GIM encounter</span></span>
 <span><span class="co"># note: users needs to define their own GIM_cohort table based on the criteria they want to use to define GIM encounters</span></span>
-<span><span class="va">GIM_epicares</span> <span class="op">&lt;-</span> <span class="va">epicares</span><span class="op">[</span><span class="va">genc_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">GIM_cohort</span><span class="op">$</span><span class="va">genc_id</span>, <span class="st">'epicare'</span><span class="op">]</span></span>
+<span><span class="va">GIM_epicares</span> <span class="op">&lt;-</span> <span class="va">epicares</span><span class="op">[</span><span class="va">genc_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">GIM_cohort</span><span class="op">$</span><span class="va">genc_id</span>, <span class="st">"epicare"</span><span class="op">]</span></span>
 <span></span>
 <span><span class="co">## Get all encounters associated with GIM epicares (keep all encounters of those epicares, even those without GIM to make sure all linked transfers are accounted for)</span></span>
-<span><span class="va">GIM_epicares_all_enc</span> <span class="op">&lt;-</span> <span class="va">epicares</span><span class="op">[</span><span class="va">epicare</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">GIM_epicares</span><span class="op">$</span><span class="va">epicare</span>, <span class="st">'genc_id'</span><span class="op">]</span> </span>
+<span><span class="va">GIM_epicares_all_enc</span> <span class="op">&lt;-</span> <span class="va">epicares</span><span class="op">[</span><span class="va">epicare</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">GIM_epicares</span><span class="op">$</span><span class="va">epicare</span>, <span class="st">"genc_id"</span><span class="op">]</span></span>
 <span></span>
 <span><span class="co">## Calculate readmissions to GIM (considering all linked transfers in DB)</span></span>
 <span><span class="va">GIM_readm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readmission.html">readmission</a></span><span class="op">(</span><span class="va">db</span>, restricted_cohort <span class="op">=</span> <span class="va">GIM_epicares_all_enc</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co">## Get 7-day readmission rate of GIM patients to GIM </span></span>
+<span><span class="co">## Get 7-day readmission rate of GIM patients to GIM</span></span>
 <span><span class="co"># note: numerator/denominator are based on unique GIM epicares, not GIM encounters (i.e., there may be several GIM encounters associated with a single GIM epicare, but those are only counted once; readmission is attributed to the last encounter within each GIM epicare)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">GIM_readm</span><span class="op">$</span><span class="va">readmit7</span>, na.rm <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
 <p>The resulting readmission rates indicate whether there was ANY GIM
@@ -797,21 +823,21 @@ make sure that all available transfer information is used in the
 readmission calculations.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Get all encounters with COVID diagnosis</span></span>
-<span><span class="va">COVID_enc</span> <span class="op">&lt;-</span> <span class="va">ipdiagnosis</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">'^U07'</span>,<span class="va">diagnosis_code</span><span class="op">)</span>,<span class="st">'genc_id'</span><span class="op">]</span></span>
+<span><span class="va">COVID_enc</span> <span class="op">&lt;-</span> <span class="va">ipdiagnosis</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"^U07"</span>, <span class="va">diagnosis_code</span><span class="op">)</span>, <span class="st">"genc_id"</span><span class="op">]</span></span>
 <span></span>
 <span><span class="co">## Calculate epicares based on ALL encounters in DB (to ensure linked transfers are included)</span></span>
 <span><span class="va">epicares</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/episodes_of_care.html">episodes_of_care</a></span><span class="op">(</span><span class="va">db</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co">## Identify all epicares that have at least 1 COVID encounter </span></span>
-<span><span class="va">COVID_epicares</span> <span class="op">&lt;-</span> <span class="va">epicares</span><span class="op">[</span><span class="va">genc_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">COVID_enc</span><span class="op">$</span><span class="va">genc_id</span>, <span class="st">'epicare'</span><span class="op">]</span></span>
+<span><span class="co">## Identify all epicares that have at least 1 COVID encounter</span></span>
+<span><span class="va">COVID_epicares</span> <span class="op">&lt;-</span> <span class="va">epicares</span><span class="op">[</span><span class="va">genc_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">COVID_enc</span><span class="op">$</span><span class="va">genc_id</span>, <span class="st">"epicare"</span><span class="op">]</span></span>
 <span></span>
 <span><span class="co">## Get all encounters associated with COVID epicares (keep all encounters of those epicares, even those without COVID diagnosis to make sure all linked transfers are accounted for)</span></span>
-<span><span class="va">COVID_epicares_all_enc</span> <span class="op">&lt;-</span> <span class="va">epicares</span><span class="op">[</span><span class="va">epicare</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">COVID_epicares</span><span class="op">$</span><span class="va">epicare</span>, <span class="st">'genc_id'</span><span class="op">]</span> </span>
+<span><span class="va">COVID_epicares_all_enc</span> <span class="op">&lt;-</span> <span class="va">epicares</span><span class="op">[</span><span class="va">epicare</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">COVID_epicares</span><span class="op">$</span><span class="va">epicare</span>, <span class="st">"genc_id"</span><span class="op">]</span></span>
 <span></span>
 <span><span class="co">## Calculate readmissions with COVID diagnosis (considering all linked transfers in DB)</span></span>
 <span><span class="va">COVID_readm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readmission.html">readmission</a></span><span class="op">(</span><span class="va">db</span>, restricted_cohort <span class="op">=</span> <span class="va">COVID_epicares_all_enc</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co">## Get 30-day readmission rate of COVID patients, only counting readmissions that also have a COVID diagnosis </span></span>
+<span><span class="co">## Get 30-day readmission rate of COVID patients, only counting readmissions that also have a COVID diagnosis</span></span>
 <span><span class="co"># note: numerator/denominator are based on unique COVID epicares, not COVID encounters (i.e., there may be several COVID encounters associated with a single epicare, but those are only counted once; readmission is attributed to the last encounter within each COVID epicare)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">COVID_readm</span><span class="op">$</span><span class="va">readmit30</span>, na.rm <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
 <p>The resulting readmission rates indicate whether patients with COVID
@@ -871,6 +897,54 @@ consider if any additional REB restrictions apply, in which case the
 <code>restricted_cohort</code> should be filtered based on REB
 considerations first before applying any additional inclusion steps.</p>
 </div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="faq">FAQ<a class="anchor" aria-label="anchor" href="#faq"></a>
+</h2>
+<div class="section level3">
+<h3 id="why-are-there-missing-values-in-the-readmission-flags">Why are there missing values in the readmission flags?<a class="anchor" aria-label="anchor" href="#why-are-there-missing-values-in-the-readmission-flags"></a>
+</h3>
+<p>Missing values (<code>NA</code>) in the returned readmission flags
+indicate that readmission status for these encounters cannot be
+determined. Encounters with <code>NA</code> are excluded from the
+denominator in readmission rate calculations, and thus, should be
+removed from any readmission analyses. There are several reasons for
+<code>NA</code> in the readmission flags:</p>
+<ol style="list-style-type: decimal">
+<li><p><strong>Buffer period:</strong> Any <code>genc_ids</code> that
+were discharged during the buffer period (end of data availability
+period for a given hospital) are returned as <code>readmit = NA</code>
+because readmission cannot be reliably determined for these encounters
+(see <a href="#sectionBuffer">here</a> for more details). Note that
+longer readmission windows will lead to a longer buffer period (i.e.,
+more <code>NA</code>).</p></li>
+<li><p><strong>Attribution to last encounter per episode of
+care:</strong> If there are multiple encounters in a given episode of
+care, readmission will only be attributed to the <em>last</em>
+encounter. All previous encounters associated with the same episode of
+care will be returned as <code>readmit = NA</code> (see <a href="#sectionIntro">here</a>). If attribution to the last encounter
+(i.e., the last discharging physician/hospital) is irrelevant for your
+research question, you may consider assigning the last readmission value
+to <em>all</em> encounters of a given episode of care. This could be
+relevant if you are only analyzing the first encounter per patient (or a
+randomly selected encounter).</p></li>
+<li><p><strong>Acute transfers to non-GEMINI site:</strong> If an
+encounter is followed by a transfer to an acute care institution but the
+transfer encounter does not exist in GEMINI data (e.g., transfer to
+non-GEMINI hospital), all encounters of that episode of care will be
+returned with <code>readmit = NA</code> (see <a href="#sectionATout">here</a>). This is because readmission is typically
+attributed to the last encounter of an episode of care (see point 2
+above), which in this case does not exist in our data. Additionally, we
+don’t know how long a patient was hospitalized for at a non-GEMINI site,
+so we cannot reliably determine if any subsequent encounter occurred
+within the readmission window of interest.</p></li>
+<li><p><strong>CIHI flags:</strong> If set to <code>TRUE</code>, the
+following CIHI flags will result in <code>readmit = NA</code> for
+encounters meeting the relevant criteria (see <a href="#sectionCIHI">here</a> for details): <code>death</code>
+(<code>TRUE</code> by default), <code>palliative</code>,
+<code>mental</code>, and <code>signout</code></p></li>
+</ol>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -13,7 +13,7 @@ providing options for outputting raw comorbidities or comorbidities at admission
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -26,6 +26,7 @@ providing options for outputting raw comorbidities or comorbidities at admission
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/cell_suppression_and_table1.html">Cell Suppression and Table 1</a></li>
     <li><a class="dropdown-item" href="../articles/daily_census.html">Daily Census</a></li>
+    <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
@@ -72,12 +73,12 @@ providing options for outputting raw comorbidities or comorbidities at admission
 
 <dl><dt id="arg-ipdiag">ipdiag<a class="anchor" aria-label="anchor" href="#arg-ipdiag"></a></dt>
 <dd><p>(<code>data.table</code> or <code>data.frame</code>)<br><code>ipdiagnosis</code> table as defined in the
-<a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>.</p></dd>
+<a href="https://geminimedicine.ca/the-gemini-database/" class="external-link">GEMINI Data Repository Dictionary</a>.</p></dd>
 
 
 <dt id="arg-erdiag">erdiag<a class="anchor" aria-label="anchor" href="#arg-erdiag"></a></dt>
 <dd><p>(<code>data.table</code> or <code>data.frame</code>)<br><code>erdiagnosis</code> table as defined in the
-<a href="https://drive.google.com/uc?export=download&amp;id=1iwrTz1YVz4GBPtaaS9tJtU0E9Bx1QSM5" class="external-link">GEMINI Data Repository Dictionary</a>.
+<a href="https://geminimedicine.ca/the-gemini-database/" class="external-link">GEMINI Data Repository Dictionary</a>.
 Typically, ER diagnoses should be included when deriving comorbidity in order
 to increase sensitivity. However, in certain scenarios, users may choose to
 only include IP diagnoses by specifying <code>erdiag = NULL</code>. This may be useful

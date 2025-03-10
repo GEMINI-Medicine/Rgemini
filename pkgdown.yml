@@ -4,11 +4,12 @@ pkgdown_sha: ~
 articles:
   cell_suppression_and_table1: cell_suppression_and_table1.html
   daily_census: daily_census.html
+  data_coverage: data_coverage.html
   epicare_and_readmission: epicare_and_readmission.html
   icd_to_ccsr: icd_to_ccsr.html
   plotting_data_exploration: plotting_data_exploration.html
   plotting_theme: plotting_theme.html
-last_built: 2025-01-30T22:46Z
+last_built: 2025-03-10T23:00Z
 urls:
   reference: https://gemini-medicine.github.io/Rgemini/reference
   article: https://gemini-medicine.github.io/Rgemini/articles
