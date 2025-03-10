@@ -35,6 +35,18 @@ NULL
 
 #' Dummy data for `data_coverage` function
 #' Coverage data
-#' @name data_coverage
+#' @name coverage
+#' @docType data
+NULL
+
+#' Dummy data for `data_coverage` function
+#' Coverage data
+#' @name coverage_enc
+#' @docType data
+NULL
+
+#' Dummy data for `data_coverage` function
+#' Coverage data
+#' @name coverage_timeline
 #' @docType data
 NULL
