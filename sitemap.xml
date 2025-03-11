@@ -21,7 +21,10 @@
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/comorbidity_index.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/compare_sets.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/convert_dt.html</loc></url>
+<url><loc>https://gemini-medicine.github.io/Rgemini/reference/coverage.html</loc></url>
+<url><loc>https://gemini-medicine.github.io/Rgemini/reference/coverage_enc.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/coverage_message.html</loc></url>
+<url><loc>https://gemini-medicine.github.io/Rgemini/reference/coverage_timeline.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/covid_flag.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/create_ntiles.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/daily_census.html</loc></url>
@@ -32,7 +35,6 @@
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/dummy_admdad.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/dummy_ccsr.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/dummy_census.html</loc></url>
-<url><loc>https://gemini-medicine.github.io/Rgemini/reference/dummy_data_coverage.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/dummy_diag.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/dummy_ipadmdad.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/dummy_ipdiagnosis.html</loc></url>
