@@ -145,6 +145,7 @@ disability <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
   ## Read file with disability codes from data folder
   disability_codes <- Rgemini::mapping_disability %>% data.table()
 
+
   ## Get encounters with disability
   res_component <- diagnoses %>%
     regex_left_join(disability_codes, by = "diagnosis_code", ignore_case = TRUE) %>% # identify any codes starting with mapped codes
