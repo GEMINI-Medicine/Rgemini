@@ -588,7 +588,31 @@ NULL
 #' Used to generate mock output for the `data_coverage` vignette.
 #'
 #' @keywords internal
-#' @name dummy_data_coverage
+#' @name coverage
+#' @docType data
+#'
+NULL
+
+#' @title
+#' Dummy coverage data (encounter-level)
+#'
+#' @description
+#' Used to generate mock output for the `data_coverage` vignette.
+#'
+#' @keywords internal
+#' @name coverage_enc
+#' @docType data
+#'
+NULL
+
+#' @title
+#' Dummy coverage data (timeline)
+#'
+#' @description
+#' Used to generate mock output for the `data_coverage` vignette.
+#'
+#' @keywords internal
+#' @name coverage_timeline
 #' @docType data
 #'
 NULL
