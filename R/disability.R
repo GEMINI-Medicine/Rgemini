@@ -133,7 +133,6 @@ disability <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
     )
   }
 
-
   ## Ensure ipdiag/erdiag are in data.table format before proceeding
   diagnoses <- coerce_to_datatable(ipdiag[, c("genc_id", "diagnosis_code")])
   if (!is.null(erdiag)) {
