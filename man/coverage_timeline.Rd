@@ -3,9 +3,8 @@
 \docType{data}
 \name{coverage_timeline}
 \alias{coverage_timeline}
-\title{Dummy data for \code{data_coverage} function
-Coverage data}
+\title{Dummy coverage data (timeline)}
 \description{
-Dummy data for \code{data_coverage} function
-Coverage data
+Used to generate mock output for the \code{data_coverage} vignette.
 }
+\keyword{internal}

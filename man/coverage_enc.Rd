@@ -3,9 +3,8 @@
 \docType{data}
 \name{coverage_enc}
 \alias{coverage_enc}
-\title{Dummy data for \code{data_coverage} function
-Coverage data}
+\title{Dummy coverage data (encounter-level)}
 \description{
-Dummy data for \code{data_coverage} function
-Coverage data
+Used to generate mock output for the \code{data_coverage} vignette.
 }
+\keyword{internal}

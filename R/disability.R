@@ -133,7 +133,6 @@ disability <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
     )
   }
 
-
   ## Ensure ipdiag/erdiag are in data.table format before proceeding
   diagnoses <- coerce_to_datatable(ipdiag[, c("genc_id", "diagnosis_code")])
   if (!is.null(erdiag)) {
@@ -145,6 +144,7 @@ disability <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
 
   ## Read file with disability codes from data folder
   disability_codes <- Rgemini::mapping_disability %>% data.table()
+
 
   ## Get encounters with disability
   res_component <- diagnoses %>%
