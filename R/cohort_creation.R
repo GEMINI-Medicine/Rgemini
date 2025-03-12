@@ -233,6 +233,9 @@ cohort_creation <- function(
     colnames(cohort_tab)[3] <- paste("Overall", colnames(cohort_tab)[3])
   }
 
+  ## Remove key column assignment
+  setkey(cohort_clean[[length(cohort_clean)]], NULL)
+
   ## returns list with 2 items:
   # 1) final cohort data after all inclusion/exclusion steps have been applied
   # 2) table showing cohort creation numbers at each inclusion/exclusion step
