@@ -42,7 +42,6 @@ drv <- dbDriver("PostgreSQL")
 db <- dbConnect(drv, dbname = "drm_cleandb_v3_1_0", host = "prime.smh.gemini-hpc.ca", port = 5432, user = "anoutchinad", pass = getPass("Pass: "))
 
 cohort <- dbGetQuery(db, "SELECT * FROM public.admdad WHERE discharge_date_time > '2020-06-30 23:59'") %>% data.table()
-cohort_gencs <- cohort %>% select(genc_id)
 
 # Temp table for cohort genc_ids
 dbSendQuery(db, "drop table if exists temp_g")
@@ -97,13 +96,16 @@ chsc_merge[, derived_total_inpatient_cost := (riw_15 * cost_of_standard_hospital
 # price index.
 # https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810000408
 # adjusted cost of sth in '20 in '23 = original_cost * (CPI in 2023/ CPI 2020)
-# CPI data assuming 2002 = 100, and specifically Health care, not health and 
+# CPI data assuming 2002 = 100, and specifically Health care, not health and
 # personal care
 ## We should determine what month we take the CPI from (start of fiscal year?)
+## Might actually be the end of fiscal year since CHSC values are from apr-may
+## of the following year 
 
 # cpi values scaled to 100 for 2002 for all of Canada (or should we do Ontario)
 # in the future maybe we can use scraping to get updated values
-cpi_values <- data.table(
+# scale to 2002 because it's the official time base in canada
+cpi_values_apr <- data.table(
     methodology_year = c(2018, 2019, 2020, 2021, 2022, 2023, 2024),
     cpi_health_and_personal_care = c(126.2, 127.1, 128.7, 132.5, 137.0, 145.7, 150.0),
     cpi_health_care = c(128.6, 129.4, 131.6, 134.5, 137.4, 144.7, 148.5)
