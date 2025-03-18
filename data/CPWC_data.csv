@@ -1,9 +1,9 @@
 hospital_name, hospital_id, year_start, year_end, cost_of_standard_hospital_stay
-"Grand River Hospital","GRH", "2018-04-01", "2019-03-31", 5079
-"Grand River Hospital","GRH", "2019-04-01", "2020-03-31", 5319
-"Grand River Hospital","GRH", "2020-04-01", "2021-03-31", 6880
-"Grand River Hospital","GRH", "2021-04-01", "2022-03-31", 5823
-"Grand River Hospital","GRH", "2022-04-01", "2023-03-31", 6176
+"Grand River Hospital", "GRH" , "2018-04-01", "2019-03-31", 5079
+"Grand River Hospital", "GRH" , "2019-04-01", "2020-03-31", 5319
+"Grand River Hospital", "GRH" , "2020-04-01", "2021-03-31", 6880
+"Grand River Hospital", "GRH" , "2021-04-01", "2022-03-31", 5823
+"Grand River Hospital", "GRH" , "2022-04-01", "2023-03-31", 6176
 "Georgetown Hospital", "HHCG", "2018-04-01", "2019-03-31", 5900
 "Georgetown Hospital", "HHCG", "2019-04-01", "2021-03-21", 5911
 "Georgetown Hospital", "HHCG", "2020-04-01", "2021-03-31", 6870
