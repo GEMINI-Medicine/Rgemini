@@ -43,11 +43,11 @@ dbcon <- dbConnect(drv, dbname = "drm_cleandb_v3_1_0", host = "prime.smh.gemini-
 
 cohort <- dbGetQuery(dbcon, "SELECT * FROM public.admdad WHERE discharge_date_time > '2020-06-30 23:59'") %>% data.table()
 
-derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NULL) {
+derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   ## check user inputs
   check_input(dbcon, "DBI")
   check_input(cohort, c("data.table", "data.frame"), colnames = "genc_id")
-  if (!is.NULL(reference_year)) {
+  if (!is.na(reference_year)) {
       check_input(reference_year, "integer") # maybe add interval constraint to be greater than smallest year that has CPI available
   }
 
@@ -144,7 +144,7 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NULL) {
   ### Q: Should we give the user an option to choose what year to adjust to?
   ###    Currently I'm adjusting to the largest discharge year in the cohort
   ###    
-  if (is.null(reference_year)) {
+  if (is.na(reference_year)) {
       max_discharge_date <- substr(max(cohort$discharge_date_time), 1, 10)
       if (as.integer(substr(max_discharge_date, 7, 7)) < 4) {
         reference_year <- as.integer(substr(max_discharge_date, 1, 4)) - 1
