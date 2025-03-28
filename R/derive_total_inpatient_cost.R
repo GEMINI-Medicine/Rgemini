@@ -218,29 +218,22 @@ library(lubridate)
 
 # JSON pull of sbk data https://yourhealthsystem.cihi.ca/hspidas/indicator/trend?indicatorCode=015&zoneCode=O10093
 
-# read static html
-
-
-test_data <- jsonlite::fromJSON(test_url)
-test_url <- "https://yourhealthsystem.cihi.ca/hspidas/indicator/trend?indicatorCode=015&zoneCode=O10093"
-trends <- test_data$zones$fiscalYears
-metrics <- test_data$zones$fiscalYears[]
-test2 <- trends %>% data.table()
-zones <- test_data$zones
-trends[2]
-
-trends[[1]]$metrics[2]
-tr
-hehe <- trends[[1]]$metrics[[5]]
-
-hoho <- rbind(trends[[1]]$metrics[[1]], trends[[1]]$metrics[[2]], trends[[1]]$metrics[[3]], trends[[1]]$metrics[[4]], trends[[1]]$metrics[[5]])
-hohoho <- hoho %>% select(indicatorValue, dataPeriodEDesc)
-
-
 
 chsc_data_temp <- chsc_data
 codes <- c("O10093", "O10027", "O10027", "O10027", "O5137", "O80258", "O80258", "O5210", "O80380", "O5142", "O5142", "O80169", "O80169", "O1096", "O1096", "O80290", "O10020", "O10020", "O10020", "O5224", "O5159", "O5302", "O80497", "O81124", "O80497", "O5141", "O81100", "O20392", "O20392", "O5159", "O5159", "O10018", "O10018", "O10018")
 hosp_id <- c("SBK", "HHCO", "HHCM", "HHCG", "GRH", "HHSH", "HHSJ", "HRH", "KGH", "LHSCU", "LHSCV", "MKHR", "MKHV", "MKSH", "MKSHX", "MSH", "NHGN", "NHSC", "NHWH", "NYGH", "PMH", "SAH", "SJHC", "SMGH", "SMH", "TBRH", "TEHNM", "THPC", "THPM", "UHNTG", "UHNTW", "WOHSB", "WOHSE", "WOHSR")
 
 cihi_hosp_codes <- data.table(hosp_id, codes)
-glimpse(cihi_hosp_codes)
+
+
+pulls <- data.table()
+glimpse(pulls)
+for(i in 1:nrow(cihi_hosp_codes)) {
+    cihi_url <- paste0("https://yourhealthsystem.cihi.ca/hspidas/indicator/trend?indicatorCode=015&zoneCode=", cihi_hosp_codes[i]$codes)
+    data <- jsonlite::fromJSON(cihi_url)
+    trends <- data$zones$fiscalYears
+    site_data <- rbind(trends[[1]]$metrics[[1]], trends[[1]]$metrics[[2]], trends[[1]]$metrics[[3]], trends[[1]]$metrics[[4]], trends[[1]]$metrics[[5]]) %>% select(indicatorValue, dataPeriodEDesc) %>% rename(methodology_year = dataPeriodEDesc)
+    site_data$site <- cihi_hosp_codes[i]$hosp_id
+    site_data$methodology_year <- substr(site_data$methodology_year, 1, 4)
+    pulls <- rbind(pulls, site_data)
+}
