@@ -105,6 +105,13 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   #    since fiscal/methodology year 2018. How should we handle these values?
   #    We definitely need to document this in the function, but should we remove
   #    rows from the output?
+
+  # Q: CHSC data shows that average costs are the same in hospitals that are
+  #    in the same system (i.e. Markham Stouffville and Uxbridge), but I'm 
+  #    not sure this is very realistic- specifically in the Oak valley case
+  #    bevause Uxbridge is comparably a much smaller hospital than Markham
+  #    Stouffville...
+
   chsc_data <- fread("~/repos/Rgemini/Rgemini/data/CPWC_data.csv")
   setnames(chsc_data, old = "fiscal_year", new = "methodology_year")
   chsc_merge <- merge(cohort_cmg, chsc_data, by = c("hospital_id", "methodology_year"))
@@ -141,6 +148,9 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   cpi_values_apr[, methodology_year := as.integer(substr(REF_DATE, 1, 4))]
 
   ## Get reference year to which we adjust costs to
+  # If month is < 4, subtract 1 from max_discharge date year as we're still
+  # in the previous fiscal year.
+
   ### Q: Should we give the user an option to choose what year to adjust to?
   ###    Currently I'm adjusting to the largest discharge year in the cohort
   ###    
@@ -219,4 +229,18 @@ test2 <- trends %>% data.table()
 zones <- test_data$zones
 trends[2]
 
-trends[[1]]$metrics[1]
+trends[[1]]$metrics[2]
+tr
+hehe <- trends[[1]]$metrics[[5]]
+
+hoho <- rbind(trends[[1]]$metrics[[1]], trends[[1]]$metrics[[2]], trends[[1]]$metrics[[3]], trends[[1]]$metrics[[4]], trends[[1]]$metrics[[5]])
+hohoho <- hoho %>% select(indicatorValue, dataPeriodEDesc)
+
+
+
+chsc_data_temp <- chsc_data
+codes <- c("O10093", "O10027", "O10027", "O10027", "O5137", "O80258", "O80258", "O5210", "O80380", "O5142", "O5142", "O80169", "O80169", "O1096", "O1096", "O80290", "O10020", "O10020", "O10020", "O5224", "O5159", "O5302", "O80497", "O81124", "O80497", "O5141", "O81100", "O20392", "O20392", "O5159", "O5159", "O10018", "O10018", "O10018")
+hosp_id <- c("SBK", "HHCO", "HHCM", "HHCG", "GRH", "HHSH", "HHSJ", "HRH", "KGH", "LHSCU", "LHSCV", "MKHR", "MKHV", "MKSH", "MKSHX", "MSH", "NHGN", "NHSC", "NHWH", "NYGH", "PMH", "SAH", "SJHC", "SMGH", "SMH", "TBRH", "TEHNM", "THPC", "THPM", "UHNTG", "UHNTW", "WOHSB", "WOHSE", "WOHSR")
+
+cihi_hosp_codes <- data.table(hosp_id, codes)
+glimpse(cihi_hosp_codes)
