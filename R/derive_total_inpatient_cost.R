@@ -1,3 +1,29 @@
+#' @title
+#' Derive total inpatient cost for each hospital stay.
+#'
+#' @description
+#' `derive_total_inpatient_cost.R` derives the total cost of an encounter's
+#' hospitalization based on Resource Intensity Weights (RIW), which represent
+#' weighted costs relative to average inpatient cost.
+#' @param dbcon (`DBIConnection`)\cr
+#' A database connection to any GEMINI database.
+#' @param cohort (`data.frame` or `data.table`)\cr
+#' User specified cohort that's a restricted subset of all encounters in the DRM
+#' table "ipadmdad" (see [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/)).
+#' Must contain `genc_id` as the identifier. 
+#' 
+#' @param reference_year (`int`)\cr
+#' The year to which the derived costs should be adjusted to due to inflation.
+#' As a default, reference year is decided to be the fiscal year of the latest
+#' discharge in the provided cohort. For example, if the latest discharge is
+#' on 2023-03-24, the reference year will be 2022 aligning with the fiscal year.
+#' 
+#' @details 
+#' 
+#' @return
+#' This function returns a `data.table` containing `genc_id`,
+#' `derived_total_inpatient_cost`, `inflation_rate`, andd
+
 # Function that derives cost of hospitalization based on
 # Resource Intensity Weights (RIW), which represents weighted costs relative to
 # average inpatient cost. The actual cost amount can be inferred based on CMG
@@ -43,6 +69,9 @@ dbcon <- dbConnect(drv, dbname = "drm_cleandb_v3_1_0", host = "prime.smh.gemini-
 
 cohort <- dbGetQuery(dbcon, "SELECT * FROM public.admdad WHERE discharge_date_time > '2020-06-30 23:59'") %>% data.table()
 
+# TODO: Add warning if user cohort has admissions outside of what's available
+#       From CIHI's average inpatient costs
+
 derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   ## check user inputs
   check_input(dbcon, "DBI")
@@ -51,7 +80,7 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
       check_input(reference_year, "integer") # maybe add interval constraint to be greater than smallest year that has CPI available
   }
 
-  ## TODO:: Detect if we're using hospital_id or hospital_num
+  ## TODO: Detect if we're using hospital_id or hospital_num
   
   # create temp table for cohort_gencs to pull ipcmg
   DBI::dbSendQuery(dbcon, "DROP TABLE IF EXISTS temp_g;")
@@ -187,7 +216,6 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
 }
 
 
-
 # adjust for healthcare specific inflation using Canada Health Care consumer
 # price index.
 # https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810000408
@@ -237,3 +265,7 @@ for(i in 1:nrow(cihi_hosp_codes)) {
     site_data$methodology_year <- substr(site_data$methodology_year, 1, 4)
     pulls <- rbind(pulls, site_data)
 }
+
+start <- Sys.time()
+cost <- derive_total_inpatient_cost(dbcon, cohort)
+print( Sys.time() - start )

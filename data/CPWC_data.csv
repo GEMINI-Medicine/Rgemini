@@ -1,4 +1,4 @@
-hospital_id,hospital_name,methodology_year,cost_of_standard_hospital_stay,hospital_num
+hospital_id,hospital_name,fiscal_year,cost_of_standard_hospital_stay,hospital_num
 GRH,Grand River Hospital,2018,5079,127
 GRH,Grand River Hospital,2019,5319,127
 GRH,Grand River Hospital,2020,6880,127
