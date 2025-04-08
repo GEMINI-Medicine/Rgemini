@@ -11,7 +11,7 @@ All functions have been developed by the GEMINI team and were tested on the curr
 
 ## Installation
 
-`Rgemini` is currently not yet available on CRAN. Please follow the installation instructions below, depending on the environment you work in (HPC4Health, NORA, other).
+`Rgemini` is currently not yet available on CRAN. Please follow the installation instructions below, depending on the environment you work in (HPC4Health or other).
 
 ### HPC4Health
 
@@ -23,6 +23,8 @@ All other users can install the package from GitHub using the following:
 ``` r
 remotes::install_github("GEMINI-Medicine/Rgemini", build_vignettes = TRUE)
 ```
+
+Please note that when `build_vignettes = TRUE`, you need to first install packages used in the vignettes (see packages listed under "Suggests" [here](https://github.com/GEMINI-Medicine/Rgemini/blob/main/DESCRIPTION)). Alternatively, you can set `build_vignettes` to `FALSE` and review the knitted vignettes [here](https://gemini-medicine.github.io/Rgemini/articles/).
 
 Alternatively, you can `git clone` the `Rgemini` repository from the `main` branch, and then run `devtools::install("/path/to/repo", repos = NULL, type="source")`.
 
