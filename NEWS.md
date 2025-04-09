@@ -1,7 +1,3 @@
-# Rgemini `develop`
-
-* 
-
 # Rgemini `1.1.0`
 
 * **New functions:**
