@@ -21,12 +21,12 @@ The `Rgemini` package is automatically installed for all HPC4Health users workin
 
 All other users can install the package from GitHub using the following:
 ``` r
-remotes::install_github("GEMINI-Medicine/Rgemini", build_vignettes = TRUE, dependencies = TRUE)
+remotes::install_github("GEMINI-Medicine/Rgemini", dependencies = TRUE)
 ```
 
-Please note that when `build_vignettes = TRUE`, any packages used in the vignettes need to be installed as well (see packages listed under "Suggests" [here](https://github.com/GEMINI-Medicine/Rgemini/blob/main/DESCRIPTION)). Alternatively, you can set `build_vignettes` to `FALSE` and review the knitted vignettes [here](https://gemini-medicine.github.io/Rgemini/articles/).
+You can also specify `build_vignettes = TRUE` to include all package vignettes. However, in that case, make sure to install any additional packages required for the vignettes (see packages listed under "Suggests" [here](https://github.com/GEMINI-Medicine/Rgemini/blob/main/DESCRIPTION)). Alternatively, you can review the knitted vignettes [here](https://gemini-medicine.github.io/Rgemini/articles/).
 
-If the installation option mentioned above does not work, you can `git clone` the `Rgemini` repository from the `main` branch, and then run `devtools::install("/path/to/repo", repos = NULL, type="source")`. Alternatively, you can try one of the following:
+If the installation instructions from above don't work, you can `git clone` the `Rgemini` repository from the `main` branch, and then run `devtools::install("/path/to/repo", repos = NULL, type="source")`. Alternatively, you can try one of the following:
 
 1. Install using `pak::pkg_install("GEMINI-Medicine/Rgemini")`.
 2. Download the latest source tarball from the [package releases](https://github.com/GEMINI-Medicine/Rgemini/tags) to some directory such as `/path/to/tarball` and run `install.packages("/path/to/tarball", repos = NULL, type="source")`.
