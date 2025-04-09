@@ -11,7 +11,7 @@ All functions have been developed by the GEMINI team and were tested on the curr
 
 ## Installation
 
-`Rgemini` is currently not yet available on CRAN. Please follow the installation instructions below, depending on the environment you work in (HPC4Health, NORA, other).
+`Rgemini` is currently not yet available on CRAN. Please follow the installation instructions below, depending on the environment you work in (HPC4Health or other).
 
 ### HPC4Health
 
@@ -21,15 +21,15 @@ The `Rgemini` package is automatically installed for all HPC4Health users workin
 
 All other users can install the package from GitHub using the following:
 ``` r
-remotes::install_github("GEMINI-Medicine/Rgemini", build_vignettes = TRUE)
+remotes::install_github("GEMINI-Medicine/Rgemini", dependencies = TRUE)
 ```
 
-Alternatively, you can `git clone` the `Rgemini` repository from the `main` branch, and then run `devtools::install("/path/to/repo", repos = NULL, type="source")`.
+You can also specify `build_vignettes = TRUE` to include all package vignettes. However, in that case, make sure to install any additional packages required for the vignettes (see packages listed under "Suggests" [here](https://github.com/GEMINI-Medicine/Rgemini/blob/main/DESCRIPTION)). Alternatively, you can review the knitted vignettes [here](https://gemini-medicine.github.io/Rgemini/articles/).
 
-If the installation methods above do not work, please try one of the following:
+If the installation instructions from above don't work, you can `git clone` the `Rgemini` repository from the `main` branch, and then run `devtools::install("/path/to/repo", repos = NULL, type="source")`. Alternatively, you can try one of the following:
 
 1. Install using `pak::pkg_install("GEMINI-Medicine/Rgemini")`.
-2. Download the latest source tarball from the [package releases](https://github.com/GEMINI-Medicine/Rgemini/tags) to some directory such as `/path/to/tarball` and run `install.packages("/path/to/tarball", repos = NULL, type="source")`.
+2. Download the latest source tarball from the [package releases](https://github.com/GEMINI-Medicine/Rgemini/tags) to some directory such as `/path/to/tarball` and run `install.packages("/path/to/tarball", repos = NULL, type = "source")`.
 3. Try configuring secure downloads as described in [this blog post](https://support.posit.co/hc/en-us/articles/206827897-Secure-Package-Downloads-for-R37).
 
 If none of the above methods work, please create a post on our [discussion board](https://github.com/GEMINI-Medicine/Rgemini/discussions/categories/q-a).
