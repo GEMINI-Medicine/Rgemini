@@ -68,7 +68,7 @@
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p><code>Rgemini</code> is currently not yet available on CRAN. Please follow the installation instructions below, depending on the environment you work in (HPC4Health, NORA, other).</p>
+<p><code>Rgemini</code> is currently not yet available on CRAN. Please follow the installation instructions below, depending on the environment you work in (HPC4Health or other).</p>
 <div class="section level3">
 <h3 id="hpc4health">HPC4Health<a class="anchor" aria-label="anchor" href="#hpc4health"></a>
 </h3>
@@ -79,12 +79,12 @@
 </h3>
 <p>All other users can install the package from GitHub using the following:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"GEMINI-Medicine/Rgemini"</span>, build_vignettes <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p>Alternatively, you can <code>git clone</code> the <code>Rgemini</code> repository from the <code>main</code> branch, and then run <code>devtools::install("/path/to/repo", repos = NULL, type="source")</code>.</p>
-<p>If the installation methods above do not work, please try one of the following:</p>
+<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"GEMINI-Medicine/Rgemini"</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>You can also specify <code>build_vignettes = TRUE</code> to include all package vignettes. However, in that case, make sure to install any additional packages required for the vignettes (see packages listed under “Suggests” <a href="https://github.com/GEMINI-Medicine/Rgemini/blob/main/DESCRIPTION" class="external-link">here</a>). Alternatively, you can review the knitted vignettes <a href="https://gemini-medicine.github.io/Rgemini/articles/">here</a>.</p>
+<p>If the installation instructions from above don’t work, you can <code>git clone</code> the <code>Rgemini</code> repository from the <code>main</code> branch, and then run <code>devtools::install("/path/to/repo", repos = NULL, type="source")</code>. Alternatively, you can try one of the following:</p>
 <ol style="list-style-type: decimal">
 <li>Install using <code>pak::pkg_install("GEMINI-Medicine/Rgemini")</code>.</li>
-<li>Download the latest source tarball from the <a href="https://github.com/GEMINI-Medicine/Rgemini/tags" class="external-link">package releases</a> to some directory such as <code>/path/to/tarball</code> and run <code>install.packages("/path/to/tarball", repos = NULL, type="source")</code>.</li>
+<li>Download the latest source tarball from the <a href="https://github.com/GEMINI-Medicine/Rgemini/tags" class="external-link">package releases</a> to some directory such as <code>/path/to/tarball</code> and run <code>install.packages("/path/to/tarball", repos = NULL, type = "source")</code>.</li>
 <li>Try configuring secure downloads as described in <a href="https://support.posit.co/hc/en-us/articles/206827897-Secure-Package-Downloads-for-R37" class="external-link">this blog post</a>.</li>
 </ol>
 <p>If none of the above methods work, please create a post on our <a href="https://github.com/GEMINI-Medicine/Rgemini/discussions/categories/q-a" class="external-link">discussion board</a>.</p>
