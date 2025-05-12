@@ -21,7 +21,7 @@
 #' discharge in the provided cohort. For example, if the latest discharge is
 #' on 2023-03-24, the reference year will be 2022 aligning with the fiscal year.
 #' 
-#' @import RPostgreSQL cansim
+#' @import RPostgreSQL cansim stringr
 #' 
 #' @return
 #' This function returns a `data.table` containing `genc_id`,
@@ -29,7 +29,7 @@
 #' 'derived_total_inpatient_cost_adjusted', the last of which corresponds
 #' to the total inpatient costs are adjusted to prices in the reference year 
 #' if provided. If the reference year is not provided, then costs are adjusted
-#' to the most recent fiscal year in the cohort
+#' to the most recent fiscal year in the cohort.
 #' 
 #' @references 
 #' include references to CIHI's CSHS table
@@ -72,6 +72,7 @@ library(getPass)
 library(Rgemini)
 library(GEMINIpkg)
 library(cansim)
+library(stringr)
 
 # Useful documentation 
 
