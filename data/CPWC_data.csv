@@ -1,159 +1,191 @@
 hospital_id,hospital_name,fiscal_year,cost_of_standard_hospital_stay,hospital_num
+GRH,Grand River Hospital,2017,5123,127
 GRH,Grand River Hospital,2018,5079,127
 GRH,Grand River Hospital,2019,5319,127
 GRH,Grand River Hospital,2020,6880,127
 GRH,Grand River Hospital,2021,5823,127
 GRH,Grand River Hospital,2022,6176,127
+HHCO,Oakville Trafalgar Memorial Hospital,2017,5876,128
 HHCO,Oakville Trafalgar Memorial Hospital,2018,5900,128
-HHCO,Oakville Trafalgar Memorial Hospital,2019,5900,128
-HHCO,Oakville Trafalgar Memorial Hospital,2020,5900,128
-HHCO,Oakville Trafalgar Memorial Hospital,2021,5900,128
-HHCO,Oakville Trafalgar Memorial Hospital,2022,5900,128
+HHCO,Oakville Trafalgar Memorial Hospital,2019,5911,128
+HHCO,Oakville Trafalgar Memorial Hospital,2020,6870,128
+HHCO,Oakville Trafalgar Memorial Hospital,2021,6549,128
+HHCO,Oakville Trafalgar Memorial Hospital,2022,6620,128
+HHSH,Hamilton General Hospital,2017,5491,109
 HHSH,Hamilton General Hospital,2018,5554,109
 HHSH,Hamilton General Hospital,2019,5733,109
 HHSH,Hamilton General Hospital,2020,6688,109
 HHSH,Hamilton General Hospital,2021,6708,109
 HHSH,Hamilton General Hospital,2022,7115,109
+HHSJ,Juravinski Hospital,2017,5491,110
 HHSJ,Juravinski Hospital,2018,5554,110
 HHSJ,Juravinski Hospital,2019,5733,110
 HHSJ,Juravinski Hospital,2020,6688,110
 HHSJ,Juravinski Hospital,2021,6708,110
 HHSJ,Juravinski Hospital,2022,7115,110
+HRH,Humber River Hopsital,2017,5259,129
 HRH,Humber River Hospital,2018,5886,129
 HRH,Humber River Hospital,2019,5999,129
 HRH,Humber River Hospital,2020,6392,129
 HRH,Humber River Hospital,2021,6222,129
 HRH,Humber River Hospital,2022,6722,129
+KGH,Kingston General Hospital,2017,5743,130
 KGH,Kingston General Hospital,2018,6042,130
 KGH,Kingston General Hospital,2019,5837,130
 KGH,Kingston General Hospital,2020,6745,130
 KGH,Kingston General Hospital,2021,6532,130
 KGH,Kingston General Hospital,2022,6634,130
+LHSCU,University Hospital,2017,6001,117
 LHSCU,University Hospital,2018,6459,117
 LHSCU,University Hospital,2019,6275,117
 LHSCU,University Hospital,2020,7429,117
 LHSCU,University Hospital,2021,7046,117
 LHSCU,University Hospital,2022,7489,117
+LHSCV,Victoria Hospital,2017,6001,118
 LHSCV,Victoria Hospital,2018,6459,118
 LHSCV,Victoria Hospital,2019,6275,118
 LHSCV,Victoria Hospital,2020,7429,118
 LHSCV,Victoria Hospital,2021,7046,118
 LHSCV,Victoria Hospital,2022,7489,118
+MKHR,Mackenzie Richmond Hill Hospital,2017,5614,114
 MKHR,Mackenzie Richmond Hill Hospital,2018,5490,114
 MKHR,Mackenzie Richmond Hill Hospital,2019,5648,114
 MKHR,Mackenzie Richmond Hill Hospital,2020,6564,114
 MKHR,Mackenzie Richmond Hill Hospital,2021,7418,114
 MKHR,Mackenzie Richmond Hill Hospital,2022,7676,114
+MKHV,Cortellucci Vaughan Hospital,2017,5614,115
 MKHV,Cortellucci Vaughan Hospital,2018,5490,115
 MKHV,Cortellucci Vaughan Hospital,2019,5648,115
 MKHV,Cortellucci Vaughan Hospital,2020,6564,115
 MKHV,Cortellucci Vaughan Hospital,2021,7418,115
 MKHV,Cortellucci Vaughan Hospital,2022,7676,115
+MKSH,Markham Stouffville Hospital,2017,5144,116
 MKSH,Markham Stouffville Hospital,2018,5438,116
 MKSH,Markham Stouffville Hospital,2019,5280,116
 MKSH,Markham Stouffville Hospital,2020,6274,116
 MKSH,Markham Stouffville Hospital,2021,5895,116
 MKSH,Markham Stouffville Hospital,2022,6285,116
+MKSHX,Uxbridge Hospital,2017,5144,131
 MKSHX,Uxbridge Hospital,2018,5438,131
 MKSHX,Uxbridge Hospital,2019,5280,131
 MKSHX,Uxbridge Hospital,2020,6274,131
 MKSHX,Uxbridge Hospital,2021,5895,131
 MKSHX,Uxbridge Hospital,2022,6285,131
+MSH,Mount Sinai Hospital,2017,6637,108
 MSH,Mount Sinai Hospital,2018,6746,108
 MSH,Mount Sinai Hospital,2019,6496,108
 MSH,Mount Sinai Hospital,2020,6962,108
 MSH,Mount Sinai Hospital,2021,7546,108
 MSH,Mount Sinai Hospital,2022,8087,108
+NHGN,Greater Niagara General Hospital,2017,4886,111
 NHGN,Greater Niagara General Hospital,2018,4827,111
 NHGN,Greater Niagara General Hospital,2019,4883,111
 NHGN,Greater Niagara General Hospital,2020,5654,111
 NHGN,Greater Niagara General Hospital,2021,5323,111
 NHGN,Greater Niagara General Hospital,2022,5637,111
+NHSC,Niagara Health System - St. Catherines Site,2017,4886,112
 NHSC,Niagara Health System - St. Catherines Site,2018,4827,112
 NHSC,Niagara Health System - St. Catherines Site,2019,4883,112
 NHSC,Niagara Health System - St. Catherines Site,2020,5654,112
 NHSC,Niagara Health System - St. Catherines Site,2021,5323,112
 NHSC,Niagara Health System - St. Catherines Site,2022,5637,112
-NHWH,Niagara Health System - Welland Hospital  Site,2018,4827,113
-NHWH,Niagara Health System - Welland Hospital  Site,2019,4883,113
-NHWH,Niagara Health System - Welland Hospital  Site,2020,5654,113
-NHWH,Niagara Health System - Welland Hospital  Site,2021,5323,113
-NHWH,Niagara Health System - Welland Hospital  Site,2022,5637,113
+NHWH,Niagara Health System - Welland Hospital Site,2017,4886,113
+NHWH,Niagara Health System - Welland Hospital Site,2018,4827,113
+NHWH,Niagara Health System - Welland Hospital Site,2019,4883,113
+NHWH,Niagara Health System - Welland Hospital Site,2020,5654,113
+NHWH,Niagara Health System - Welland Hospital Site,2021,5323,113
+NHWH,Niagara Health System - Welland Hospital Site,2022,5637,113
+NYGH,North York General Hospital,2017,5452,122
 NYGH,North York General Hospital,2018,5467,122
 NYGH,North York General Hospital,2019,5780,122
 NYGH,North York General Hospital,2020,6591,122
 NYGH,North York General Hospital,2021,5544,122
 NYGH,North York General Hospital,2022,6684,122
+PMH,Princess Margaret Hospital,2017,6268,102
 PMH,Princess Margaret Hospital,2018,6390,102
 PMH,Princess Margaret Hospital,2019,6304,102
 PMH,Princess Margaret Hospital,2020,7162,102
 PMH,Princess Margaret Hospital,2021,6952,102
 PMH,Princess Margaret Hospital,2022,7325,102
+SAH,Sault Area Hospital,2017,5859,123
 SAH,Sault Area Hospital,2018,6347,123
 SAH,Sault Area Hospital,2019,6057,123
 SAH,Sault Area Hospital,2020,6816,123
 SAH,Sault Area Hospital,2021,6468,123
 SAH,Sault Area Hospital,2022,6813,123
+SBK,Sunnybrook Health Sciencea Centre,2017,6403,107
 SBK,Sunnybrook Health Sciences Centre,2018,6291,107
 SBK,Sunnybrook Health Sciences Centre,2019,6496,107
 SBK,Sunnybrook Health Sciences Centre,2020,7188,107
 SBK,Sunnybrook Health Sciences Centre,2021,6793,107
 SBK,Sunnybrook Health Sciences Centre,2022,7519,107
+SJHC,St. Joseph's Health Centre,2017,6328,104
 SJHC,St. Joseph's Health Centre,2018,5615,104
 SJHC,St. Joseph's Health Centre,2019,6913,104
 SJHC,St. Joseph's Health Centre,2020,8337,104
 SJHC,St. Joseph's Health Centre,2021,7408,104
 SJHC,St. Joseph's Health Centre,2022,7757,104
+SMGH,St. Mary's General Hospital,2017,4829,124
 SMGH,St. Mary's General Hospital,2018,5067,124
 SMGH,St. Mary's General Hospital,2019,5204,124
 SMGH,St. Mary's General Hospital,2020,6658,124
 SMGH,St. Mary's General Hospital,2021,6361,124
 SMGH,St. Mary's General Hospital,2022,6514,124
+SMH,St. Michael's Hospital,2017,6328,103
 SMH,St. Michael's Hospital,2018,5615,103
 SMH,St. Michael's Hospital,2019,6913,103
 SMH,St. Michael's Hospital,2020,8337,103
 SMH,St. Michael's Hospital,2021,7408,103
 SMH,St. Michael's Hospital,2022,7757,103
+TBHR,Thunder Bay Regional Health Sciences Centre,2017,4982,125
 TBRH,Thunder Bay Regional Health Sciences Centre,2018,5028,125
 TBRH,Thunder Bay Regional Health Sciences Centre,2019,4940,125
 TBRH,Thunder Bay Regional Health Sciences Centre,2020,6030,125
 TBRH,Thunder Bay Regional Health Sciences Centre,2021,5557,125
 TBRH,Thunder Bay Regional Health Sciences Centre,2022,5727,125
+TEHNM,Michael Garron Hospital,2017,4709,126
 TEHNM,Michael Garron Hospital,2018,4828,126
 TEHNM,Michael Garron Hospital,2019,5003,126
 TEHNM,Michael Garron Hospital,2020,5587,126
 TEHNM,Michael Garron Hospital,2021,5251,126
 TEHNM,Michael Garron Hospital,2022,5869,126
+THPC,The Credit Valley Hospital,2017,5803,105
 THPC,The Credit Valley Hospital,2018,6058,105
 THPC,The Credit Valley Hospital,2019,5667,105
 THPC,The Credit Valley Hospital,2020,7053,105
 THPC,The Credit Valley Hospital,2021,6547,105
 THPC,The Credit Valley Hospital,2022,7099,105
+THPM,Mississauga Hospital,2017,5803,106
 THPM,Mississauga Hospital,2018,6058,106
 THPM,Mississauga Hospital,2019,5667,106
 THPM,Mississauga Hospital,2020,7053,106
 THPM,Mississauga Hospital,2021,6547,106
 THPM,Mississauga Hospital,2022,7099,106
+UHNTG,Toronto General Hospital,2017,6268,100
 UHNTG,Toronto General Hospital,2018,6390,100
 UHNTG,Toronto General Hospital,2019,6304,100
 UHNTG,Toronto General Hospital,2020,7162,100
 UHNTG,Toronto General Hospital,2021,6952,100
 UHNTG,Toronto General Hospital,2022,7325,100
+UHNTW,Toronto Western Hospital,2017,6268,101
 UHNTW,Toronto Western Hospital,2018,6390,101
 UHNTW,Toronto Western Hospital,2019,6304,101
 UHNTW,Toronto Western Hospital,2020,7162,101
 UHNTW,Toronto Western Hospital,2021,6952,101
 UHNTW,Toronto Western Hospital,2022,7325,101
+WOHSB,Brampton Civic Hospital,2017,5070,119
 WOHSB,Brampton Civic Hospital,2018,4964,119
 WOHSB,Brampton Civic Hospital,2019,5270,119
 WOHSB,Brampton Civic Hospital,2020,6003,119
 WOHSB,Brampton Civic Hospital,2021,6423,119
 WOHSB,Brampton Civic Hospital,2022,6687,119
+WOHSE,Etobicoke General Hospital,2017,5070,120
 WOHSE,Etobicoke General Hospital,2018,4964,120
 WOHSE,Etobicoke General Hospital,2019,5270,120
 WOHSE,Etobicoke General Hospital,2020,6003,120
 WOHSE,Etobicoke General Hospital,2021,6423,120
 WOHSE,Etobicoke General Hospital,2022,6687,120
+WOHSR,William Osler Reactivation Care Centre,2017,5070,121
 WOHSR,William Osler Reactivation Care Centre,2018,4964,121
 WOHSR,William Osler Reactivation Care Centre,2019,5270,121
 WOHSR,William Osler Reactivation Care Centre,2020,6003,121

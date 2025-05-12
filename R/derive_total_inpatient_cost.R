@@ -102,12 +102,13 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   check_input(dbcon, "DBI")
   check_input(cohort, c("data.table", "data.frame"), colnames = "genc_id")
   if (!is.na(reference_year)) {
-      check_input(reference_year, "integer") # maybe add interval constraint to be greater than smallest year that has CPI available
+      check_input(reference_year, "integer") 
   }
 
   ## TODO: Detect if we're using hospital_id or hospital_num
 
-  cat("\n *** WARNING: Resource Intensity Weights (RIW) are calculated differently year by year, and the inpatient costs derived by this function use the RIW methodology of the year an encounter was discharged. Year by year the features used to assign RIW values change, for example, in 2020 These derived costs are not standardized across years. ***\n")
+  ## TODO: SITE COVID FEATURES IN RIW
+  cat("\n *** WARNING: Resource Intensity Weights (RIW) and Case Mix Groups (CMG) are calculated differently year by year, and the inpatient costs derived by this function use the methodologies of the year an encounter was discharged. Year by year the features to model RIW values change, for example, in 2020 covid specific features were added to the computation. These RIW values are directly used to compute total inpatient cost, as they represent the relative resources, intensity, and weight of each inpatient case compared to an average case. Please keep in mind that as a result, the derived costs are not standardized in terms of methodologies across years. ***\n")
 
   # Resource intensity weight represents the relative resources, intensity, and weight of each inpatient case compared with the typical average case that has a value of 1.0000. 
   
@@ -125,7 +126,7 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
 
   ########################### Handle Missingness ###########################
   ## Impute Methodology years
-  cat("\n Imputing missing methodology year where appropriate... \n\n")
+  cat("\n Imputing missing methodology year where appropriate. \n\n")
 
   # Impute missing years based on cmg, diagnosis_for_cmg_assignment, 
   # comorbidity_level, and riw_inpatient_atypical_indicator
@@ -152,17 +153,18 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   # Q: Is riw_15 = 0 considered missing? Since the result effectively says
   #    that for rows with riw_15 = 0 total cost = 0. A: Find out what RIW_15 = 0
   #    means in CIHI definitions. If there's some meaning, then decide what we
-  #    should do.
+  #    should do. RIW_15 is not a valid RIW value according to CIHI.
+  #    should be dropped.
 
   # impute RIW for missing rows
-  cat("\n Imputing missing riw_15 where appropriate... \n\n")
+  cat("\n Imputing missing riw_15 where appropriate. \n\n")
   cohort_cmg[, riw_15 := ifelse(is.na(riw_15) | riw_15 == 0, na.omit(riw_15)[1], riw_15), by = .(cmg, diagnosis_for_cmg_assignment, comorbidity_level, riw_inpatient_atypical_indicator)]
   
   # remove rows missing riw
   missing_riw <- n_missing(cohort_cmg$riw_15)
-  print(paste0(missing_riw, " rows are missing riw_15. Removing..."))
+  print(paste0(missing_riw, " rows are missing riw_15 or have riw_15 = 0. Removing."))
   cat("\n\n")
-  cohort_cmg <- cohort_cmg %>% filter(!is.na(riw_15))
+  cohort_cmg <- cohort_cmg %>% filter(!is.na(riw_15) | riw_15 != 0)
 
   ########################### Compute Inpatient Cost ###########################
   ## merge CHSC data by hospital num
