@@ -37,7 +37,7 @@
 # methodology year (by year, based on when the data were pulled) and needs to
 # be adjused for (healthcare specific) inflation.
 # The suggested general approach used in the Pediatric Complexity project:
-# 1. Create a scv file for CPWC(CHSC) for each hospital number and year, based
+# 1. Create a scv file for CPWC(CSHS) for each hospital number and year, based
 # on cihi info
 # 2. This CSV file then needs to be merged with other GEMINI tables as follows:
 # 3. Merge ipcmg into your cohort by genc_id, assess missingness of methodology
@@ -52,7 +52,7 @@
 #    year and calendar year are > 1 year apart.
 # 6. Report all records excluded due to missing values required for total cost
 #    calculation (i.e. RIW).
-# 7. Merge in CHSC data by hospital_num
+# 7. Merge in CSHS data by hospital_num
 # 8. Multiply riw_15 by CHSC
 # 9. Adjust for healthcare-specific inflation
 # Once the method has been developed, we should triangulate the results with
@@ -92,7 +92,7 @@ source("~/repos/Rgemini/Rgemini/R/utils.R")
 drv <- dbDriver("PostgreSQL")
 dbcon <- dbConnect(drv, dbname = "drm_cleandb_v3_1_0", host = "prime.smh.gemini-hpc.ca", port = 5432, user = "anoutchinad", pass = getPass("Pass: "))
 
-cohort <- dbGetQuery(dbcon, "SELECT * FROM public.admdad WHERE discharge_date_time > '2020-06-30 23:59'") %>% data.table()
+cohort <- dbGetQuery(dbcon, "SELECT * FROM public.admdad WHERE discharge_date_time < '2020-06-30 23:59'") %>% data.table()
 
 # TODO: Add warning if user cohort has admissions outside of what's available
 #       From CIHI's average inpatient costs
@@ -106,8 +106,14 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   }
 
   ## TODO: Detect if we're using hospital_id or hospital_num
+  if ("hospital_num" %in% names(cohort)) {
+    hosp_identifier <- "hospital_num"
+  } else {
+    hosp_identifier <- "hospital_id"
+  }
 
-  ## TODO: SITE COVID FEATURES IN RIW
+
+  ## TODO: CITE COVID FEATURES IN RIW
   cat("\n *** WARNING: Resource Intensity Weights (RIW) and Case Mix Groups (CMG) are calculated differently year by year, and the inpatient costs derived by this function use the methodologies of the year an encounter was discharged. Year by year the features to model RIW values change, for example, in 2020 covid specific features were added to the computation. These RIW values are directly used to compute total inpatient cost, as they represent the relative resources, intensity, and weight of each inpatient case compared to an average case. Please keep in mind that as a result, the derived costs are not standardized in terms of methodologies across years. ***\n")
 
   # Resource intensity weight represents the relative resources, intensity, and weight of each inpatient case compared with the typical average case that has a value of 1.0000. 
@@ -167,9 +173,7 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   cohort_cmg <- cohort_cmg %>% filter(!is.na(riw_15) | riw_15 != 0)
 
   ########################### Compute Inpatient Cost ###########################
-  ## merge CHSC data by hospital num
-  # TODO: Add hospital num into chsc_data csv rather than hospital name,
-  #       And change merge to merge by hospital number
+  ## merge CSHS data by hospital num
 
   # Q: CHSC data only has data for up to fiscal/methodology year 2022 and only
   #    since fiscal/methodology year 2018. How should we handle these values?
@@ -178,13 +182,16 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   #    we could use until the data is available. Let the user know.
 
 
-  chsc_data <- fread("~/repos/Rgemini/Rgemini/data/CPWC_data.csv")
-  setnames(chsc_data, old = "fiscal_year", new = "methodology_year")
-  chsc_merge <- merge(cohort_cmg, chsc_data, by = c("hospital_id", "methodology_year"))
+  ## TODO: How do we handle encounters whose methodology year isn't included in
+  ## the CPWC data that we have?
+  load("data/mapping_cihi_cshs.rda")
+  cshs_data <- data.table(hospital_id, hospital_name, fiscal_year, cost_of_standard_hospital_stay, hospital_num)
+  setnames(cshs_data, old = "fiscal_year", new = "methodology_year")
+  cshs_merge <- merge(cohort_cmg, cshs_data, by = c(hosp_identifier, "methodology_year"), all.x = TRUE, all.y = FALSE)
 
   # compute unadjusted derived total inpatient cost by multiplying
-  # riw_15 by cost of standar hospital stay for that year and hospital.
-  chsc_merge[, derived_total_inpatient_cost := (riw_15 * cost_of_standard_hospital_stay)]
+  # riw_15 by cost of standard hospital stay for that year and hospital.
+  cshs_merge[, derived_total_inpatient_cost := (riw_15 * cost_of_standard_hospital_stay)]
 
 
   ################## Adjust derived total cost for inflation ##################
@@ -205,7 +212,7 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   cpi_values_apr <- cpi_values_apr %>%
       select(REF_DATE, VALUE, UOM) %>%
       data.table()
-  # add methodology year column for merging into chsc_merge
+  # add methodology year column for merging into cshs_merge
   cpi_values_apr[, methodology_year := as.integer(substr(REF_DATE, 1, 4))]
 
   ## Get reference year to which we adjust costs to
@@ -224,11 +231,11 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   cat("\n\n")
 
   ## Adjust derived costs to reference year
-  # select relevant columns from chsc_merge
-  chsc_merge_small <- chsc_merge[, .(genc_id, admission_date_time, discharge_date_time, methodology_year, hospital_id, derived_total_inpatient_cost)]
+  # select relevant columns from cshs_merge
+  cshs_merge_small <- cshs_merge[, .(genc_id, admission_date_time, discharge_date_time, methodology_year, hospital_id, derived_total_inpatient_cost)]
   
   # merge derived costs with cpi values
-  result <- merge(chsc_merge_small, cpi_values_apr, by = "methodology_year")
+  result <- merge(cshs_merge_small, cpi_values_apr, by = "methodology_year")
   reference_cpi <- cpi_values_apr %>% filter(methodology_year == as.integer(reference_year))
 
   # get percent change in cpi for methodology year to ref year
