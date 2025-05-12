@@ -4,7 +4,10 @@
 #' @description
 #' `derive_total_inpatient_cost.R` derives the total cost of an encounter's
 #' hospitalization based on Resource Intensity Weights (RIW), which represent
-#' weighted costs relative to average inpatient cost.
+#' weighted costs relative to average inpatient cost. This function is currently
+#' only able to derive inpatient costs for encounters with a methodology year 
+#' that's between 2017 and 2022.
+#' 
 #' @param dbcon (`DBIConnection`)\cr
 #' A database connection to any GEMINI database.
 #' @param cohort (`data.frame` or `data.table`)\cr
@@ -152,10 +155,7 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   cat("\n\n")
   cohort_cmg <- cohort_cmg %>% filter(!is.na(methodology_year))
 
-  ## Remove rows missing riw_15
-  # Q: Can I impute riw_15 using the same imputation method for method year? A:
-  #    Yes, similar method as imputation of missing methodology year, just also
-  #    using methodology year rather than riw.
+
   # Q: Is riw_15 = 0 considered missing? Since the result effectively says
   #    that for rows with riw_15 = 0 total cost = 0. A: Find out what RIW_15 = 0
   #    means in CIHI definitions. If there's some meaning, then decide what we
@@ -166,7 +166,8 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   cat("\n Imputing missing riw_15 where appropriate. \n\n")
   cohort_cmg[, riw_15 := ifelse(is.na(riw_15) | riw_15 == 0, na.omit(riw_15)[1], riw_15), by = .(cmg, diagnosis_for_cmg_assignment, comorbidity_level, riw_inpatient_atypical_indicator)]
   
-  # remove rows missing riw
+  # remove rows missing riw or have riw_15 = 0 as the latter is not a valid
+  # riw value as per cihi
   missing_riw <- n_missing(cohort_cmg$riw_15)
   print(paste0(missing_riw, " rows are missing riw_15 or have riw_15 = 0. Removing."))
   cat("\n\n")
@@ -187,7 +188,17 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   load("data/mapping_cihi_cshs.rda")
   cshs_data <- data.table(hospital_id, hospital_name, fiscal_year, cost_of_standard_hospital_stay, hospital_num)
   setnames(cshs_data, old = "fiscal_year", new = "methodology_year")
-  cshs_merge <- merge(cohort_cmg, cshs_data, by = c(hosp_identifier, "methodology_year"), all.x = TRUE, all.y = FALSE)
+
+  # Check if cohort contains any methodology years that fall outside of
+  # the years for which we have cpwc for.
+
+  if (min(cohort_cmg$methodology_year) < min(cshs_data$methodology_year) | 
+      max(cohort_cmg$methodology_year) > max(cshs_data$methodology_year)) {
+    print(paste0("*** WARNING: The provided cohort has rows with methodology years that are earlier or later than the years that we have Cost of Standard Hospital Stay (CSHS) values available for. These rows will not have a inpatient cost calculation.", "The earliest year with CSHS data is ", min(cshs_data$methodology_year), " and the latest year with CSHS data is ", max(cshs_data$methodology_year), ". The min and max methodology years in the provided cohort are ", min(cohort_cmg$methodology_year), " and ", max(cohort_cmg$methodology_year), " respectively. ***"))
+  }
+
+  # merge cshs table with cohort.
+  cshs_merge <- left_join(cohort_cmg, cshs_data, by = c(hosp_identifier, "methodology_year"))
 
   # compute unadjusted derived total inpatient cost by multiplying
   # riw_15 by cost of standard hospital stay for that year and hospital.
@@ -235,7 +246,7 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   cshs_merge_small <- cshs_merge[, .(genc_id, admission_date_time, discharge_date_time, methodology_year, hospital_id, derived_total_inpatient_cost)]
   
   # merge derived costs with cpi values
-  result <- merge(cshs_merge_small, cpi_values_apr, by = "methodology_year")
+  result <- left_join(cshs_merge_small, cpi_values_apr, by = "methodology_year")
   reference_cpi <- cpi_values_apr %>% filter(methodology_year == as.integer(reference_year))
 
   # get percent change in cpi for methodology year to ref year
