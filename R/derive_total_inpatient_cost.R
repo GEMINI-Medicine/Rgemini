@@ -18,11 +18,18 @@
 #' discharge in the provided cohort. For example, if the latest discharge is
 #' on 2023-03-24, the reference year will be 2022 aligning with the fiscal year.
 #' 
-#' @details 
+#' @import RPostgreSQL cansim
 #' 
 #' @return
 #' This function returns a `data.table` containing `genc_id`,
-#' `derived_total_inpatient_cost`, `inflation_rate`, andd
+#' `derived_total_inpatient_cost`, `inflation_rate`, and
+#' 'derived_total_inpatient_cost_adjusted', the last of which corresponds
+#' to the total inpatient costs are adjusted to prices in the reference year 
+#' if provided. If the reference year is not provided, then costs are adjusted
+#' to the most recent fiscal year in the cohort
+#' 
+#' @references 
+#' include references to CIHI's CSHS table
 
 # Function that derives cost of hospitalization based on
 # Resource Intensity Weights (RIW), which represents weighted costs relative to
@@ -63,6 +70,24 @@ library(Rgemini)
 library(GEMINIpkg)
 library(cansim)
 
+# Useful documentation 
+
+# CSHS methodology: https://www.cihi.ca/sites/default/files/document/cost-standard-hospital-stay-methodology-notes-en.pdf
+# CSHS by hospital computation
+# Source: https://www.cihi.ca/sites/default/files/document/cmdb-user-guide-2021-2022-en.pdf
+# CSHS_hospital = total_hospital_inpatient_costs / total_hospital_RIW
+# "CSHS is an indicator that measures the relative cost efficiency of a 
+# hospital's ability to provide acute inpatient care. This indicator compares a
+# hospital’s total acute inpatient care expenses with the number of acute
+# inpatient weighted cases related to the inpatients that it provided
+# care for. The result is the hospital’s average full cost of treating the
+# average acute inpatient. A high CSHS indicates a relatively high cost of
+# treating the average acute inpatient; a low CSHS indicates that the cost of
+# treating the average acute inpatient is relatively low"
+
+# soursc relevant Rgemini functions
+source("~/repos/Rgemini/Rgemini/R/n_missing.R")
+source("~/repos/Rgemini/Rgemini/R/utils.R")
 # load dbconnection for testing
 drv <- dbDriver("PostgreSQL")
 dbcon <- dbConnect(drv, dbname = "drm_cleandb_v3_1_0", host = "prime.smh.gemini-hpc.ca", port = 5432, user = "anoutchinad", pass = getPass("Pass: "))
@@ -81,6 +106,10 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   }
 
   ## TODO: Detect if we're using hospital_id or hospital_num
+
+  cat("\n *** WARNING: Resource Intensity Weights (RIW) are calculated differently year by year, and the inpatient costs derived by this function use the RIW methodology of the year an encounter was discharged. Year by year the features used to assign RIW values change, for example, in 2020 These derived costs are not standardized across years. ***\n")
+
+  # Resource intensity weight represents the relative resources, intensity, and weight of each inpatient case compared with the typical average case that has a value of 1.0000. 
   
   # create temp table for cohort_gencs to pull ipcmg
   DBI::dbSendQuery(dbcon, "DROP TABLE IF EXISTS temp_g;")
@@ -112,14 +141,24 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
 
   ## Remove rows where methodology_year is still missing after imputing
   missing_yr <- n_missing(cohort_cmg$methodology_year)
-  print(paste0(missing_yr, " rows are missing methodology year. Removing..."))
+  print(paste0(missing_yr, " rows are missing methodology year. Removing."))
   cat("\n\n")
-  cmg_final <- cohort_cmg %>% filter(!is.na(methodology_year))
+  cohort_cmg <- cohort_cmg %>% filter(!is.na(methodology_year))
 
   ## Remove rows missing riw_15
-  # Q: Can I impute riw_15 using the same imputation method for method year?
+  # Q: Can I impute riw_15 using the same imputation method for method year? A:
+  #    Yes, similar method as imputation of missing methodology year, just also
+  #    using methodology year rather than riw.
   # Q: Is riw_15 = 0 considered missing? Since the result effectively says
-  #    that for rows with riw_15 = 0 total cost = 0.
+  #    that for rows with riw_15 = 0 total cost = 0. A: Find out what RIW_15 = 0
+  #    means in CIHI definitions. If there's some meaning, then decide what we
+  #    should do.
+
+  # impute RIW for missing rows
+  cat("\n Imputing missing riw_15 where appropriate... \n\n")
+  cohort_cmg[, riw_15 := ifelse(is.na(riw_15) | riw_15 == 0, na.omit(riw_15)[1], riw_15), by = .(cmg, diagnosis_for_cmg_assignment, comorbidity_level, riw_inpatient_atypical_indicator)]
+  
+  # remove rows missing riw
   missing_riw <- n_missing(cohort_cmg$riw_15)
   print(paste0(missing_riw, " rows are missing riw_15. Removing..."))
   cat("\n\n")
@@ -133,13 +172,9 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   # Q: CHSC data only has data for up to fiscal/methodology year 2022 and only
   #    since fiscal/methodology year 2018. How should we handle these values?
   #    We definitely need to document this in the function, but should we remove
-  #    rows from the output?
+  #    rows from the output? A: Don't remove, see what interpolation techniques
+  #    we could use until the data is available. Let the user know.
 
-  # Q: CHSC data shows that average costs are the same in hospitals that are
-  #    in the same system (i.e. Markham Stouffville and Uxbridge), but I'm 
-  #    not sure this is very realistic- specifically in the Oak valley case
-  #    bevause Uxbridge is comparably a much smaller hospital than Markham
-  #    Stouffville...
 
   chsc_data <- fread("~/repos/Rgemini/Rgemini/data/CPWC_data.csv")
   setnames(chsc_data, old = "fiscal_year", new = "methodology_year")
@@ -161,11 +196,6 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   # (i.e. cpi value for 2018 is given at REF_DATE = '2018-04') from
   # statcan table: 18-10-0004-01.
 
-  ### Q: Do we agree the CPI for that fiscal year should be the one taken
-  ###    at the start of the fiscal year?
-  ### Q: Currently I'm taking CPI for health care for all of Canada, should I 
-  ###    restrict it to Ontario only?
-
   cpi_values_apr <- get_cansim_connection("18-10-0004-01") |>
       dplyr::filter(GEO == "Canada" & UOM == "2002=100" & `Products and product groups` == "Health care" & REF_DATE >= "2018-04" & grepl("-04", REF_DATE)) |>
       collect_and_normalize()
@@ -180,9 +210,6 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   # If month is < 4, subtract 1 from max_discharge date year as we're still
   # in the previous fiscal year.
 
-  ### Q: Should we give the user an option to choose what year to adjust to?
-  ###    Currently I'm adjusting to the largest discharge year in the cohort
-  ###    
   if (is.na(reference_year)) {
       max_discharge_date <- substr(max(cohort$discharge_date_time), 1, 10)
       if (as.integer(substr(max_discharge_date, 7, 7)) < 4) {
@@ -215,25 +242,9 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   return(result)
 }
 
-
-# adjust for healthcare specific inflation using Canada Health Care consumer
-# price index.
-# https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810000408
-# adjusted cost of sth in '20 in '23 = original_cost * (CPI in 2023/ CPI 2020)
-# CPI data assuming 2002 = 100, and specifically Health care, not health and
-# personal care
-## We should determine what month we take the CPI from (start of fiscal year?)
-## Might actually be the end of fiscal year since CHSC values are from apr-may
-## of the following year 
-
-# cpi values scaled to 100 for 2002 for all of Canada (or should we do Ontario)
-# in the future maybe we can use scraping to get updated values
-# scale to 2002 because it's the official time base in canada
-cpi_values_apr <- data.table(
-    methodology_year = c(2018, 2019, 2020, 2021, 2022, 2023, 2024),
-    cpi_health_and_personal_care = c(126.2, 127.1, 128.7, 132.5, 137.0, 145.7, 150.0),
-    cpi_health_care = c(128.6, 129.4, 131.6, 134.5, 137.4, 144.7, 148.5)
-)
+start <- Sys.time()
+cost <- derive_total_inpatient_cost(dbcon, cohort)
+print( Sys.time() - start )
 
 ## trying scraping
 library(rvest)
@@ -266,6 +277,3 @@ for(i in 1:nrow(cihi_hosp_codes)) {
     pulls <- rbind(pulls, site_data)
 }
 
-start <- Sys.time()
-cost <- derive_total_inpatient_cost(dbcon, cohort)
-print( Sys.time() - start )
