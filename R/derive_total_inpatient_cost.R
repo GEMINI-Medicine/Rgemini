@@ -157,7 +157,7 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   # Q: Is riw_15 = 0 considered missing? Since the result effectively says
   #    that for rows with riw_15 = 0 total cost = 0. A: Find out what RIW_15 = 0
   #    means in CIHI definitions. If there's some meaning, then decide what we
-  #    should do. RIW_15 is not a valid RIW value according to CIHI.
+  #    should do. A: RIW_15 is not a valid RIW value according to CIHI.
   #    should be dropped.
 
   # impute RIW for missing rows
