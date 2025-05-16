@@ -66,15 +66,20 @@ jobs:
 
       - name: Install Rgemini package
         env:
-          R_PROFILE_USER: ${{ github.workspace }}/.Rprofile_gha # Use the same Rprofile
+          R_PROFILE_USER: ${{ github.workspace }}/.Rprofile_gha 
         run: |
           R CMD INSTALL --library=${{ env.R_LIBS_USER }} .
         working-directory: ${{ github.workspace }}
         
       - name: List installed packages in custom lib for verification
         env:
-          R_PROFILE_USER: ${{ github.workspace }}/.Rprofile_gha # Use the same Rprofile
+          R_PROFILE_USER: ${{ github.workspace }}/.Rprofile_gha 
         run: Rscript -e "print(installed.packages(lib.loc=Sys.getenv('R_LIBS_USER'))[,c('Package', 'Version', 'LibPath')])"
+
+      - name: Install devtools R package
+        env:
+          R_PROFILE_USER: ${{ github.workspace }}/.Rprofile_gha 
+        run: Rscript -e 'install.packages("devtools", repos = "https://cran.rstudio.com")'
 
       - name: Verify R and Python Environment before test script
         env:
@@ -99,6 +104,7 @@ jobs:
           echo "Python version from setup-python: $PYTHON_VERSION_FROM_SETUP"
           echo "which python: $(which python)"
           echo "python --version: $(python --version)"
+
 
       - name: Run Rgemini tests with Python script
         env:
