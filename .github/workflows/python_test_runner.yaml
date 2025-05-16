@@ -42,6 +42,14 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Cache R packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          # Use outputs from setup steps in cache key for more robustness
+          key: ${{ runner.os }}-r-${{ steps.setup_r.outputs.installed-r-version }}-py-${{ steps.setup_python.outputs.python-version }}-libs-${{ hashFiles('DESCRIPTION') }}
+          restore-keys: |
+            ${{ runner.os }}-r-${{ steps.setup_r.outputs.installed-r-version }}-py-${{ steps.setup_python.outputs.python-version }}-libs-
 
       - name: Install Python dependencies (rpy2)
         run: pip install rpy2
@@ -72,21 +80,11 @@ jobs:
           R_PROFILE_USER: ${{ github.workspace }}/.Rprofile_gha 
         run: Rscript -e 'install.packages("devtools", repos = "https://cran.rstudio.com")'
 
-      - name: Verify R and Python Environment before test script
-        env:
-          R_HOME_FROM_SETUP: ${{ steps.setup_r.outputs.r-home }}
-          PYTHON_VERSION_FROM_SETUP: ${{ steps.setup_python.outputs.python-version }}
-        run: |
-          ls -l "$R_HOME_FROM_SETUP/lib/libR.so" || echo "libR.so not found in $R_HOME_FROM_SETUP/lib (this is expected to fail if R_HOME/lib does not contain libR.so directly)"
-          ls -l "$R_HOME_FROM_SETUP/lib/R/lib/libR.so" || echo "libR.so not found in $R_HOME_FROM_SETUP/lib/R/lib"
-
       - name: Run Rgemini tests with Python script
         env:
-          # Explicitly set R_HOME for rpy2. This is crucial.
           R_HOME: ${{ steps.setup_r.outputs.r-home }}
           # Explicitly set LD_LIBRARY_PATH for Linux to find R shared libraries.
           # This ensures that the dynamic linker finds libR.so from the R version setup by actions/setup-r.
-          # The construction ensures we prepend to any existing LD_LIBRARY_PATH.
           LD_LIBRARY_PATH: ${{ steps.setup_r.outputs.r-home }}/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
           R_LIBS_USER: ${{ env.R_LIBS_USER }} # Continue using the job-level env var for R package libraries
         run: |
