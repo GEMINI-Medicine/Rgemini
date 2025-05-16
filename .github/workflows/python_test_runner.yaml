@@ -18,21 +18,22 @@ jobs:
       - name: Install system dependencies for R packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
-          sudo apt-get install -y libcurl4-openssl-dev libfontconfig1-dev libfreetype6-dev libssl-dev libxml2-dev r-base
+          sudo apt-get install -y libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev libxml2-dev
 
-
+      # Set up the R environment
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
         with:
           r-version: 'release' # Use 'release' for the latest stable R version
           use-public-rspm: true
 
+      # Set up the Python environment
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10' # Or your desired Python version
 
+      # Install the rpy2 Python package
       - name: Install Python dependencies (rpy2)
         run: pip install rpy2
 
@@ -40,28 +41,24 @@ jobs:
       # This step also installs the Rgemini package's dependencies
       - name: Install R package dependencies (devtools, testthat, and Rgemini's deps)
         env:
-          # Temporarily set R_PROFILE_USER to ensure packages are installed
-          # into a standard library path accessible by rpy2.
-          # We'll use a temporary file for this.
-          R_PROFILE_USER: ${{ runner.temp }}/.Rprofile_gha
+          # Add environment variables that might help with compilation
+          PKG_CONFIG_PATH: /usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig
+          CPPFLAGS: -I/usr/include/libxml2
+          # R_LIBS_USER is set at the job level and will be used by install.packages and remotes::install_deps
         run: |
-          # Create a temporary .Rprofile to set the library path
-          echo "options(repos = c(CRAN = 'https://cloud.r-project.org/'), download.file.method = 'libcurl')" > ${{ env.R_PROFILE_USER }}
-          # Ensure packages are installed into the default user library path
-          echo ".libPaths(c(Sys.getenv('R_LIBS_USER'), .libPaths()))" >> ${{ env.R_PROFILE_USER }}
+          # Set CRAN repo and download method
+          Rscript -e "options(repos = c(CRAN = 'https://cloud.r-project.org/'), download.file.method = 'libcurl')"
 
           # Install required packages for testing and dependency management
           Rscript -e "install.packages(c('remotes', 'devtools', 'testthat'), Ncpus=2)"
 
           # Install Rgemini's dependencies listed in DESCRIPTION
-          Rscript -e "remotes::install_deps(dependencies = TRUE, Ncpus=2)"
+          Rscript -e "remotes::install_deps(dependencies = TRUE, Ncpus=2, upgrade = TRUE)"
         working-directory: ${{ github.workspace }} # Ensure commands run from the repo root
 
       # Install the Rgemini package itself
       - name: Install Rgemini package
-        env:
-          # Use the temporary R_PROFILE_USER again for consistent library path
-          R_PROFILE_USER: ${{ runner.temp }}/.Rprofile_gha
+        # R_LIBS_USER is set at the job level and will be used by R CMD INSTALL
         run: |
           R CMD INSTALL .
         working-directory: ${{ github.workspace }}
@@ -72,15 +69,14 @@ jobs:
           # Explicitly set R_HOME for rpy2. This is crucial.
           R_HOME: ${{ steps.setup_r.outputs.r-home }}
           # Explicitly set LD_LIBRARY_PATH for Linux to find R shared libraries.
-          # This ensures that the dynamic linker finds libR.so from the R version setup by actions/setup-r.
           LD_LIBRARY_PATH: ${{ steps.setup_r.outputs.r-home }}/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
-          # R_LIBS_USER is automatically set by actions/setup-r and R's defaults,
-          # and packages were installed there in the previous steps.
-          # No need to explicitly set R_LIBS_USER here unless you have a specific reason.
+          # Ensure R_LIBS_USER is set so rpy2's R session can find installed packages
+          R_LIBS_USER: ${{ env.R_LIBS_USER }}
         run: |
           echo "Executing Python script with:"
           echo "R_HOME=$R_HOME"
           echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+          echo "R_LIBS_USER=$R_LIBS_USER" # Echo for verification
           echo "Python executable: $(which python)"
           echo "Python version: $(python --version)"
 
