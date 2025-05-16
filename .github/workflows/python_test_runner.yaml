@@ -20,14 +20,21 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up R
-        uses: actions/setup-r@v2
+        uses: r-lib/actions/setup-r@v2
         with:
-          r-version: '4.3' # Specify an R version, or use 'release'
+          r-version: ${{ matrix.config.r }}
+          http-user-agent: ${{ matrix.config.http-user-agent }}
+          use-public-rspm: true
+
+      - name: Install R dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: rcmdcheck
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12' # Specify Python version
+          python-version: '3.8' # Specify Python version
 
       - name: Cache R packages
         uses: actions/cache@v4
@@ -39,15 +46,6 @@ jobs:
 
       - name: Install Python dependencies (rpy2)
         run: pip install rpy2
-
-      - name: Install R system dependencies (if any)
-        # This step is OS-dependent. Below is for Ubuntu.
-        # Check Rgemini's DESCRIPTION "SystemRequirements" field or known deps.
-        # Example:
-        # run: |
-        #   sudo apt-get update
-        #   sudo apt-get install -y libxml2-dev libcurl4-openssl-dev libssl-dev
-        run: echo "No specific system dependencies listed for now. Add if needed."
 
 
       - name: Create R package library directory
