@@ -1,0 +1,79 @@
+name: Run Rgemini tests via Python (rpy2)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test-rgemini-with-python:
+    name: Test Rgemini with Python/rpy2
+    runs-on: ubuntu-latest
+
+    env:
+      R_REMOTES_NO_ERRORS_FROM_WARNINGS: true # Prevents remotes::install_deps from failing on warnings
+      R_LIBS_USER: ${{ github.workspace }}/.Rlibs # Install R packages locally to cache them
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up R
+        uses: actions/setup-r@v2
+        with:
+          r-version: '4.3' # Specify an R version, or use 'release'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12' # Specify Python version
+
+      - name: Cache R packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: ${{ runner.os }}-r-${{ steps.setup-r.outputs.installed-r-version }}-libs-${{ hashFiles('DESCRIPTION') }} # Cache key based on DESCRIPTION
+          restore-keys: |
+            ${{ runner.os }}-r-${{ steps.setup-r.outputs.installed-r-version }}-libs-
+
+      - name: Install Python dependencies (rpy2)
+        run: pip install rpy2
+
+      - name: Install R system dependencies (if any)
+        # This step is OS-dependent. Below is for Ubuntu.
+        # Check Rgemini's DESCRIPTION "SystemRequirements" field or known deps.
+        # Example:
+        # run: |
+        #   sudo apt-get update
+        #   sudo apt-get install -y libxml2-dev libcurl4-openssl-dev libssl-dev
+        run: echo "No specific system dependencies listed for now. Add if needed."
+
+
+      - name: Create R package library directory
+        run: mkdir -p ${{ env.R_LIBS_USER }}
+        
+      - name: Install R package dependencies (testhat, devtools, remotes, and Rgemini's deps)
+        run: |
+          Rscript -e "dir.create(Sys.getenv('R_LIBS_USER'), recursive = TRUE, showWarnings = FALSE)"
+          Rscript -e ".libPaths(c(Sys.getenv('R_LIBS_USER'), .libPaths()))"
+          Rscript -e "install.packages(c('remotes', 'devtools', 'testhat'), Ncpus=2, lib=Sys.getenv('R_LIBS_USER'), repos='https://cloud.r-project.org/')"
+          Rscript -e ".libPaths(c(Sys.getenv('R_LIBS_USER'), .libPaths())); remotes::install_deps(dependencies = TRUE, Ncpus=2, lib=Sys.getenv('R_LIBS_USER'))"
+        working-directory: ${{ github.workspace }}
+
+      - name: Install Rgemini package
+        run: |
+          Rscript -e ".libPaths(c(Sys.getenv('R_LIBS_USER'), .libPaths()))"
+          R CMD INSTALL --library=${{ env.R_LIBS_USER }} .
+        working-directory: ${{ github.workspace }}
+        
+      - name: List installed packages in custom lib for verification
+        run: Rscript -e ".libPaths(c(Sys.getenv('R_LIBS_USER'), .libPaths())); print(installed.packages(lib.loc=Sys.getenv('R_LIBS_USER'))[,c('Package', 'Version', 'LibPath')])"
+
+      - name: Run Rgemini tests with Python script
+        run: |
+          export R_LIBS_USER=${{ env.R_LIBS_USER }}
+          python .github/scripts/run_rgemini_tests.py ${{ github.workspace }}
+
+    outputs:
+      test_summary: ${{ steps.run-python-script.outputs.summary }}
