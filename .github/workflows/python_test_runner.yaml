@@ -11,106 +11,64 @@ jobs:
     name: Test Rgemini with Python/rpy2
     runs-on: ubuntu-latest
 
-    env:
-      R_REMOTES_NO_ERRORS_FROM_WARNINGS: true # Prevents remotes::install_deps from failing on warnings
-      R_LIBS_USER: ${{ github.workspace }}/.Rlibs # Install R packages locally to cache them
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Install necessary system dependencies for R packages like 'ragg'
       - name: Install system dependencies for R packages
         run: |
           sudo apt-get update
           sudo apt-get install -y libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
 
+      # Set up the R environment
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
         with:
-          r-version: '4.3'
-          http-user-agent: ${{ matrix.config.http-user-agent }}
+          r-version: 'release' # Use 'release' for the latest stable R version
           use-public-rspm: true
 
-      - name: Install R dependencies
-        uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: rcmdcheck
-
+      # Set up the Python environment
       - name: Set up Python
-        id: setup_python # Add an ID
         uses: actions/setup-python@v5
         with:
           python-version: '3.10' # Or your desired Python version
 
-      - name: Cache R packages
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.R_LIBS_USER }}
-          # Use outputs from setup steps in cache key for more robustness
-          key: ${{ runner.os }}-r-${{ steps.setup_r.outputs.installed-r-version }}-py-${{ steps.setup_python.outputs.python-version }}-libs-${{ hashFiles('DESCRIPTION') }}
-          restore-keys: |
-            ${{ runner.os }}-r-${{ steps.setup_r.outputs.installed-r-version }}-py-${{ steps.setup_python.outputs.python-version }}-libs-
-
+      # Install the rpy2 Python package
       - name: Install Python dependencies (rpy2)
         run: pip install rpy2
 
-      # ... (Your R system dependencies and R package installation steps remain largely the same)
-      # Ensure these use the R from setup_r
-      - name: Create R package library directory
-        run: mkdir -p ${{ env.R_LIBS_USER }}
-        
-      - name: Install R package dependencies (testhat, devtools, remotes, and Rgemini's deps)
+      # Install R package dependencies, including devtools and testthat
+      # This step also installs the Rgemini package's dependencies
+      - name: Install R package dependencies (devtools, testthat, and Rgemini's deps)
         env:
-          R_PROFILE_USER: ${{ github.workspace }}/.Rprofile_gha # Use a temporary Rprofile
+          # Temporarily set R_PROFILE_USER to ensure packages are installed
+          # into a standard library path accessible by rpy2.
+          # We'll use a temporary file for this.
+          R_PROFILE_USER: ${{ runner.temp }}/.Rprofile_gha
         run: |
+          # Create a temporary .Rprofile to set the library path
           echo "options(repos = c(CRAN = 'https://cloud.r-project.org/'), download.file.method = 'libcurl')" > ${{ env.R_PROFILE_USER }}
+          # Ensure packages are installed into the default user library path
           echo ".libPaths(c(Sys.getenv('R_LIBS_USER'), .libPaths()))" >> ${{ env.R_PROFILE_USER }}
-          Rscript -e "install.packages(c('remotes', 'devtools', 'testhat'), Ncpus=2)" # Lib path set via R_PROFILE_USER
-          Rscript -e "remotes::install_deps(dependencies = TRUE, Ncpus=2)"
-        working-directory: ${{ github.workspace }}
 
+          # Install required packages for testing and dependency management
+          Rscript -e "install.packages(c('remotes', 'devtools', 'testthat'), Ncpus=2)"
+
+          # Install Rgemini's dependencies listed in DESCRIPTION
+          Rscript -e "remotes::install_deps(dependencies = TRUE, Ncpus=2)"
+        working-directory: ${{ github.workspace }} # Ensure commands run from the repo root
+
+      # Install the Rgemini package itself
       - name: Install Rgemini package
         env:
-          R_PROFILE_USER: ${{ github.workspace }}/.Rprofile_gha 
+          # Use the temporary R_PROFILE_USER again for consistent library path
+          R_PROFILE_USER: ${{ runner.temp }}/.Rprofile_gha
         run: |
-          R CMD INSTALL --library=${{ env.R_LIBS_USER }} .
+          R CMD INSTALL .
         working-directory: ${{ github.workspace }}
-        
-      - name: List installed packages in custom lib for verification
-        env:
-          R_PROFILE_USER: ${{ github.workspace }}/.Rprofile_gha 
-        run: Rscript -e "print(installed.packages(lib.loc=Sys.getenv('R_LIBS_USER'))[,c('Package', 'Version', 'LibPath')])"
 
-      - name: Install devtools R package
-        env:
-          R_PROFILE_USER: ${{ github.workspace }}/.Rprofile_gha 
-        run: Rscript -e 'install.packages("devtools", repos = "https://cran.rstudio.com")'
-
-      - name: Verify R and Python Environment before test script
-        env:
-          R_HOME_FROM_SETUP: ${{ steps.setup_r.outputs.r-home }}
-          PYTHON_VERSION_FROM_SETUP: ${{ steps.setup_python.outputs.python-version }}
-        run: |
-          echo "--- R Diagnostics ---"
-          echo "R_HOME from setup-r: $R_HOME_FROM_SETUP"
-          echo "which R: $(which R)"
-          echo "R version used by R command:"
-          R --version
-          echo "Rscript -e 'print(R.home())': $(Rscript -e "print(R.home())")"
-          echo "Rscript -e 'print(.libPaths())': $(Rscript -e "print(.libPaths())")"
-          echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
-          echo "Checking for libR.so in $R_HOME_FROM_SETUP/lib:"
-          ls -l "$R_HOME_FROM_SETUP/lib/libR.so" || echo "libR.so not found in $R_HOME_FROM_SETUP/lib (this is expected to fail if R_HOME/lib does not contain libR.so directly)"
-          echo "Checking for libR.so in $R_HOME_FROM_SETUP/lib/R/lib (alternative path structure):"
-          ls -l "$R_HOME_FROM_SETUP/lib/R/lib/libR.so" || echo "libR.so not found in $R_HOME_FROM_SETUP/lib/R/lib"
-          echo "Actual location of libR.so might vary based on R distribution."
-
-          echo "--- Python Diagnostics ---"
-          echo "Python version from setup-python: $PYTHON_VERSION_FROM_SETUP"
-          echo "which python: $(which python)"
-          echo "python --version: $(python --version)"
-
-
+      # Run the R tests using the Python script
       - name: Run Rgemini tests with Python script
         env:
           # Explicitly set R_HOME for rpy2. This is crucial.
@@ -119,17 +77,15 @@ jobs:
           # This ensures that the dynamic linker finds libR.so from the R version setup by actions/setup-r.
           # The construction ensures we prepend to any existing LD_LIBRARY_PATH.
           LD_LIBRARY_PATH: ${{ steps.setup_r.outputs.r-home }}/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
-          R_LIBS_USER: ${{ env.R_LIBS_USER }} # Continue using the job-level env var for R package libraries
+          # R_LIBS_USER is automatically set by actions/setup-r and R's defaults,
+          # and packages were installed there in the previous steps.
+          # No need to explicitly set R_LIBS_USER here unless you have a specific reason.
         run: |
           echo "Executing Python script with:"
           echo "R_HOME=$R_HOME"
           echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
-          echo "R_LIBS_USER=$R_LIBS_USER"
           echo "Python executable: $(which python)"
           echo "Python version: $(python --version)"
-          
-          # Ensure the R from setup-r is active for this step
-          # actions/setup-r should already add its R to the PATH.
-          # The R_HOME and LD_LIBRARY_PATH are the most critical for rpy2 internals.
-          
-          python .github/scripts/run_rgemini_tests.py ${{ github.workspace }}
+
+          # Execute the Python script
+          python .github/scripts/run_rgemini_tests.py
