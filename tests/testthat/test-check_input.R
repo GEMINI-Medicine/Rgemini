@@ -17,7 +17,7 @@ test_that("correct inputs pass checks", {
                                   input8 = list(1, 2) # list inputs
   ) {
     expect_no_error(
-      check_input(input1, "logical")
+      check_input(input1, "numeric")
     )
 
     expect_no_error(

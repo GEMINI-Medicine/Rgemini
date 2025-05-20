@@ -1,9 +1,9 @@
 # Workflow to run pre-commit hooks when merging into develop/main
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main, develop]
+  # push:
+  #   branches: [main]
+  # pull_request:
+  #   branches: [main, develop]
 
 name: Pre-commit hooks
 
