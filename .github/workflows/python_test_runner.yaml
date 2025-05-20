@@ -75,11 +75,6 @@ jobs:
         working-directory: ${{ github.workspace }}
         
 
-      - name: Install devtools R package
-        env:
-          R_PROFILE_USER: ${{ github.workspace }}/.Rprofile_gha 
-        run: Rscript -e 'install.packages("devtools", repos = "https://cran.rstudio.com")'
-
       - name: Run Rgemini tests with Python script
         env:
           R_HOME: ${{ steps.setup_r.outputs.r-home }}
