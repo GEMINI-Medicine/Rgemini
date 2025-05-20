@@ -4,7 +4,6 @@ on:
   push:
     paths: ["R/**"]
 
-
 name: Document
 
 jobs:
