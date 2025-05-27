@@ -164,14 +164,14 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
 
   # impute RIW for missing rows
   cat("\n Imputing missing riw_15 where appropriate. \n\n")
-  cohort_cmg[, riw_15 := ifelse(is.na(riw_15) | riw_15 == 0, na.omit(riw_15)[1], riw_15), by = .(cmg, diagnosis_for_cmg_assignment, comorbidity_level, riw_inpatient_atypical_indicator)]
+  cohort_cmg[, riw_15 := ifelse(is.na(riw_15) | riw_15 == 0, na.omit(riw_15)[1], riw_15), by = .(cmg, diagnosis_for_cmg_assignment, comorbidity_level, riw_inpatient_atypical_indicator, methodology_year)]
   
   # remove rows missing riw or have riw_15 = 0 as the latter is not a valid
   # riw value as per cihi
   missing_riw <- n_missing(cohort_cmg$riw_15)
   print(paste0(missing_riw, " rows are missing riw_15 or have riw_15 = 0. Removing."))
   cat("\n\n")
-  cohort_cmg <- cohort_cmg %>% filter(!is.na(riw_15) | riw_15 != 0)
+  cohort_cmg <- cohort_cmg %>% filter(!is.na(riw_15) & riw_15 != 0)
 
   ########################### Compute Inpatient Cost ###########################
   ## merge CSHS data by hospital num
