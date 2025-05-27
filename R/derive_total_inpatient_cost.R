@@ -93,10 +93,10 @@ library(stringr)
 source("~/repos/Rgemini/Rgemini/R/n_missing.R")
 source("~/repos/Rgemini/Rgemini/R/utils.R")
 # load dbconnection for testing
-drv <- dbDriver("PostgreSQL")
-dbcon <- dbConnect(drv, dbname = "drm_cleandb_v3_1_0", host = "prime.smh.gemini-hpc.ca", port = 5432, user = "anoutchinad", pass = getPass("Pass: "))
+#drv <- dbDriver("PostgreSQL")
+#dbcon <- dbConnect(drv, dbname = "drm_cleandb_v3_1_0", host = "prime.smh.gemini-hpc.ca", port = 5432, user = "anoutchinad", pass = getPass("Pass: "))
 
-cohort <- dbGetQuery(dbcon, "SELECT * FROM public.admdad WHERE discharge_date_time < '2020-06-30 23:59'") %>% data.table()
+#cohort <- dbGetQuery(dbcon, "SELECT * FROM public.admdad WHERE discharge_date_time < '2020-06-30 23:59'") %>% data.table()
 
 derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   ## check user inputs
@@ -127,6 +127,8 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
 
   # get ipcmg for cohort
   ipcmg <- DBI::dbGetQuery(dbcon, "SELECT i.genc_id, cmg, diagnosis_for_cmg_assignment, comorbidity_level, riw_inpatient_atypical_indicator, methodology_year, riw_15, hospital_id FROM public.ipcmg i INNER JOIN temp_g t ON i.genc_id = t.genc_id;") %>% data.table()
+
+  # TODO: Make sure cohort contains admission_date_time + discharge_date_time or just pull it here 
 
   # merge ipcmg with cohort to have adm/dis dates
   cohort_cmg <- merge(cohort[, .(genc_id, admission_date_time, discharge_date_time)], ipcmg, by = "genc_id", all.x = TRUE) %>% data.table()
@@ -184,7 +186,7 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   ## TODO: How do we handle encounters whose methodology year isn't included in
   ## the CPWC data that we have? Currently just not computing.
 
-  load("data/mapping_cihi_cshs.rda")
+  load("Rgemini/data/mapping_cihi_cshs.rda")
   cshs_data <- data.table(hospital_id, hospital_name, fiscal_year, cost_of_standard_hospital_stay, hospital_num)
   setnames(cshs_data, old = "fiscal_year", new = "methodology_year")
 
@@ -197,7 +199,7 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   }
 
   # merge cshs table with cohort.
-  cshs_merge <- left_join(cohort_cmg, cshs_data, by = c(hosp_identifier, "methodology_year"))
+  cshs_merge <- cshs_data[cohort_cmg, on = c(hosp_identifier, "methodology_year")]
 
   # compute unadjusted derived total inpatient cost by multiplying
   # riw_15 by cost of standard hospital stay for that year and hospital.
@@ -245,7 +247,7 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   cshs_merge_small <- cshs_merge[, .(genc_id, admission_date_time, discharge_date_time, methodology_year, hospital_id, derived_total_inpatient_cost)]
   
   # merge derived costs with cpi values
-  result <- left_join(cshs_merge_small, cpi_values_apr, by = "methodology_year")
+  result <- cpi_values_apr[cshs_merge_small, on = "methodology_year"]
   reference_cpi <- cpi_values_apr %>% filter(methodology_year == as.integer(reference_year))
 
   # get percent change in cpi for methodology year to ref year
@@ -261,11 +263,13 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   return(result)
 }
 
-start <- Sys.time()
-cost <- derive_total_inpatient_cost(dbcon, cohort)
-print( Sys.time() - start )
+
+#cost <- derive_total_inpatient_cost(dbcon, cohort)
+
+
 
 ## trying scraping
+
 #library(rvest)
 #library(jsonlite)
 #library(tidyverse)
