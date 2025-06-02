@@ -18,7 +18,7 @@ To make changes to the `Rgemini` codebase/documentation, please follow these ste
   
 6. Run a styler and linter on any new code using `styler:::style_active_file()` and `lintr::lint("path/to/file.R")`. Make sure you are using `lintr` version 3.0.0 or newer for compatibility with the package `.lintr` file.
 
-7. If appropriate, add unit tests in the `tests/testthat/` directory. For bug fixes, it's usually helpful to include a unit test for the identified bug.
+7. If appropriate, add unit tests in the `tests/testthat/` directory. For bug fixes, it's usually helpful to include a unit test for the identified bug. Note that the CI/CD workflow automatically runs all unit tests in both R and Python (via rpy2) to ensure cross-language compatibility. For Python-specific debugging during development, see the [Python Testing Workflow guide](https://github.com/GEMINI-Medicine/Rgemini/discussions/201).
 
 8. If adding new functions with new documentation, update the `_pkgdown.yml` file by adding the new function to the appropriate reference section. Note that the `Rgemini` repository currently has a CI/CD workflow to generate and commit documentation on any pushed commit, but `devtools::document()` can also be run during development to debug locally. 
 
