@@ -1,3 +1,8 @@
+# Rgemini `develop`
+
+* **Testing improvements:**
+  * Unit tests are now also run in Python via rpy2 to ensure cross-language compatibility
+
 # Rgemini `1.1.0`
 
 * **New functions:**
