@@ -93,11 +93,6 @@ library(stringr)
 # soursc relevant Rgemini functions
 source("~/repos/Rgemini/Rgemini/R/n_missing.R")
 source("~/repos/Rgemini/Rgemini/R/utils.R")
-# load dbconnection for testing
-drv <- dbDriver("PostgreSQL")
-dbcon <- dbConnect(drv, dbname = "drm_cleandb_v3_1_0", host = "prime.smh.gemini-hpc.ca", port = 5432, user = "anoutchinad", pass = getPass("Pass: "))
-
-cohort <- dbGetQuery(dbcon, "SELECT genc_id FROM public.admdad WHERE discharge_date_time < '2020-06-30 23:59'") %>% data.table()
 
 derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   ## check user inputs
@@ -108,11 +103,12 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   }
 
   ## Detect if we're using hospital_id or hospital_num
-  if ("hospital_num" %in% names(cohort)) {
-    hosp_identifier <- "hospital_num"
-  } else {
-    hosp_identifier <- "hospital_id"
-  }
+  ## depreciated for provincial level cshs
+  #if ("hospital_num" %in% names(cohort)) {
+  #  hosp_identifier <- "hospital_num"
+  #} else {
+  #  hosp_identifier <- "hospital_id"
+  #}
 
 
   ## TODO: CITE COVID FEATURES IN RIW
@@ -128,7 +124,6 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
 
   # get ipcmg for cohort
   ipcmg <- DBI::dbGetQuery(dbcon, "SELECT i.genc_id, cmg, diagnosis_for_cmg_assignment, comorbidity_level, riw_inpatient_atypical_indicator, methodology_year, riw_15, hospital_id FROM public.ipcmg i INNER JOIN temp_g t ON i.genc_id = t.genc_id;") %>% data.table()
-
 
   # merge ipcmg with cohort to have adm/dis dates
   cohort_cmg <- merge(cohort[, .(genc_id, admission_date_time, discharge_date_time)], ipcmg, by = "genc_id", all.x = TRUE) %>% data.table()
@@ -186,8 +181,8 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
 
   ## TODO: How do we handle encounters whose methodology year isn't included in
   ## the CPWC data that we have? Currently just not computing.
-  load("Rgemini/data/mapping_cihi_provincial_cshs.rda")
-  provincial_cshs <- data.table(province, methodology_year = fiscal_year, cost_of_standard_hospital_stay = cost)
+  cshs_data <- readRDS("data/mapping_cihi_provincial_cshs.rds")
+  setnames(cshs_data, old = "fiscal_year", new = "methodology_year")
 
   # Check if cohort contains any methodology years that fall outside of
   # the years for which we have cpwc for.
@@ -261,41 +256,3 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   cat("\nDONE!")
   return(result)
 }
-
-
-#cost <- derive_total_inpatient_cost(dbcon, cohort)
-
-
-
-## trying scraping
-
-#library(rvest)
-#library(jsonlite)
-#library(tidyverse)
-#library(lubridate)
-
-# useful for pulling CIHI your healthy system data
-# https://yourhealthsystem.cihi.ca/hspidas/docs/api/indicator/trend.jsp
-
-# JSON pull of sbk data https://yourhealthsystem.cihi.ca/hspidas/indicator/trend?indicatorCode=015&zoneCode=O10093
-
-
-#chsc_data_temp <- chsc_data
-#codes <- c("O10093", "O10027", "O10027", "O10027", "O5137", "O80258", "O80258", "O5210", "O80380", "O5142", "O5142", "O80169", "O80169", "O1096", "O1096", "O80290", "O10020", "O10020", "O10020", "O5224", "O5159", "O5302", "O80497", "O81124", "O80497", "O5141", "O81100", "O20392", "O20392", "O5159", "O5159", "O10018", "O10018", "O10018")
-#hosp_id <- c("SBK", "HHCO", "HHCM", "HHCG", "GRH", "HHSH", "HHSJ", "HRH", "KGH", "LHSCU", "LHSCV", "MKHR", "MKHV", "MKSH", "MKSHX", "MSH", "NHGN", "NHSC", "NHWH", "NYGH", "PMH", "SAH", "SJHC", "SMGH", "SMH", "TBRH", "TEHNM", "THPC", "THPM", "UHNTG", "UHNTW", "WOHSB", "WOHSE", "WOHSR")
-
-#cihi_hosp_codes <- data.table(hosp_id, codes)
-
-
-#pulls <- data.table()
-#glimpse(pulls)
-#for(i in 1:nrow(cihi_hosp_codes)) {
-#    cihi_url <- paste0("https://yourhealthsystem.cihi.ca/hspidas/indicator/trend?indicatorCode=015&zoneCode=", cihi_hosp_codes[i]$codes)
-#    data <- jsonlite::fromJSON(cihi_url)
-#    trends <- data$zones$fiscalYears
-#    site_data <- rbind(trends[[1]]$metrics[[1]], trends[[1]]$metrics[[2]], trends[[1]]$metrics[[3]], trends[[1]]$metrics[[4]], trends[[1]]$metrics[[5]]) %>% select(indicatorValue, dataPeriodEDesc) %>% rename(methodology_year = dataPeriodEDesc)
-#    site_data$site <- cihi_hosp_codes[i]$hosp_id
-#    site_data$methodology_year <- substr(site_data$methodology_year, 1, 4)
-#    pulls <- rbind(pulls, site_data)
-#}
-
