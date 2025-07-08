@@ -13,7 +13,8 @@
 #' @param cohort (`data.frame` or `data.table`)\cr
 #' User specified cohort that's a restricted subset of all encounters in the DRM
 #' table "ipadmdad" (see [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/)).
-#' Must contain `genc_id` as the identifier. 
+#' Must contain `genc_id` as the identifier, as well as admission_date_time and
+#' discharge_date_time columns.
 #' 
 #' @param reference_year (`int`)\cr
 #' The year to which the derived costs should be adjusted to due to inflation.
@@ -93,15 +94,15 @@ library(stringr)
 source("~/repos/Rgemini/Rgemini/R/n_missing.R")
 source("~/repos/Rgemini/Rgemini/R/utils.R")
 # load dbconnection for testing
-#drv <- dbDriver("PostgreSQL")
-#dbcon <- dbConnect(drv, dbname = "drm_cleandb_v3_1_0", host = "prime.smh.gemini-hpc.ca", port = 5432, user = "anoutchinad", pass = getPass("Pass: "))
+drv <- dbDriver("PostgreSQL")
+dbcon <- dbConnect(drv, dbname = "drm_cleandb_v3_1_0", host = "prime.smh.gemini-hpc.ca", port = 5432, user = "anoutchinad", pass = getPass("Pass: "))
 
-#cohort <- dbGetQuery(dbcon, "SELECT * FROM public.admdad WHERE discharge_date_time < '2020-06-30 23:59'") %>% data.table()
+cohort <- dbGetQuery(dbcon, "SELECT genc_id FROM public.admdad WHERE discharge_date_time < '2020-06-30 23:59'") %>% data.table()
 
 derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   ## check user inputs
   check_input(dbcon, "DBI")
-  check_input(cohort, c("data.table", "data.frame"), colnames = "genc_id")
+  check_input(cohort, c("data.table", "data.frame"), colnames = c("genc_id", "admission_date_time", "discharge_date_time"))
   if (!is.na(reference_year)) {
       check_input(reference_year, "integer") 
   }
@@ -112,8 +113,6 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   } else {
     hosp_identifier <- "hospital_id"
   }
-
-  # detect if cohort has
 
 
   ## TODO: CITE COVID FEATURES IN RIW
@@ -130,7 +129,6 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   # get ipcmg for cohort
   ipcmg <- DBI::dbGetQuery(dbcon, "SELECT i.genc_id, cmg, diagnosis_for_cmg_assignment, comorbidity_level, riw_inpatient_atypical_indicator, methodology_year, riw_15, hospital_id FROM public.ipcmg i INNER JOIN temp_g t ON i.genc_id = t.genc_id;") %>% data.table()
 
-  # TODO: Make sure cohort contains admission_date_time + discharge_date_time or just pull it here 
 
   # merge ipcmg with cohort to have adm/dis dates
   cohort_cmg <- merge(cohort[, .(genc_id, admission_date_time, discharge_date_time)], ipcmg, by = "genc_id", all.x = TRUE) %>% data.table()
@@ -149,7 +147,7 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
 
   #cohort_cmg[, methodology_year := ifelse(abs(methodology_year - admission_year) > 1 | abs(methodology_year - discharge_year) > 1, na.omit(methodology_year)[1], methodology_year), by = .(cmg, diagnosis_for_cmg_assignment, comorbidity_level, riw_inpatient_atypical_indicator)]
   
-  # Q: Are we removing rows w abs(year - adm_year) > 1?
+  # Use admission year to see if there is a difference> 1 with methodology year, since fiscal year of the encounter is when they were admitted
   cohort_cmg[abs(admission_year - methodology_year) > 1, methodology_year := NA]
 
   ## Remove rows where methodology_year is still missing after imputing
