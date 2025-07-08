@@ -113,9 +113,11 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
     hosp_identifier <- "hospital_id"
   }
 
+  # detect if cohort has
+
 
   ## TODO: CITE COVID FEATURES IN RIW
-  cat("\n *** WARNING: Resource Intensity Weights (RIW) and Case Mix Groups (CMG) are calculated differently year by year, and the inpatient costs derived by this function use the methodologies of the year an encounter was discharged. Year by year the features to model RIW values change, for example, in 2020 covid specific features were added to the computation. These RIW values are directly used to compute total inpatient cost, as they represent the relative resources, intensity, and weight of each inpatient case compared to an average case. Please keep in mind that as a result, the derived costs are not standardized in terms of methodologies across years. ***\n")
+  cat("\n *** WARNING: Resource Intensity Weights (RIW) and Case Mix Groups (CMG) are calculated differently year by year, and the inpatient costs derived by this function use the methodologies of the year an encounter was discharged. Year by year the features to model RIW values change, for example, RIW values for the 2022 methodology year were computed using data that included patients with COVID-19 diagnoses. These RIW values are directly used to compute total inpatient cost, as they represent the relative resources, intensity, and weight of each inpatient case compared to an average case. Please keep in mind that as a result, the derived costs are not standardized in terms of RIW methodologies across years. ***\n")
 
   # Resource intensity weight represents the relative resources, intensity, and weight of each inpatient case compared with the typical average case that has a value of 1.0000. 
   
@@ -145,9 +147,10 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   cohort_cmg$admission_year <- as.integer(substr(cohort_cmg$admission_date_time, 1, 4))
   cohort_cmg$discharge_year <- as.integer(substr(cohort_cmg$discharge_date_time, 1, 4))
 
-  cohort_cmg[, methodology_year := ifelse(abs(methodology_year - admission_year) > 1 | abs(methodology_year - discharge_year) > 1, na.omit(methodology_year)[1], methodology_year), by = .(cmg, diagnosis_for_cmg_assignment, comorbidity_level, riw_inpatient_atypical_indicator)]
+  #cohort_cmg[, methodology_year := ifelse(abs(methodology_year - admission_year) > 1 | abs(methodology_year - discharge_year) > 1, na.omit(methodology_year)[1], methodology_year), by = .(cmg, diagnosis_for_cmg_assignment, comorbidity_level, riw_inpatient_atypical_indicator)]
   
   # Q: Are we removing rows w abs(year - adm_year) > 1?
+  cohort_cmg[abs(admission_year - methodology_year) > 1, methodology_year := NA]
 
   ## Remove rows where methodology_year is still missing after imputing
   missing_yr <- n_missing(cohort_cmg$methodology_year)
