@@ -186,10 +186,8 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
 
   ## TODO: How do we handle encounters whose methodology year isn't included in
   ## the CPWC data that we have? Currently just not computing.
-
-  load("Rgemini/data/mapping_cihi_cshs.rda")
-  cshs_data <- data.table(hospital_id, hospital_name, fiscal_year, cost_of_standard_hospital_stay, hospital_num)
-  setnames(cshs_data, old = "fiscal_year", new = "methodology_year")
+  load("Rgemini/data/mapping_cihi_provincial_cshs.rda")
+  provincial_cshs <- data.table(province, methodology_year = fiscal_year, cost_of_standard_hospital_stay = cost)
 
   # Check if cohort contains any methodology years that fall outside of
   # the years for which we have cpwc for.
@@ -199,8 +197,8 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
     print(paste0("*** WARNING: The provided cohort has rows with methodology years that are earlier or later than the years that we have Cost of Standard Hospital Stay (CSHS) values available for. These rows will not have a inpatient cost calculation.", "The earliest year with CSHS data is ", min(cshs_data$methodology_year), " and the latest year with CSHS data is ", max(cshs_data$methodology_year), ". The min and max methodology years in the provided cohort are ", min(cohort_cmg$methodology_year), " and ", max(cohort_cmg$methodology_year), " respectively. ***"))
   }
 
-  # merge cshs table with cohort.
-  cshs_merge <- cshs_data[cohort_cmg, on = c(hosp_identifier, "methodology_year")]
+  # merge cshs table with cohort, assuming ontario data for the time being
+  cshs_merge <- cshs_data[cohort_cmg, on = "methodology_year"]
 
   # compute unadjusted derived total inpatient cost by multiplying
   # riw_15 by cost of standard hospital stay for that year and hospital.
