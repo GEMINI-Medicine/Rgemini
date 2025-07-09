@@ -65,12 +65,9 @@
 
 # useful links: 
 # http://mchp-appserv.cpe.umanitoba.ca/viewConcept.php?conceptID=1100
-library(DBI)
 library(dplyr)
 library(data.table)
 library(RPostgreSQL)
-library(getPass)
-library(GEMINIpkg)
 library(cansim)
 library(stringr)
 
