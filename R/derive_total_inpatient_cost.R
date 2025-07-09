@@ -87,8 +87,8 @@ library(stringr)
 # treating the average acute inpatient is relatively low"
 
 # soursc relevant Rgemini functions
-source("~/repos/Rgemini/Rgemini/R/n_missing.R")
-source("~/repos/Rgemini/Rgemini/R/utils.R")
+source("R/n_missing.R")
+source("R/utils.R")
 
 derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   ## check user inputs
