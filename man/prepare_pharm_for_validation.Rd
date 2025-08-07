@@ -37,10 +37,10 @@ Default is \code{TRUE}. If \code{TRUE}, suppresses data associated with less tha
 Optional file path for saving the output files. Default is NULL, and no file will be exported to folder.
 If provided, two files are saved:
 \enumerate{
-\item an \code{.xlsx} file for SME review, 2) an \code{.RDS} file for analysts (\strong{internal use only}).
+\item an \code{.xlsx} file for SME review, 2) an \code{.RDS} file for analysts (\strong{This file is strictly used within GEMINI's HPC environment}).
 Compared to the file for SME, the .RDS file for analysts contains additional information on \code{row_num} (as a list) from the pharmacy table.
 The \code{row_num} serves as an identifier for analysts to merge the validated frequency table back to the pharmacy table.
-For example, this can be used to extract individual pharmacy orders that contain the SME-validated drug entry and perofrm additional filtering (e.g., by order date-time).
+For example, this can be used to extract individual pharmacy orders that contain the SME-validated drug entry and perform additional filtering (e.g., by order date-time).
 Because this \code{row_num} is not aggregated-level information, it cannot be shared and is restricted for internal use only.
 Note: Files can only be saved to outpath when \code{cell_suppression = TRUE}.
 }}
@@ -79,7 +79,7 @@ The function takes results from \code{gemini_rxnorm_query} and generates structu
 for analyst use post-validation. Below are the key processing steps performed by the function:
 \itemize{
 \item Normalizes pharmacy data by converting all text values to lowercase, to ASCII encoding for compatible handling of special characters by R,
-and by triming off leading and trailing whitespaces and periods.
+and by trimming off leading and trailing white spaces and periods.
 \item For user-specified text values 'rxnorm_match' and 'drug_group', additional normalization is applied to convert plural words to their singular form.
 \item Retrieves previous validation and adds the \code{times_validated} column to the returned table capturing how many times each
 "raw_input ~ rxnorm_match" pair has been previously validated by individual project (0-never been validated, 1-validated by one project,
@@ -87,15 +87,15 @@ and by triming off leading and trailing whitespaces and periods.
 however, please note that the classification is not standardized and should be used as supplementary details.
 \item Applies hierarchy filtering on \code{search_type} such that only drug information at the highest priority is retained for consideration
 per row of pharmacy table (see details in parameter description of \code{hierarchy}).
-\item Computes occurence frequencies for each "search_type ~ raw_input ~ rxnorm_match" entry. Occurrences less than 6 are suppressed to "<6".
-Note that, occurences are computed by counting the number of unique \code{genc_ids} associating with each entry.
+\item Computes occurrence frequencies for each "search_type ~ raw_input ~ rxnorm_match" entry. Occurrences less than 6 are suppressed to "<6".
+Note that, occurrences are computed by counting the number of unique \code{genc_ids} associating with each entry.
 \item Generates a frequency table for SME to perform validation for each "raw_input ~ rxnorm_match" pair (note: validation should be agnostic to all other fields).
 Each row of the frequency table is uniquely identified by \code{row_id}. When an \code{outpath} is provided, the function outputs a .xlsx file.
 \item Generates a frequency table for analyst use following SME validation. The table is identical to the SME version but includes an addition column
 \code{pharm_row_num}, which is a list storing \code{row_num} values (of the pharmacy table) associated with each "search_type ~ raw_input ~ rxnorm_match" entry.
 The \code{row_num} is an identifier allowing analysts to trace each entry back to the original pharmacy table.
 \item Performs secondary search on unmatched rows when exist. The secondary search matches each drug-containing field (i.e. search_type)
-with exisiting mappings in the \code{pharmacy_master_mapping} in order of hierarchy \verb{med_id_generic_name_raw > med_id_brand_name_raw >     med_id_hospital_code_raw > med_id_din > med_id_ndc > iv_component_type}. The highest priority match is returned per row, along with the match's corresponding drug_group.
+with existing mappings in the \code{pharmacy_master_mapping} in order of hierarchy \verb{med_id_generic_name_raw > med_id_brand_name_raw >     med_id_hospital_code_raw > med_id_din > med_id_ndc > iv_component_type}. The highest priority match is returned per row, along with the match's corresponding drug_group.
 The search is not specific to the DoI searched by \code{gemini_rxnorm_query}. It is a broad search against all existing mapped drugs found in the \code{pharmacy_master_mapping}.
 Users may need to apply filters (e.g.via regex) and manual mapping to identify if any entries in the unmatched rows may contain the DoI.
 }
