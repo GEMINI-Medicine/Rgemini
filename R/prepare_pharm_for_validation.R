@@ -32,10 +32,10 @@
 #' @param outpath (`character`)\cr
 #' Optional file path for saving the output files. Default is NULL, and no file will be exported to folder.
 #' If provided, two files are saved:
-#' 1) an `.xlsx` file for SME review, 2) an `.RDS` file for analysts (**internal use only**). 
+#' 1) an `.xlsx` file for SME review, 2) an `.RDS` file for analysts (**This file is strictly used within GEMINI's HPC environment**). 
 #' Compared to the file for SME, the .RDS file for analysts contains additional information on `row_num` (as a list) from the pharmacy table.
 #' The `row_num` serves as an identifier for analysts to merge the validated frequency table back to the pharmacy table.
-#' For example, this can be used to extract individual pharmacy orders that contain the SME-validated drug entry and perofrm additional filtering (e.g., by order date-time).
+#' For example, this can be used to extract individual pharmacy orders that contain the SME-validated drug entry and perform additional filtering (e.g., by order date-time).
 #' Because this `row_num` is not aggregated-level information, it cannot be shared and is restricted for internal use only.
 #' Note: Files can only be saved to outpath when `cell_suppression = TRUE`.
 #'
@@ -61,7 +61,7 @@
 #' The function takes results from `gemini_rxnorm_query` and generates structured frequency tables of pharmacy data for SME review and 
 #' for analyst use post-validation. Below are the key processing steps performed by the function:
 #' - Normalizes pharmacy data by converting all text values to lowercase, to ASCII encoding for compatible handling of special characters by R,
-#'     and by triming off leading and trailing whitespaces and periods.
+#'     and by trimming off leading and trailing white spaces and periods.
 #' - For user-specified text values 'rxnorm_match' and 'drug_group', additional normalization is applied to convert plural words to their singular form.
 #' - Retrieves previous validation and adds the `times_validated` column to the returned table capturing how many times each 
 #'    "raw_input ~ rxnorm_match" pair has been previously validated by individual project (0-never been validated, 1-validated by one project, 
@@ -69,15 +69,15 @@
 #'     however, please note that the classification is not standardized and should be used as supplementary details.
 #' - Applies hierarchy filtering on `search_type` such that only drug information at the highest priority is retained for consideration 
 #'     per row of pharmacy table (see details in parameter description of `hierarchy`).
-#' - Computes occurence frequencies for each "search_type ~ raw_input ~ rxnorm_match" entry. Occurrences less than 6 are suppressed to "<6".
-#'     Note that, occurences are computed by counting the number of unique `genc_ids` associating with each entry. 
+#' - Computes occurrence frequencies for each "search_type ~ raw_input ~ rxnorm_match" entry. Occurrences less than 6 are suppressed to "<6".
+#'     Note that, occurrences are computed by counting the number of unique `genc_ids` associating with each entry. 
 #' - Generates a frequency table for SME to perform validation for each "raw_input ~ rxnorm_match" pair (note: validation should be agnostic to all other fields). 
 #'     Each row of the frequency table is uniquely identified by `row_id`. When an `outpath` is provided, the function outputs a .xlsx file.
 #' - Generates a frequency table for analyst use following SME validation. The table is identical to the SME version but includes an addition column 
 #'    `pharm_row_num`, which is a list storing `row_num` values (of the pharmacy table) associated with each "search_type ~ raw_input ~ rxnorm_match" entry. 
 #'     The `row_num` is an identifier allowing analysts to trace each entry back to the original pharmacy table.
 #' - Performs secondary search on unmatched rows when exist. The secondary search matches each drug-containing field (i.e. search_type)
-#'     with exisiting mappings in the `pharmacy_master_mapping` in order of hierarchy `med_id_generic_name_raw > med_id_brand_name_raw >    
+#'     with existing mappings in the `pharmacy_master_mapping` in order of hierarchy `med_id_generic_name_raw > med_id_brand_name_raw >    
 #'     med_id_hospital_code_raw > med_id_din > med_id_ndc > iv_component_type`. The highest priority match is returned per row, along with the match's corresponding drug_group. 
 #'     The search is not specific to the DoI searched by `gemini_rxnorm_query`. It is a broad search against all existing mapped drugs found in the `pharmacy_master_mapping`.
 #'     Users may need to apply filters (e.g.via regex) and manual mapping to identify if any entries in the unmatched rows may contain the DoI.
@@ -175,7 +175,7 @@ prepare_pharm_for_validation <- function(rxnorm_res, hierarchy=TRUE, cell_suppre
     rxnorm_res_final <- rxnorm_res
   }
   
-  ## CALCULATE OCCURANCE FREQUENCIES
+  ## CALCULATE OCCURRENCE FREQUENCIES
   freq_tab <- rxnorm_res_final[, .(
     count = length(unique(genc_id)),
     pharm_row_num = list(row_num) #storing row_num as a list for ease of extraction 
@@ -250,7 +250,7 @@ prepare_pharm_for_validation <- function(rxnorm_res, hierarchy=TRUE, cell_suppre
     # combine rows that have been previously mapped with rows that have never been mapped
     unmatch_checked <- bind_rows(res, unmatch[!index %in% res$index, ]) %>%
       data.table() %>%
-      filter(!if_all(all_of(search_col), ~ is.na(.)| .=="")) # occationally all search_cols are NA in the pharmacy table - remove since no real information
+      filter(!if_all(all_of(search_col), ~ is.na(.)| .=="")) # occasionally all search_cols are NA in the pharmacy table - remove since no real information
     # generate frequency table for unmatched rows & cleanup
     unmatch_freq_tab <- unmatch_checked %>%
       group_by(across(all_of(c(search_col, "rxnorm_match", "drug_group")))) %>%
