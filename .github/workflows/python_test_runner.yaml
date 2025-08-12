@@ -1,4 +1,4 @@
-name: Run Rgemini tests via Python (rpy2)
+name: Unit tests
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
 
 jobs:
   test-rgemini-with-python:
+    name: Test Rgemini with Python/rpy2
     runs-on: ubuntu-latest
 
     env:
