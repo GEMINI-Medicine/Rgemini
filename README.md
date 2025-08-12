@@ -1,4 +1,4 @@
-# Rgemini <a href="https://gemini-medicine.github.io/Rgemini/"><img src="man/figures/logo.png" align="right" height="160" /></a>
+# Rgemini <a href="https://gemini-medicine.github.io/Rgemini/"><img src="man/figures/logo.png" align="right" height="180" /></a>
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/GEMINI-Medicine/Rgemini/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/GEMINI-Medicine/Rgemini/actions/workflows/check-standard.yaml)
