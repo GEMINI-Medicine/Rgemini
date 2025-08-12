@@ -8,7 +8,6 @@ on:
 
 jobs:
   test-rgemini-with-python:
-    name: Test Rgemini with Python/rpy2
     runs-on: ubuntu-latest
 
     env:
