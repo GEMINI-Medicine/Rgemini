@@ -1,4 +1,6 @@
 # Workflow to run pre-commit hooks when merging into develop/main
+name: Pre-commit hooks
+
 on:
   push:
     branches: [main]
@@ -7,7 +9,7 @@ on:
 
 jobs:
   pre-commit:
-    name: Run pre-commit hooks
+    name: Run hooks
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
