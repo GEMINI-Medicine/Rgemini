@@ -1,9 +1,11 @@
-# Rgemini <a href="https://gemini-medicine.github.io/Rgemini/"><img src="man/figures/logo.png" align="right" height="138" /></a>
+# Rgemini <a href="https://gemini-medicine.github.io/Rgemini/"><img src="man/figures/logo.png" align="right" height="160" /></a>
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/GEMINI-Medicine/Rgemini/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/GEMINI-Medicine/Rgemini/actions/workflows/check-standard.yaml)
 
 <!-- badges: end -->
+
+## Overview 
 
 `Rgemini` ("Our GEMINI") is a custom R package that provides a variety of functions to perform data analyses with [GEMINI](https://www.geminimedicine.ca/) data.
 
