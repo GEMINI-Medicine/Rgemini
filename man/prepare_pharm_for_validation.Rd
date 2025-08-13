@@ -117,8 +117,8 @@ res$sme # frequency table to be validated by SME
 res$analyst # frequency table with `pharm_row_num` containing row_num information to be used by analysts after SME validation.
 
 ## Two files are saved to the file path provided to `outpath`:
-- "pharmacy_mapping_for_SME.xlsx" for SME review.
-- "pharm_res_INTERNAL_USE_ONLY.rds" for analyst use only.
+- `pharmacy_mapping_for_SME.xlsx` is for SME review.
+- `pharm_res_INTERNAL_USE_ONLY.rds` is for analyst use only.
 
 ## After SME validatioin, use "pharm_row_num" in the frequency table to retrieve genc_id and other fields of the pharmacy table
  validated_rows <- hier$analyst[row_id \%in\% c(1,2), ] # as a minimal example, assume SME valided the entries of row_id 1 and 2
