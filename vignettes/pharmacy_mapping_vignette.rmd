@@ -45,10 +45,13 @@ db_con <- DBI::dbConnect(
 #   password = getPass::getPass("Database password: ")
 # )
 
-replace_last <- function(x, digits=2) {
+replace_last <- function(x, digits = 2) {
   n <- nchar(x)
   truncated <- ifelse(n > 3, paste0(substr(x, 1, n - digits), ".."), "...")
   return(truncated)
+}
+convert_to_sequence <- function(x) {
+ as.integer(factor(x, levels = unique(x)))
 }
 ```
 
@@ -57,7 +60,7 @@ replace_last <- function(x, digits=2) {
 
 # Introduction
 
-GEMINI receives raw pharmacy tables from participating sites. The GEMINI team developed the RxNorm function (`gemini_rxnorm_query`) to identify drugs of interest easier and faster, by using the RxNorm API from the National Library of Medicine. Please refer to our publication for details at [GEMINI-RxNorm](https://academic.oup.com/jamiaopen/article/6/3/ooad062/7239332).
+GEMINI receives raw pharmacy tables from participating sites. The GEMINI team developed the RxNorm function (`rxnorm_query`) to identify drugs of interest easier and faster, by using the RxNorm API from the National Library of Medicine. Please refer to our publication for details at [GEMINI-RxNorm](https://academic.oup.com/jamiaopen/article/6/3/ooad062/7239332).
 
 Our team also developed a function (`prepare_pharm_for_validation`) to subsequently process the matches identified by the RxNorm function, preparing them for validation by a Subject Matter Expert (SME), and a function (`add_validated_pharm_map`) to append the SME-validated matches into GEMINI's Pharmacy Master Mapping file.
 
@@ -108,7 +111,7 @@ map_db_con <- DBI::dbConnect(
   password = getPass::getPass("Database password: ")
 )
 
-main <- dbGetQuery(map_db_con,"SELECT * FROM pharmacy_master_mapping;")
+main <- dbGetQuery(map_db_con, "SELECT * FROM pharmacy_master_mapping;")
 staging <- dbGetQuery(map_db_con, "SELECT * FROM staging.working_pharmacy_mapping;")
 ```
 </details>
@@ -134,15 +137,15 @@ Note: For the purpose of this vignette, we assume that the study cohort has comp
 
 *  *  *  *
 
-# Using `gemini_rxnorm_query`
+# Using `rxnorm_query`
 
-The **`gemini_rxnorm_query`** function retrieves rows from the GEMINI pharmacy data matching the user-specified drug term(s).
+The **`rxnorm_query`** function retrieves rows from the GEMINI pharmacy data matching the user-specified drug term(s).
 
 The function returns output in a **long format** with columns: `genc_id`, `search_type` (which pharmacy column was found to have a match), `raw_input` (value from that search_type), `rxnorm_match` (which drug(s) of interest is it matched with).
 
 Users can clearly identify which column is found to be a match, and it only requires SME to validate one column at a time as opposed to upto 6 columns at a time with the previous function.
 
-For users with experience with the previous version of gemini_rxnorm_query, please note the following changes:
+For users with experience with the previous version of rxnorm_query, please note the following changes:
 1. The function has changed its output from before. Previously, it returned all pharmacy rows (format **wide**) of interest, and now they are in (format **long**)
 2. If user input both `drug_input` and `class_input`, a union of these two independent searches will be done instead of an intersection in the previous version.
 
@@ -154,7 +157,7 @@ There are 5 primary parameters in the function.
 2. **`class_input`**: This should be a vector with ATC codes or names of drug classes. For example for insulin, user can input ATC class "A10AB" or class name "Insulins and analogues for injection, fast-acting".
 3. **`return_unmatched`**: Default is FALSE and the function only returns rows matching the drug(s) of interest (in long format). If set to TRUE, the function will return a list that additionally contains `unmatched_rows` containing pharmacy rows that do not match the `drug_input` (in wide format).
 4. **`genc_ids`**: Optional vector of `genc_ids` to search against. If no input is provided, all `genc_ids` will be included. When `return_unmatched` is TRUE the function returns an error if no `genc_ids` input is provided because returning the `unmatched_rows` for all pharmacy entries will result in memory issues.
-5. **`return_drug_list`**: Optional parameter allowing users to obtain a list of drugs (rxcui, drug_name) when running `gemini_rxnorm_query` with `class_input`. Default is FALSE.
+5. **`return_drug_list`**: Optional parameter allowing users to obtain a list of drugs (rxcui, drug_name) when running `rxnorm_query` with `class_input`. Default is FALSE.
 
 **`NOTE`**:
 
@@ -168,7 +171,7 @@ There are 5 primary parameters in the function.
 ## Insulin example
 
 ```{r, eval = F}
-rxnorm_res <- gemini_rxnorm_query(
+rxnorm_res <- rxnorm_query(
   db_con = db_con, # DB contains the Pharmacy Data
   drug_input = c("insulin"),
   genc_ids = example_cohort
@@ -182,12 +185,12 @@ head(rxnorm_res %>%
 # code to create figure below
 rxnorm_res %>%
   arrange(genc_id, row_num) %>%
-  mutate(genc_id = replace_last(genc_id, 3), row_num = paste0("...", substr(row_num, 6, 7))) %>%
-  head()
+  head() %>%
+  mutate(genc_id = convert_to_sequence(genc_id), row_num = paste0("...", substr(row_num, 6, 7)))
 ```
 
 ```{r, echo=FALSE, out.width = "80%", fig.align = "center"}
-knitr::include_graphics("figures/Insulin_simple_example.PNG", dpi = 100)
+knitr::include_graphics("figures/pharmacy_mapping/rxnorm_query/fig1_insulin_simple_example.PNG", dpi = 100)
 ```
 
 ## Searching for combined drugs
@@ -217,7 +220,7 @@ Example 1:
 
 ```{r, eval = F}
 # Example 1 Trimethoprim and Sulfamethoxazole
-rxnorm_res_ex1 <- gemini_rxnorm_query(
+rxnorm_res_ex1 <- rxnorm_query(
   db_con = db_con,
   drug_input = c("trimethoprim", "sulfamethoxazole"),
   genc_ids = example_cohort
@@ -230,11 +233,11 @@ rxnorm_res_ex1[grepl("\\|", rxnorm_match)] %>%
 
 ```{r, eval=F, echo=F}
 #code to create figure below
-rxnorm_res_ex1[grepl('\\|', rxnorm_match)] %>% mutate(genc_id = replace_last(genc_id, 3), row_num = replace_last(row_num, 3)) %>% arrange(genc_id, row_num) %>% head()
+rxnorm_res_ex1[grepl('\\|', rxnorm_match)] %>% arrange(genc_id, row_num) %>% head() %>% mutate(genc_id = convert_to_sequence(genc_id), row_num = paste0("...", substr(row_num, 6, 7))) 
 ```
 
 ```{r, echo=FALSE, out.width = "80%", fig.align = "center"}
-knitr::include_graphics("figures/trim_sulf.PNG", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/rxnorm_query/fig2_trim_sulf.PNG", dpi = 200)
 ```
 
 <hr style="border-top: 0.5px solid #ccc; margin: 20px 0;">
@@ -253,7 +256,7 @@ Example 2:
 
 ```{r, eval = F}
 # Example 2 Complera
-rxnorm_res_ex2 <- gemini_rxnorm_query(
+rxnorm_res_ex2 <- rxnorm_query(
   db_con = db_con,
   drug_input = c("complera"),
   genc_ids = example_cohort
@@ -263,12 +266,12 @@ tail(rxnorm_res_ex2) #Last digits of encounter-level identifiers are hidden to p
 ```
 
 ```{r, eval=F, echo=F}
-#code to create figure below
-rxnorm_res_ex2 %>% mutate(genc_id = replace_last(genc_id, 3), row_num = replace_last(row_num, 3)) %>% tail()
+# code to create figure below
+rxnorm_res_ex2 %>% tail() %>% mutate(genc_id = convert_to_sequence(genc_id), row_num = paste0("...", substr(row_num, 6, 7)))
 ```
 
 ```{r, echo=FALSE, out.width = "80%", fig.align = "center"}
-knitr::include_graphics("figures/complera.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/rxnorm_query/fig3_complera.png", dpi = 200)
 ```
 
 
@@ -277,9 +280,9 @@ knitr::include_graphics("figures/complera.png", dpi = 200)
 
 2. Only drugs entered into `drug_input` or drugs under `class_input` selected by users will appear under `rxnorm_match` output (even if the pharmacy entry may contain an additional drug the user didn't search for).
 
-3. Rxnorm is a US-based tool. Although this is highly uncommon, drugs that are only prescribed in Canada (and not in the US) cannot be found by RxNorm. In addition, the current `gemini_rxnorm_query` tool does not support searches based on Canadian brand names. Please use the equivalent American brand name or generic name instead.
+3. Rxnorm is a US-based tool. Although this is highly uncommon, drugs that are only prescribed in Canada (and not in the US) cannot be found by RxNorm. In addition, the current `rxnorm_query` tool does not support searches based on Canadian brand names. Please use the equivalent American brand name or generic name instead.
 
-4. If `gemini_rxnorm_query` returns a warning saying "drug could not be found", please check the [RxNav website](https://mor.nlm.nih.gov/RxNav/) as sometimes there may be alternative searchable drug names based on the suggestion from the search bar. For example, Paxlovid returns the same warning, but when entered into RxNav, an auto-completion in the search bar shows "paxlovid 150 mg /100 mg dose pack". In this case, user should input "paxlovid 150 mg /100 mg dose pack" into `drug_name`.
+4. If `rxnorm_query` returns a warning saying "drug could not be found", please check the [RxNav website](https://mor.nlm.nih.gov/RxNav/) as sometimes there may be alternative searchable drug names based on the suggestion from the search bar. For example, Paxlovid returns the same warning, but when entered into RxNav, an auto-completion in the search bar shows "paxlovid 150 mg /100 mg dose pack". In this case, user should input "paxlovid 150 mg /100 mg dose pack" into `drug_name`.
 
 5. This function requires database version `drm_cleandb_v3_1_0` and newer. It is backward **incompatible** with database version before that, and `rxnorm_top_score` in the output has been deprecated.
 
@@ -303,7 +306,7 @@ RxNorm is not a perfect tool and may generate false-positive matches. A typical 
 
 ## Key parameters
 
-1. **`rxnorm_res`**: Object returned by `gemini_rxnorm_query`.
+1. **`rxnorm_res`**: Object returned by `rxnorm_query`.
 2. **`hierarchy`**: Flag whether to apply the predefined hierarchy filters to retain only highest-priority drug information per pharmacy row.
 3. **`cell_suppression`**: Flag whether to apply small cell suppression to the outputs.
 4. **`outpath`**: Optionally provide a file path where the results will be saved. File export is only permitted when `cell_suppression=TRUE`.
@@ -322,7 +325,7 @@ RxNorm is not a perfect tool and may generate false-positive matches. A typical 
 ## Insulin example
 
 ### Pre SME validation
-We have already run RxNorm search for insulin in the above section by `rxnorm_res <- gemini_rxnorm_query(...)`, we can now pass 'rxnorm_res' to the second function `prepare_pharm_for_validation` to process the search results into frequency tables for SME validation:
+We have already run RxNorm search for insulin in the above section by `rxnorm_res <- rxnorm_query(...)`, we can now pass 'rxnorm_res' to the second function `prepare_pharm_for_validation` to process the search results into frequency tables for SME validation:
 
 ```{r, eval = F}
 prep_res <- prepare_pharm_for_validation(
@@ -336,7 +339,7 @@ prep_res <- prepare_pharm_for_validation(
 
 Upon running, the user will be prompted to provide their username and password to establish a connection to the database hosting the Pharmacy Master Mapping file.
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/prepare_pharm_run.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/fig1_prepare_pharm_run.png", dpi = 200)
 ```
 
 
@@ -348,7 +351,7 @@ prep_res$sme[c(1:5, 40:45),]
 ```
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/freqtab_sme.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/fig2_freqtab_sme.png", dpi = 200)
 ```
 
 <details style="font-size: 13px;">
@@ -380,7 +383,7 @@ prep_res$analyst[c(1:5),]
 ```
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/freqtab_ana.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/fig3_freqtab_ana.png", dpi = 200)
 ```
 
 - Same table as prep_res$sme, with one additional column: `pharm_row_num`. 
@@ -396,7 +399,7 @@ Analyst should clearly explain to the SME how to use this table to conduct valid
   1. Columns highlighted in <span style="background-color: yellow;">yellow</span>: 'SME_confirm', 'SME_comment' should be filled out by the SME.
 <div style="padding-left: 40px;">
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/sme_valid_example_pre.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/fig4_sme_valid_example_pre.png", dpi = 200)
 ```
 </div>
 
@@ -425,7 +428,7 @@ fwrite(file.path(getwd(), "Vignettes/figures/pharmacy_mapping_for_SME_validated.
 ```
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/sme_valid_example.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/fig5_sme_valid_example.png", dpi = 200)
 ```
 
 ```
@@ -463,7 +466,7 @@ summary(saved_robject)
 ```
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/rds_object.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/fig5_rds_object.png", dpi = 200)
 ```
 </div>
 
@@ -614,7 +617,7 @@ prep_res_nohier <- prepare_pharm_for_validation(
 ```
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/prepare_pharm_nohier_run.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/fig7_prepare_pharm_nohier_run.png", dpi = 200)
 ```
 
 ```
@@ -633,7 +636,7 @@ rxnorm_res %>%
 ```
 
 ```{r, echo=FALSE, out.width = "80%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/nohier_example.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/fig8_nohier_example.png", dpi = 200)
 ```
 
 ```
@@ -642,10 +645,10 @@ knitr::include_graphics("figures/nohier_example.png", dpi = 200)
 
 ### Unmatched results
 
-Recall that with **return_unmatched=TRUE** in the previous `rxnorm_res <- gemini_rxnorm_query(...)` function, the returned object contains 2 items - matched and unmatched results. When `rxnorm_res` contains unmatched result, **`prepare_pharm_for_validation` will automatically detect its presence, and process them along with the matched result to facilitate SME validation.**
+Recall that with **return_unmatched=TRUE** in the previous `rxnorm_res <- rxnorm_query(...)` function, the returned object contains 2 items - matched and unmatched results. When `rxnorm_res` contains unmatched result, **`prepare_pharm_for_validation` will automatically detect its presence, and process them along with the matched result to facilitate SME validation.**
 
 ```{r, eval=F}
-rxnorm_res_unmatch <- gemini_rxnorm_query(
+rxnorm_res_unmatch <- rxnorm_query(
   db_con = db_con,
   drug_input = c("insulin"),
   genc_ids = example_cohort,
@@ -663,7 +666,7 @@ head(prep_res_unmatch$unmatched_rows, 8)
 ```
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/prepare_pharm_unmatch.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/fig9_prepare_pharm_unmatch.png", dpi = 200)
 ```
 
 
@@ -712,7 +715,7 @@ It is not uncommon for research projects to be interested only in drugs administ
 
 ```{r eval=F}
 ## Run rxnorm as usual
-rxnorm_res <- gemini_rxnorm_query(
+rxnorm_res <- rxnorm_query(
   db_con = db_con,
   drug_input = c("insulin"),
   genc_ids = example_cohort
@@ -815,7 +818,7 @@ Note that NOT all types of mappings need to be included to the master file. The 
 <br>**True positives** are drug entries RxNorm correctly identified. For example, the red-highlighted rows below are the true positives and should be added to the master file:
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/masterfile_collection_truepos.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/fig10_masterfile_collection_truepos.png", dpi = 200)
 ```
 
 ```
@@ -824,13 +827,13 @@ Essentially, they are the rows with `SME_confirm=TRUE`. Also note that, although
 
 Below is the expected formatted file, after the analyst filters mappings to true positive rows:
 ```{r, echo=FALSE, out.width = "80%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/masterfile_collection_truepos_clean.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/fig11_masterfile_collection_truepos_clean.png", dpi = 200)
 ```
 
 <br>**False negatives** are drug entries missed by RxNorm and found by examining unmatched rows. In the mock example below, the blue-highlighted row is an entry that RxNorm missed but was identified as insulin by the SME.
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/masterfile_collection_falseneg.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/fig12_masterfile_collection_falseneg.png", dpi = 200)
 ```
 
 ```
@@ -844,7 +847,7 @@ Analyst should perform additional preprocessing to append this entry to the fina
 
 Below is the expected *final* formatted file for database upload (containing both the true positives and the false negative entry):
 ```{r, echo=FALSE, out.width = "80%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/masterfile_collection_falseneg_clean.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/fig13_masterfile_collection_falseneg_clean.png", dpi = 200)
 ```
 
 </div>
@@ -948,11 +951,11 @@ add_validated_pharm_map(file.path(getwd(), "Vignettes/figures/pharmacy_mapping_f
 For example, if you do not filter for only SME_confirm == TRUE records, then the function will stop and ask you to resolve the invalid values. Invalid records are printed in the console - rows with SME_confirm as NA:
 
 ```{r, echo=FALSE, out.width = "80%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/add_validated_pharm_map_figures/figure_2_invalid_records_SME_not_TRUE_quit_error_message.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/add_validated_pharm_map/fig1_invalid_records_SME_not_TRUE_quit_error_message.png", dpi = 200)
 ```
 
 ```{r, echo=FALSE, out.width = "80%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/add_validated_pharm_map_figures/figure_1_invalid_records_SME_not_TRUE_table.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/add_validated_pharm_map/fig2_invalid_records_SME_not_TRUE_table.png", dpi = 200)
 ```
 </details>
 
@@ -960,23 +963,23 @@ knitr::include_graphics("figures/add_validated_pharm_map_figures/figure_1_invali
 <br> After all checks are passed, you will be prompted to enter your database Username, Password, and the Abbreviated Title of your project:
 
 ```{r, echo=FALSE, out.width = "80%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/add_validated_pharm_map_figures/figure_3_user_name_prompt.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/add_validated_pharm_map/fig3_user_name_prompt.png", dpi = 200)
 ```
 
 <br> Next, the function checks if any to-be-appended records already exist in the Pharmacy Master Mapping file. Records with 2 or more copies of the same mapping will not be appended. These records will be printed in the console for user to review and acknowledge:
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/add_validated_pharm_map_figures/figure_4_duplicate_mapping_entries_message_and_user_acknowledgement.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/add_validated_pharm_map/fig4_duplicate_mapping_entries_message_and_user_acknowledgement.png", dpi = 200)
 ```
 
 <br> Afterwards, the final set of new records that will be appended to the database is displayed in the Viewer for interactive review:
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/add_validated_pharm_map_figures/figure_5_viewer_of_rows_to_be_appended.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/add_validated_pharm_map/fig5_viewer_of_rows_to_be_appended.png", dpi = 200)
 ```
 
 <br>The user will be prompted one final time to confirm the addition. If 'confirm' is entered, the records will be added to the database. If 'confirm' is not entered, no records will be appended and the function will exit. 
 
 ```{r, echo=FALSE, out.width = "80%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/add_validated_pharm_map_figures/figure_6_final_confirm_prompt.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/add_validated_pharm_map/fig6_final_confirm_prompt.png", dpi = 200)
 ```
 
 
@@ -993,7 +996,7 @@ Here is an example of what happens when there is no `drug_group` in the SME vali
 ## create an example file without drug_group
 
 # read the previous cleaned pharmacy mapping file
-pharmacy_mapping_2 <- fread(file.path(getwd(), "Vignettes/figures/pharmacy_mapping_for_SME_validated_updated.csv"))
+pharmacy_mapping_2 <- fread(file.path(getwd(), "vignettes/figures/pharmacy_mapping/add_validated_pharm_map/pharmacy_mapping_for_SME_validated_updated.csv"))
 
 # create 3 new rows with unmapped names and no mapped drug_group (and let's assume for this example that the rxnorm_match was insulin)
 new_rows <- data.frame(
@@ -1008,24 +1011,24 @@ new_rows <- data.frame(
 pharmacy_mapping_2 <- rbind(pharmacy_mapping_2, new_rows)
 
 # fwrite a copy of file without drug_group
-fwrite(pharmacy_mapping_2, file.path(getwd(), "Vignettes/figures/pharmacy_mapping_for_SME_validated_updated_no_drug_group.csv"))
+fwrite(pharmacy_mapping_2, file.path(getwd(), "vignettes/figures/pharmacy_mapping/add_validated_pharm_map/pharmacy_mapping_for_SME_validated_updated_no_drug_group.csv"))
 ```
 
 ```{r, eval=FALSE, echo=T}
 ### run the function on the newly updated file
-add_validated_pharm_map(file.path(getwd(), "Vignettes/figures/pharmacy_mapping_for_SME_validated_updated_no_drug_group.csv"))
+add_validated_pharm_map(file.path(getwd(), "vignettes/figures/pharmacy_mapping/add_validated_pharm_map/pharmacy_mapping_for_SME_validated_updated_no_drug_group.csv"))
 ```
 
 <br>Unmapped `drug_group` records are printed in the console and users have the option to export them into a csv file for the SME to determine the `drug_group`. If 'yes' is entered, the user will be prompted to enter the path for exporting the csv file:
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/add_validated_pharm_map_figures/figure_8_no_drug_group_export_prompt_yes.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/add_validated_pharm_map/fig7_no_drug_group_export_prompt_yes.png", dpi = 200)
 ```
 
 <br>If the user enters 'no' to the prompt, then the function will proceed as usual without exporting the unmapped `drug_group` rows, and the unmapped `drug_group` rows will be created in the R environment as the object `missing_drug_group_rows`:
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/add_validated_pharm_map_figures/figure_9_no_drug_group_export_prompt_no.png", dpi = 200)
+knitr::include_graphics("figures/pharmacy_mapping/add_validated_pharm_map/fig8_no_drug_group_export_prompt_no.png", dpi = 200)
 ```
 
 After this step (output/save the unmapped rows), the function will proceed as usual: mapped rows will be appended to the database upon 'confirm', while unmapped rows will not.
