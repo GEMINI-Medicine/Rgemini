@@ -1,0 +1,1140 @@
+---
+title: "GEMINI Rxnorm and Pharmacy Mapping"
+output: 
+  rmarkdown::html_vignette:
+    number_sections: false
+    toc: true
+    
+vignette: >
+  %\VignetteIndexEntry{Rxnorm and Pharmacy Mapping}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\usepackage[utf8]{inputenc}
+---
+
+```{r, echo = FALSE, eval=FALSE, message = FALSE}
+knitr::opts_chunk$set(collapse = T, comment = "#>", message = FALSE, warning = FALSE)
+options(tibble.print_min = 4, tibble.print_max = 4, rmarkdown.html_vignette.check_title = FALSE)
+
+library(GEMINIpkg)
+library(RPostgreSQL)
+library(dplyr)
+library(getPass)
+library(readxl)
+library(data.table)
+
+setwd("~/repos/GEMINIpkg/") # Set working directory to your GEMINIpkg repo
+devtools::load_all(getwd())
+
+## Connect to the DB that holds the Pharmacy Data Table
+db_con <- DBI::dbConnect(
+  DBI::dbDriver("PostgreSQL"),
+  dbname = "drm_cleandb_v3_1_0",
+  host = "prime.smh.gemini-hpc.ca",
+  port = 5432,
+  user = getPass::getPass("Database Username:"),
+  password = getPass::getPass("Database password: ")
+)
+
+# ## Connect to the DB that holds the Pharmacy Master Mapping file
+# map_db_con <- DBI::dbConnect(
+#   DBI::dbDriver("PostgreSQL"),
+#   dbname = "pharmacy_mapping", # Note this is a different DB than the one above
+#   host = "prime.smh.gemini-hpc.ca",
+#   port = 5432,
+#   user = getPass::getPass("Database Username:"),
+#   password = getPass::getPass("Database password: ")
+# )
+
+replace_last <- function(x, digits=2) {
+  n <- nchar(x)
+  truncated <- ifelse(n > 3, paste0(substr(x, 1, n - digits), ".."), "...")
+  return(truncated)
+}
+```
+
+
+*  *  *  *
+
+# Introduction
+
+GEMINI receives raw pharmacy tables from participating sites. The GEMINI team developed the RxNorm function (`gemini_rxnorm_query`) to identify drugs of interest easier and faster, by using the RxNorm API from the National Library of Medicine. Please refer to our publication for details at [GEMINI-RxNorm](https://academic.oup.com/jamiaopen/article/6/3/ooad062/7239332).
+
+Our team also developed a function (`prepare_pharm_for_validation`) to subsequently process the matches identified by the RxNorm function, preparing them for validation by a Subject Matter Expert (SME), and a function (`add_validated_pharm_map`) to append the SME-validated matches into GEMINI's Pharmacy Master Mapping file.
+
+The series of functions is designed to support an analyst's workflow in identifying orders for specific drug(s) of interest from the GEMINI pharmacy data table. This vignette provides general guidelines for effectively using these functions. Analysts are encouraged to consult the function documentations for more detailed information.
+
+
+## Design Overview
+```{r, echo=FALSE, out.width = "100%", fig.align = "left", fig.cap="<div style='color:grey; font-size:12px; margin: 0px 0px 0px 20px'>Input-Output Flow Diagram of Three Pharmacy Functions. Items in orange denote steps requiring analyst or SME engagement. Pharmacy Master Mapping and Staging Pharmacy Mapping are database tables</div>" }
+knitr::include_graphics("figures/overall_design.png", dpi = 200 )
+```
+
+## Setup
+
+### Libraries and Database
+```{r, eval = F}
+library(GEMINIpkg)
+library(RPostgreSQL)
+library(dplyr)
+library(getPass)
+library(readxl)
+library(data.table)
+
+setwd("~/repos/GEMINIpkg/") # Set working directory to your GEMINIpkg repo
+
+## Connect to the DB that stores the Pharmacy Data Table
+db_con <- DBI::dbConnect(
+  DBI::dbDriver("PostgreSQL"),
+  dbname = "drm_cleandb_v3_1_0",
+  host = "prime.smh.gemini-hpc.ca",
+  port = 1234, #placeholder for real port number
+  user = getPass::getPass("Database Username:"),
+  password = getPass::getPass("Database password: ")
+)
+```
+
+<br><details>
+<summary><span style='color:blue; font-size:13px; margin-top:10px;'>Note: Pharmacy master mapping tables are stored in a different database from the pharmacy data. Expand to see how to query them.</span></summary>
+
+The pharmacy mapping files (`pharmacy_master_mapping`, `staging.working_pharmacy_mapping`) are stored in the `pharmacy_mapping` database. While most processes are automated such that analysts don't interact with these mapping files directly, knowing how to query them to explore existing mappings can be handy:
+```{r, eval=F}
+## Connect to the DB that stores the Pharmacy Master Mapping file
+map_db_con <- DBI::dbConnect(
+  DBI::dbDriver("PostgreSQL"),
+  dbname = "pharmacy_mapping", # note this is a different DB
+  host = "prime.smh.gemini-hpc.ca",
+  port = 1234, # placeholder for real port number
+  user = getPass::getPass("Database Username:"),
+  password = getPass::getPass("Database password: ")
+)
+
+main <- dbGetQuery(map_db_con,"SELECT * FROM pharmacy_master_mapping;")
+staging <- dbGetQuery(map_db_con, "SELECT * FROM staging.working_pharmacy_mapping;")
+```
+</details>
+
+### Guiding example: Insulin
+
+In this vignette, we will use the hypothetical scenario below as a basic guiding example. Each section will demonstrate how the functions can be applied at different steps of the workflow to address this question:
+
+<div style="background-color: #ede0a3; padding: 10px 15px; margin: 10px 0;">
+**Among encounters with a discharge date between January 1 and March 31, 2022, what proportion had a pharmacy order for 'insulin' during their hospital stay?**
+</div>
+
+```{r, eval = F}
+example_cohort <- dbGetQuery(
+  db_con,
+  "SELECT genc_id
+            FROM admdad
+            WHERE discharge_date_time >= '2022-01-01' AND discharge_date_time <= '2022-03-31';") %>%
+  pull(genc_id)
+```
+
+Note: For the purpose of this vignette, we assume that the study cohort has complete pharmacy data coverage. In practice, analysts should check whether the study cohort has pharmacy data coverage. See [*data_coverage vignette*](TO BE INSERTED WHEN AVAILABLE) for details.
+
+*  *  *  *
+
+# Using `gemini_rxnorm_query`
+
+The **`gemini_rxnorm_query`** function retrieves rows from the GEMINI pharmacy data matching the user-specified drug term(s).
+
+The function returns output in a **long format** with columns: `genc_id`, `search_type` (which pharmacy column was found to have a match), `raw_input` (value from that search_type), `rxnorm_match` (which drug(s) of interest is it matched with).
+
+Users can clearly identify which column is found to be a match, and it only requires SME to validate one column at a time as opposed to upto 6 columns at a time with the previous function.
+
+For users with experience with the previous version of gemini_rxnorm_query, please note the following changes:
+1. The function has changed its output from before. Previously, it returned all pharmacy rows (format **wide**) of interest, and now they are in (format **long**)
+2. If user input both `drug_input` and `class_input`, a union of these two independent searches will be done instead of an intersection in the previous version.
+
+## Key parameters
+
+There are 5 primary parameters in the function.  
+
+1. **`drug_input`**: This should be a vector with generic drug names. While text values will be normalized (to lowercase, singularized, etc.) by subsequent functions, drug names can sometimes be tricky to singularize. Therefore, make sure to use the singular form (e.g, input "insulin", not "insulins") as this needs to comply with what is already stored in the master file. We also **recommend** to check the master file for previously mapped drugs ('rxnorm_match' & 'drug_group') and follow the same naming convention for your input if a match exists.
+2. **`class_input`**: This should be a vector with ATC codes or names of drug classes. For example for insulin, user can input ATC class "A10AB" or class name "Insulins and analogues for injection, fast-acting".
+3. **`return_unmatched`**: Default is FALSE and the function only returns rows matching the drug(s) of interest (in long format). If set to TRUE, the function will return a list that additionally contains `unmatched_rows` containing pharmacy rows that do not match the `drug_input` (in wide format).
+4. **`genc_ids`**: Optional vector of `genc_ids` to search against. If no input is provided, all `genc_ids` will be included. When `return_unmatched` is TRUE the function returns an error if no `genc_ids` input is provided because returning the `unmatched_rows` for all pharmacy entries will result in memory issues.
+5. **`return_drug_list`**: Optional parameter allowing users to obtain a list of drugs (rxcui, drug_name) when running `gemini_rxnorm_query` with `class_input`. Default is FALSE.
+
+**`NOTE`**:
+
+- There are 3 different ways to input your drug identifiers into this function:
+    1.  Input a vector of `drug_input`: This is the **recommended way** as it does not introduce complexity. We recommand using `drug_input` solely, instead of `class_input` or a combination of both `drug_input` and `class_input`.
+    2.  Input a vector of `class_input`: The function will prompt user to confirm a list of ATC classes and the drugs associated with the ATC classes. Users are indirectly querying based on drug names and heavily rely on the drug name to ATC relationship from rxnorm.
+        +  If `class_input` is used, it is best to provide ATC codes at the level between 2 to 4 according to the Anatomical Therapeutic Chemical Classification system by the World Health Organization. See [WHO ATC](https://www.who.int/tools/atc-ddd-toolkit/atc-classification) for details. ATC codes at level 1 (e.g. "J: Antiinfective for systemic use") lacks specificity. ATC codes at level 5 (e.g. "J01CA04: amoxicillin") are too detailed that they cannot be searched as a drug class in `class_input`
+        +  When `class_input` is used, the function internally converts the drug classes into a list of drug names and then queries based on the drug names. We recommand users to turn on `return_drug_list` when using `class_input`. This will output a list of drug names associating with the `class_input`, allowing users to confirm the list with an SME. 
+    3.  Input both `drug_input` and `class_input`: Previously an **intersection** of these two independent searches (one based on `drug_input` and one based on `class_input`) will be used. In this version, a **union** of these two searches are used instead.
+
+## Insulin example
+
+```{r, eval = F}
+rxnorm_res <- gemini_rxnorm_query(
+  db_con = db_con, # DB contains the Pharmacy Data
+  drug_input = c("insulin"),
+  genc_ids = example_cohort
+)
+
+head(rxnorm_res %>%
+  arrange(genc_id, row_num)) # some digits of encounter-level identifiers are hidden to protect privacy.
+```
+
+```{r, eval=F, echo=F}
+# code to create figure below
+rxnorm_res %>%
+  arrange(genc_id, row_num) %>%
+  mutate(genc_id = replace_last(genc_id, 3), row_num = paste0("...", substr(row_num, 6, 7))) %>%
+  head()
+```
+
+```{r, echo=FALSE, out.width = "80%", fig.align = "center"}
+knitr::include_graphics("figures/Insulin_simple_example.PNG", dpi = 100)
+```
+
+## Searching for combined drugs
+
+The search for drugs commonly used in combination or drugs with mulitple active components is a bit more complex. There are 2 **complementary** strategies to search for combined drugs.
+
+1. Search by the individual drug name or the individual active component name. Example 1.
+2. Search by the brand name / generic name of the combined drug (if available). Example 2.
+
+Depending on the drug(s) of interest, RxNorm's sensitivity in identifying hits can be very different for the 2 methods. Users should explore both strategies to determine what works best for their needs.
+
+Analysts can consult with the project SME for brand name / generic name of the combined drug. Analyst can also input the components to [RxNav website](https://mor.nlm.nih.gov/RxNav/) to search for brand name/ generic name associated with the combination.
+
+
+<hr style="border-top: 0.5px solid #ccc; margin: 20px 0;">
+Example 1:
+
+-  Drugs of interest: drugs using 'Trimethoprim' and 'Sulfamethoxazole' in combination.
+
+-  User should input c("trimethoprim", "sulfamethoxazole") into `drug_input`, instead of combining the two drugs into one customized entry like "trimethoprim-sulfamethoxazole" or "trimethoprim/sulfamethoxazole".
+
+-  The search will return pharmacy orders matching **one or more** of the two drugs.
+
+-  To narrow down to orders where the two drugs are used in combination, the user can then use `grepl` to identify results with "|" to find matches where both trimethoprim and sulfamethoxazole are found.
+
+-  This combination is available under different brand names. If the user has a list of these brand names, they can perform a second search on the brand names (see Example 2).
+
+```{r, eval = F}
+# Example 1 Trimethoprim and Sulfamethoxazole
+rxnorm_res_ex1 <- gemini_rxnorm_query(
+  db_con = db_con,
+  drug_input = c("trimethoprim", "sulfamethoxazole"),
+  genc_ids = example_cohort
+)
+
+rxnorm_res_ex1[grepl("\\|", rxnorm_match)] %>%
+  arrange(genc_id, row_num) %>%
+  head() # Last digits of encounter-level identifiers are hidden to protect privacy.
+```
+
+```{r, eval=F, echo=F}
+#code to create figure below
+rxnorm_res_ex1[grepl('\\|', rxnorm_match)] %>% mutate(genc_id = replace_last(genc_id, 3), row_num = replace_last(row_num, 3)) %>% arrange(genc_id, row_num) %>% head()
+```
+
+```{r, echo=FALSE, out.width = "80%", fig.align = "center"}
+knitr::include_graphics("figures/trim_sulf.PNG", dpi = 200)
+```
+
+<hr style="border-top: 0.5px solid #ccc; margin: 20px 0;">
+
+Example 2:
+
+-  Drugs of interest: a brand name drug Complera.
+
+-  This drug contains three active components: emtricitabine, rilpivirine, and tenofovir disoproxil fumarate.
+
+-  This combination of the three active components is only available under the brand name 'Complera'.
+
+-  User should input c("complera") in `drug_input`.
+
+-  User can perform a second search on the individual ingrediants (see Example 1) to potentially find additional hits. For drugs like this one, which are available under one specific brand name, searching by individual components can be less sensitive than directly searching the brand name.
+
+```{r, eval = F}
+# Example 2 Complera
+rxnorm_res_ex2 <- gemini_rxnorm_query(
+  db_con = db_con,
+  drug_input = c("complera"),
+  genc_ids = example_cohort
+)
+
+tail(rxnorm_res_ex2) #Last digits of encounter-level identifiers are hidden to protect privacy.
+```
+
+```{r, eval=F, echo=F}
+#code to create figure below
+rxnorm_res_ex2 %>% mutate(genc_id = replace_last(genc_id, 3), row_num = replace_last(row_num, 3)) %>% tail()
+```
+
+```{r, echo=FALSE, out.width = "80%", fig.align = "center"}
+knitr::include_graphics("figures/complera.png", dpi = 200)
+```
+
+
+## Important notes
+1. If a user input more than one drugs in `drug_input` or enter a class `class_input`, under `rxnorm_match` a pipe "|" may appear to separate more than one drugs which indicates that each entry (cell) from the pharmacy table is found to link to these drugs. 
+
+2. Only drugs entered into `drug_input` or drugs under `class_input` selected by users will appear under `rxnorm_match` output (even if the pharmacy entry may contain an additional drug the user didn't search for).
+
+3. Rxnorm is a US-based tool. Although this is highly uncommon, drugs that are only prescribed in Canada (and not in the US) cannot be found by RxNorm. In addition, the current `gemini_rxnorm_query` tool does not support searches based on Canadian brand names. Please use the equivalent American brand name or generic name instead.
+
+4. If `gemini_rxnorm_query` returns a warning saying "drug could not be found", please check the [RxNav website](https://mor.nlm.nih.gov/RxNav/) as sometimes there may be alternative searchable drug names based on the suggestion from the search bar. For example, Paxlovid returns the same warning, but when entered into RxNav, an auto-completion in the search bar shows "paxlovid 150 mg /100 mg dose pack". In this case, user should input "paxlovid 150 mg /100 mg dose pack" into `drug_name`.
+
+5. This function requires database version `drm_cleandb_v3_1_0` and newer. It is backward **incompatible** with database version before that, and `rxnorm_top_score` in the output has been deprecated.
+
+
+*  *  *  *
+
+
+# Using `prepare_pharm_for_validation`
+
+RxNorm is not a perfect tool and may generate false-positive matches. A typical workflow we recommend is consulting a SME to validate the results. This could be physician, pharmacist, or anybody with knowledge of medication. They can ensure that the pharmacy records identified by RxNorm are indeed accurate.
+
+**`prepare_pharm_for_validation`** was developed to streamline this validation process. It helps analysts to process the RxNorm results into standardized frequency tables for validation by the SME and subsequent analyses.
+
+3 key advantages of using this function:
+
+- It compares the RxNorm results against previously validated mappings in the Pharmacy Master Mapping file, flagging matches that had already been validated before by other projects. This allows SMEs to focus primarily on new matches, streamlining the validation process.
+
+- Pharmacy data includes multiple fields containing drug information, which can contain redundant or inconsistent drug information for the same pharmacy order. The function provides a standardized way to handle these issues by applying hierarchical rules to prioritize matches from certain fields over others. The hierarchical rules are predefined by GEMINI SMEs.
+
+- It performs small cell suppression on data associated with less than 6 encounters to protect privacy.
+
+## Key parameters
+
+1. **`rxnorm_res`**: Object returned by `gemini_rxnorm_query`.
+2. **`hierarchy`**: Flag whether to apply the predefined hierarchy filters to retain only highest-priority drug information per pharmacy row.
+3. **`cell_suppression`**: Flag whether to apply small cell suppression to the outputs.
+4. **`outpath`**: Optionally provide a file path where the results will be saved. File export is only permitted when `cell_suppression=TRUE`.
+
+**`NOTE`**: 
+
+- The hierarchy rules follow this order:
+<div style="background-color: #d9e7e5; padding:4px; font-size:13px;">
+ **med_id_generic_name_raw > med_id_brand_name_raw > med_id_hospital_code_raw > med_id_din > med_id_ndc > iv_component_type**
+</div>
+
+- For each pharmacy row (identified by `row_num` of the pharmacy table), only the highest-priority column that was matched to the drug(s) of interest is retained as the "raw_input" for that row. **The default `hierarchy=TRUE` is highly recommended**. Only set to `FALSE` if user expects to apply non-standard hierarchy rules and conduct further detailed investigations.
+
+- With the hierarchy rule in place, it would be rare for drug information from the lowest priority column to show up in the results (i.e. iv_component_type). When that happens, it means that no drug match was found for the other 5 higher priority columns. However, it is possible that the higher priority columns suggests the pharmacy order is for a diffferent drug (not the drug of your interest): e.g., med_id_generic_name_raw = 'trimethoprim', iv_component_type = 'insulin'. Therefore, when there are iv_component_type entries in the returned results, analyst should inspect the original pharmacy order corresponding to those entries, to ensure the drug info at higher priority columns are NOT pointing to a different drug.
+
+## Insulin example
+
+### Pre SME validation
+We have already run RxNorm search for insulin in the above section by `rxnorm_res <- gemini_rxnorm_query(...)`, we can now pass 'rxnorm_res' to the second function `prepare_pharm_for_validation` to process the search results into frequency tables for SME validation:
+
+```{r, eval = F}
+prep_res <- prepare_pharm_for_validation(
+  rxnorm_res = rxnorm_res,
+  hierarchy = T,
+  cell_suppression = T,
+  outpath = "path/to/output/folder/"
+)
+```
+
+
+Upon running, the user will be prompted to provide their username and password to establish a connection to the database hosting the Pharmacy Master Mapping file.
+```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/prepare_pharm_run.png", dpi = 200)
+```
+
+
+<br>The returned object **`prep_res` is a list containing 2 data tables** named 'sme' and 'analyst':
+
+<br>**$sme** is the frequency table to be shared with the SME for validation:
+```{r, eval = F}
+prep_res$sme[c(1:5, 40:45),]
+```
+
+```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/freqtab_sme.png", dpi = 200)
+```
+
+<details style="font-size: 13px;">
+<summary><span style='color:blue; font-size:13px; margin-left: 20px;'>Expand to understand the table</span></summary>
+
+- **`row_id`**: a unique identifier for each row of the table. It helps analysts to track entries in case of accidental row deletions during the validation process.
+- **`count`**: number of unique genc_ids associating with each row. With cell_suppression = T, small counts less than 6 encounters are suppressed to "<6".
+- **`search_type`, `raw_input`, `rxnorm_match`**: distinct rxnorm results.
+- **`drug_group`**: general classification of the drug in `rxnorm_match` found in the Pharmacy Master Mapping file. `drug_group = NA` for drugs that have not been previously mapped.
+- **`times_validated`**: number of times each `raw_input ~ rxnorm_match` match has previously been validated (0: never been validated, 1: validated by one project, 2+: validated by two or more projects).
+- **`SME_confirm`, `SME_comment`**: fields for SME to fill out during validation.
+- Note that text values in `search_type`, `raw_input`, `rxnorm_match` and `drug_group` have been **standardized**. The function converts them to lowercase, singularizes certain fiels (`rxnorm_match` and `drug_group` only), and handles special charaters & leading/trailing whitespaces. See in-package function `normalize_text` for details.
+
+</details>
+<br></br>
+
+```{r, eval=F, echo=F}
+# code to produce figure below
+prep_res$analyst$pharm_row_num <- lapply(prep_res$analyst$pharm_row_num, function(x) {
+  sapply(x, replace_last, USE.NAMES = F)
+})
+```
+
+
+**$analyst** is the frequency table for analyst's own use:
+
+```{r, eval=F}
+prep_res$analyst[c(1:5),]
+```
+
+```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/freqtab_ana.png", dpi = 200)
+```
+
+- Same table as prep_res$sme, with one additional column: `pharm_row_num`. 
+- **`pharm_row_num` is a LIST storing `row_num`** - a unique identifier for each row of the pharmacy table. Analysts will need these values to retrieve encounter-level data from the pharmacy table after SME-validation. See [*Guidelines for post-validation*](#section-post-valid). Since `pharm_row_num` is encounter-level data, this table is restricted to internal use only. **Do Not Share Outside The Internal Environment**. For illustration purposes of the Vignette, the last digits of `pharm_row_num` are hidden.
+
+
+### SME validation
+
+When the user specifies a folder path to `outpath`, a file named `pharmacy_mapping_for_SME.xlsx` is exported to the corresponding folder. This file corresponds to the frequency table in `prep_res$sme` in the user's GlobalEnv. It is intended for sharing with the SME for validation.
+
+Analyst should clearly explain to the SME how to use this table to conduct validation. Below are the key guidelines:
+
+  1. Columns highlighted in <span style="background-color: yellow;">yellow</span>: 'SME_confirm', 'SME_comment' should be filled out by the SME.
+<div style="padding-left: 40px;">
+```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/sme_valid_example_pre.png", dpi = 200)
+```
+</div>
+
+  2. *SME_confirm* should be a logical value of TRUE or FALSE. Input TRUE to indicate that the SME verifies that `raw_input` matches `rxnorm_match` (i.e. information in <span style="background-color: #ae8dda;">purple-highlighted columns</span> are correct), otherwise FALSE. For simplicity, you could instruct the SME to enter 'T' for correct matches and leave cells empty otherwise, then you could fill out the missing entries with 'F'.
+
+  3. *SME_comment* is intended for SME to add comments, ask questions, or flag exclusions. Even with a valid rxnorm match (`SME_confirm = T`), the SME may still want to exclude a drug from the study for specific reasons. This column is especially useful for the SME to flag such exclusions.
+  
+  4. While analysts may modify the table or add extra columns to meet specific project needs, *SME_confirm* should always be included. And analysts should communicate clearly to SME the distinction between rxnorm validation and cohort inclusion.
+  
+  5. *times_validated* allows SME to prioritize verifying entries that haven't been validated yet (times_validated = 0). However, SME should also review previously validated entries and flag any errors they find.
+
+  6. In cases where *drug_group* is missing: If applicable to the project, the SME should complete the *drug_group* column manually. Otherwise, the analyst can reach out to GEMINI's internal SME to fill it out later, which is **required** when adding the validated mappings to the database (see [*Using add_validated_pharm_map*](#section-db-upload)).
+
+  7. No rows should be deleted from the table.
+
+
+<br>Below is an example of the expected results after SME validation:
+
+```{r, eval=F, echo=F}
+# The code below is used to generate a mock SME validated file
+prep_res$sme %>% mutate(
+  SME_confirm = ifelse(row_id %in% c(1:3, 5:30), "T", "F"), # rows with correct "raw_input ~ rxnorm_match"
+  SME_comment = ifelse(row_id %in% c(6, 14, 30), "exclude from cohort", NA) # rows SME commented
+)
+fwrite(file.path(getwd(), "Vignettes/figures/pharmacy_mapping_for_SME_validated.csv"))
+```
+
+```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/sme_valid_example.png", dpi = 200)
+```
+
+```
+- The SME entered 'T' to confirm that "insulin regular" correctly matches "insulin"; entered 'F' to indicate that "tazocin (fk) 4.5g in 100ml ns" does not match "insulin".
+- The SME marked the drug in the 5th row as "exclude from cohort" to indicate that: although `raw_input` matches `rxnorm_match`, we want to exclude this drug entry from the study cohort.
+```
+
+
+### Post SME validation {#section-post-valid}
+
+Upon receiving the validated mapping from the SME, analysts should at least perform the following essential checks:
+
+- Any accidental row deletion? Use `row_id` to detect and track deletions.
+- Did the SME make changes and overwrite the rxnorm results?
+- Is `SME_confirm` fully populated? If not, fill in the missing values or consult with the SME.
+- Review `SME_comment`, address SME's questions, clarify uncertainties, and note any cohort exclusion requirements.
+
+After completing sanity checks, analyst should save the cleaned validated mapping to folder and proceed to address the study question.
+
+<hr style="border-top: 0.5px solid #ccc; margin: 20px 0;">
+Recall the goal of the Insluin study - determine the proportion of encounters had an order for 'insulin' during their hospital stay. 
+
+Now, the SME has confirmed drug entries corresponding to 'insulin', and also indicated a few drug entries to be excluded from the study (despite correct rxnorm match), the next steps are to identify a list of encounters with drug entries matching these criteria.
+
+**Steps to identify encounters prescribed with 'insulin' of interest to the study:**
+
+<p style="padding-left: 35px; margin-top:20px;">**STEP 1.** Load the prepared pharmacy R object.</p>
+
+<div style="padding-left: 40px; font-size:13px"> Since the analyst specified a folder path to `outpath` when running `prepare_pharm_for_validation(...)`, an R object named `pharm_res_INTERNAL_USE_ONLY.rds` was saved to folder upon running `prepare_pharm_for_validation`. This R object is equivalent to `prep_res`. The R object offers a convenient way for analyst to resume analysis after SME validation without the need to re-run the time-consuming steps `gemini-rxnorm-query` & `prepare_pharm_for_validation`:</div>
+
+<div style="padding-left: 40px">
+```{r, eval=F}
+saved_robject <- readRDS(file.path("path/to/output/folder/pharm_res_INTERNAL_USE_ONLY.rds"))
+summary(saved_robject)
+```
+
+```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/rds_object.png", dpi = 200)
+```
+</div>
+
+<p style="padding-left: 35px; margin-top:20px;">**STEP 2.** Cross-reference with the validation information to identify the list of pharmacy orders (`pharm_row_num`) of interest to the study.</p>
+
+<div style="padding-left: 40px">
+```{r, eval=F}
+###################################################
+# Read in cleaned SME validated mapping file from folder
+sme_valid_clean <- read.csv(file.path(getwd(), "Vignettes/figures/pharmacy_mapping_for_SME_validated.csv"))
+
+head(sme_valid_clean)
+# #   row_id count             search_type                     raw_input rxnorm_match drug_group times_validated SME_confirm         SME_comment
+# # 1      1  1271 med_id_generic_name_raw               insulin regular      insulin    insulin              2+        TRUE                    
+# # 2      2   722 med_id_generic_name_raw             insulin humulin r      insulin    insulin              2+        TRUE                    
+# # 3      3   671 med_id_generic_name_raw tazocin (fk) 4.5g in 100ml ns      insulin    insulin               0       FALSE                    
+# # 4      4   600   med_id_brand_name_raw                         lilly      insulin    insulin               0        TRUE                    
+# # 5      5   332              med_id_din                      00586714      insulin    insulin               0        TRUE exclude from cohort
+
+###################################################
+# Filter SME-validated frequency table to rows of interest
+insulin <- sme_valid_clean %>%
+  filter(SME_confirm == T) %>% # filter drug entries to validated matches
+  filter(SME_comment != "exclude from cohort") # exclude entries not relevant for the study
+
+###################################################
+# Identify `pharm_row_num` corresponding to drug(s) of interest in the R object saved to analyst's folder
+
+## Extract `row_id` corresponding to drug(s) of interest,
+##  since `row_id` is a consistent identifier pre- post- validation.
+##  If for some reasons, `row_id` was altered unexpectedly, use `raw_input` instead.
+insulin_row_id <- insulin$row_id 
+
+insulin_pharm_row_num <- saved_robject$analyst %>%
+  filter(row_id %in% insulin_row_id) %>%
+  pull(pharm_row_num) %>% # note that `pharm_row_num` is stored as list
+  unlist() # unlist to covert to vector
+
+insulin_pharm_row_num[1:5] #Last digits of encounter-level identifiers are hidden to protect privacy.
+# [1] "547810.." "547810.." "547812.." "547866.." "547866.."
+```
+</div>
+
+<p style="padding-left: 35px; margin-top:20px;">**STEP 3.** Identify encounters (`genc_id`) corresponding to the pharmacy orders.</p>
+
+  <div style="padding-left: 40px; font-size:13px">**$pharm_row_num** values (e.g. 547810.., 547871..) correspond to **row_num** of the pharmacy table, which is the unique identifier for *each pharmacy row*. Therefore, analysts can use them to trace each entry back to the original pharmacy table to identify genc_ids with **at least one insulin order throughout hospitalization**:</div>
+
+<div style="padding-left: 40px">
+```{r, eval=F}
+# Send a list of row_num as a temp table in case the number of row_num is very long,
+# since dbGetQuery has a character limit.
+
+insulin_pharm_row_num <- data.table(row_num=insulin_pharm_row_num) #ensure it's data.frame
+
+dbWritetable(db_con, c("pg_temp", "temp_row_num"), insulin_pharm_row_num,
+  temporary = T, row.names = F) # write the row_num into a temp table
+
+query <- paste0("SELECT p.*
+                 FROM pharmacy p
+                 INNER JOIN temp_row_num t on t.row_num=p.row_num;")
+pharm_tab <- dbGetQuery(db_con, query)  # pull pharm rows containing validated drugs
+
+# Encounters associated with the validated insulin entries:
+insulin_cohort <- unique(pharm_tab$genc_id) # i.e. genc_ids with at least 1 insulin prescription order in the pharmacy table
+
+insulin_cohort[1:5] # Last digits of encounter-level identifiers are hidden to protect privacy.
+# [1] 28937... 28938... 28938... 28938... 28940...
+
+length(insulin_cohort)
+# [1] 4088 
+## A total 4088 encounters (7.7%) in the example cohort had
+## at least 1 insulin order during their hospital stay,
+## assuming cohort has pharamcy data coverage.
+
+```
+</div>
+
+<br><div style="padding-left: 40px; font-size:13px">In the pharmacy table, one encounter can have multiple pharmacy orders. **row_num** is, therefore, also useful for *tracing order-level information*. For example, instead of identifying encounters with at least 1 insulin prescription, the study is now interested in identifying encounters who had **at least one insulin prescribed during the first 24 hours of inpatient admission**. The analyst can use row number along with order date-time to refine the cohort:</div>
+
+<div style="padding-left: 40px">
+```{r, eval=F}
+# Pull pharm rows containing validated drugs
+dbWritetable(db_con, c("pg_temp", "temp_row_num"), insulin_pharm_row_num,
+  temporary = T, row.names = F) # write the row_num into a temptable
+
+query <- paste0("SELECT p.*
+                 FROM pharmacy p
+                 INNER JOIN temp_row_num t on t.row_num=p.row_num;")
+pharm_tab <- dbGetQuery(db_con, query)
+
+# Pull admission_date_time for the study cohort
+adm_query <- paste0(
+  "SELECT genc_id, admission_date_time
+   FROM admdad
+   WHERE genc_id IN (", # this approach only suitable for a small number of genc_ids,
+  paste(example_cohort, collapse = ", "), ");"#if cohort is large, send the list of genc_id as a temp table instead
+) 
+adm_tab <- dbGetQuery(db_con, adm_query) %>% 
+  mutate(admission_date_time = ymd_hm(admission_date_time))
+
+# Impute missing time in `med_start_date_time` with 00h:00m
+pharm_tab <- pharm_tab %>%
+  mutate(med_start_date_time = parse_date_time(med_start_date_time,
+    order = c("ymd HM", "ymd")
+  ))
+
+# Encounters with validated insulin entries within the first 24 hours of inpatient admission:
+insulin_24hr_cohort <- pharm_tab %>%
+  left_join(adm_tab, by = "genc_id") %>%
+  filter(
+    med_start_date_time <= admission_date_time + hours(24),
+    med_start_date_time >= admission_date_time
+  ) %>%
+  pull(genc_id) %>%
+  unique()
+
+insulin_24hr_cohort[1:5]
+# [1] 28937... 28938... 28938... 28940... 28942...
+
+length(insulin_24hr_cohort)
+# [1] 1982 
+## A total 1982 encounters (3.7%) in the example cohort had
+## at least 1 insulin order din their first 24 hours of admission,
+## assuming cohort has pharamcy data coverage.
+```
+</div>
+
+## More complex scenarios
+
+### Setting hierachy to FALSE
+
+The pharmacy table has multiple fields containing drug information. For a single pharmacy order, RxNorm may match these fields to the same drug or different drugs. 
+
+Setting **hierarchy=TRUE** prioritizes fields to ensure a one-to-one match (i.e. one order to one drug) to reduce unnecessary mapping efforts. When **hierarchy=FALSE**, all matching entries are returned without applying hierarchy rules to the drug-containing fields. While setting hierarchy to FALSE is generally discouraged, it may be useful for project-specific scenarios requiring no or non-standard hierarchy rules. To apply customized hierarchy rules, analysts could refer to the detailed code logic of applying hierarchical filters in `prepare_pharm_for_validation` function.
+
+<hr style="border-top: 0.5px solid #ccc; margin: 20px 0;">
+Insulin example, `hierarchy=T` vs. `hierarchy=F`:
+```{r, eval=F}
+prep_res <- prepare_pharm_for_validation(
+  rxnorm_res = rxnorm_res,
+  hierarchy = T,
+  cell_suppression = T)
+
+prep_res_nohier <- prepare_pharm_for_validation(
+  rxnorm_res = rxnorm_res,
+  hierarchy = F,
+  cell_suppression = T)
+```
+
+```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/prepare_pharm_nohier_run.png", dpi = 200)
+```
+
+```
+- When `hierarchy=F` the most frequent raw_input is DIN number "00586714". 
+- When `hierarchy=T` DIN number "00586714" is not the most frequent value because the function now ignores any DIN matches for pharmacy entries that have already been matched to "insulin" based on `med_id_generic_name_raw`, `med_id_brand_name_raw`, or `med_id_hospital_code_raw` (which are prioritized according to the hierarchy rules).
+- Below is a mock example of ONE pharmacy order from ONE encounter:
+```
+```{r, eval=F, echo=F}
+# code to generate result figure below
+rxnorm_res %>%
+  filter(row_num == 1695237) %>%
+  mutate(
+    genc_id = "fake_id 1", # for purpose of the vignette, hide last digits of genc_id to protect privacy
+    row_num = paste0("...", substr(row_num, 6,7)) # for purpose of the vignette, hide last digits of row_num to protect privacy
+  )
+```
+
+```{r, echo=FALSE, out.width = "80%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/nohier_example.png", dpi = 200)
+```
+
+```
+- For this order, the columns `med_id_generic_name_raw`, `med_id_brand_name_raw`, and `med_id_din` each contain drug information, all of which are matched to "insulin" by RxNorm. When `hierarchy=T`, only the row with "med_id_generic_name_raw = insulin regular 100 unit/mL vial (1,000 unit/10 mL)" is included in the result frequency table, while other rows are dropped, ensuring a one-to-one match. When `hierarchy=F` all rows will be included, therefore, the redundant information "med_id_din = 00586714" and "med_id_brand_name_raw = Novolin Toronto ; Humulin R" are returned and contribute to the frequency count.
+```
+
+### Unmatched results
+
+Recall that with **return_unmatched=TRUE** in the previous `rxnorm_res <- gemini_rxnorm_query(...)` function, the returned object contains 2 items - matched and unmatched results. When `rxnorm_res` contains unmatched result, **`prepare_pharm_for_validation` will automatically detect its presence, and process them along with the matched result to facilitate SME validation.**
+
+```{r, eval=F}
+rxnorm_res_unmatch <- gemini_rxnorm_query(
+  db_con = db_con,
+  drug_input = c("insulin"),
+  genc_ids = example_cohort,
+  return_unmatched = T)
+
+prep_res_unmatch <- prepare_pharm_for_validation(
+  rxnorm_res = rxnorm_res_unmatch,
+  hierarchy = T,
+  cell_suppression = T)
+
+names(prep_res_unmatch)
+# [1] "sme" "analyst" "unmatched_rows"
+
+head(prep_res_unmatch$unmatched_rows, 8)
+```
+
+```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/prepare_pharm_unmatch.png", dpi = 200)
+```
+
+
+- An additional result table **prep_res_unmatch$unmatched_rows** is returned. This table is saved as the second tab of the .xlsx file when an outpath is provided.
+- **$unmatched_rows** is a frequency table of all drug entries that did not match to the drug(s) of interest.
+- *historically_mapped_to_drug* and *historically_mapped_to_drug_group* are historical mapping information based on a search against the existing mappings in the master file. Distinct mappings from different projects are separated by '||'. See function documentation for details.
+  <div style="padding-left: 40px; padding-top:8px; font-size:12px"> e.g. Drug information for the top 8 rows have not been previously mapped, except for "row_id=7", which was mapped to drug "dalteparin" and drug_group "low molecular weight heparin". </div>
+- Note that this secondary search is **a broad search against all mapped drugs, and it is NOT specific to the user's drug(s) of interest**. Users may use regex search to identify their drug(s) of interest.
+
+<details style='padding-left:80px; margin-top:-10px; font-size:11px'>
+<summary><span style='color:grey; font-size:12px;'>Expand to see an example</span></summary>
+
+```{r, eval=F}
+prep_res_unmatch$unmatched_rows %>%
+  filter(grepl("insulin", historically_mapped_to_drug) | grepl("insulin", historically_mapped_to_drug_group)) %>%
+  head()
+
+### Code below illustrates how to extract original pharamcy data based on info in the frequency table
+## Recall that prepare_pharm_for_validation() standardizes text values in rxnorm_res, so we need to do the same here before searching for matches
+## this can be achieved by applying the utils function `normalize_text()` in the package
+# rxnorm_res_unmatch$unmatched_rows[, (names(rxnorm_res_unmatch$unmatched_rows)) := lapply(.SD, normalize_text)]
+# rxnorm_res_unmatch$unmatched_rows %>%
+#   filter(
+#     grepl("insulin lispro full unit pen", med_id_generic_name_raw, ignore.case = TRUE),
+#     grepl("humalog kwik pen", med_id_brand_name_raw, ignore.case = TRUE),
+#     grepl("insulispen", med_id_hospital_code_raw, ignore.case = TRUE)
+#   )
+```
+
+```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/filter_pharm_unmatch.png", dpi = 200)
+```
+</details>
+
+- Columns starting with `SME_` are for SME to fill out. 
+   <div style="padding-left: 40px; padding-top:8px; font-size:12px"> e.g. if the SME identifies a drug entry in column `med_id_brand_name_raw` that should have been matched to "insulin" but was missed by RxNorm (i.e. a false negative), in `SME_mapped_search_type` they should enter "med_id_brand_name_raw", in `SME_mapped_search_type` they should enter "insulin", and in `SME_mapped_drug_group` they could provide drug classification information, if available.</div>
+
+
+### Considering routes of administration
+
+It is not uncommon for research projects to be interested only in drugs administered via specific routes. In such cases, the general approach we recommend for analysts is to generate a separate frequency table for routes and consult with SME to identify those of interest. And then analysts can filter the pharmacy table containing the drug(s) of interest to the relevant routes.
+
+<details>
+<summary><span style='color:blue; font-size:13px'>Expand to see an example of how to filter insulin orders to routes of interest</span></summary>
+
+
+```{r eval=F}
+## Run rxnorm as usual
+rxnorm_res <- gemini_rxnorm_query(
+  db_con = db_con,
+  drug_input = c("insulin"),
+  genc_ids = example_cohort
+)
+
+## Prepare frequency table for drug(s) of interest as usual
+prep_res <- prepare_pharm_for_validation(
+  rxnorm_res = rxnorm_res,
+  hierarchy = T,
+  cell_suppression = T
+)
+
+## Extract pharmacy data corresponding to insulin 
+##  (for the purpose of illustration, we assume all matches in rxnorm_res are confirmed by SME)
+insulin_pharm_row_num <- prep_res$analyst %>%
+  pull(pharm_row_num) %>%
+  unlist()
+
+## Generate frequency table for routes corresponding to insulin, and share with SME
+route_query <- paste0(
+  "SELECT genc_id, route
+    FROM pharmacy
+    WHERE row_num IN (", paste(insulin_pharm_row_num, collapse = ", "),# filter to rows with validated drugs
+  ");"
+)
+
+freqtab_route <- dbGetQuery(db_con, route_query) %>%
+  mutate(route = tolower(route)) %>% # minimal standardization, analysts should clean up the raw values as needed
+  group_by (route) %>%
+  summarise(n= length(unique(genc_id))) %>%
+  arrange(-n) %>%
+  mutate(
+    row_id = 1:length(route),
+    SME_confirm = NA # to be filled out by SME
+  )
+
+# # A tibble: 22 × 4
+#    route              n row_id SME_confirm
+#    <chr>          <int>  <int> <lgl>
+#  1 iv              2099      1 NA
+#  2 subcut          1167      2 NA
+#  3 .route           652      3 NA
+#  4 iv continuous    476      4 NA
+#  5 sc               330      5 NA
+#  6 intravenous      308      6 NA
+#  7 iv direct        299      7 NA
+#  8 iv infus         239      8 NA
+#  9 iv-direct/push   132      9 NA
+# 10 subcutaneous     104     10 NA
+# ℹ 12 more rows
+# ℹ Use `print(n = ...)` to see more rows
+
+## Next, let's assume that after the analyst sharing the `freqtab_route` above with the SME, 
+##  the SME marks routes with the row_id = c(1, 4, 6, 7, 9) as routes of interest. 
+##  The analyst can then use this information to further filter the insulin order to those administered via these routes:
+
+iv_route <- freqtab_route %>% filter(row_id %in% c(1, 4, 6, 7, 9)) %>% pull(route)
+
+# identify genc_ids with insulin administered via routes of interest
+pharm_query <- paste0(
+  "SELECT *
+    FROM pharmacy
+    WHERE row_num IN (", paste(insulin_pharm_row_num, collapse = ", "),
+  ");"
+)
+
+# filter pharmacy data to insulin that were administered via the routes of interest
+iv_insulin <- dbGetQuery(db_con, pharm_query) %>%
+  filter(tolower(route) %in% iv_route) 
+```
+
+- In scenarios where drug and route information may interact and need to be considered simultaneously, analysts should include all drug (`rxnorm_match` x `route`) combinations in this frequency table.
+- The GEMINI database has two lookup tables **`lookup_pharmacy_route`** and **`lookup_pharmacy_concept`**, which provide OMOP concept IDs and descriptions for the raw `route` entries (typically abbreviated codes). We recommend merging the route frequency table with the concept descriptions to facilitate decisions regarding inclusion/exclusion of routes by the SME.
+
+</details>
+<br></br>
+
+*  *  *  *
+
+# Preparing SME-validated mappings for database integration {#section-db-prep}
+
+Once the SME-validated mappings are finalized, they should be integrated into GEMINI's Pharmacy Master Mapping file. **Analysts are expected to document and perform the integration**:
+
+1. Analyst should format the mapping file according to the following requirements:
+    + The file must **have and only have** the following columns from the SME-validated frequency table: `search_type`, `raw_input`, `rxnorm_match`, `SME_confirm`, and `drug_group`.
+    + *SME_confirm* must be logical values. **Only include rows with `SME_confirm=TRUE`**, non-True rows will cause mapping upload to stop.
+    + The column *drug_group* should be included if the SME has filled it out. If not, this column can be left empty for now, however, analysts will eventually need to reach out to GEMINI's internal SME for filling out this column upon running (see [*Using add_validated_pharm_map*](#section-db-upload)).
+    + If *unmatched rows* are examined and false negative entries are found, the analyst should extract and add these mappings to the final mapping file. To differentiate these manually identified entries from those mapped by RxNorm, a **prefix "manual_"** should be added to the mapped drugs. See 'False negatives' below for details.
+    + Save the formatted final mapping as a **.csv (required format) file** to folder.
+
+2. Document the mapping information on the [Solo mapping tracker](https://app.smartsheet.com/sheets/hgGCpcp9PhQ25RfW9pPpQjm5jJ9mxwmRmhQRQHP1?view=grid)
+
+3. With the final mapping file fulfilling the above criteria, analyst can proceed to run the function [add_validated_pharm_map()](#section-db-upload), which automates databse upload processes for analysts.
+
+<hr style="border-top: 0.5px solid #ccc; margin: 20px 0;">
+Note that NOT all types of mappings need to be included to the master file. The only types of mapping we are interested to collect are **True positives** and **False negatives** (if applicable):
+
+<div style='padding-left:40px'>
+
+<br>**True positives** are drug entries RxNorm correctly identified. For example, the red-highlighted rows below are the true positives and should be added to the master file:
+
+```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/masterfile_collection_truepos.png", dpi = 200)
+```
+
+```
+Essentially, they are the rows with `SME_confirm=TRUE`. Also note that, althought the SME commented to exclude the 5th row from the study, the 5th row is still a true positive match for insulin and thus should still be added. 
+```
+
+Below is the expected formatted file, after the analyst filters mappings to true positive rows:
+```{r, echo=FALSE, out.width = "80%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/masterfile_collection_truepos_clean.png", dpi = 200)
+```
+
+<br>**False negatives** are drug entries missed by RxNorm and found by examining unmatched rows. In the mock example below, the blue-highlighted row is an entry that RxNorm missed but was identified as insulin by the SME.
+
+```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/masterfile_collection_falseneg.png", dpi = 200)
+```
+
+```
+Analyst should perform additional preprocessing to append this entry to the final file along with the true positives. Namely, convert:
+- `SME_mapped_search_type` to `search_type`, 
+- the relevant drug entry to `raw_input`
+- `SME_mapped_drug` to `rxnorm_match` while adding a prefix "manual_" to the drug name
+- `SME_mapped_drug_group` to `drug_group`
+- set `SME_confirm` to TRUE.
+```
+
+Below is the expected *final* formatted file for database upload (containing both the true positives and the false negative entry):
+```{r, echo=FALSE, out.width = "80%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/masterfile_collection_falseneg_clean.png", dpi = 200)
+```
+
+</div>
+
+*  *  *  *
+
+
+# Using `add_validated_pharm_map` {#section-db-upload}
+
+**`add_validated_pharm_map`** was developed to accurately and efficiently append new validated pharmacy mappings to the existing collection of pharmacy mappings stored in the Pharmacy Mapping database. 
+
+The function runs a series of checks and processes pharmacy mapping data which has been validated by a SME and appends new mappings to the database. If the checks detects any data issues, the user is provided with options to resolve them. 
+
+Newly validated rows can **only** be appended if the *drug_group* field is fully populated (i.e. `drug_group` is mandatory). The function provides a convenient way to help users resolve the missing values in this field.
+
+<details>
+<summary><span style='color:blue; font-size:13px; margin-left: 20px;'>Expand to see important note about drug_group for analysts</span></summary>
+```
+Classifying drugs into groups is not always neccessary for individual research projects, so project-SMEs are not required to fill out `drug_group`. 
+However, high-level drug classification can often be beneficial for various research purposes. Therefore, filling out `drug_group` is required for mappings added to GEMINI's Pharmacy Master Mapping table and can be performed by GEMINI's internal SMEs. As there is no single "best" way to systemetically classify drugs, analysts are **not expected** to fill out the `drug_group` themselves. Instead, they should use the `add_validated_pharm_map` function to extract existing classifications, and reach out to our SMEs to perform mapping for drugs that have not been previously grouped. This ensures that drugs are classified in a relatively consistent manner over time. See sections below for details.
+```
+</details>
+
+For new pharmacy mapping records that have passed the checks, the function will **appends them to the Staging Pharmacy Mapping table (`staging.working_pharmacy_mapping` in the database)**, along with the user's database `user_name`, `project_id`, and a timestamp (`last_updated`). The added user information allows tracking of records in case a reversion is necessary.
+
+Overall, the function prevents analysts from appending incorrect, incomplete, or duplicate mappings to the Pharmacy Mapping Master table. In conjunction with the feature to output unmapped `drug_group` for SME validation, the automated checking and appending process of `add_validated_pharm_map` provides analysts with both a more efficient and accurate way to grow the existing collection of pharmacy mappings.
+
+
+## Key parameters
+
+There is only one parameter in the function:
+
+**`file_path`** - path for a .csv file containing the newly validated pharmacy mapping records.
+
+**`NOTE`**:
+
+- The csv file imported from the `file_path` parameter must meet the formatting requirements in [*Preparing SME-validated mappings for database integration*](#section-db-prep)
+
+- There are implicit parameters users need to provide through prompts when running the function:
+
+<div style="margin: 0px 0px 0px 40px; font-size:13px">
+1. **`Username`**: the username of the analyst for their database connection.
+2. **`Password`**: the password of the analyst for their database connection.
+3. **`Project Title`**: the Abbreviated Title per GEMINI Project Tracker of the research project. If the mapping is not associated with a project on the tracker, the user should provide a brief name that describes the mapping activity, e.g. 'reports_sedhypno_indicator'.
+4. **`CSV Output Prompt`**: if the value entered is `yes`, unmapped records without `drug_group`, will be exported to a csv file. If the value entered is anything else, the unmapped records will not be appended and instead returned to the user's R environment object.
+5. **`CSV Output Path`**: if the user chooses to export unmapped records without `drug_group`, they must then enter path for the csv file which these records will export to.
+6. **`Final Confirmation`**: a final confirmation that the user needs to provide. If **'confirm'** is entered, the function will append the new validated pharmacy mapping records to the Staging Pharmacy Mapping file in the database. If anything else is entered, nothing will be appended, and the function will exit.
+</div>
+
+- To ensure drugs are consistently classified into groups in the master mappings table, the function detects and handles missing or misaligned `drug_group` entries in the csv file. The function:
+<div style="margin: 0px 0px 0px 40px; font-size:13px">
+<p><strong>(a)</strong>  auto-fills missing drug_group values using existing mappings from the master mapping table</p>
+<p><strong>(b)</strong>  corrects entries where the provided drug_group misaligned with the master mapping</p>
+<p><strong>(c)</strong>  flags the remaining unmapped entries for users to resolve them</p>
+
+    - Mapped entries from (a) and (b) will be appended to the database. For unmapped entries from (c), the function allows users to either export them to a file or interact with them in their R environment, where they can then consult our SMEs to complete the mappings, which can be uploaded to the database by re-running the function. For details, please see the example in [*Unmapped drug_group variable*](#section-db-upload-unmap).
+
+    - For users who prefer uploading everything at once, this process maybe adjusted, however, this is recommended only for those with a thorough understanding of the function and confidence in reproducing the steps. For example, users may manually query the staging.working_pharmacy_mapping for existing drug_group and consult with SME for mapping before running the function; or they may run the function to perform the query, exit before the final confirmation step to avoid uploading, and re-run the function to upload the completely filled out mappings.
+</div>
+
+- The function can be terminated at any time (via [ctrl+c] on NORA) without appending anything to the database.
+- Nothing is appended to the database until the very last step where the user is prompted to type exactly `confirm`. Hence, if a mistake was made when entering values for the function's prompts, the user can simply exit the function without making unintended database changes.
+- The checking for existing copies of pharmacy mappings and the appending of new pharmacy mappings are performed on the `staging.working_pharmacy_mapping` database, not the `pharmacy_master_mapping` database. The `staging.working_pharmacy_mapping` will be used to update the `pharmacy_master_mapping` database at various intervals in time.
+
+
+
+## Insulin example
+
+Below is an example of preprocessing the SME validated pharmacy mapping file so that it can run smoothly in `add_validated_pharm_map`:
+```{r, eval=F, echo=T}
+# read the SME validated mapping file
+pharmacy_mapping <- fread(file.path(getwd(), "Vignettes/figures/pharmacy_mapping_for_SME_validated.csv"))
+
+# subset the file to contain only necessary columns
+pharmacy_mapping <- pharmacy_mapping %>%
+  select(search_type, raw_input, rxnorm_match, SME_confirm, drug_group) %>%
+  unique()
+
+# ensure SME_confirm is a **logical variable** and remove non-TRUE values
+pharmacy_mapping  <- pharmacy_mapping  %>%
+  mutate(SME_confirm = as.logical(SME_confirm))
+
+pharmacy_mapping <- pharmacy_mapping[SME_confirm == TRUE]
+
+# write the updated file to a csv
+fwrite(pharmacy_mapping, file.path(getwd(), "Vignettes/figures/pharmacy_mapping_for_SME_validated_updated.csv"))
+```
+
+Run the function on the cleaned file:
+
+```{r, eval=FALSE, echo=T}
+add_validated_pharm_map(file.path(getwd(), "Vignettes/figures/pharmacy_mapping_for_SME_validated_updated.csv"))
+```
+
+
+<br>Upon running, the function will perform checks on the input file and stops if any check fails. 
+
+<details style='font-size:11px'>
+<summary><span style='color:grey; font-size:12px; margin-left: 20px;'>Expand to see what happens when a check fails</span></summary>
+
+For example, if you do not filter for only SME_confirm == TRUE records, then the function will stop and ask you to resolve the invalid values. Invalid records are printed in the console - rows with SME_confirm as NA:
+
+```{r, echo=FALSE, out.width = "80%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/add_validated_pharm_map_figures/figure_2_invalid_records_SME_not_TRUE_quit_error_message.png", dpi = 200)
+```
+
+```{r, echo=FALSE, out.width = "80%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/add_validated_pharm_map_figures/figure_1_invalid_records_SME_not_TRUE_table.png", dpi = 200)
+```
+</details>
+
+
+<br> After all checks are passed, you will be prompted to enter your database Username, Password, and the Abbreviated Title of your project:
+
+```{r, echo=FALSE, out.width = "80%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/add_validated_pharm_map_figures/figure_3_user_name_prompt.png", dpi = 200)
+```
+
+<br> Next, the function checks if any to-be-appended records already exist in the Pharmacy Master Mapping file. Records with 2 or more copies of the same mapping will not be appended. These records will be printed in the console for user to review and acknowledge:
+```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/add_validated_pharm_map_figures/figure_4_duplicate_mapping_entries_message_and_user_acknowledgement.png", dpi = 200)
+```
+
+<br> Afterwards, the final set of new records that will be appended to the database is displayed in the Viewer for interactive review:
+```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/add_validated_pharm_map_figures/figure_5_viewer_of_rows_to_be_appended.png", dpi = 200)
+```
+
+<br>The user will be prompted one final time to confirm the addition. If 'confirm' is entered, the records will be added to the database. If 'confirm' is not entered, no records will be appended and the function will exit. 
+
+```{r, echo=FALSE, out.width = "80%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/add_validated_pharm_map_figures/figure_6_final_confirm_prompt.png", dpi = 200)
+```
+
+
+
+## More complex scenarios
+
+### Unmapped `drug_group` variable {#section-db-upload-unmap}
+
+If there are rows where the `drug_group` variable has missing records even after mapping with the Pharmacy Master Mapping file in the database, the function allows the user to either output a csv file containing the missing records for the SME to validate or output the table of missing records into the R environment to investigate.
+
+Here is an example of what happens when there is no `drug_group` in the SME validated file, when running the function:
+
+```{r, eval=F, echo=F}
+## create an example file without drug_group
+
+# read the previous cleaned pharmacy mapping file
+pharmacy_mapping_2 <- fread(file.path(getwd(), "Vignettes/figures/pharmacy_mapping_for_SME_validated_updated.csv"))
+
+# create 3 new rows with unmapped names and no mapped drug_group (and let's assume for this example that the rxnorm_match was insulin)
+new_rows <- data.frame(
+  search_type = rep('med_id_generic_name_raw', 3),
+  raw_input = c('test drug 1', 'test drug 2', 'test drug 3'),
+  rxnorm_match = c('test match 1', 'test match 2', 'test match 3'),
+  drug_group = rep(NA, 3),
+  SME_confirm = rep("TRUE", 3)
+)
+
+# Add the new row to the existing data frame
+pharmacy_mapping_2 <- rbind(pharmacy_mapping_2, new_rows)
+
+# fwrite a copy of file without drug_group
+fwrite(pharmacy_mapping_2, file.path(getwd(), "Vignettes/figures/pharmacy_mapping_for_SME_validated_updated_no_drug_group.csv"))
+```
+
+```{r, eval=FALSE, echo=T}
+### run the function on the newly updated file
+add_validated_pharm_map(file.path(getwd(), "Vignettes/figures/pharmacy_mapping_for_SME_validated_updated_no_drug_group.csv"))
+```
+
+<br>Unmapped `drug_group` records are printed in the console and users have the option to export them into a csv file for the SME to determine the `drug_group`. If 'yes' is entered, the user will be prompted to enter the path for exporting the csv file:
+
+```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/add_validated_pharm_map_figures/figure_8_no_drug_group_export_prompt_yes.png", dpi = 200)
+```
+
+<br>If the user enters 'no' to the prompt, then the function will proceed as usual without exporting the unmapped `drug_group` rows, and the unmapped `drug_group` rows will be created in the R environment as the object `missing_drug_group_rows`:
+
+```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
+knitr::include_graphics("figures/add_validated_pharm_map_figures/figure_9_no_drug_group_export_prompt_no.png", dpi = 200)
+```
+
+After this step (output/save the unmapped rows), the function will proceed as usual: mapped rows will be appended to the database upon 'confirm', while unmapped rows will not.
+
+
+### Making changes to the appended records
+
+After appending to the Staging Pharmacy Mapping file in the database, if a mistake was discovered, it is possible to make changes to the records directly using SQL queries. 
+
+**Changes can only be made to records created by the respective owner**, as determined by the user's unique database access username in the `user_name` column. As a reminder, the `user_name` column is automatically appended to the database after a successful run of `add_validated_pharm_map`. The timestamp column, `last_updated` can also be used to help the user identify rows to change.
+
+For example, the user below realized that all oral anticoagulants appended on 2024-11-01 were incorrect, the user removes them from the database (so that they can be fixed and reappended using `add_validated_pharm_map`) by doing the following:
+
+```{r, eval=F}
+# Connect to the pharmacy_mapping db
+drv <- dbDriver("PostgreSQL")
+map_db_con <- DBI::dbConnect(drv,
+  dbname = "pharmacy_mapping",
+  host = "domain_name.ca",
+  port = 1234,
+  user = "user_name",
+  password = getPass("Enter Password:")
+)
+# First inspect the rows to be deleted
+rows_to_delete <- dbGetQuery(map_db_con, "
+  SELECT *
+  FROM staging.working_pharmacy_mapping
+  WHERE user_name = 'liuweih'
+    AND last_updated::date = '2024-11-01'
+    AND drug_group = 'oral anticoagulant';
+")
+
+# An example of the returned rows
+head(rows_to_delete)
+#   user_name             search_type              raw_input  rxnorm_match         drug_group        project_name        last_updated
+# 1   liuweih med_id_generic_name_raw          acenocoumarol acenocoumarol oral anticoagulant GEMINI-Low-Risk_DVT 2024-11-01 09:30:06
+# 2   liuweih med_id_generic_name_raw               apixaban      apixaban oral anticoagulant GEMINI-Low-Risk_DVT 2024-11-01 09:30:06
+# 3   liuweih med_id_generic_name_raw    apixaban 2.5 mg tab      apixaban oral anticoagulant GEMINI-Low-Risk_DVT 2024-11-01 09:30:06
+# 4   liuweih med_id_generic_name_raw apixaban 2.5 mg tablet      apixaban oral anticoagulant GEMINI-Low-Risk_DVT 2024-11-01 09:30:06
+# 5   liuweih med_id_generic_name_raw      apixaban 5 mg tab      apixaban oral anticoagulant GEMINI-Low-Risk_DVT 2024-11-01 09:30:06
+# 6   liuweih med_id_generic_name_raw   apixaban 5 mg tablet      apixaban oral anticoagulant GEMINI-Low-Risk_DVT 2024-11-01 09:30:06
+
+### Running the delete statement
+
+# When making changes to the database, please use 'BEGIN' statements with 'COMMIT' statements if changes are final.
+# Or use 'ROLLBACK' statements to abort the changes.
+dbSendQuery(map_db_con, "BEGIN;")
+
+# Delete the incorrectly appended rows
+dbSendQuery(map_db_con, "
+  DELETE FROM staging.working_pharmacy_mapping
+  WHERE user_name = 'liuweih'
+    AND last_updated::date = '2024-11-01'
+    AND drug_group = 'oral anticoagulant';
+")
+
+# Check that they no longer exist in the db.
+dbGetQuery(map_db_con, "
+  SELECT * 
+  FROM staging.working_pharmacy_mapping
+  WHERE user_name = 'user_name' 
+    AND last_updated::date = '2024-11-01' 
+    AND drug_group = 'oral anticoagulant';
+")
+
+# If for any reason you don't want to proceed with these changes, run:
+dbSendQuery(map_db_con, "ROLLBACK;")
+
+# If the changes are final, then run:
+#dbSendQuery(map_db_con, "COMMIT;")
+
+```
+
+After the incorrectly appended rows are removed from the staging database, you can reappend a fixed version by re-running `add_validated_pharm_map`.
+
+
+
+
+<!-- styling HTML Workflow -->
+
+<style type="text/css">
+
+h1 { font-size: 26px; }
+
+body{ /* Normal  */
+  font-size: 14px;
+  font-family: "Georgia", serif;
+  line-height: 1.5;
+  padding: 10px;
+  margin-left: 450px;
+  }
+
+ul:not(#TOC ul) li  {
+    margin-top: 8px;
+  }
+
+#TOC {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 300px;
+    height: calc(100vh - 100px);
+    overflow-y: auto;
+    border: 1px solid #2a93dd;
+    background-color: #ffffff;
+    padding: 10px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    border-radius: 5px;
+  }
+
+</style>
