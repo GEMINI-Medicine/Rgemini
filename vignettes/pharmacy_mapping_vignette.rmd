@@ -60,7 +60,7 @@ convert_to_sequence <- function(x) {
 
 # Introduction
 
-GEMINI receives raw pharmacy tables from participating sites. The GEMINI team developed the RxNorm function (`gemini_rxnorm_query`) to identify drugs of interest easier and faster, by using the RxNorm API from the National Library of Medicine. Please refer to our publication for details at [GEMINI-RxNorm](https://academic.oup.com/jamiaopen/article/6/3/ooad062/7239332).
+GEMINI receives raw pharmacy tables from participating sites. The GEMINI team developed the RxNorm function (`rxnorm_query`) to identify drugs of interest easier and faster, by using the RxNorm API from the National Library of Medicine. Please refer to our publication for details at [GEMINI-RxNorm](https://academic.oup.com/jamiaopen/article/6/3/ooad062/7239332).
 
 Our team also developed a function (`prepare_pharm_for_validation`) to subsequently process the matches identified by the RxNorm function, preparing them for validation by a Subject Matter Expert (SME), and a function (`add_validated_pharm_map`) to append the SME-validated matches into GEMINI's Pharmacy Master Mapping file.
 
@@ -137,15 +137,15 @@ Note: For the purpose of this vignette, we assume that the study cohort has comp
 
 *  *  *  *
 
-# Using `gemini_rxnorm_query`
+# Using `rxnorm_query`
 
-The **`gemini_rxnorm_query`** function retrieves rows from the GEMINI pharmacy data matching the user-specified drug term(s).
+The **`rxnorm_query`** function retrieves rows from the GEMINI pharmacy data matching the user-specified drug term(s).
 
 The function returns output in a **long format** with columns: `genc_id`, `search_type` (which pharmacy column was found to have a match), `raw_input` (value from that search_type), `rxnorm_match` (which drug(s) of interest is it matched with).
 
 Users can clearly identify which column is found to be a match, and it only requires SME to validate one column at a time as opposed to upto 6 columns at a time with the previous function.
 
-For users with experience with the previous version of gemini_rxnorm_query, please note the following changes:
+For users with experience with the previous version of rxnorm_query, please note the following changes:
 1. The function has changed its output from before. Previously, it returned all pharmacy rows (format **wide**) of interest, and now they are in (format **long**)
 2. If user input both `drug_input` and `class_input`, a union of these two independent searches will be done instead of an intersection in the previous version.
 
@@ -157,7 +157,7 @@ There are 5 primary parameters in the function.
 2. **`class_input`**: This should be a vector with ATC codes or names of drug classes. For example for insulin, user can input ATC class "A10AB" or class name "Insulins and analogues for injection, fast-acting".
 3. **`return_unmatched`**: Default is FALSE and the function only returns rows matching the drug(s) of interest (in long format). If set to TRUE, the function will return a list that additionally contains `unmatched_rows` containing pharmacy rows that do not match the `drug_input` (in wide format).
 4. **`genc_ids`**: Optional vector of `genc_ids` to search against. If no input is provided, all `genc_ids` will be included. When `return_unmatched` is TRUE the function returns an error if no `genc_ids` input is provided because returning the `unmatched_rows` for all pharmacy entries will result in memory issues.
-5. **`return_drug_list`**: Optional parameter allowing users to obtain a list of drugs (rxcui, drug_name) when running `gemini_rxnorm_query` with `class_input`. Default is FALSE.
+5. **`return_drug_list`**: Optional parameter allowing users to obtain a list of drugs (rxcui, drug_name) when running `rxnorm_query` with `class_input`. Default is FALSE.
 
 **`NOTE`**:
 
@@ -171,7 +171,7 @@ There are 5 primary parameters in the function.
 ## Insulin example
 
 ```{r, eval = F}
-rxnorm_res <- gemini_rxnorm_query(
+rxnorm_res <- rxnorm_query(
   db_con = db_con, # DB contains the Pharmacy Data
   drug_input = c("insulin"),
   genc_ids = example_cohort
@@ -220,7 +220,7 @@ Example 1:
 
 ```{r, eval = F}
 # Example 1 Trimethoprim and Sulfamethoxazole
-rxnorm_res_ex1 <- gemini_rxnorm_query(
+rxnorm_res_ex1 <- rxnorm_query(
   db_con = db_con,
   drug_input = c("trimethoprim", "sulfamethoxazole"),
   genc_ids = example_cohort
@@ -256,7 +256,7 @@ Example 2:
 
 ```{r, eval = F}
 # Example 2 Complera
-rxnorm_res_ex2 <- gemini_rxnorm_query(
+rxnorm_res_ex2 <- rxnorm_query(
   db_con = db_con,
   drug_input = c("complera"),
   genc_ids = example_cohort
@@ -280,9 +280,9 @@ knitr::include_graphics("figures/pharmacy_mapping/rxnorm_query/fig3_complera.png
 
 2. Only drugs entered into `drug_input` or drugs under `class_input` selected by users will appear under `rxnorm_match` output (even if the pharmacy entry may contain an additional drug the user didn't search for).
 
-3. Rxnorm is a US-based tool. Although this is highly uncommon, drugs that are only prescribed in Canada (and not in the US) cannot be found by RxNorm. In addition, the current `gemini_rxnorm_query` tool does not support searches based on Canadian brand names. Please use the equivalent American brand name or generic name instead.
+3. Rxnorm is a US-based tool. Although this is highly uncommon, drugs that are only prescribed in Canada (and not in the US) cannot be found by RxNorm. In addition, the current `rxnorm_query` tool does not support searches based on Canadian brand names. Please use the equivalent American brand name or generic name instead.
 
-4. If `gemini_rxnorm_query` returns a warning saying "drug could not be found", please check the [RxNav website](https://mor.nlm.nih.gov/RxNav/) as sometimes there may be alternative searchable drug names based on the suggestion from the search bar. For example, Paxlovid returns the same warning, but when entered into RxNav, an auto-completion in the search bar shows "paxlovid 150 mg /100 mg dose pack". In this case, user should input "paxlovid 150 mg /100 mg dose pack" into `drug_name`.
+4. If `rxnorm_query` returns a warning saying "drug could not be found", please check the [RxNav website](https://mor.nlm.nih.gov/RxNav/) as sometimes there may be alternative searchable drug names based on the suggestion from the search bar. For example, Paxlovid returns the same warning, but when entered into RxNav, an auto-completion in the search bar shows "paxlovid 150 mg /100 mg dose pack". In this case, user should input "paxlovid 150 mg /100 mg dose pack" into `drug_name`.
 
 5. This function requires database version `drm_cleandb_v3_1_0` and newer. It is backward **incompatible** with database version before that, and `rxnorm_top_score` in the output has been deprecated.
 
@@ -306,7 +306,7 @@ RxNorm is not a perfect tool and may generate false-positive matches. A typical 
 
 ## Key parameters
 
-1. **`rxnorm_res`**: Object returned by `gemini_rxnorm_query`.
+1. **`rxnorm_res`**: Object returned by `rxnorm_query`.
 2. **`hierarchy`**: Flag whether to apply the predefined hierarchy filters to retain only highest-priority drug information per pharmacy row.
 3. **`cell_suppression`**: Flag whether to apply small cell suppression to the outputs.
 4. **`outpath`**: Optionally provide a file path where the results will be saved. File export is only permitted when `cell_suppression=TRUE`.
@@ -325,7 +325,7 @@ RxNorm is not a perfect tool and may generate false-positive matches. A typical 
 ## Insulin example
 
 ### Pre SME validation
-We have already run RxNorm search for insulin in the above section by `rxnorm_res <- gemini_rxnorm_query(...)`, we can now pass 'rxnorm_res' to the second function `prepare_pharm_for_validation` to process the search results into frequency tables for SME validation:
+We have already run RxNorm search for insulin in the above section by `rxnorm_res <- rxnorm_query(...)`, we can now pass 'rxnorm_res' to the second function `prepare_pharm_for_validation` to process the search results into frequency tables for SME validation:
 
 ```{r, eval = F}
 prep_res <- prepare_pharm_for_validation(
@@ -645,10 +645,10 @@ knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/f
 
 ### Unmatched results
 
-Recall that with **return_unmatched=TRUE** in the previous `rxnorm_res <- gemini_rxnorm_query(...)` function, the returned object contains 2 items - matched and unmatched results. When `rxnorm_res` contains unmatched result, **`prepare_pharm_for_validation` will automatically detect its presence, and process them along with the matched result to facilitate SME validation.**
+Recall that with **return_unmatched=TRUE** in the previous `rxnorm_res <- rxnorm_query(...)` function, the returned object contains 2 items - matched and unmatched results. When `rxnorm_res` contains unmatched result, **`prepare_pharm_for_validation` will automatically detect its presence, and process them along with the matched result to facilitate SME validation.**
 
 ```{r, eval=F}
-rxnorm_res_unmatch <- gemini_rxnorm_query(
+rxnorm_res_unmatch <- rxnorm_query(
   db_con = db_con,
   drug_input = c("insulin"),
   genc_ids = example_cohort,
@@ -715,7 +715,7 @@ It is not uncommon for research projects to be interested only in drugs administ
 
 ```{r eval=F}
 ## Run rxnorm as usual
-rxnorm_res <- gemini_rxnorm_query(
+rxnorm_res <- rxnorm_query(
   db_con = db_con,
   drug_input = c("insulin"),
   genc_ids = example_cohort
