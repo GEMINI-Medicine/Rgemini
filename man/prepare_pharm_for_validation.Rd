@@ -13,7 +13,7 @@ prepare_pharm_for_validation(
 }
 \arguments{
 \item{rxnorm_res}{(\code{data.frame}, \code{data.table}, \code{list}) \cr
-An object returned by \code{gemini_rxnorm_query}, which may include matched rows only or it may additionally include unmatched rows.
+An object returned by \code{rxnorm_query}, which may include matched rows only or it may additionally include unmatched rows.
 If provided as a list, it should contain \code{matched_rows} and \code{unmatched_rows}.}
 
 \item{hierarchy}{(\code{logical})\cr
@@ -66,16 +66,16 @@ Additionally, if \code{outpath} is provided, two files are saved to the specifie
 }
 }
 \description{
-This function processes data returned by \code{gemini_rxnorm_query} to prepare it for validation by Subject Matter Expert (SME).
-It connects to the \code{pharmacy_mapping} database, retrieves previous validation information for each "raw_input ~ rxnorm_match" pair (fields returned by \code{gemini_rxnorm_query})
+This function processes data returned by \code{rxnorm_query} to prepare it for validation by Subject Matter Expert (SME).
+It connects to the \code{pharmacy_mapping} database, retrieves previous validation information for each "raw_input ~ rxnorm_match" pair (fields returned by \code{rxnorm_query})
 from the \code{pharmacy_master_mapping} table, and applies optional hierarchy filtering and small cell suppression to
 generate frequency tables ready for SME to conduct validation.
 It also provides analyst with structured tables for subsequent analytical work post-validation.
-When the input \code{gemini_rxnorm_query} object contains unmatched rows of the pharmacy table, the function also retrieves previous mapping
+When the input \code{rxnorm_query} object contains unmatched rows of the pharmacy table, the function also retrieves previous mapping
 information found in the \code{pharmacy_master_mapping} table in the DB for each relevant drug-containing column.
 }
 \details{
-The function takes results from \code{gemini_rxnorm_query} and generates structured frequency tables of pharmacy data for SME review and
+The function takes results from \code{rxnorm_query} and generates structured frequency tables of pharmacy data for SME review and
 for analyst use post-validation. Below are the key processing steps performed by the function:
 \itemize{
 \item Normalizes pharmacy data by converting all text values to lowercase, to ASCII encoding for compatible handling of special characters by R,
@@ -96,7 +96,7 @@ Each row of the frequency table is uniquely identified by \code{row_id}. When an
 The \code{row_num} is an identifier allowing analysts to trace each entry back to the original pharmacy table.
 \item Performs secondary search on unmatched rows when exist. The secondary search matches each drug-containing field (i.e. search_type)
 with existing mappings in the \code{pharmacy_master_mapping} in order of hierarchy \verb{med_id_generic_name_raw > med_id_brand_name_raw >     med_id_hospital_code_raw > med_id_din > med_id_ndc > iv_component_type}. The highest priority match is returned per row, along with the match's corresponding drug_group.
-The search is not specific to the DoI searched by \code{gemini_rxnorm_query}. It is a broad search against all existing mapped drugs found in the \code{pharmacy_master_mapping}.
+The search is not specific to the DoI searched by \code{rxnorm_query}. It is a broad search against all existing mapped drugs found in the \code{pharmacy_master_mapping}.
 Users may need to apply filters (e.g.via regex) and manual mapping to identify if any entries in the unmatched rows may contain the DoI.
 }
 }
@@ -111,14 +111,12 @@ clean_db <- DBI::dbConnect(drv,
   user = getPass("Enter user:"),
   password = getPass("password")
 )
-rxnorm_res <- gemini_rxnorm_query(clean_db, drug_input = c("warfarin"), return_unmatched = F)
+rxnorm_res <- rxnorm_query(clean_db, drug_input = c("warfarin"), return_unmatched = F)
 res <- prepare_pharm_for_validation(rxnorm_res = rxnorm_res, hierarchy = T, cell_suppression = T, outpath="/user_path/")
 res$sme # frequency table to be validated by SME
 res$analyst # frequency table with `pharm_row_num` containing row_num information to be used by analysts after SME validation.
 
-## Two files are saved to the file path provided to `outpath`:
-- `pharmacy_mapping_for_SME.xlsx` is for SME review.
-- `pharm_res_INTERNAL_USE_ONLY.rds` is for analyst use only.
+## Two files are saved to the file path provided to `outpath`: `pharmacy_mapping_for_SME.xlsx` is for SME review; `pharm_res_INTERNAL_USE_ONLY.rds` is for analyst use only.
 
 ## After SME validatioin, use "pharm_row_num" in the frequency table to retrieve genc_id and other fields of the pharmacy table
  validated_rows <- hier$analyst[row_id \%in\% c(1,2), ] # as a minimal example, assume SME valided the entries of row_id 1 and 2
