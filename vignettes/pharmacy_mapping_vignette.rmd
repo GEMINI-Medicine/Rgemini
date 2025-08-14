@@ -306,10 +306,11 @@ RxNorm is not a perfect tool and may generate false-positive matches. A typical 
 
 ## Key parameters
 
-1. **`rxnorm_res`**: Object returned by `rxnorm_query`.
-2. **`hierarchy`**: Flag whether to apply the predefined hierarchy filters to retain only highest-priority drug information per pharmacy row.
-3. **`cell_suppression`**: Flag whether to apply small cell suppression to the outputs.
-4. **`outpath`**: Optionally provide a file path where the results will be saved. File export is only permitted when `cell_suppression=TRUE`.
+1. **`pharm_dbcon`**: Database connection to the master pharmacy mapping file.
+2. **`rxnorm_res`**: Object returned by `rxnorm_query`.
+3. **`hierarchy`**: Flag whether to apply the predefined hierarchy filters to retain only highest-priority drug information per pharmacy row.
+4. **`cell_suppression`**: Flag whether to apply small cell suppression to the outputs.
+5. **`outpath`**: Optionally provide a file path where the results will be saved. File export is only permitted when `cell_suppression=TRUE`.
 
 **`NOTE`**: 
 
@@ -322,13 +323,26 @@ RxNorm is not a perfect tool and may generate false-positive matches. A typical 
 
 - With the hierarchy rule in place, it would be rare for drug information from the lowest priority column to show up in the results (i.e. iv_component_type). When that happens, it means that no drug match was found for the other 5 higher priority columns. However, it is possible that the higher priority columns suggests the pharmacy order is for a diffferent drug (not the drug of your interest): e.g., med_id_generic_name_raw = 'trimethoprim', iv_component_type = 'insulin'. Therefore, when there are iv_component_type entries in the returned results, analyst should inspect the original pharmacy order corresponding to those entries, to ensure the drug info at higher priority columns are NOT pointing to a different drug.
 
+- Note for GEMINI analysts: Rgemini::prepare_pharm_for_validation() works the same as GEMINIpkg::prepare_pharm_for_validation() except for database connection. The internal GEMINIpkg version auto-connects to the default mapping database, while the Rgemini version requires you to pass a database connection as the first argument. This modification is to support broader use cases in HPC4Health. If you are migrating from the GEMINIpkg function to Rgemini, please update your call to specify database connection to the `pharmacy_master_mapping` database (not `staging.working_pharmacy_mapping`).
+
+
 ## Insulin example
 
 ### Pre SME validation
 We have already run RxNorm search for insulin in the above section by `rxnorm_res <- rxnorm_query(...)`, we can now pass 'rxnorm_res' to the second function `prepare_pharm_for_validation` to process the search results into frequency tables for SME validation:
 
 ```{r, eval = F}
+pharm_db <- DBI::dbConnect(
+  DBI::dbDriver("PostgreSQL"),
+  dbname = "pharmacy_mapping", # note this is a different DB from the pharmacy data table
+  host = "prime.smh.gemini-hpc.ca",
+  port = 1234, # placeholder for real port number
+  user = getPass::getPass("Database Username:"),
+  password = getPass::getPass("Database password: ")
+)
+
 prep_res <- prepare_pharm_for_validation(
+  pharm_dbcon = pharm_db,
   rxnorm_res = rxnorm_res,
   hierarchy = T,
   cell_suppression = T,
@@ -345,7 +359,7 @@ knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/f
 
 <br>The returned object **`prep_res` is a list containing 2 data tables** named 'sme' and 'analyst':
 
-<br>**$sme** is the frequency table to be shared with the SME for validation:
+<br>**$sme** is the frequency table to be shared with the SME for validation. To share this aggregated data file with SME, analysts must submit a file transfer request for GEMINI review. **Only approved files may be exported and shared**.
 ```{r, eval = F}
 prep_res$sme[c(1:5, 40:45),]
 ```
@@ -387,7 +401,7 @@ knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/f
 ```
 
 - Same table as prep_res$sme, with one additional column: `pharm_row_num`. 
-- **`pharm_row_num` is a LIST storing `row_num`** - a unique identifier for each row of the pharmacy table. Analysts will need these values to retrieve encounter-level data from the pharmacy table after SME-validation. See [*Guidelines for post-validation*](#section-post-valid). Since `pharm_row_num` is encounter-level data, this table is restricted to internal use only. **Do Not Share Outside The Internal Environment**. For illustration purposes of the Vignette, the last digits of `pharm_row_num` are hidden.
+- **`pharm_row_num` is a LIST storing `row_num`** - a unique identifier for each row of the pharmacy table. Analysts will need these values to retrieve encounter-level data from the pharmacy table after SME-validation. See [*Guidelines for post-validation*](#section-post-valid). Since `pharm_row_num` contains encounter-level data, use of this table is restricted within the secure HPC environment (e.g. NORA, HPC4Health). **Egress Outside The HPC Environment is Not Permitted**. For illustration purposes of the Vignette, the last digits of `pharm_row_num` are hidden.
 
 
 ### SME validation
@@ -611,11 +625,13 @@ Setting **hierarchy=TRUE** prioritizes fields to ensure a one-to-one match (i.e.
 Insulin example, `hierarchy=T` vs. `hierarchy=F`:
 ```{r, eval=F}
 prep_res <- prepare_pharm_for_validation(
+  pharm_dbcon = pharm_db,
   rxnorm_res = rxnorm_res,
   hierarchy = T,
   cell_suppression = T)
 
 prep_res_nohier <- prepare_pharm_for_validation(
+  pharm_dbcon = pharm_db,
   rxnorm_res = rxnorm_res,
   hierarchy = F,
   cell_suppression = T)
@@ -660,6 +676,7 @@ rxnorm_res_unmatch <- rxnorm_query(
   return_unmatched = T)
 
 prep_res_unmatch <- prepare_pharm_for_validation(
+  pharm_dbcon = pharm_db,
   rxnorm_res = rxnorm_res_unmatch,
   hierarchy = T,
   cell_suppression = T)
@@ -728,6 +745,7 @@ rxnorm_res <- rxnorm_query(
 
 ## Prepare frequency table for drug(s) of interest as usual
 prep_res <- prepare_pharm_for_validation(
+  pharm_dbcon = pharm_db,
   rxnorm_res = rxnorm_res,
   hierarchy = T,
   cell_suppression = T
@@ -874,7 +892,7 @@ GEMINI analysts with write access to the pharmacy mapping database can proceed t
 
 **`add_validated_pharm_map`** was developed to accurately and efficiently append new validated pharmacy mappings to the existing collection of pharmacy mappings stored in the Pharmacy Mapping database.
 
-Note that this function is ONLY available in the internal package GEMINIpkg (not avaialble in Rgemini). To use this function, users will need to load the GEMINIpkg library to their workspace or call GEMINIpkg::add_validated_pharm_map().
+Note that this function is ONLY available in the internal package GEMINIpkg (not avaialble in Rgemini). To use this function, users will need to load the GEMINIpkg library to their workspace or call `GEMINIpkg::add_validated_pharm_map()`.
 
 The function runs a series of checks and processes pharmacy mapping data which has been validated by a SME and appends new mappings to the database. If the checks detects any data issues, the user is provided with options to resolve them. 
 
