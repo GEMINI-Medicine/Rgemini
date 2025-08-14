@@ -95,7 +95,7 @@ Each row of the frequency table is uniquely identified by \code{row_id}. When an
 \code{pharm_row_num}, which is a list storing \code{row_num} values (of the pharmacy table) associated with each "search_type ~ raw_input ~ rxnorm_match" entry.
 The \code{row_num} is an identifier allowing analysts to trace each entry back to the original pharmacy table.
 \item Performs secondary search on unmatched rows when exist. The secondary search matches each drug-containing field (i.e. search_type)
-with existing mappings in the \code{pharmacy_master_mapping} in order of hierarchy \verb{med_id_generic_name_raw > med_id_brand_name_raw >     med_id_hospital_code_raw > med_id_din > med_id_ndc > iv_component_type}. The highest priority match is returned per row, along with the match's corresponding drug_group.
+with existing mappings in the \code{pharmacy_master_mapping} in order of hierarchy \verb{med_id_generic_name_raw > med_id_brand_name_raw > med_id_hospital_code_raw > med_id_din > med_id_ndc > iv_component_type}. The highest priority match is returned per row, along with the match's corresponding drug_group.
 The search is not specific to the DoI searched by \code{rxnorm_query}. It is a broad search against all existing mapped drugs found in the \code{pharmacy_master_mapping}.
 Users may need to apply filters (e.g.via regex) and manual mapping to identify if any entries in the unmatched rows may contain the DoI.
 }
@@ -103,7 +103,7 @@ Users may need to apply filters (e.g.via regex) and manual mapping to identify i
 \examples{
 \dontrun{
 drv <- dbDriver("PostgreSQL")
- # Connect to DB for Rxnorm search
+# Connect to DB for Rxnorm search
 clean_db <- DBI::dbConnect(drv,
   dbname = "drm_cleandb_xxx",
   host = "domain_name.ca",
@@ -112,19 +112,19 @@ clean_db <- DBI::dbConnect(drv,
   password = getPass("password")
 )
 rxnorm_res <- rxnorm_query(clean_db, drug_input = c("warfarin"), return_unmatched = F)
-res <- prepare_pharm_for_validation(rxnorm_res = rxnorm_res, hierarchy = T, cell_suppression = T, outpath="/user_path/")
+res <- prepare_pharm_for_validation(rxnorm_res = rxnorm_res, hierarchy = T, cell_suppression = T, outpath = "/user_path/")
 res$sme # frequency table to be validated by SME
 res$analyst # frequency table with `pharm_row_num` containing row_num information to be used by analysts after SME validation.
 
 ## Two files are saved to the file path provided to `outpath`: `pharmacy_mapping_for_SME.xlsx` is for SME review; `pharm_res_INTERNAL_USE_ONLY.rds` is for analyst use only.
 
 ## After SME validatioin, use "pharm_row_num" in the frequency table to retrieve genc_id and other fields of the pharmacy table
- validated_rows <- hier$analyst[row_id \%in\% c(1,2), ] # as a minimal example, assume SME valided the entries of row_id 1 and 2
- validated_pharm_rows <- unlist(validated_rows$pharm_row_num) # extract corresponding pharm_row_num
- query <- paste0("SELECT row_num, genc_id, med_start_date_time 
-                  FROM pharmacy 
-                  WHERE row_num IN (", paste(validated_pharm_rows, collapse=", "), ");")
- pharm_tab <- dbGetQuery(clean_db, query)  # pull pharm rows containing validated drugs
+validated_rows <- hier$analyst[row_id \%in\% c(1, 2), ] # as a minimal example, assume SME valided the entries of row_id 1 and 2
+validated_pharm_rows <- unlist(validated_rows$pharm_row_num) # extract corresponding pharm_row_num
+query <- paste0("SELECT row_num, genc_id, med_start_date_time
+                  FROM pharmacy
+                  WHERE row_num IN (", paste(validated_pharm_rows, collapse = ", "), ");")
+pharm_tab <- dbGetQuery(clean_db, query) # pull pharm rows containing validated drugs
 }
 
 }
