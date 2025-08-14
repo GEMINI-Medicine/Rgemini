@@ -1,5 +1,8 @@
 # Rgemini `develop`
 
+* **New functions:**
+  * `prepare_pharm_for_validation()` function migrated from GEMINIpkg to standardize workflow for pharmacy mapping validation following rxnorm_query
+
 * **Testing improvements:**
   * Unit tests are now also run in Python via rpy2 to ensure cross-language compatibility
 
