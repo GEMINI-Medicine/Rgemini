@@ -527,7 +527,12 @@ dbWritetable(db_con, c("pg_temp", "temp_row_num"), insulin_pharm_row_num,
 query <- paste0("SELECT p.*
                  FROM pharmacy p
                  INNER JOIN temp_row_num t on t.row_num=p.row_num;")
-pharm_tab <- dbGetQuery(db_con, query)  # pull pharm rows containing validated drugs
+pharm_tab <- dbGetQuery(db_con, query) # pull pharm rows containing validated drugs
+
+#### alternative query (less efficient), if you don't have write access to create temp table in db_con
+# query <- paste0("SELECT row_num, genc_id
+#                  FROM pharmacy
+#                  WHERE row_num IN (", paste(insulin_pharm_row_num, collapse=", "), ");")
 
 # Encounters associated with the validated insulin entries:
 insulin_cohort <- unique(pharm_tab$genc_id) # i.e. genc_ids with at least 1 insulin prescription order in the pharmacy table
@@ -536,7 +541,7 @@ insulin_cohort[1:5] # Last digits of encounter-level identifiers are hidden to p
 # [1] 28937... 28938... 28938... 28938... 28940...
 
 length(insulin_cohort)
-# [1] 4088 
+# [1] 4088
 ## A total 4088 encounters (7.7%) in the example cohort had
 ## at least 1 insulin order during their hospital stay,
 ## assuming cohort has pharamcy data coverage.
