@@ -51,7 +51,7 @@ replace_last <- function(x, digits = 2) {
   return(truncated)
 }
 convert_to_sequence <- function(x) {
- as.integer(factor(x, levels = unique(x)))
+  as.integer(factor(x, levels = unique(x)))
 }
 ```
 
@@ -69,7 +69,7 @@ The series of functions is designed to support an analyst's workflow in identify
 
 ## Design Overview
 ```{r, echo=FALSE, out.width = "100%", fig.align = "left", fig.cap="<div style='color:grey; font-size:12px; margin: 0px 0px 0px 20px'>Input-Output Flow Diagram of Three Pharmacy Functions. Items in orange denote steps requiring analyst or SME engagement. Pharmacy Master Mapping and Staging Pharmacy Mapping are database tables</div>" }
-knitr::include_graphics("figures/pharmacy_mapping/overall_design.png", dpi = 200 )
+knitr::include_graphics("figures/pharmacy_mapping/overall_design.png", dpi = 200)
 ```
 
 ## Setup
@@ -90,7 +90,7 @@ db_con <- DBI::dbConnect(
   DBI::dbDriver("PostgreSQL"),
   dbname = "drm_cleandb_v3_1_0",
   host = "prime.smh.gemini-hpc.ca",
-  port = 1234, #placeholder for real port number
+  port = 1234, # placeholder for real port number
   user = getPass::getPass("Database Username:"),
   password = getPass::getPass("Database password: ")
 )
@@ -129,7 +129,8 @@ example_cohort <- dbGetQuery(
   db_con,
   "SELECT genc_id
             FROM admdad
-            WHERE discharge_date_time >= '2022-01-01' AND discharge_date_time <= '2022-03-31';") %>%
+            WHERE discharge_date_time >= '2022-01-01' AND discharge_date_time <= '2022-03-31';"
+) %>%
   pull(genc_id)
 ```
 
@@ -232,8 +233,11 @@ rxnorm_res_ex1[grepl("\\|", rxnorm_match)] %>%
 ```
 
 ```{r, eval=F, echo=F}
-#code to create figure below
-rxnorm_res_ex1[grepl('\\|', rxnorm_match)] %>% arrange(genc_id, row_num) %>% head() %>% mutate(genc_id = convert_to_sequence(genc_id), row_num = paste0("...", substr(row_num, 6, 7))) 
+# code to create figure below
+rxnorm_res_ex1[grepl("\\|", rxnorm_match)] %>%
+  arrange(genc_id, row_num) %>%
+  head() %>%
+  mutate(genc_id = convert_to_sequence(genc_id), row_num = paste0("...", substr(row_num, 6, 7)))
 ```
 
 ```{r, echo=FALSE, out.width = "80%", fig.align = "center"}
@@ -262,12 +266,14 @@ rxnorm_res_ex2 <- rxnorm_query(
   genc_ids = example_cohort
 )
 
-tail(rxnorm_res_ex2) #Last digits of encounter-level identifiers are hidden to protect privacy.
+tail(rxnorm_res_ex2) # Last digits of encounter-level identifiers are hidden to protect privacy.
 ```
 
 ```{r, eval=F, echo=F}
 # code to create figure below
-rxnorm_res_ex2 %>% tail() %>% mutate(genc_id = convert_to_sequence(genc_id), row_num = paste0("...", substr(row_num, 6, 7)))
+rxnorm_res_ex2 %>%
+  tail() %>%
+  mutate(genc_id = convert_to_sequence(genc_id), row_num = paste0("...", substr(row_num, 6, 7)))
 ```
 
 ```{r, echo=FALSE, out.width = "80%", fig.align = "center"}
@@ -361,7 +367,7 @@ knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/f
 
 <br>**$sme** is the frequency table to be shared with the SME for validation:
 ```{r, eval = F}
-prep_res$sme[c(1:5, 40:45),]
+prep_res$sme[c(1:5, 40:45), ]
 ```
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
@@ -393,7 +399,7 @@ prep_res$analyst$pharm_row_num <- lapply(prep_res$analyst$pharm_row_num, functio
 **$analyst** is the frequency table for analyst's own use:
 
 ```{r, eval=F}
-prep_res$analyst[c(1:5),]
+prep_res$analyst[c(1:5), ]
 ```
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
@@ -496,10 +502,10 @@ sme_valid_clean <- read.csv(file.path(getwd(), "your_path_to/pharmacy_mapping_fo
 
 head(sme_valid_clean) # mock validation for demonstration purposes, not real validation
 # #   row_id count             search_type                     raw_input rxnorm_match drug_group times_validated SME_confirm         SME_comment
-# # 1      1  1271 med_id_generic_name_raw               insulin regular      insulin    insulin              2+        TRUE                    
-# # 2      2   722 med_id_generic_name_raw             insulin humulin r      insulin    insulin              2+        TRUE                    
-# # 3      3   671 med_id_generic_name_raw tazocin (fk) 4.5g in 100ml ns      insulin    insulin               0        TRUE                    
-# # 4      4   600   med_id_brand_name_raw                         lilly      insulin    insulin               0       FALSE                    
+# # 1      1  1271 med_id_generic_name_raw               insulin regular      insulin    insulin              2+        TRUE
+# # 2      2   722 med_id_generic_name_raw             insulin humulin r      insulin    insulin              2+        TRUE
+# # 3      3   671 med_id_generic_name_raw tazocin (fk) 4.5g in 100ml ns      insulin    insulin               0        TRUE
+# # 4      4   600   med_id_brand_name_raw                         lilly      insulin    insulin               0       FALSE
 # # 5      5   332              med_id_din                      00586714      insulin    insulin               0        TRUE exclude from cohort
 
 ###################################################
@@ -514,7 +520,7 @@ insulin <- sme_valid_clean %>%
 ## Extract `row_id` corresponding to drug(s) of interest,
 ##  since `row_id` is a consistent identifier pre- post- validation.
 ##  If for some reasons, `row_id` was altered unexpectedly, use `raw_input` instead.
-insulin_row_id <- insulin$row_id 
+insulin_row_id <- insulin$row_id
 
 insulin_pharm_row_num <- saved_robject$analyst %>%
   filter(row_id %in% insulin_row_id) %>%
@@ -535,10 +541,11 @@ insulin_pharm_row_num[1:5] # mock example of row numbers
 # Send a list of row_num as a temp table in case the number of row_num is very long,
 # since dbGetQuery has a character limit.
 
-insulin_pharm_row_num <- data.table(row_num=insulin_pharm_row_num) #ensure it's data.frame
+insulin_pharm_row_num <- data.table(row_num = insulin_pharm_row_num) # ensure it's data.frame
 
 dbWritetable(db_con, c("pg_temp", "temp_row_num"), insulin_pharm_row_num,
-  temporary = T, row.names = F) # write the row_num into a temp table
+  temporary = T, row.names = F
+) # write the row_num into a temp table
 
 query <- paste0("SELECT p.*
                  FROM pharmacy p
@@ -558,7 +565,6 @@ length(insulin_cohort)
 ## A total 4088 encounters (7.7%) in the example cohort had
 ## at least 1 insulin order during their hospital stay,
 ## assuming cohort has pharamcy data coverage.
-
 ```
 </div>
 
@@ -568,7 +574,8 @@ length(insulin_cohort)
 ```{r, eval=F}
 # Pull pharm rows containing validated drugs
 dbWritetable(db_con, c("pg_temp", "temp_row_num"), insulin_pharm_row_num,
-  temporary = T, row.names = F) # write the row_num into a temptable
+  temporary = T, row.names = F
+) # write the row_num into a temptable
 
 query <- paste0("SELECT p.*
                  FROM pharmacy p
@@ -580,9 +587,9 @@ adm_query <- paste0(
   "SELECT genc_id, admission_date_time
    FROM admdad
    WHERE genc_id IN (", # this approach only suitable for a small number of genc_ids,
-  paste(example_cohort, collapse = ", "), ");"#if cohort is large, send the list of genc_id as a temp table instead
-) 
-adm_tab <- dbGetQuery(db_con, adm_query) %>% 
+  paste(example_cohort, collapse = ", "), ");" # if cohort is large, send the list of genc_id as a temp table instead
+)
+adm_tab <- dbGetQuery(db_con, adm_query) %>%
   mutate(admission_date_time = ymd_hm(admission_date_time))
 
 # Impute missing time in `med_start_date_time` with 00h:00m
@@ -602,7 +609,7 @@ insulin_24hr_cohort <- pharm_tab %>%
   unique()
 
 length(insulin_24hr_cohort)
-# [1] 1982 
+# [1] 1982
 ## A total 1982 encounters (3.7%) in the example cohort had
 ## at least 1 insulin order din their first 24 hours of admission,
 ## assuming cohort has pharamcy data coverage.
@@ -624,13 +631,15 @@ prep_res <- prepare_pharm_for_validation(
   pharm_dbcon = pharm_db,
   rxnorm_res = rxnorm_res,
   hierarchy = T,
-  cell_suppression = T)
+  cell_suppression = T
+)
 
 prep_res_nohier <- prepare_pharm_for_validation(
   pharm_dbcon = pharm_db,
   rxnorm_res = rxnorm_res,
   hierarchy = F,
-  cell_suppression = T)
+  cell_suppression = T
+)
 ```
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
@@ -648,7 +657,7 @@ rxnorm_res %>%
   filter(row_num == 1695237) %>%
   mutate(
     genc_id = "fake_id 1", # for purpose of the vignette, hide last digits of genc_id to protect privacy
-    row_num = paste0("...", substr(row_num, 6,7)) # for purpose of the vignette, hide last digits of row_num to protect privacy
+    row_num = paste0("...", substr(row_num, 6, 7)) # for purpose of the vignette, hide last digits of row_num to protect privacy
   )
 ```
 
@@ -669,13 +678,15 @@ rxnorm_res_unmatch <- rxnorm_query(
   db_con = db_con,
   drug_input = c("insulin"),
   genc_ids = example_cohort,
-  return_unmatched = T)
+  return_unmatched = T
+)
 
 prep_res_unmatch <- prepare_pharm_for_validation(
   pharm_dbcon = pharm_db,
   rxnorm_res = rxnorm_res_unmatch,
   hierarchy = T,
-  cell_suppression = T)
+  cell_suppression = T
+)
 
 names(prep_res_unmatch)
 # [1] "sme" "analyst" "unmatched_rows"
@@ -747,7 +758,7 @@ prep_res <- prepare_pharm_for_validation(
   cell_suppression = T
 )
 
-## Extract pharmacy data corresponding to insulin 
+## Extract pharmacy data corresponding to insulin
 ##  (for the purpose of illustration, we assume all matches in rxnorm_res are confirmed by SME)
 insulin_pharm_row_num <- prep_res$analyst %>%
   pull(pharm_row_num) %>%
@@ -757,14 +768,14 @@ insulin_pharm_row_num <- prep_res$analyst %>%
 route_query <- paste0(
   "SELECT genc_id, route
     FROM pharmacy
-    WHERE row_num IN (", paste(insulin_pharm_row_num, collapse = ", "),# filter to rows with validated drugs
+    WHERE row_num IN (", paste(insulin_pharm_row_num, collapse = ", "), # filter to rows with validated drugs
   ");"
 )
 
 freqtab_route <- dbGetQuery(db_con, route_query) %>%
   mutate(route = tolower(route)) %>% # minimal standardization, analysts should clean up the raw values as needed
-  group_by (route) %>%
-  summarise(n= length(unique(genc_id))) %>%
+  group_by(route) %>%
+  summarise(n = length(unique(genc_id))) %>%
   arrange(-n) %>%
   mutate(
     row_id = 1:length(route),
@@ -787,11 +798,13 @@ freqtab_route <- dbGetQuery(db_con, route_query) %>%
 # ℹ 12 more rows
 # ℹ Use `print(n = ...)` to see more rows
 
-## Next, let's assume that after the analyst sharing the `freqtab_route` above with the SME, 
-##  the SME marks routes with the row_id = c(1, 4, 6, 7, 9) as routes of interest. 
+## Next, let's assume that after the analyst sharing the `freqtab_route` above with the SME,
+##  the SME marks routes with the row_id = c(1, 4, 6, 7, 9) as routes of interest.
 ##  The analyst can then use this information to further filter the insulin order to those administered via these routes:
 
-iv_route <- freqtab_route %>% filter(row_id %in% c(1, 4, 6, 7, 9)) %>% pull(route)
+iv_route <- freqtab_route %>%
+  filter(row_id %in% c(1, 4, 6, 7, 9)) %>%
+  pull(route)
 
 # identify genc_ids with insulin administered via routes of interest
 pharm_query <- paste0(
@@ -803,7 +816,7 @@ pharm_query <- paste0(
 
 # filter pharmacy data to insulin that were administered via the routes of interest
 iv_insulin <- dbGetQuery(db_con, pharm_query) %>%
-  filter(tolower(route) %in% iv_route) 
+  filter(tolower(route) %in% iv_route)
 ```
 
 - In scenarios where drug and route information may interact and need to be considered simultaneously, analysts should include all drug (`rxnorm_match` x `route`) combinations in this frequency table.
@@ -954,10 +967,10 @@ Below is an example of preprocessing the SME validated pharmacy mapping file so 
 pharmacy_mapping <- fread(file.path(getwd(), "your_path_to/pharmacy_mapping_for_SME_validated.csv"))
 
 # #   row_id count             search_type                     raw_input rxnorm_match drug_group times_validated SME_confirm         SME_comment
-# # 1      1  1271 med_id_generic_name_raw               insulin regular      insulin    insulin              2+        TRUE                    
-# # 2      2   722 med_id_generic_name_raw             insulin humulin r      insulin    insulin              2+        TRUE                    
-# # 3      3   671 med_id_generic_name_raw tazocin (fk) 4.5g in 100ml ns      insulin    insulin               0        TRUE                    
-# # 4      4   600   med_id_brand_name_raw                         lilly      insulin    insulin               0       FALSE                    
+# # 1      1  1271 med_id_generic_name_raw               insulin regular      insulin    insulin              2+        TRUE
+# # 2      2   722 med_id_generic_name_raw             insulin humulin r      insulin    insulin              2+        TRUE
+# # 3      3   671 med_id_generic_name_raw tazocin (fk) 4.5g in 100ml ns      insulin    insulin               0        TRUE
+# # 4      4   600   med_id_brand_name_raw                         lilly      insulin    insulin               0       FALSE
 # # 5      5   332              med_id_din                      00586714      insulin    insulin               0        TRUE exclude from cohort
 
 # subset the file to contain only necessary columns
@@ -966,7 +979,7 @@ pharmacy_mapping <- pharmacy_mapping %>%
   unique()
 
 # ensure SME_confirm is a **logical variable** and remove non-TRUE values
-pharmacy_mapping  <- pharmacy_mapping  %>%
+pharmacy_mapping <- pharmacy_mapping %>%
   mutate(SME_confirm = as.logical(SME_confirm))
 
 pharmacy_mapping <- pharmacy_mapping[SME_confirm == TRUE]
@@ -1045,9 +1058,9 @@ pharmacy_mapping_2 <- fread(file.path(getwd(), "your_path_to/pharmacy_mapping_fo
 
 # create 3 new rows with unmapped names and no mapped drug_group (and let's assume for this example that the rxnorm_match was insulin)
 new_rows <- data.frame(
-  search_type = rep('med_id_generic_name_raw', 3),
-  raw_input = c('test drug 1', 'test drug 2', 'test drug 3'),
-  rxnorm_match = c('test match 1', 'test match 2', 'test match 3'),
+  search_type = rep("med_id_generic_name_raw", 3),
+  raw_input = c("test drug 1", "test drug 2", "test drug 3"),
+  rxnorm_match = c("test match 1", "test match 2", "test match 3"),
   drug_group = rep(NA, 3),
   SME_confirm = rep("TRUE", 3)
 )
@@ -1132,10 +1145,10 @@ dbSendQuery(map_db_con, "
 
 # Check that they no longer exist in the db.
 dbGetQuery(map_db_con, "
-  SELECT * 
+  SELECT *
   FROM staging.working_pharmacy_mapping
-  WHERE user_name = 'user_name' 
-    AND last_updated::date = '2024-11-01' 
+  WHERE user_name = 'user_name'
+    AND last_updated::date = '2024-11-01'
     AND drug_group = 'oral anticoagulant';
 ")
 
@@ -1143,8 +1156,7 @@ dbGetQuery(map_db_con, "
 dbSendQuery(map_db_con, "ROLLBACK;")
 
 # If the changes are final, then run:
-#dbSendQuery(map_db_con, "COMMIT;")
-
+# dbSendQuery(map_db_con, "COMMIT;")
 ```
 
 After the incorrectly appended rows are removed from the staging database, you can reappend a fixed version by re-running `add_validated_pharm_map`.
