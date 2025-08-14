@@ -8,6 +8,11 @@
 #' When the input `rxnorm_query` object contains unmatched rows of the pharmacy table, the function also retrieves previous mapping
 #' information found in the `pharmacy_master_mapping` table in the DB for each relevant drug-containing column.
 #'
+#' @param pharm_dbcon (`DBIConnection`)\cr
+#' A database connection to the Pharmacy Master Mapping Database. Only `DBI` connection is
+#' accepted as `odbc` connection may cause connection issues in certain environment.
+#' Note for GEMINI analysts: Unlike GEMINIpkg::prepare_pharm_for_validation(), Rgemini::prepare_pharm_for_validation() doesn't auto-connect to the mapping database, and you must supply the proper connection as the first argument. Please make sure to connect to the `pharmacy_master_mapping` database (not `staging.working_pharmacy_mapping`).
+#'
 #' @param rxnorm_res (`data.frame`, `data.table`, `list`) \cr
 #' An object returned by `rxnorm_query`, which may include matched rows only or it may additionally include unmatched rows.
 #' If provided as a list, it should contain `matched_rows` and `unmatched_rows`.
@@ -38,6 +43,7 @@
 #' For example, this can be used to extract individual pharmacy orders that contain the SME-validated drug entry and perform additional filtering (e.g., by order date-time).
 #' Because this `row_num` is not aggregated-level information, it cannot be shared and is restricted for internal use only.
 #' Note: Files can only be saved to outpath when `cell_suppression = TRUE`.
+#'
 #'
 #' @return A list containing two or three data tables:
 #' \itemize{
@@ -86,7 +92,7 @@
 #' @examples
 #' \dontrun{
 #' drv <- dbDriver("PostgreSQL")
-#' # Connect to DB for Rxnorm search
+#' # Connect to GEMINI data DB for Rxnorm search
 #' clean_db <- DBI::dbConnect(drv,
 #'   dbname = "drm_cleandb_xxx",
 #'   host = "domain_name.ca",
@@ -95,7 +101,17 @@
 #'   password = getPass("password")
 #' )
 #' rxnorm_res <- rxnorm_query(clean_db, drug_input = c("warfarin"), return_unmatched = F)
-#' res <- prepare_pharm_for_validation(rxnorm_res = rxnorm_res, hierarchy = T, cell_suppression = T, outpath = "/user_path/")
+#'
+#' # Connect to Pharmacy Master Mapping DB for validated mappings from previous projects
+#' pharm_db <- DBI::dbConnect(drv,
+#'   dbname = "pharmacy_mapping",
+#'   host = "domain_name.ca",
+#'   port = xxxx,
+#'   user = getPass("Enter user:"),
+#'   password = getPass("password")
+#' )
+#' res <- prepare_pharm_for_validation(pharm_dbcon = pharm_db, rxnorm_res = rxnorm_res, hierarchy = T, cell_suppression = T, outpath = "/user_path/")
+#'
 #' res$sme # frequency table to be validated by SME
 #' res$analyst # frequency table with `pharm_row_num` containing row_num information to be used by analysts after SME validation.
 #'
@@ -112,18 +128,12 @@
 #'
 #' @export
 #'
-prepare_pharm_for_validation <- function(rxnorm_res, hierarchy = TRUE, cell_suppression = TRUE, outpath = NULL) {
+prepare_pharm_for_validation <- function(pharm_dbcon, rxnorm_res, hierarchy = TRUE, cell_suppression = TRUE, outpath = NULL) {
   ## CONNECT TO PHARMACY MAPPING DB
-  drv <- dbDriver("PostgreSQL")
-  db_con <- DBI::dbConnect(drv,
-    dbname = "pharmacy_mapping",
-    host = "prime.smh.gemini-hpc.ca",
-    port = 5432,
-    user = getPass::getPass("Enter Username for Database Connection:"),
-    password = getPass::getPass("Enter Password:")
-  )
+  check_input(pharm_dbcon, argtype = "DBI")
+
   ## LOAD MASTERFILE
-  masterfile <- dbGetQuery(db_con, "SELECT * from pharmacy_master_mapping") %>% data.table()
+  masterfile <- dbGetQuery(pharm_dbcon, "SELECT * from pharmacy_master_mapping") %>% data.table()
   masterfile[, (c("rxnorm_match", "drug_group")) := lapply(.SD, normalize_text, lemma = T),
     .SDcols = c("rxnorm_match", "drug_group")
   ] # for 'rxnorm_match' 'drug_group' set lemma=T to additionally convert to singular
@@ -131,7 +141,7 @@ prepare_pharm_for_validation <- function(rxnorm_res, hierarchy = TRUE, cell_supp
     .SDcols = setdiff(names(masterfile), c("rxnorm_match", "drug_group"))
   ] # normalize text for remaining cols
 
-  dbDisconnect(db_con)
+  dbDisconnect(pharm_dbcon)
   ## CHECK AND STANDARDIZE INPUT RXNORM DATA
   if (!all(class(rxnorm_res) %in% c("data.table", "data.frame", "list"))) {
     stop("Invalid input. rxnorm_res must be a dataframe or a list")
