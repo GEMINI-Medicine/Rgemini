@@ -5,6 +5,7 @@
 \title{Prepare RxNorm Data for Validation}
 \usage{
 prepare_pharm_for_validation(
+  pharm_dbcon,
   rxnorm_res,
   hierarchy = TRUE,
   cell_suppression = TRUE,
@@ -12,6 +13,11 @@ prepare_pharm_for_validation(
 )
 }
 \arguments{
+\item{pharm_dbcon}{(\code{DBIConnection})\cr
+A database connection to the Pharmacy Master Mapping Database. Only \code{DBI} connection is
+accepted as \code{odbc} connection may cause connection issues in certain environment.
+Note for GEMINI analysts: Unlike GEMINIpkg::prepare_pharm_for_validation(), Rgemini::prepare_pharm_for_validation() doesn't auto-connect to the mapping database, and you must supply the proper connection as the first argument. Please make sure to connect to the \code{pharmacy_master_mapping} database (not \code{staging.working_pharmacy_mapping}).}
+
 \item{rxnorm_res}{(\code{data.frame}, \code{data.table}, \code{list}) \cr
 An object returned by \code{rxnorm_query}, which may include matched rows only or it may additionally include unmatched rows.
 If provided as a list, it should contain \code{matched_rows} and \code{unmatched_rows}.}
@@ -103,7 +109,7 @@ Users may need to apply filters (e.g.via regex) and manual mapping to identify i
 \examples{
 \dontrun{
 drv <- dbDriver("PostgreSQL")
-# Connect to DB for Rxnorm search
+# Connect to GEMINI data DB for Rxnorm search
 clean_db <- DBI::dbConnect(drv,
   dbname = "drm_cleandb_xxx",
   host = "domain_name.ca",
@@ -112,7 +118,17 @@ clean_db <- DBI::dbConnect(drv,
   password = getPass("password")
 )
 rxnorm_res <- rxnorm_query(clean_db, drug_input = c("warfarin"), return_unmatched = F)
-res <- prepare_pharm_for_validation(rxnorm_res = rxnorm_res, hierarchy = T, cell_suppression = T, outpath = "/user_path/")
+
+# Connect to Pharmacy Master Mapping DB for validated mappings from previous projects
+pharm_db <- DBI::dbConnect(drv,
+  dbname = "pharmacy_mapping",
+  host = "domain_name.ca",
+  port = xxxx,
+  user = getPass("Enter user:"),
+  password = getPass("password")
+)
+res <- prepare_pharm_for_validation(pharm_dbcon = pharm_db, rxnorm_res = rxnorm_res, hierarchy = T, cell_suppression = T, outpath = "/user_path/")
+
 res$sme # frequency table to be validated by SME
 res$analyst # frequency table with `pharm_row_num` containing row_num information to be used by analysts after SME validation.
 
