@@ -10,19 +10,19 @@
 #' Classification keyword or specific ids like ATC are accepted.
 #' @param drug_input string or list of strings
 #' Generic or brand name is accepted. Spelling is normalized.
-#' @param detailed_search (optional, default: T) logical
+#' @param detailed_search (optional, default: TRUE) logical
 #' If true, search for every related concept to each selected drug, instead of just the selected drugs.
 #' This will greatly expand the search but will sometimes match related concepts that are not desired.
-#' @param return_unmatched (mandatory, default: F) 
+#' @param return_unmatched (mandatory, default: FALSE) 
 #' If true, the function will output a list with two vectors: 
 #' (1) First vector called matched_rows: All the matched entries in a long format same output as if the argument return_unmatched is F. 
 #' (2) Second vector called unmatched_rows: all unmatched pharmacy rows (wide format with genc_id, 6 identifying columns, and row_num) based on a list of genc_ids inputted.
 #' If false, the function will by default output matched entries in a long format for every genc_id wiht the following columns: genc_id, search_type, raw_input, rxnorm_match 
-#' @param cohort (optional, default: 'all') integer or list of integers which defines an encounter identifier.
-#' @param return_drug_list (optional, default: F) logical
+#' @param cohort (optional, default: 'all') data frame of the cohort.
+#' @param return_drug_list (optional, default: FALSE) logical
 #' Outputs the search drug list instead of searching
 #' @return
-#' For unmathced_row=F
+#' For unmatched_row = FALSE
 #' 
 #' The GEMINI pharmacy dataframe for matched rows, or NA if cancelled.
 #' An additional 'rxnorm_match' column is added specifying what rxnorm matched the row to.
@@ -31,7 +31,7 @@
 #' \dontrun{
 #' diabetes_orders_condensed <- rxnorm_query(dbcon = con,
 #'                                        drug_input = c("metformin", "insulin"),
-#'                                        return_unmatched = F)
+#'                                        return_unmatched = FALSE)
 #' }
 #'
 #' @import RCurl odbc httr jsonlite DT data.table dplyr
@@ -40,7 +40,7 @@
 
 rxnorm_query <- function(dbcon, class_input = NA, drug_input = NA, cohort = NULL, return_unmatched = FALSE, detailed_search = NULL, return_drug_list = NULL){
 
-  # Assert there is atleast one input else stop
+  # Assert there is at least one input else stop
   if(is.na(class_input[1]) & is.na(drug_input[1])){
     stop("At least one of class_input or drug_input must not be NA.")
   }
@@ -48,7 +48,7 @@ rxnorm_query <- function(dbcon, class_input = NA, drug_input = NA, cohort = NULL
   # Default detailed_search to TRUE
    if(!is.logical(detailed_search)) detailed_search <- TRUE
 
-  # If genc_id is NULL, return_unmatched can not be true
+  # If cohort is NULL, return_unmatched can not be true
   if(is.null(cohort) & return_unmatched == TRUE){
     stop("return_unmatched can not be TRUE if argument cohort is NULL since the number of pharmacy rows return will likely incapaciate your R session due to too much data being loaded into memory.")
   }
