@@ -26,23 +26,23 @@ Classification keyword or specific ids like ATC are accepted.}
 \item{drug_input}{string or list of strings
 Generic or brand name is accepted. Spelling is normalized.}
 
-\item{cohort}{(optional, default: 'all') integer or list of integers which defines an encounter identifier.}
+\item{cohort}{(optional, default: 'all') data frame of the cohort.}
 
-\item{return_unmatched}{(mandatory, default: F)
+\item{return_unmatched}{(mandatory, default: FALSE)
 If true, the function will output a list with two vectors:
 (1) First vector called matched_rows: All the matched entries in a long format same output as if the argument return_unmatched is F.
 (2) Second vector called unmatched_rows: all unmatched pharmacy rows (wide format with genc_id, 6 identifying columns, and row_num) based on a list of genc_ids inputted.
 If false, the function will by default output matched entries in a long format for every genc_id wiht the following columns: genc_id, search_type, raw_input, rxnorm_match}
 
-\item{detailed_search}{(optional, default: T) logical
+\item{detailed_search}{(optional, default: TRUE) logical
 If true, search for every related concept to each selected drug, instead of just the selected drugs.
 This will greatly expand the search but will sometimes match related concepts that are not desired.}
 
-\item{return_drug_list}{(optional, default: F) logical
+\item{return_drug_list}{(optional, default: FALSE) logical
 Outputs the search drug list instead of searching}
 }
 \value{
-For unmathced_row=F
+For unmatched_row = FALSE
 
 The GEMINI pharmacy dataframe for matched rows, or NA if cancelled.
 An additional 'rxnorm_match' column is added specifying what rxnorm matched the row to.
@@ -54,7 +54,7 @@ Retrieve rows from GEMINI pharmacy data matching specified drug term(s).
 \dontrun{
 diabetes_orders_condensed <- rxnorm_query(dbcon = con,
                                        drug_input = c("metformin", "insulin"),
-                                       return_unmatched = F)
+                                       return_unmatched = FALSE)
 }
 
 }
