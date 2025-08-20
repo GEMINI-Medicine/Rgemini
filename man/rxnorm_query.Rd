@@ -29,13 +29,13 @@ Generic or brand name is accepted. Spelling is normalized.}
 \item{cohort}{(optional, default: 'all') data frame of the cohort.}
 
 \item{return_unmatched}{(mandatory, default: FALSE)
-If true, the function will output a list with two vectors:
-(1) First vector called matched_rows: All the matched entries in a long format same output as if the argument return_unmatched is F.
+If TRUE, the function will output a list with two vectors:
+(1) First vector called matched_rows: All the matched entries in a long format same output as if the argument return_unmatched is FALSE.
 (2) Second vector called unmatched_rows: all unmatched pharmacy rows (wide format with genc_id, 6 identifying columns, and row_num) based on a list of genc_ids inputted.
-If false, the function will by default output matched entries in a long format for every genc_id wiht the following columns: genc_id, search_type, raw_input, rxnorm_match}
+If FALSE, the function will by default output matched entries in a long format for every genc_id wiht the following columns: genc_id, search_type, raw_input, rxnorm_match}
 
 \item{detailed_search}{(optional, default: TRUE) logical
-If true, search for every related concept to each selected drug, instead of just the selected drugs.
+If TRUE, search for every related concept to each selected drug, instead of just the selected drugs.
 This will greatly expand the search but will sometimes match related concepts that are not desired.}
 
 \item{return_drug_list}{(optional, default: FALSE) logical
