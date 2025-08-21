@@ -6,6 +6,9 @@
 * **Miscellanous:**
   * Added hex sticker
 
+* **New vignette:**
+  * Migrated and updated Rxnorm-Pharmacy-Mapping vignette from GEMINIpkg for `rxnorm_query()` and `prepare_pharm_for_validation`.
+
 # Rgemini `1.1.0`
 
 * **New functions:**
