@@ -254,13 +254,13 @@ knitr::include_graphics("figures/pharmacy_mapping/rxnorm_query/fig3_complera.png
 ## Important notes
 1. If a user input more than one drugs in `drug_input` or enter a class `class_input`, under `rxnorm_match` a pipe "|" may appear to separate more than one drugs which indicates that each entry (cell) from the pharmacy table is found to link to these drugs. 
 
-2. Only drugs entered into `drug_input` or drugs under `class_input` selected by users will appear under `rxnorm_match` output (even if the pharmacy entry may contain an additional drug the user didn't search for).
+2. Only drugs entered into `drug_input` or drugs under `class_input` selected by users will appear under `rxnorm_match` output (even if the pharmacy entry may contain an additional drug, it will not appear as it wasn't searched for by the user).
 
 3. Rxnorm is a US-based tool. Although this is highly uncommon, drugs that are only prescribed in Canada (and not in the US) cannot be found by RxNorm. In addition, the current `rxnorm_query` tool does not support searches based on Canadian brand names. Please use the equivalent American brand name or generic name instead.
 
 4. If `rxnorm_query` returns a warning saying "drug could not be found", please check the [RxNav website](https://mor.nlm.nih.gov/RxNav/) as sometimes there may be alternative searchable drug names based on the suggestion from the search bar. For example, Paxlovid returns the same warning, but when entered into RxNav, an auto-completion in the search bar shows "paxlovid 150 mg /100 mg dose pack". In this case, user should input "paxlovid 150 mg /100 mg dose pack" into `drug_name`.
 
-5. This function requires database version `drm_cleandb_v3_1_0` and newer. It is backward **incompatible** with database version before that, and `rxnorm_top_score` in the output has been deprecated.
+5. This function requires database or datacut prepared from version `drm_cleandb_v3_1_0` and newer. It is backward **incompatible** with database version before that, and `rxnorm_top_score` in the output has been deprecated.
 
 
 *  *  *  *
@@ -268,9 +268,9 @@ knitr::include_graphics("figures/pharmacy_mapping/rxnorm_query/fig3_complera.png
 
 # Using `prepare_pharm_for_validation`
 
-RxNorm is not a perfect tool and may generate false-positive matches. A typical workflow we recommend is consulting a SME to validate the results. This could be physician, pharmacist, or anybody with knowledge of medication. They can ensure that the pharmacy records identified by RxNorm are indeed accurate.
+**RxNorm is not a perfect tool and may generate false-positive matches. A typical workflow we recommend is consulting a SME to validate the results.** This could be physician, pharmacist, or anybody with knowledge of medication. They can ensure that the pharmacy records identified by RxNorm are indeed accurate.
 
-**`prepare_pharm_for_validation`** was developed to streamline this validation process. It helps analysts to process the RxNorm results into standardized frequency tables for validation by the SME and subsequent analyses.
+**`prepare_pharm_for_validation`** was developed to streamline this validation process. It helps analysts to process the RxNorm results into standardized frequency tables for validation and to conduct subsequent analyses.
 
 3 key advantages of using this function:
 
@@ -299,7 +299,7 @@ RxNorm is not a perfect tool and may generate false-positive matches. A typical 
 
 - With the hierarchy rule in place, it would be rare for drug information from the lowest priority column to show up in the results (i.e. iv_component_type). When that happens, it means that no drug match was found for the other 5 higher priority columns. However, it is possible that the higher priority columns suggests the pharmacy order is for a diffferent drug (not the drug of your interest): e.g., med_id_generic_name_raw = 'trimethoprim', iv_component_type = 'insulin'. Therefore, when there are iv_component_type entries in the returned results, analyst should inspect the original pharmacy order corresponding to those entries, to ensure the drug info at higher priority columns are NOT pointing to a different drug.
 
-- Note for GEMINI analysts: Rgemini::prepare_pharm_for_validation() works the same as GEMINIpkg::prepare_pharm_for_validation() except for database connection. The internal GEMINIpkg version auto-connects to the default mapping database, while the Rgemini version requires you to pass a database connection as the first argument. This modification is to support broader use cases in HPC4Health. If you are migrating from the GEMINIpkg function to Rgemini, please update your call to specify database connection to the `pharmacy_master_mapping` database (not `staging.working_pharmacy_mapping`).
+- Note for GEMINI analysts: `Rgemini::prepare_pharm_for_validation()` works the same as `GEMINIpkg::prepare_pharm_for_validation()` except for database connection. The internal GEMINIpkg version auto-connects to the default mapping database, while the Rgemini version requires you to pass a database connection as the first argument. This modification is to support broader use cases in HPC4Health. If you are migrating from the GEMINIpkg function to Rgemini, please update your code to specify database connection to the `pharmacy_master_mapping` database (not `staging.working_pharmacy_mapping`).
 
 
 ## Insulin example
@@ -324,12 +324,6 @@ prep_res <- prepare_pharm_for_validation(
   cell_suppression = T,
   outpath = "path/to/output/folder/"
 )
-```
-
-
-Upon running, the user will be prompted to provide their username and password to establish a connection to the database hosting the Pharmacy Master Mapping file.
-```{r, echo=FALSE, out.width = "100%", fig.align = "center", fig.cap="" }
-knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/fig1_prepare_pharm_run.png", dpi = 200)
 ```
 
 
@@ -377,16 +371,16 @@ knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/f
 ```
 
 - Same table as prep_res$sme, with one additional column: `pharm_row_num`. 
-- **`pharm_row_num` is a LIST storing `row_num`** - a unique identifier for each row of the pharmacy table. Analysts will need these values to retrieve encounter-level data from the pharmacy table after SME-validation. See [*Guidelines for post-validation*](#section-post-valid). Since `pharm_row_num` contains encounter-level data, use of this table is restricted within the secure HPC environment (e.g. NORA, HPC4Health). **Egress Outside The HPC Environment is Not Permitted**. For illustration purposes of the Vignette, the last digits of `pharm_row_num` are hidden.
+- **`pharm_row_num` is a LIST storing `row_num`** - a unique identifier for each row of the pharmacy table. Analysts will need these values to retrieve encounter-level data from the pharmacy table after SME-validation. See [*Guidelines for post-validation*](#section-post-valid). Since `pharm_row_num` contains encounter-level data, use of this table is restricted within the secure HPC environment (e.g. NORA, HPC4Health). **Egress Outside The HPC Environment is Not Permitted**. For illustration purposes of this vignette, the last digits of `pharm_row_num` are hidden.
 
 
 ### SME validation
 
-When the user specifies a folder path to `outpath`, a file named `pharmacy_mapping_for_SME.xlsx` is exported to the corresponding folder. This file corresponds to the frequency table in `prep_res$sme` in the user's GlobalEnv. It is intended for sharing with the SME for validation.
+When the user specifies a folder path to `outpath`, a file named `pharmacy_mapping_for_SME.xlsx` is exported to the corresponding folder. This file is the frequency table in `prep_res$sme` in the user's GlobalEnv. It is intended for sharing with the SME for validation.
 
 To share this aggregated data file with the SME, analysts must submit a file transfer request for GEMINI review. **Only approved files may be exported and shared**.
 
-Analyst should clearly explain to the SME how to use this table to conduct validation. Below are the key guidelines:
+Analyst should clearly explain to the SME how to use this table to conduct validation, following the key guidelines:
 
   1. Columns highlighted in <span style="background-color: yellow;">yellow</span>: 'SME_confirm', 'SME_comment' should be filled out by the SME.
 <div style="padding-left: 40px;">
@@ -403,7 +397,7 @@ knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/f
   
   5. *times_validated* allows SME to prioritize verifying entries that haven't been validated yet (times_validated = 0). However, SME should also review previously validated entries and flag any errors they find.
 
-  6. In cases where *drug_group* is missing: If applicable to the project, the SME should complete the *drug_group* column manually. Otherwise, the analyst can reach out to GEMINI's internal SME to fill it out later, which is **required** when adding the validated mappings to the database (see [*Using add_validated_pharm_map*](#section-db-upload)).
+  6. Missing *drug_group*: the SME can choose to fill out the *drug_group* column if it is relevant for the project. For GEMINI analysts, *drug_group* field must be completed for database upload; please reach out to GEMINI's internal SME to fill it out before adding the validated mappings to the database (see [*Using add_validated_pharm_map*](#section-db-upload)).
 
   7. No rows should be deleted from the table.
 
@@ -814,7 +808,7 @@ Once the SME-validated mappings are finalized, they should be integrated into GE
 
 **GEMINI Analysts** are expected to document and perform the integration.
 
-**HPC4Health users** are encouraged to contribute their mappings for inclusion in the our database, enabling reuser in future work. To prepare your mapping for database upload, please follow the requirements below.
+**HPC4Health users** are encouraged to contribute their mappings for inclusion in the our database, enabling reuse in future work. To prepare your mapping for database upload, please follow the requirements below.
 
 1. Analyst should format the mapping file according to the following requirements:
     + The file must **have and only have** the following columns from the SME-validated frequency table: `search_type`, `raw_input`, `rxnorm_match`, `SME_confirm`, and `drug_group`.
