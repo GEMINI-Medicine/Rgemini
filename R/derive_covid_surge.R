@@ -28,6 +28,7 @@
 #' `surge_index` (`numeric`)
 #'
 #' @import DBI RPostgreSQL
+#' @importFrom lubridate ymd_hm floor_month
 #' @export
 #'
 #' @examples
@@ -98,7 +99,8 @@ derive_covid_surge <- function(db, time_period = c("2015-04-01", "2023-06-30"), 
 
     ### now make numerator
     ## make month-year
-    covid_encounters[, month_year := substr(discharge_date_time, 1, 7)]
+    covid_encounters <- covid_encounters %>%
+        mutate(month_year = floor_date(ymd_hm(discharge_date_time), unit = "month"))
 
     ## group by month-year, get sum of each grouping
     ### 
@@ -107,6 +109,38 @@ derive_covid_surge <- function(db, time_period = c("2015-04-01", "2023-06-30"), 
     ## calculate numerator using above
     surge_table[, surge_index_num := 10 * (no_icu_count + 2 * (icu_vent_count) + 5 * (invasive_vent_count))]
 
+    ### now calculate the denominator using daily_census as approximation
+    ### currently using 2019-12-31 as end baseline as there are covid diagnoses
+    ### in Jan 2020
+    ## pull encounters in time period
+    #### keeping hospital_id since num is not on cleandb dad rn
+    cohort <- dbGetQuery(db, "select a.genc_id, l.hospital_num, a.hospital_id, a.admission_date_time, a.discharge_date_time from admdad a join lookup_hospital l on a.hospital_id = l.hospital_id") %>%
+        data.table()
+
+    # convert to factor for merging
+    cohort$hospital_num <- as.factor(cohort$hospital_num)
+
+    ### now pull census data, take most recent data
+    daily_census_data <- quiet(Rgemini::daily_census(cohort, time_period = c("2015-04-01", "2019-12-31"), capacity_func = "max")) %>%
+        group_by(hospital_num) %>%
+        slice_max(date_time) %>%
+        data.table()
+    
+    ## add hospital_id back in
+    daily_census_data <- merge(daily_census_data, unique(cohort[, .(hospital_num, hospital_id)]), by = "hospital_num")
+
+    ### pull max bed #
+    # since capacity_ratio = census/measure
+    # max_beds = census/capacity_ratio
+    daily_census_data[, max_beds := round(census/capacity_ratio)]
+
+    ## add denominator to surge_table
+    surge_table <- merge(surge_table, daily_census_data[, .(hospital_id, max_beds)], by = "hospital_id")
+
+    ## calculate surge index
+    surge_table[, surge_index := surge_index_num/max_beds]
+
+
     ## select hospital_id, month_year, numerator
-    return(surge_table[, .(hospital_id, month_year, surge_index_num)][order(hospital_id, month_year)])
+    return(surge_table[, .(hospital_id, month_year, surge_index, surge_index_num, max_beds)][order(hospital_id, month_year)])
 }
