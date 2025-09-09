@@ -22,7 +22,7 @@ Imports:
 	lemon,
     lubridate, 
     purrr,
-    reactable
+    reactable,
     reshape2,
     RCurl,
     RPostgreSQL,
