@@ -10,20 +10,20 @@ rxnorm_query(
   drug_input = NA,
   cohort = NULL,
   return_unmatched = FALSE,
-  detailed_search = NULL,
-  return_drug_list = NULL
+  detailed_search = TRUE,
+  return_drug_list = FALSE
 )
 }
 \arguments{
 \item{dbcon}{PostgreSQL connection class
-The connection object for the desired database and user. Obtained with odbc::dbConnect()
+The connection object for the desired database and user. Obtained with DBI::dbConnect()
 Supported database versions: drm_cleandb_v3_1_0 / H4H_v5 or newer
 Older DBs lack \code{row_num} in the pharmacy table and are therefore incompatible with the RxNorm workflow.}
 
-\item{class_input}{string or list of strings
+\item{class_input}{(optional, default: NA) string or list of strings
 Classification keyword or specific ids like ATC are accepted.}
 
-\item{drug_input}{string or list of strings
+\item{drug_input}{(optional, default: NA) string or list of strings
 Generic or brand name is accepted. Spelling is normalized.}
 
 \item{cohort}{(optional, default: 'all') data frame of the cohort.}
