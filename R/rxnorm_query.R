@@ -1,5 +1,4 @@
 ### Pharmacy Mapper ###
-# Takes in a classification term and outputs pharmacy rows that match
 #' Retrieve rows from GEMINI pharmacy data matching specified drug term(s).
 #'
 #' @param dbcon PostgreSQL connection class
