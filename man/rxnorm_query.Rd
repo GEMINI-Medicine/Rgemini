@@ -17,7 +17,7 @@ rxnorm_query(
 \arguments{
 \item{dbcon}{PostgreSQL connection class
 The connection object for the desired database and user. Obtained with odbc::dbConnect()
-Supports drm_cleandb_v3_1_0 and up!
+Supported database versions: drm_cleandb_v3_1_0 / H4H_v5 or newer
 Older DBs lack row_num so it will not work}
 
 \item{class_input}{string or list of strings
