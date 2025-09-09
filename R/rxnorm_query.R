@@ -2,13 +2,13 @@
 #' Retrieve rows from GEMINI pharmacy data matching specified drug term(s).
 #'
 #' @param dbcon PostgreSQL connection class
-#' The connection object for the desired database and user. Obtained with DBI::dbConnect
+#' The connection object for the desired database and user. Obtained with DBI::dbConnect()
 #' Supported database versions: drm_cleandb_v3_1_0 / H4H_v5 or newer
 #' Older DBs lack `row_num` in the pharmacy table and are therefore incompatible with the RxNorm workflow.
-#' @param class_input string or list of strings
-#' Classification keyword or specific ids like ATC are accepted.
 #' @param drug_input string or list of strings
 #' Generic or brand name is accepted. Spelling is normalized.
+#' @param class_input (optional, default: NA) string or list of strings
+#' Classification keyword or specific ids like ATC are accepted.
 #' @param detailed_search (optional, default: TRUE) logical
 #' If TRUE, search for every related concept to each selected drug, instead of just the selected drugs.
 #' This will greatly expand the search but will sometimes match related concepts that are not desired.
@@ -37,23 +37,17 @@
 #'
 #' @export
 
-rxnorm_query <- function(dbcon, class_input = NA, drug_input = NA, cohort = NULL, return_unmatched = FALSE, detailed_search = NULL, return_drug_list = NULL){
+rxnorm_query <- function(dbcon, class_input = NA, drug_input = NA, cohort = NULL, return_unmatched = FALSE, detailed_search = TRUE, return_drug_list = FALSE){
 
   # Assert there is at least one input else stop
-  if(is.na(class_input[1]) & is.na(drug_input[1])){
+  if (is.na(class_input[1]) & is.na(drug_input[1])) {
     stop("At least one of class_input or drug_input must not be NA.")
   }
-
-  # Default detailed_search to TRUE
-   if(!is.logical(detailed_search)) detailed_search <- TRUE
-
+  
   # If cohort is NULL, return_unmatched can not be TRUE
   if(is.null(cohort) & return_unmatched == TRUE){
     stop("return_unmatched can not be TRUE if argument cohort is NULL since the number of pharmacy rows return will likely incapaciate your R session due to too much data being loaded into memory.")
   }
-
-  # Default return_drug_list to FALSE
-  if(!is.logical(return_drug_list)) return_drug_list <- FALSE
 
   if(!is.na(class_input[1])){
     ###### CLASSIFICATION SEARCH ######
