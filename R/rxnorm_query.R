@@ -2,7 +2,7 @@
 #' Retrieve rows from GEMINI pharmacy data matching specified drug term(s).
 #'
 #' @param dbcon PostgreSQL connection class
-#' The connection object for the desired database and user. Obtained with odbc::dbConnect()
+#' The connection object for the desired database and user. Obtained with DBI::dbConnect
 #' Supported database versions: drm_cleandb_v3_1_0 / H4H_v5 or newer
 #' Older DBs lack `row_num` in the pharmacy table and are therefore incompatible with the RxNorm workflow.
 #' @param class_input string or list of strings
@@ -33,7 +33,7 @@
 #'                                        return_unmatched = FALSE)
 #' }
 #'
-#' @import RCurl odbc httr jsonlite DT data.table dplyr
+#' @import data.table DBI dplyr httr jsonlite RCurl reactable RPostgreSQL
 #'
 #' @export
 
@@ -109,7 +109,16 @@ rxnorm_query <- function(dbcon, class_input = NA, drug_input = NA, cohort = NULL
     rownames(class_list) <- NULL
 
     # Prompt user to select an ATC class
-    print(datatable(class_list))
+    print(reactable(
+          class_list,
+          searchable = TRUE,
+          pagination = TRUE,
+          defaultPageSize = 10,
+          pageSizeOptions = c(10, 25, 50, 100),
+          showPageSizeOptions = TRUE,   # Show the dropdown for page size
+          striped = TRUE,
+          highlight = TRUE
+        ))
     cat("\nThe table in the viewer displays the drug classes containing your search term.
         Press enter to confirm all, or enter the indexes to remove separated by commas.
         (or enter c to cancel)")
@@ -228,7 +237,16 @@ rxnorm_query <- function(dbcon, class_input = NA, drug_input = NA, cohort = NULL
 
   ###### RXCUI SEARCH ######
   # Prompt user to confirm the drugs
-  print(datatable(drug_list))
+  print(reactable(
+        drug_list,
+        searchable = TRUE,
+        pagination = TRUE,
+        defaultPageSize = 10,
+        pageSizeOptions = c(10, 25, 50, 100),
+        showPageSizeOptions = TRUE,   # Show the dropdown for page size
+        striped = TRUE,
+        highlight = TRUE
+      ))
   cat("\nThe table in the viewer displays the drugs that will be searched.
       Press enter to confirm all, or enter the indexes to remove separated by commas.
       (or enter c to cancel)")
@@ -322,7 +340,7 @@ query_str <- paste0(
     cat("Searching database. This may take a few minutes...\n")
     # Pull the data from the databases
     tryCatch({
-      pharm_matches <- odbc::dbGetQuery(dbcon, query_str)
+      pharm_matches <- DBI::dbGetQuery(dbcon, query_str)
     }, error = function(e) {
       print(e)
       stop("Error occured when querying database. Please re-create your database connection and try again.")
