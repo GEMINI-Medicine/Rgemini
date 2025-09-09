@@ -50,6 +50,7 @@ rxnorm_query <- function(dbcon, class_input = NA, drug_input = NA, cohort = NULL
   }
 
   if(!is.na(class_input[1])){
+    
     ###### CLASSIFICATION SEARCH ######
     # Find ATC classes with search_input in name or id
     call <- paste0("https://rxnav.nlm.nih.gov/REST/",
