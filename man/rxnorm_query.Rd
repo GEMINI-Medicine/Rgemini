@@ -52,9 +52,11 @@ Retrieve rows from GEMINI pharmacy data matching specified drug term(s).
 }
 \examples{
 \dontrun{
-diabetes_orders_condensed <- rxnorm_query(dbcon = con,
-                                       drug_input = c("metformin", "insulin"),
-                                       return_unmatched = FALSE)
+diabetes_orders_condensed <- rxnorm_query(
+  dbcon = con,
+  drug_input = c("metformin", "insulin"),
+  return_unmatched = FALSE
+)
 }
 
 }
