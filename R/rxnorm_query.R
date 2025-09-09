@@ -5,7 +5,7 @@
 #' The connection object for the desired database and user. Obtained with DBI::dbConnect()
 #' Supported database versions: drm_cleandb_v3_1_0 / H4H_v5 or newer
 #' Older DBs lack `row_num` in the pharmacy table and are therefore incompatible with the RxNorm workflow.
-#' @param drug_input string or list of strings
+#' @param drug_input (optional, default: NA) string or list of strings
 #' Generic or brand name is accepted. Spelling is normalized.
 #' @param class_input (optional, default: NA) string or list of strings
 #' Classification keyword or specific ids like ATC are accepted.
