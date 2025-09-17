@@ -12,10 +12,11 @@
 #' If TRUE (default), the function searches for every related concept to each selected drug, instead of just the selected drugs.
 #' This will greatly expand the search and increase sensitivity, but will sometimes result in false positive matches.
 #' @param return_unmatched (`logical`)
-#' If TRUE, the function will output a list with two vectors:
-#' (1) First vector called matched_rows: All the matched entries in a long format same output as if the argument return_unmatched is FALSE.
-#' (2) Second vector called unmatched_rows: all unmatched pharmacy rows (wide format with genc_id, 6 identifying columns, and row_num) based on a list of genc_ids inputted.
-#' If FALSE, the function will by default output matched entries in a long format for every genc_id wiht the following columns: genc_id, search_type, raw_input, rxnorm_match
+#' If FALSE (default), the function will only return pharmacy entries that Rxnorm matched to the searched drugs.
+#' If TRUE, the function will additionally return all unmatched rows, allowing users to inspect pharmacy entries that Rxnorm did not match to the searched drug(s) of interest. The function will return a list with 2 items:
+#' 1) `matched_rows`: All the matched entries (same output as if the argument return_unmatched is FALSE).
+#' 2) `unmatched_rows`: All unmatched pharmacy rows for a cohort of interest.
+`return_unmatched = TRUE` is only supported when users specify a `cohort` input to avoid memory issues. 
 #' @param cohort (optional, default: 'all') data frame of the cohort.
 #' @param return_drug_list (optional, default: FALSE) logical
 #' Outputs the search drug list instead of searching
