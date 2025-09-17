@@ -22,11 +22,13 @@
 #' @param return_drug_list (`logical`)
 #' Optional input allowing users to return the list of searched drugs, instead of running the search (e.g., when planning a search by ATC class).
 #' @return
-#' For unmatched_row = FALSE
+#' By default, `rxnorm_query` returns a `data.table` containing the rows from the pharmacy table that Rxnorm matched to the drug(s) of interest. Entries are returned in long format for each `genc_id`, together with the following additional columns: 
+#' - `search_type`: Pharmacy column where drug match was found
+#' - `raw_input`: Corresponding entry in the matched row(s) of the pharmacy table
+#' - `row_num`: Row ID of matched pharmacy entries
+#' - `rxnorm_match`: Rxnorm output specifying which of the searched drug(s) the pharmacy entry was matched to. 
 #'
-#' The GEMINI pharmacy dataframe for matched rows, or NA if cancelled.
-#' An additional 'rxnorm_match' column is added specifying what rxnorm matched the row to.
-#'
+#' When `return_unmatched` is TRUE, the 2nd list item of the output will contain a `data.table` with the unmatched rows, containing all columns from the pharmacy table included in the Rxnorm search.
 #' @examples
 #' \dontrun{
 #' diabetes_orders_condensed <- rxnorm_query(
