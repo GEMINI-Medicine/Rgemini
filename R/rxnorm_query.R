@@ -61,7 +61,7 @@ rxnorm_query <- function(dbcon, drug_name = NULL, drug_class = NULL, cohort = NU
 
   # If cohort is NULL, return_unmatched can not be TRUE
   if (is.null(cohort) && return_unmatched == TRUE) {
-    stop("return_unmatched can not be TRUE if argument cohort is NULL since the number of pharmacy rows return will likely incapaciate your R session due to too much data being loaded into memory.")
+    stop("return_unmatched cannot be TRUE if argument cohort is NULL since the large number of unmatched pharmacy rows would likely cause memory issues.")
   }
 
   if (!is.na(class_input[1])) {
