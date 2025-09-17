@@ -49,7 +49,8 @@
 #' }
 #'
 #' @import DBI httr jsonlite RCurl reactable RPostgreSQL
-#'
+#' @references
+#' Waters R, et al. JAMIA Open, 2023. https://doi.org/10.1093/jamiaopen/ooad062
 #' @export
 
 rxnorm_query <- function(dbcon, class_input = NA, drug_input = NA, cohort = NULL, return_unmatched = FALSE, detailed_search = TRUE, return_drug_list = FALSE) {
