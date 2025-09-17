@@ -1,9 +1,8 @@
 ### Pharmacy Mapper ###
 #' Retrieve rows from GEMINI pharmacy data matching specified drug term(s).
 #'
-#' @param dbcon PostgreSQL connection class
-#' The connection object for the desired database and user. Obtained with DBI::dbConnect()
-#' Supported database versions: drm_cleandb_v3_1_0 / H4H_v5 or newer
+#' @param dbcon (`DBIConnection`)
+#' A database connection to a GEMINI database. Requires version drm_cleandb_v3_1_0 / H4H_v5 or newer.
 #' Older DBs lack `row_num` in the pharmacy table and are therefore incompatible with the RxNorm workflow.
 #' @param drug_input (optional, default: NA) string or list of strings
 #' Generic or brand name is accepted. Spelling is normalized.
