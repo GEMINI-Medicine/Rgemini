@@ -53,7 +53,7 @@
 #' Waters R, et al. JAMIA Open, 2023. https://doi.org/10.1093/jamiaopen/ooad062
 #' @export
 
-rxnorm_query <- function(dbcon, class_input = NA, drug_input = NA, cohort = NULL, return_unmatched = FALSE, detailed_search = TRUE, return_drug_list = FALSE) {
+rxnorm_query <- function(dbcon, drug_name = NULL, drug_class = NULL, cohort = NULL, return_unmatched = FALSE, detailed_search = TRUE, return_drug_list = FALSE) {
   # Assert there is at least one input else stop
   if (is.na(class_input[1]) & is.na(drug_input[1])) {
     stop("At least one of class_input or drug_input must not be NA.")
