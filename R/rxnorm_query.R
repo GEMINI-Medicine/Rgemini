@@ -249,7 +249,7 @@ rxnorm_query <- function(dbcon, class_input = NA, drug_input = NA, cohort = NULL
       arrange(drug_name)
   } else if (!is.na(drug_input[1])) {
     drug_list <- drug_list_drug
-  } else if (!is.na(class_input[1])) {
+  } else if (!is.null(drug_class)) {
     drug_list <- drug_list_class
   } else {
     stop("No drugs found.")
