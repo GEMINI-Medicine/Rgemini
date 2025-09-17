@@ -11,7 +11,7 @@
 #' @param detailed_search (`logical`)
 #' If TRUE (default), the function searches for every related concept to each selected drug, instead of just the selected drugs.
 #' This will greatly expand the search and increase sensitivity, but will sometimes result in false positive matches.
-#' @param return_unmatched (mandatory, default: FALSE)
+#' @param return_unmatched (`logical`)
 #' If TRUE, the function will output a list with two vectors:
 #' (1) First vector called matched_rows: All the matched entries in a long format same output as if the argument return_unmatched is FALSE.
 #' (2) Second vector called unmatched_rows: all unmatched pharmacy rows (wide format with genc_id, 6 identifying columns, and row_num) based on a list of genc_ids inputted.
