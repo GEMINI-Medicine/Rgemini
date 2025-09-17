@@ -6,35 +6,35 @@ To submit suggestions for bug fixes/enhancements, please create a [new issue](ht
 
 ## Code development 
 
-To make changes to the `Rgemini` codebase/documentation, please follow these steps:
+To make changes to the `Rgemini` codebase/documentation, please follow these steps and guidelines:
 
 1. Create a new issue or assign yourself to an existing issue you want to work on.
 
 2. Create a new branch off `develop`. The branch name should contain the issue number. 
 
 3. Commit all changes to this newly created branch and include the issue number in each commit message. 
-
-4. Once you finish code development, add a new item at the top of `NEWS.md` concisely describing what's changed.
   
-6. Run a styler and linter on any new code using `styler:::style_active_file()` and `lintr::lint("path/to/file.R")`. Make sure you are using `lintr` version 3.0.0 or newer for compatibility with the package `.lintr` file.
+4. Run a styler and linter on any new code using `styler:::style_active_file()` and `lintr::lint("path/to/file.R")`. Make sure you are using `lintr` version 3.0.0 or newer for compatibility with the package `.lintr` file.
 
-7. If appropriate, add unit tests in the `tests/testthat/` directory. For bug fixes, it's usually helpful to include a unit test for the identified bug. Note that the CI/CD workflow automatically runs all unit tests in both R and Python (via rpy2) to ensure cross-language compatibility. For Python-specific debugging during development, see the [Python Testing Workflow guide](https://github.com/GEMINI-Medicine/Rgemini/discussions/201).
+5. If appropriate, add unit tests in the `tests/testthat/` directory. For bug fixes, it's usually helpful to include a unit test for the identified bug. Note that the CI/CD workflow automatically runs all unit tests in both R and Python (via rpy2) to ensure cross-language compatibility. For Python-specific debugging during development, see the [Python Testing Workflow guide](https://github.com/GEMINI-Medicine/Rgemini/discussions/201).
    
-9. If adding new package dependencies: First check whether existing dependencies listed in (DESCRIPTION.md)[https://github.com/GEMINI-Medicine/Rgemini/blob/main/DESCRIPTION] could achieve a similar task (we want to try and minimize package dependencies where possible). If you do require a new library, please add it under the `Imports` section in (DESCRIPTION.md)[https://github.com/GEMINI-Medicine/Rgemini/blob/main/DESCRIPTION]. If a package is not strictly necessary to run `Rgemini` functions, but is used for illustration purposes in vignettes, please list it under `Suggests`.
+6. If adding new functions, update the `_pkgdown.yml` file by adding the new function to the appropriate reference section. Note that the `Rgemini` repository currently has a CI/CD workflow to generate and commit documentation on any pushed commit, but `devtools::document()` can also be run during development to debug locally. 
 
-10. If adding new functions with new documentation, update the `_pkgdown.yml` file by adding the new function to the appropriate reference section. Note that the `Rgemini` repository currently has a CI/CD workflow to generate and commit documentation on any pushed commit, but `devtools::document()` can also be run during development to debug locally. 
+7. If adding new package dependencies: First check whether existing dependencies listed in (DESCRIPTION.md)[https://github.com/GEMINI-Medicine/Rgemini/blob/main/DESCRIPTION] could achieve a similar task (we want to try and minimize package dependencies where possible). If you do require a new library, please add it under the `Imports` section in (DESCRIPTION.md)[https://github.com/GEMINI-Medicine/Rgemini/blob/main/DESCRIPTION]. If a package is not strictly necessary to run `Rgemini` functions, but is used for illustration purposes in vignettes, please list it under `Suggests`.
+   
+8. Functions derived based on published articles (e.g. clinical scores) should include a `references` section in `roxygen`. The citation format is: `1st_author_last_name 1st_author_initial, et al. Journal Abbreviation, Year. https://doi.org/xxxx.`. URLs should be presented as-is without hyperlinking and DOI URLs should be used whenever possible. Note that commonly known online resources (e.g. links CIHI documentations, data dictionary) might not require a `references` section and can be included as hyperlinks in any `roxygen` section.
 
-11. Note that any new package data should be saved as a `.rda` file in the `data/` directory, and should be documented with `roxygen` in `data.R`.
+9. Any new package data should be saved as an `.rda` file in the `data/` directory, and should be documented with `roxygen` in `data.R`.
 
-12. Functions derived based on published articles (e.g. clinical scores) should include a `references` section in `roxygen`. The citation format is: `1st_author_last_name 1st_author_initial, et al. Journal Abbreviation, Year. https://doi.org/xxxx.`. URLs should be presented as-is without hyperlinking and DOI URLs should be used whenever possible. Note that commonly known online resources (e.g. links CIHI documentations, data dictionary) might not require a `references` section and can be included as hyperlinks in any `roxygen` section.
+10. Once you finish code development and all relevant documentation, add a new item at the top of `NEWS.md` concisely describing what's changed.
 
-13. Submit a [pull request (PR)](https://help.github.com/articles/using-pull-requests) into the `develop` branch.
+11. Submit a [pull request (PR)](https://help.github.com/articles/using-pull-requests) into the `develop` branch.
 
-14. Ask a team member to review the changes (see guidelines for reviewers below) and implement additional changes based on the reviewer's feedback.
+12. Ask a team member to review the changes (see guidelines for reviewers below) and implement additional changes based on the reviewer's feedback.
 
-15. Once the reviewer has approved the pull request, resolve any merge conflicts and CI/CD errors.
+13. Once the reviewer has approved the pull request, resolve any merge conflicts and CI/CD errors.
 
-16. Finally, squash all commits (confirm the PR # is referenced in the squash commit message) and merge the branch into `develop`, close the issue, and delete the branch you developed on.
+14. Finally, squash all commits (confirm the PR # is referenced in the squash commit message) and merge the branch into `develop`, close the issue, and delete the branch you developed on.
 
 
 ## Reviewing code
