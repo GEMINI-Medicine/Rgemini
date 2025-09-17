@@ -8,7 +8,7 @@
 #' Name of drug to search for (e.g., "amoxicillin"). Generic or brand name is accepted. Multiple drugs can be provided as a character vector. If empty, function expects `drug_class` input instead.
 #' @param class_input (`character`)
 #' Optional input: Can be used as an alternative to `drug_input` to search whole drug classes based on ATC code (e.g., "J05" = Antivirals for systemic use), rather than searching for individual drug names.
-#' @param detailed_search (optional, default: TRUE) logical
+#' @param detailed_search (`logical`)
 #' If TRUE, search for every related concept to each selected drug, instead of just the selected drugs.
 #' This will greatly expand the search but will sometimes match related concepts that are not desired.
 #' @param return_unmatched (mandatory, default: FALSE)
