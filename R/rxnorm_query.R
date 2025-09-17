@@ -19,8 +19,8 @@
 `return_unmatched = TRUE` is only supported when users specify a `cohort` input to avoid memory issues. 
 #' @param cohort (`data.table` or `data.frame`)
 #' Optional input allowing users to specify a cohort of interest. Needs to include GEMINI encounter ID (`genc_id`). By default, the whole GEMINI pharmacy table will be included in the Rxnorm search.
-#' @param return_drug_list (optional, default: FALSE) logical
-#' Outputs the search drug list instead of searching
+#' @param return_drug_list (`logical`)
+#' Optional input allowing users to return the list of searched drugs, instead of running the search (e.g., when planning a search by ATC class).
 #' @return
 #' For unmatched_row = FALSE
 #'
