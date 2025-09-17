@@ -194,7 +194,7 @@ rxnorm_query <- function(dbcon, drug_name = NULL, drug_class = NULL, cohort = NU
       summarise(atc_class = paste(atc_class, collapse = ", "), .groups = "drop")
   }
 
-  if (!is.na(drug_input[1])) {
+  if (!is.null(drug_name)) {
     ###### DRUG NAME SEARCH ######
     # Find drugs with the names in list
     drug_list <- data.table()
