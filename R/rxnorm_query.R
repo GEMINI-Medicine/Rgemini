@@ -10,7 +10,7 @@
 #' Optional input: Can be used as an alternative to `drug_input` to search whole drug classes based on ATC code (e.g., "J05" = Antivirals for systemic use), rather than searching for individual drug names.
 #' @param detailed_search (`logical`)
 #' If TRUE (default), the function searches for every related concept to each selected drug, instead of just the selected drugs.
-#' This will greatly expand the search but will sometimes match related concepts that are not desired.
+#' This will greatly expand the search and increase sensitivity, but will sometimes result in false positive matches.
 #' @param return_unmatched (mandatory, default: FALSE)
 #' If TRUE, the function will output a list with two vectors:
 #' (1) First vector called matched_rows: All the matched entries in a long format same output as if the argument return_unmatched is FALSE.
