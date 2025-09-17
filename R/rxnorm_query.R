@@ -4,8 +4,8 @@
 #' @param dbcon (`DBIConnection`)
 #' A database connection to a GEMINI database. Requires version drm_cleandb_v3_1_0 / H4H_v5 or newer.
 #' Older DBs lack `row_num` in the pharmacy table and are therefore incompatible with the RxNorm workflow.
-#' @param drug_input (optional, default: NA) string or list of strings
-#' Generic or brand name is accepted. Spelling is normalized.
+#' @param drug_name (`character`)
+#' Name of drug to search for (e.g., "amoxicillin"). Generic or brand name is accepted. Multiple drugs can be provided as a character vector. If empty, function expects `drug_class` input instead.
 #' @param class_input (optional, default: NA) string or list of strings
 #' Classification keyword or specific ids like ATC are accepted.
 #' @param detailed_search (optional, default: TRUE) logical
