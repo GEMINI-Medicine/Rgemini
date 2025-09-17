@@ -332,7 +332,7 @@ rxnorm_query <- function(dbcon, class_input = NA, drug_input = NA, cohort = NULL
   # Pull the pharmacy rows that match the rxcui list
   # NOTE: This will have to be changed to your database!
 
-  # Should create a genc_id temp table if opt$genc_id is not all
+  # Should create a genc_id temp table if user-defined cohort is provided
   if (!is.null(cohort)) {
     cohort <- data.table(cohort)
     dbSendQuery(dbcon, "Drop table if exists genc_temp;") # Drop if exists
