@@ -383,7 +383,7 @@ rxnorm_query <- function(dbcon, class_input = NA, drug_input = NA, cohort = NULL
   cat("Finalizing. This may take a few minutes...\n")
   # Attach the name of matched drugs, combined from all matches
   final_matches <- pharm_matches %>%
-    merge(drug_list, by = "rxcui", all.x = T) %>%
+    merge(drug_list, by = "rxcui", all.x = TRUE) %>%
     dplyr::rename(rxnorm_match = drug_name) %>%
     select(-rxcui) %>%
     as.data.table() %>%
