@@ -261,7 +261,7 @@ rxnorm_query <- function(dbcon, class_input = NA, drug_input = NA, cohort = NULL
       mutate(atc_class = ifelse(rxcui %in% rxcui_overlap, paste0(atc_class, ", MANUAL"), atc_class)) %>%
       rbind(drug_list_drug) %>%
       arrange(drug_name)
-  } else if (!is.na(drug_input[1])) {
+  } else if (!is.null(drug_name)) {
     drug_list <- drug_list_drug
   } else if (!is.null(drug_class)) {
     drug_list <- drug_list_class
