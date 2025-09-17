@@ -31,10 +31,20 @@
 #' When `return_unmatched` is TRUE, the 2nd list item of the output will contain a `data.table` with the unmatched rows, containing all columns from the pharmacy table included in the Rxnorm search.
 #' @examples
 #' \dontrun{
-#' diabetes_orders_condensed <- rxnorm_query(
-#'   dbcon = con,
-#'   drug_input = c("metformin", "insulin"),
-#'   return_unmatched = FALSE
+#' # Connect to DB
+#' drv <- dbDriver("PostgreSQL")
+#' dbcon <- DBI::dbConnect(drv,
+#'   dbname = "db",
+#'   host = "domain_name.ca",
+#'   port = 1234,
+#'   user = getPass("Username: "),
+#'   password = getPass("Password: ")
+#' )
+#'
+#' # Run Rxnorm query
+#' rxnorm_res <- rxnorm_query(
+#'   dbcon = dbcon,
+#'   drug_input = c("metformin", "insulin")
 #' )
 #' }
 #'
