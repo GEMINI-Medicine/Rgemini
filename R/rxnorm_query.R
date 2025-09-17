@@ -64,7 +64,7 @@ rxnorm_query <- function(dbcon, drug_name = NULL, drug_class = NULL, cohort = NU
     stop("return_unmatched cannot be TRUE if argument cohort is NULL since the large number of unmatched pharmacy rows would likely cause memory issues.")
   }
 
-  if (!is.na(class_input[1])) {
+  if (!is.null(drug_class)) {
     ###### CLASSIFICATION SEARCH ######
     # Find ATC classes with search_input in name or id
     call <- paste0(
