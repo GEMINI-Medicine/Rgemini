@@ -255,7 +255,7 @@ rxnorm_query <- function(dbcon, drug_name = NULL, drug_class = NULL, cohort = NU
     drug_list_drug <- distinct(drug_list)
   }
   if (!is.null(drug_name) && !is.null(drug_class)) {
-    cat("\n Warning Detected both drug_input and class_input. A union of the two will be used to search. Previous version was an intersect \n")
+    cat("\n Warning: Detected both `drug_name` and `drug_class` input. A union of the two will be used to search.\n")
     rxcui_overlap <- union(drug_list_drug$rxcui, drug_list_class$rxcui) # It's time we don't use intersect but union here.
     drug_list_drug <- drug_list_drug %>% filter(!rxcui %in% rxcui_overlap)
     drug_list <- drug_list_class %>%
