@@ -6,8 +6,8 @@
 #' Older DBs lack `row_num` in the pharmacy table and are therefore incompatible with the RxNorm workflow.
 #' @param drug_name (`character`)
 #' Name of drug to search for (e.g., "amoxicillin"). Generic or brand name is accepted. Multiple drugs can be provided as a character vector. If empty, function expects `drug_class` input instead.
-#' @param class_input (optional, default: NA) string or list of strings
-#' Classification keyword or specific ids like ATC are accepted.
+#' @param class_input (`character`)
+#' Optional input: Can be used as an alternative to `drug_input` to search whole drug classes based on ATC code (e.g., "J05" = Antivirals for systemic use), rather than searching for individual drug names.
 #' @param detailed_search (optional, default: TRUE) logical
 #' If TRUE, search for every related concept to each selected drug, instead of just the selected drugs.
 #' This will greatly expand the search but will sometimes match related concepts that are not desired.
