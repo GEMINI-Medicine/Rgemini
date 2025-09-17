@@ -2,12 +2,12 @@
 % Please edit documentation in R/rxnorm_query.R
 \name{rxnorm_query}
 \alias{rxnorm_query}
-\title{Retrieve rows from GEMINI pharmacy data matching specified drug term(s).}
+\title{RxNorm Pharmacy Data Mapping Function}
 \usage{
 rxnorm_query(
   dbcon,
-  class_input = NA,
-  drug_input = NA,
+  drug_name = NULL,
+  drug_class = NULL,
   cohort = NULL,
   return_unmatched = FALSE,
   detailed_search = TRUE,
@@ -15,48 +15,94 @@ rxnorm_query(
 )
 }
 \arguments{
-\item{dbcon}{PostgreSQL connection class
-The connection object for the desired database and user. Obtained with DBI::dbConnect()
-Supported database versions: drm_cleandb_v3_1_0 / H4H_v5 or newer
+\item{dbcon}{(\code{DBIConnection})
+A database connection to a GEMINI database. Requires version drm_cleandb_v3_1_0 / H4H_v5 or newer.
 Older DBs lack \code{row_num} in the pharmacy table and are therefore incompatible with the RxNorm workflow.}
 
-\item{class_input}{(optional, default: NA) string or list of strings
-Classification keyword or specific ids like ATC are accepted.}
+\item{drug_name}{(\code{character})
+Name of drug to search for (e.g., "amoxicillin"). Generic or brand name is accepted.
+Multiple drugs can be provided as a character vector. If empty, function expects \code{drug_class} input instead.}
 
-\item{drug_input}{(optional, default: NA) string or list of strings
-Generic or brand name is accepted. Spelling is normalized.}
+\item{drug_class}{(\code{character})
+Optional input: Can be used as an alternative to `` to search whole drug classes based on ATC code
+(e.g., "J05" = Antivirals for systemic use), rather than searching for individual drug names.}
 
-\item{cohort}{(optional, default: 'all') data frame of the cohort.}
+\item{cohort}{(\code{data.table} or \code{data.frame})
+Optional input allowing users to specify a cohort of interest.
+Needs to include GEMINI encounter ID (\code{genc_id}).
+By default, the whole GEMINI pharmacy table will be included in the Rxnorm search.}
 
-\item{return_unmatched}{(mandatory, default: FALSE)
-If TRUE, the function will output a list with two vectors:
-(1) First vector called matched_rows: All the matched entries in a long format same output as if the argument return_unmatched is FALSE.
-(2) Second vector called unmatched_rows: all unmatched pharmacy rows (wide format with genc_id, 6 identifying columns, and row_num) based on a list of genc_ids inputted.
-If FALSE, the function will by default output matched entries in a long format for every genc_id wiht the following columns: genc_id, search_type, raw_input, rxnorm_match}
+\item{return_unmatched}{(\code{logical})
+If FALSE (default), the function will only return pharmacy entries that Rxnorm matched to the searched drugs.
+If TRUE, the function will additionally return all unmatched rows,
+allowing users to inspect pharmacy entries that Rxnorm did not match to the searched drug(s) of interest.
+The function will return a list with 2 items:
+\enumerate{
+\item \code{matched_rows}: All the matched entries (same output as if the argument return_unmatched is FALSE).
+\item \code{unmatched_rows}: All unmatched pharmacy rows for a cohort of interest.
+}}
 
-\item{detailed_search}{(optional, default: TRUE) logical
-If TRUE, search for every related concept to each selected drug, instead of just the selected drugs.
-This will greatly expand the search but will sometimes match related concepts that are not desired.}
+\item{detailed_search}{(\code{logical})
+If TRUE (default), the function searches for every related concept to each selected drug,
+instead of just the selected drugs.
+This will greatly expand the search and increase sensitivity, but will sometimes result in false positive matches.}
 
-\item{return_drug_list}{(optional, default: FALSE) logical
-Outputs the search drug list instead of searching}
+\item{return_drug_list}{(\code{logical})
+Optional input allowing users to return the list of searched drugs,
+instead of running the search (e.g., when planning a search by ATC class).}
 }
 \value{
-For unmatched_row = FALSE
+By default, \code{rxnorm_query} returns a \code{data.table} containing the rows from
+the pharmacy table that Rxnorm matched to the drug(s) of interest.
+Entries are returned in long format for each \code{genc_id}, together with the following additional columns:
+\itemize{
+\item \code{search_type}: Pharmacy column where drug match was found
+\item \code{raw_input}: Corresponding entry in the matched row(s) of the pharmacy table
+\item \code{row_num}: Row ID of matched pharmacy entries
+\item \code{rxnorm_match}: Rxnorm output specifying which of the searched drug(s) the pharmacy entry was matched to.
+}
 
-The GEMINI pharmacy dataframe for matched rows, or NA if cancelled.
-An additional 'rxnorm_match' column is added specifying what rxnorm matched the row to.
+When \code{return_unmatched} is TRUE, the 2nd list item of the output will
+be a \code{data.table} with the unmatched rows,
+containing all columns from the pharmacy table included in the Rxnorm search.
 }
 \description{
-Retrieve rows from GEMINI pharmacy data matching specified drug term(s).
+Retrieve rows from GEMINI pharmacy data matching specified drug names or drug classes.
+}
+\details{
+RxNorm is a standardized naming system and drug thesaurus provided by the National Library of Medicine.
+The GEMINI-RxNorm system (Waters et al., 2023) automates the use of RxNorm tools with
+other datasets to identify drug concepts from pharmacy orders.
+The procedure matches drug-identifying information from pharmacy data to RxNorm concept identifiers.
+A user interface allows researchers to search for drugs,
+returning the relevant original pharmacy data and predicted drugs through matched RxNorm concepts.
+The GEMINI-RxNorm system significantly reduces the time required over manual pharmacy validation.
+It can reduce an estimated 30 seconds to 5 seconds per pharmacy row,
+and it can reduce the total number of rows needed to be manually validated by up to 99.99\% (Waters et al., 2023).
+
+Note: The returned matches from this function should be manually and carefully validated by users.
+Please see the vignette for the prepare_pharm_for_validation.R function for more details.
 }
 \examples{
 \dontrun{
-diabetes_orders_condensed <- rxnorm_query(
-  dbcon = con,
-  drug_input = c("metformin", "insulin"),
-  return_unmatched = FALSE
+# Connect to DB
+drv <- dbDriver("PostgreSQL")
+dbcon <- DBI::dbConnect(drv,
+  dbname = "db",
+  host = "domain_name.ca",
+  port = 1234,
+  user = getPass("Username: "),
+  password = getPass("Password: ")
+)
+
+# Run Rxnorm query
+rxnorm_res <- rxnorm_query(
+  dbcon = dbcon,
+  drug_name = c("metformin", "insulin")
 )
 }
 
+}
+\references{
+Waters R, et al. JAMIA Open, 2023. https://doi.org/10.1093/jamiaopen/ooad062
 }
