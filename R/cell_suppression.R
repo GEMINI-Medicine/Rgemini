@@ -543,7 +543,6 @@ render_cell_suppression.strat <- function(label, ..., transpose = FALSE) {
 }
 
 
-
 #' @title
 #' Render Default (Discrete)
 #'
