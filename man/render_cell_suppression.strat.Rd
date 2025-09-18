@@ -4,17 +4,17 @@
 \alias{render_cell_suppression.strat}
 \title{Render Cell Suppression (Strata)}
 \usage{
-render_cell_suppression.strat(label, n, transpose = FALSE)
+render_cell_suppression.strat(label, ..., transpose = FALSE)
 }
 \arguments{
 \item{label}{(\code{character})\cr
 A character vector containing the labels.}
 
-\item{n}{(\code{numeric} or \code{character})\cr
-A numeric vector containing the sizes.}
-
 \item{transpose}{(\code{logical})\cr
 Used internally by \code{\link[table1:table1]{table1::table1()}}.}
+
+\item{n}{(\code{numeric} or \code{character})\cr
+A numeric vector containing the sizes.}
 }
 \value{
 named (\code{character})\cr
