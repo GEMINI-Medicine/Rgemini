@@ -8,13 +8,16 @@ render_cell_suppression.strat(label, ..., transpose = FALSE)
 }
 \arguments{
 \item{label}{(\code{character})\cr
-A character vector containing the labels.}
+For table1 versions up to 1.4.3: A character vector containing the labels.
+For table1 versions >= 1.5.0: A list item with data for each strata.}
+
+\item{...}{\cr
+Optional additional arguments. Note that the current version expects this to
+be n for each strata, mimicing the behavior of table1 version <= 1.4.3, where
+n was explicitly passed to this function.}
 
 \item{transpose}{(\code{logical})\cr
 Used internally by \code{\link[table1:table1]{table1::table1()}}.}
-
-\item{n}{(\code{numeric} or \code{character})\cr
-A numeric vector containing the sizes.}
 }
 \value{
 named (\code{character})\cr
