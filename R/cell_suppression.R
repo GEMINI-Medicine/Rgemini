@@ -518,11 +518,12 @@ render_cell_suppression.strat <- function(label, ..., transpose = FALSE) {
 
   # Since table1 version 1.5.0 or newer:
   # `label` is a list so we need to extract relevant info here
-  # this should now support all table1 versions
   if (is.list(label)) {
-    n <- prettyNum(sapply(label, nrow), ...)
+    n <- sapply(label, nrow)
     label <- names(n)
   } else {
+    # for previous versions (< 1.5.0), n was provided as an explicit input
+    # argument; we now just obtain it from the implicit ones provided
     n <- list(...)[[1]]
   }
 
