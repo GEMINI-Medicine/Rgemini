@@ -526,7 +526,7 @@ render_cell_suppression.strat <- function(label, ..., transpose = FALSE) {
     label <- names(n)
   } else {
     # For previous table1 versions (<= 1.4.3): n was explicitly passed; here
-    # we check for implicit arguemnts to accommodate all versions of table1
+    # we check for implicit arguments to accommodate all versions of table1
     n <- list(...)[[1]]
   }
 
