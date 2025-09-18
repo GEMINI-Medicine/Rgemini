@@ -260,8 +260,8 @@ render_cell_suppression.categorical <- function(x, ...) {
 
   if (
     !is.null(args$single_level_binary) &&
-      args$single_level_binary &&
-      length(res) == 2
+    args$single_level_binary &&
+    length(res) == 2
   ) {
     res <- res[1]
   }
@@ -346,8 +346,8 @@ render_strict_cell_suppression.categorical <- function(x, ...) {
 
   if (
     !is.null(args$single_level_binary) &&
-      args$single_level_binary &&
-      length(res) == 2
+    args$single_level_binary &&
+    length(res) == 2
   ) {
     res <- res[1]
   }
@@ -514,7 +514,18 @@ render_cell_suppression.continuous <- function(x, ...) {
 #'
 #' @export
 #'
-render_cell_suppression.strat <- function(label, n, transpose = FALSE) {
+render_cell_suppression.strat <- function(label, ..., transpose = FALSE) {
+
+  # Since table1 version 1.5.0 or newer:
+  # `label` is a list so we need to extract relevant info here
+  # this should now support all table1 versions
+  if (is.list(label)) {
+    n <- prettyNum(sapply(label, nrow), ...)
+    label <- names(n)
+  } else {
+    n <- list(...)[[1]]
+  }
+
   sprintf(
     ifelse(
       is.na(n),
