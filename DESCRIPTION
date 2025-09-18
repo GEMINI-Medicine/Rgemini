@@ -30,7 +30,7 @@ Imports:
     stddiff, 
     stringi, 
     stringr, 
-    table1 (<= 1.4.3), 
+    table1 (1.4.3), 
     tidyr, 
     timeDate,
     fuzzyjoin,
