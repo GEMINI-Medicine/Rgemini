@@ -497,13 +497,16 @@ render_cell_suppression.continuous <- function(x, ...) {
 #' column in the call to [table1::table1()].
 #'
 #' @param label (`character`)\cr
-#' A character vector containing the labels.
-#'
-#' @param n (`numeric` or `character`)\cr
-#' A numeric vector containing the sizes.
+#' For table1 versions up to 1.4.3: A character vector containing the labels.
+#' For table1 versions >= 1.5.0: A list item with data for each strata.
 #'
 #' @param transpose (`logical`)\cr
 #' Used internally by [table1::table1()].
+#'
+#' @param ... \cr
+#' Optional additional arguments. Note that the current version expects this to
+#' be n for each strata, mimicing the behavior of table1 version <= 1.4.3, where
+#' n was explicitly passed to this function.
 #'
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
@@ -516,14 +519,14 @@ render_cell_suppression.continuous <- function(x, ...) {
 #'
 render_cell_suppression.strat <- function(label, ..., transpose = FALSE) {
 
-  # Since table1 version 1.5.0 or newer:
+  # Since table1 version 1.5.0:
   # `label` is a list so we need to extract relevant info here
   if (is.list(label)) {
     n <- sapply(label, nrow)
     label <- names(n)
   } else {
-    # for previous versions (< 1.5.0), n was provided as an explicit input
-    # argument; we now just obtain it from the implicit ones provided
+    # For previous table1 versions (<= 1.4.3): n was explicitly passed; here
+    # we check for implicit arguemnts to accommodate all versions of table1
     n <- list(...)[[1]]
   }
 
