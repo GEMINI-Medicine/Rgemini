@@ -1,5 +1,7 @@
 # Rgemini `develop`
 
+* Fixed `render_cell_suppression.strat()` to be compatible with table1 version 1.5.0 
+
 * **Testing improvements:**
   * Unit tests are now also run in Python via rpy2 to ensure cross-language compatibility
 
