@@ -518,7 +518,6 @@ render_cell_suppression.continuous <- function(x, ...) {
 #' @export
 #'
 render_cell_suppression.strat <- function(label, ..., transpose = FALSE) {
-
   # Since table1 version 1.5.0:
   # `label` is a list so we need to extract relevant info here
   if (is.list(label)) {
