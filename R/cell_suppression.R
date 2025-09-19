@@ -260,8 +260,8 @@ render_cell_suppression.categorical <- function(x, ...) {
 
   if (
     !is.null(args$single_level_binary) &&
-      args$single_level_binary &&
-      length(res) == 2
+    args$single_level_binary &&
+    length(res) == 2
   ) {
     res <- res[1]
   }
@@ -346,8 +346,8 @@ render_strict_cell_suppression.categorical <- function(x, ...) {
 
   if (
     !is.null(args$single_level_binary) &&
-      args$single_level_binary &&
-      length(res) == 2
+    args$single_level_binary &&
+    length(res) == 2
   ) {
     res <- res[1]
   }
