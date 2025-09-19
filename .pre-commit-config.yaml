@@ -11,13 +11,17 @@ repos:
         language: r
         files: '\.[rR]$'
         types: [file]  # Only run when relevant files are present
+  
+  - repo: https://github.com/lorenzwalthert/precommit
+    rev: v0.4.3.9003
+    hooks:
       - id: style-files # style all code files
         name: Style files
         description: style files with {styler}
         entry: Rscript inst/hooks/exported/style-files.R
         language: r
         files: '(\.[rR]profile|\.[rR]|\.[rR]md|\.[rR]nw|\.[qQ]md)$'
-        #exclude: 'renv/activate\.R'
+        exclude: 'renv/activate\.R'
         
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
