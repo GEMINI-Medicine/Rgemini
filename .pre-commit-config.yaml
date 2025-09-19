@@ -22,6 +22,7 @@ repos:
         language: r
         files: '(\.[rR]profile|\.[rR]|\.[rR]md|\.[rR]nw|\.[qQ]md)$'
         exclude: 'renv/activate\.R'
+        args: [--no-verify-renv]
         
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
