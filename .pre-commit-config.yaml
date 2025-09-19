@@ -23,6 +23,8 @@ repos:
         files: '(\.[rR]profile|\.[rR]|\.[rR]md|\.[rR]nw|\.[qQ]md)$'
         exclude: 'renv/activate\.R'
         args: [--no-verify-renv]
+        additional_dependencies:
+          - styler@1.10.0
         
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
