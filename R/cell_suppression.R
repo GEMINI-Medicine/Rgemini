@@ -531,7 +531,7 @@ render_cell_suppression.strat <- function(label, ..., transpose = FALSE) {
     n <- list(...)[[1]]
 }
 
-  sprintf(
+sprintf(
     ifelse(
       is.na(n),
       "<span class='stratlabel'>%s</span>",
