@@ -506,8 +506,8 @@ render_cell_suppression.continuous <- function(x, ...) {
 #' Used internally by [table1::table1()].
 #'
 #' @param ... \cr
-#' Optional additional arguments. Note that the current version expects this to
-#' be `n` for each strata, mimicing the behavior of table1 version <= 1.4.3,
+#' Optional additional arguments. Note that the current version expects this
+#' to be `n` for each strata, mimicing the behavior of table1 version <= 1.4.3,
 #' where `n` was explicitly passed to this function.
 #'
 #' @return named (`character`)\cr
@@ -529,9 +529,9 @@ render_cell_suppression.strat <- function(label, ..., transpose = FALSE) {
     # For previous table1 versions (<= 1.4.3): n was explicitly passed; here
     # we check for implicit arguments to accommodate all versions of table1
     n <- list(...)[[1]]
-  }
+}
 
-  sprintf(
+sprintf(
     ifelse(
       is.na(n),
       "<span class='stratlabel'>%s</span>",
