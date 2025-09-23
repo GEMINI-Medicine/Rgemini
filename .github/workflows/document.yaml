@@ -1,17 +1,15 @@
 # Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
-# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
   push:
-    #paths: ["R/**"]
     paths: ["**.[rR]", "**.[qrR]md", "**.[rR]markdown", "**.[rR]nw"]
 
-name: Document & Style
+name: Style & Document
 
 permissions:
   contents: write
 
 jobs:
-  document:
+  document-and-style:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -32,61 +30,19 @@ jobs:
           extra-packages: any::roxygen2, any::styler
           needs: roxygen2, styler
 
-      - name: Enable styler cache
-        run: styler::cache_activate()
-        shell: Rscript {0}
-
-      - name: Determine cache location
-        id: styler-location
-        run: |
-          cat(
-            "location=",
-            styler::cache_info(format = "tabular")$location,
-            "\n",
-            file = Sys.getenv("GITHUB_OUTPUT"),
-            append = TRUE,
-            sep = ""
-          )
-        shell: Rscript {0}
-
-      - name: Cache styler
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.styler-location.outputs.location }}
-          key: ${{ runner.os }}-styler-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-styler-
-            ${{ runner.os }}-
-
-      - name: Style
+      - name: Style code
         run: styler::style_pkg()
         shell: Rscript {0}
 
-      - name: Document
+      - name: Generate documentation
         run: roxygen2::roxygenise()
         shell: Rscript {0}
 
-      # - name: Commit and push changes
-      #   run: |
-      #     if FILES_TO_COMMIT=($(git diff-index --name-only ${{ github.sha }} \
-      #         | egrep --ignore-case '\.(R|[qR]md|Rmarkdown|Rnw|Rprofile)$'))
-      #     then
-      #       git config --local user.name "$GITHUB_ACTOR"
-      #       git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
-      #       git commit ${FILES_TO_COMMIT[*]} -m "Run styler"
-      #       git pull --ff-only
-      #       git push origin
-      #     else
-      #       echo "No changes to commit."
-      #     fi
-
-      - name: Commit and push changes
+      - name: Commit and push all changes
         run: |
           git config --local user.name "$GITHUB_ACTOR"
           git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
-          git add man/\* NAMESPACE DESCRIPTION
-          git commit -m "Run styler & update documention" || echo "No changes to commit"
+          git add .
+          git commit -m "Run styler & update documentation" || echo "No changes to commit"
           git pull --ff-only
           git push origin
-  
-
