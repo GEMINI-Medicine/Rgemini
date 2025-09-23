@@ -25,6 +25,7 @@
 #' Name of drug to search for (e.g., "amoxicillin"). Generic or brand name is accepted.
 #' Multiple drugs can be provided as a character vector. If empty, function expects `drug_class` input instead.
 #' @param drug_class (`character`)
+<<<<<<< HEAD
 #' Optional input: Can be used as an alternative input to `drug_name` to search
 #' whole drug classes based on ATC code (e.g., "J05" = Antivirals for systemic
 #' use), rather than searching for individual drug names.
@@ -37,6 +38,14 @@
 #' Users can run `detailed_search = FALSE` at their own discretion and we
 #' recommend carefully checking for potential misses when doing so.
 #'
+=======
+#' Optional input: Can be used as an alternative to `` to search whole drug classes based on ATC code
+#' (e.g., "J05" = Antivirals for systemic use), rather than searching for individual drug names.
+#' @param detailed_search (`logical`)
+#' If TRUE (default), the function searches for every related concept to each selected drug,
+#' instead of just the selected drugs.
+#' This will greatly expand the search and increase sensitivity, but will sometimes result in false positive matches.
+>>>>>>> 7e60a33 (216 render strata fix (#217))
 #' @param return_unmatched (`logical`)
 #' If FALSE (default), the function will only return pharmacy entries that Rxnorm matched to the searched drugs.
 #' If TRUE, the function will additionally return all unmatched rows,
@@ -87,6 +96,10 @@
 #' @references
 #' Waters R, et al. JAMIA Open, 2023. https://doi.org/10.1093/jamiaopen/ooad062
 #' @export
+<<<<<<< HEAD
+=======
+
+>>>>>>> 7e60a33 (216 render strata fix (#217))
 rxnorm_query <- function(dbcon,
                          drug_name = NULL,
                          drug_class = NULL,
@@ -100,7 +113,11 @@ rxnorm_query <- function(dbcon,
   }
 
   # Find the correct pharmacy table to query in the current database connection
+<<<<<<< HEAD
   pharmacy_table <- Rgemini:::find_db_tablename(dbcon, "pharmacy")
+=======
+  pharmacy_table <- find_db_tablename(dbcon, "pharmacy")
+>>>>>>> 7e60a33 (216 render strata fix (#217))
 
 
   # If cohort is NULL, return_unmatched can not be TRUE
