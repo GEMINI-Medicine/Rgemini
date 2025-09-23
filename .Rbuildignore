@@ -1,0 +1,11 @@
+^renv$
+^renv\.lock$
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.lintr$
+^\.pre-commit-config\.yaml$
+^\.github$
+^_pkgdown\.yml$
+^CONTRIBUTING\.md$
+^LICENSE\.md$
+^Rgemini\.Rproj$

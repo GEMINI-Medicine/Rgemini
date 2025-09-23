@@ -13,8 +13,8 @@ For table1 versions >= 1.5.0: A list item with data for each strata.}
 
 \item{...}{\cr
 Optional additional arguments. Note that the current version expects this to
-be n for each strata, mimicing the behavior of table1 version <= 1.4.3, where
-n was explicitly passed to this function.}
+be \code{n} for each strata, mimicing the behavior of table1 version <= 1.4.3,
+where \code{n} was explicitly passed to this function.}
 
 \item{transpose}{(\code{logical})\cr
 Used internally by \code{\link[table1:table1]{table1::table1()}}.}
@@ -24,14 +24,16 @@ named (\code{character})\cr
 Concatenated with \code{""} to shift values down one row for proper alignment.
 }
 \description{
-This is a custom render for \code{table1} stratification variables which performs GEMINI
-"cell suppression" for any levels which contain fewer than 6 observations.
+This is a custom render for \code{table1} stratification variables which performs
+GEMINI "cell suppression" for any levels which contain fewer than 6
+observations.
 
-Note that even with strata variable cell suppression, it is possible to reverse-calculate
-the total given the overall column. Therefore it is recommended to also hide the "Overall"
-column in the call to \code{\link[table1:table1]{table1::table1()}}.
+Note that even with strata variable cell suppression, it is possible to
+reverse-calculate the total given the overall column. Therefore it is
+recommended to also hide the "Overall" column in the call to
+\code{\link[table1:table1]{table1::table1()}}.
 }
 \note{
-Arguments from this function should not be passed directly and are defined here
-to work internally with \code{\link[table1:table1]{table1::table1()}}.
+Arguments from this function should not be passed directly and are defined
+here to work internally with \code{\link[table1:table1]{table1::table1()}}.
 }

@@ -260,8 +260,8 @@ render_cell_suppression.categorical <- function(x, ...) {
 
   if (
     !is.null(args$single_level_binary) &&
-    args$single_level_binary &&
-    length(res) == 2
+      args$single_level_binary &&
+      length(res) == 2
   ) {
     res <- res[1]
   }
@@ -346,8 +346,8 @@ render_strict_cell_suppression.categorical <- function(x, ...) {
 
   if (
     !is.null(args$single_level_binary) &&
-    args$single_level_binary &&
-    length(res) == 2
+      args$single_level_binary &&
+      length(res) == 2
   ) {
     res <- res[1]
   }
@@ -489,12 +489,14 @@ render_cell_suppression.continuous <- function(x, ...) {
 #' Render Cell Suppression (Strata)
 #'
 #' @description
-#' This is a custom render for `table1` stratification variables which performs GEMINI
-#' "cell suppression" for any levels which contain fewer than 6 observations.
+#' This is a custom render for `table1` stratification variables which performs
+#' GEMINI "cell suppression" for any levels which contain fewer than 6
+#' observations.
 #'
-#' Note that even with strata variable cell suppression, it is possible to reverse-calculate
-#' the total given the overall column. Therefore it is recommended to also hide the "Overall"
-#' column in the call to [table1::table1()].
+#' Note that even with strata variable cell suppression, it is possible to
+#' reverse-calculate the total given the overall column. Therefore it is
+#' recommended to also hide the "Overall" column in the call to
+#' [table1::table1()].
 #'
 #' @param label (`character`)\cr
 #' For table1 versions up to 1.4.3: A character vector containing the labels.
@@ -505,20 +507,19 @@ render_cell_suppression.continuous <- function(x, ...) {
 #'
 #' @param ... \cr
 #' Optional additional arguments. Note that the current version expects this to
-#' be n for each strata, mimicing the behavior of table1 version <= 1.4.3, where
-#' n was explicitly passed to this function.
+#' be `n` for each strata, mimicing the behavior of table1 version <= 1.4.3,
+#' where `n` was explicitly passed to this function.
 #'
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
 #'
 #' @note
-#' Arguments from this function should not be passed directly and are defined here
-#' to work internally with [table1::table1()].
+#' Arguments from this function should not be passed directly and are defined
+#' here to work internally with [table1::table1()].
 #'
 #' @export
 #'
 render_cell_suppression.strat <- function(label, ..., transpose = FALSE) {
-
   # Since table1 version 1.5.0:
   # `label` is a list so we need to extract relevant info here
   if (is.list(label)) {
@@ -542,7 +543,6 @@ render_cell_suppression.strat <- function(label, ..., transpose = FALSE) {
     ), label, n
   )
 }
-
 
 #' @title
 #' Render Default (Discrete)
