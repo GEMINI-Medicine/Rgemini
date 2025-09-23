@@ -529,9 +529,9 @@ render_cell_suppression.strat <- function(label, ..., transpose = FALSE) {
     # For previous table1 versions (<= 1.4.3): n was explicitly passed; here
     # we check for implicit arguments to accommodate all versions of table1
     n <- list(...)[[1]]
-}
+  }
 
-sprintf(
+  sprintf(
     ifelse(
       is.na(n),
       "<span class='stratlabel'>%s</span>",
