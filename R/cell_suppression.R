@@ -506,8 +506,8 @@ render_cell_suppression.continuous <- function(x, ...) {
 #' Used internally by [table1::table1()].
 #'
 #' @param ... \cr
-#' Optional additional arguments. Note that the current version expects this
-#' to be `n` for each strata, mimicing the behavior of table1 version <= 1.4.3,
+#' Optional additional arguments. Note that the current version expects this to
+#' be `n` for each strata, mimicing the behavior of table1 version <= 1.4.3,
 #' where `n` was explicitly passed to this function.
 #'
 #' @return named (`character`)\cr
@@ -543,7 +543,6 @@ sprintf(
     ), label, n
   )
 }
-
 
 #' @title
 #' Render Default (Discrete)
