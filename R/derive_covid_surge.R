@@ -54,14 +54,10 @@
 #' The formula to derive the COVID surge index is from :
 #' https://doi.org/10.1001/jamanetworkopen.2023.23035
 #'
-#' Data for hospital bed availability to be pulled from:
-#' https://www.cihi.ca/sites/default/files/document/beds-staffed-and-in-operation-2018-2019-en-web.xlsx
-#'
 
 ## to address:
 ### - er vs ip codes
 ### - adding in gim vs all-med functionality
-### - factoring in baseline bed counts. Are paeds beds included?
 ### - cell supression: since bed counts are easily accessible online, is it possible to back-calculate number of encounters in a given month? (especially on fringe months)
 
 
@@ -87,14 +83,14 @@ derive_covid_surge <- function(db, time_period = c("2015-04-01", "2023-06-30"), 
     covid_encounters <- dbGetQuery(db, covid_query) %>%
         data.table()
 
-    ### now that all genc_ids are pulled, can filter to make numerator
-    ## without ventilation or ICU
+    ### now that all genc_ids are pulled, can make numerator
+    ## encounters without ventilation or ICU
     covid_encounters[, no_icu_vent := genc_id %ni% c(icu_encounters$genc_id, non_invasive_vent_encounters$genc_id, invasive_vent_encounters$genc_id)]
 
-    ### non-invasive OR ICU
+    ### encounters with non-invasive OR ICU
     covid_encounters[, icu_or_non_invasive_vent := genc_id %in% c(icu_encounters$genc_id, non_invasive_vent_encounters$genc_id)]
 
-    ### invasive vent
+    ### encounters with invasive vent
     covid_encounters[, invasive_vent := genc_id %in% invasive_vent_encounters$genc_id]
 
     ### now make numerator
@@ -102,9 +98,23 @@ derive_covid_surge <- function(db, time_period = c("2015-04-01", "2023-06-30"), 
     covid_encounters <- covid_encounters %>%
         mutate(month_year = floor_date(ymd_hm(discharge_date_time), unit = "month"))
 
+    ## pull encounters in time period
+    #### keeping hospital_id since num is not on cleandb dad rn
+    ## create query first
+    cohort_query <- paste0("select a.genc_id, l.hospital_num, a.hospital_id, a.admission_date_time, a.discharge_date_time from admdad a join lookup_hospital l on a.hospital_id = l.hospital_id where discharge_date_time >= '", time_period[1], " 00:00' and discharge_date_time <= '", time_period[2], " 23:59';")
+
+    cohort <- dbGetQuery(db, cohort_query) %>%
+        data.table()
+
+    ## merge in surge table data, replace NAs in non-COVID encounters
+    ## create month_year for aggregating
+    cohort <- cohort %>%
+        merge(covid_encounters, all.x = TRUE) %>%
+        mutate(across(c("no_icu_vent", "icu_or_non_invasive_vent", "invasive_vent"), ~ replace_na(., FALSE))) %>%
+        mutate(month_year = floor_date(ymd_hm(discharge_date_time), unit = "month"))
+
     ## group by month-year, get sum of each grouping
-    ### 
-    surge_table <- covid_encounters[, .(no_icu_count = sum(no_icu_vent), icu_vent_count = sum(icu_or_non_invasive_vent), invasive_vent_count = sum(invasive_vent)), by = c("hospital_id", "month_year")]
+    surge_table <- cohort[, .(no_icu_count = sum(no_icu_vent), icu_vent_count = sum(icu_or_non_invasive_vent), invasive_vent_count = sum(invasive_vent)), by = c("hospital_id", "month_year")]
 
     ## calculate numerator using above
     surge_table[, surge_index_num := 10 * (no_icu_count + 2 * (icu_vent_count) + 5 * (invasive_vent_count))]
@@ -112,11 +122,6 @@ derive_covid_surge <- function(db, time_period = c("2015-04-01", "2023-06-30"), 
     ### now calculate the denominator using daily_census as approximation
     ### currently using 2019-12-31 as end baseline as there are covid diagnoses
     ### in Jan 2020
-    ## pull encounters in time period
-    #### keeping hospital_id since num is not on cleandb dad rn
-    cohort <- dbGetQuery(db, "select a.genc_id, l.hospital_num, a.hospital_id, a.admission_date_time, a.discharge_date_time from admdad a join lookup_hospital l on a.hospital_id = l.hospital_id") %>%
-        data.table()
-
     # convert to factor for merging
     cohort$hospital_num <- as.factor(cohort$hospital_num)
 
@@ -140,7 +145,6 @@ derive_covid_surge <- function(db, time_period = c("2015-04-01", "2023-06-30"), 
     ## calculate surge index
     surge_table[, surge_index := surge_index_num/max_beds]
 
-
     ## select hospital_id, month_year, numerator
-    return(surge_table[, .(hospital_id, month_year, surge_index, surge_index_num, max_beds)][order(hospital_id, month_year)])
+    return(surge_table[, .(hospital_id, month_year, surge_index)][order(hospital_id, month_year)])
 }
