@@ -1,15 +1,7 @@
-# Rgemini `add GEMINIpkg::gemini_rxnorm_query()`
-
-* added GEMINIpkg::gemini_rxnorm_query() as rxnorm_query()
-* changed the db_con parameter to dbcon
-* removed the sites parameter
-* changed the genc_ids parameter to cohort
-* changed detailed_search and return_drug_list from being optional parameters to explicit parameters which default to NULL
-
-
 # Rgemini `develop`
 
-* Fixed `render_cell_suppression.strat()` to be compatible with table1 version 1.5.0 
+* Fixed `render_cell_suppression.strat()` to be compatible with table1 version 1.5.0
+* Removed age exclusion in `episodes_of_care()` to accommodate paeds cohort
 
 * **Testing improvements:**
   * Unit tests are now also run in Python via rpy2 to ensure cross-language compatibility
