@@ -25,8 +25,9 @@
 #' Name of drug to search for (e.g., "amoxicillin"). Generic or brand name is accepted.
 #' Multiple drugs can be provided as a character vector. If empty, function expects `drug_class` input instead.
 #' @param drug_class (`character`)
-#' Optional input: Can be used as an alternative to `` to search whole drug classes based on ATC code
-#' (e.g., "J05" = Antivirals for systemic use), rather than searching for individual drug names.
+#' Optional input: Can be used as an alternative input to `drug_name` to search
+#' whole drug classes based on ATC code (e.g., "J05" = Antivirals for systemic
+#' use), rather than searching for individual drug names.
 #' @param detailed_search (`logical`)
 #' If TRUE (default), the function searches for every related concept to each selected drug,
 #' instead of just the selected drugs.
@@ -81,7 +82,6 @@
 #' @references
 #' Waters R, et al. JAMIA Open, 2023. https://doi.org/10.1093/jamiaopen/ooad062
 #' @export
-
 rxnorm_query <- function(dbcon,
                          drug_name = NULL,
                          drug_class = NULL,
@@ -95,7 +95,7 @@ rxnorm_query <- function(dbcon,
   }
 
   # Find the correct pharmacy table to query in the current database connection
-  pharmacy_table <- find_db_tablename(dbcon, "pharmacy")
+  pharmacy_table <- Rgemini:::find_db_tablename(dbcon, "pharmacy")
 
 
   # If cohort is NULL, return_unmatched can not be TRUE

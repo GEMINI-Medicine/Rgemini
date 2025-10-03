@@ -1,10 +1,12 @@
 # Rgemini `add GEMINIpkg::gemini_rxnorm_query()`
 
 * added GEMINIpkg::gemini_rxnorm_query() as rxnorm_query()
+* improved documentation
 * changed the db_con parameter to dbcon
 * removed the sites parameter
 * changed the genc_ids parameter to cohort
-* changed detailed_search and return_drug_list from being optional parameters to explicit parameters which default to NULL
+* changed `drug_input` argument name to `drug_name`
+* added `detailed_search` and `return_drug_list` as explicit parameters
 
 
 # Rgemini `develop`
