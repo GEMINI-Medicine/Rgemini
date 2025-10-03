@@ -1,13 +1,13 @@
 # Rgemini `add GEMINIpkg::gemini_rxnorm_query()`
 
-* added GEMINIpkg::gemini_rxnorm_query() as rxnorm_query()
-* improved documentation
-* changed the db_con parameter to dbcon
-* removed the sites parameter
-* changed the genc_ids parameter to cohort
-* changed `drug_input` argument name to `drug_name`
-* added `detailed_search` and `return_drug_list` as explicit parameters
-
+* added `GEMINIpkg::gemini_rxnorm_query()` as `rxnorm_query()`, with the following changes
+  * improved documentation
+  * changed the `db_con` parameter to `dbcon`
+  * changed `drug_input` argument name to `drug_name` and `class_input` to `drug_class`
+  * changed the `genc_ids` parameter to `cohort`
+  * removed the `sites` parameter
+  * added `detailed_search` and `return_drug_list` as explicit parameters
+  * applied `find_db_tablename` to query `pharmacy_subset` on H4H
 
 # Rgemini `develop`
 
