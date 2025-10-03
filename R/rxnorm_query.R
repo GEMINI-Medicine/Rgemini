@@ -29,9 +29,14 @@
 #' whole drug classes based on ATC code (e.g., "J05" = Antivirals for systemic
 #' use), rather than searching for individual drug names.
 #' @param detailed_search (`logical`)
-#' If TRUE (default), the function searches for every related concept to each selected drug,
-#' instead of just the selected drugs.
-#' This will greatly expand the search and increase sensitivity, but will sometimes result in false positive matches.
+#' If TRUE (default), the function searches for every related concept to each
+#' selected drug. This may increase sensitivity, but can also result in false
+#' positive matches. The impact of `detailed_search = TRUE` may vary by drug
+#' group. In general, we recommend using the default option but users should
+#' carefully review the output for false positives.
+#' Users can run `detailed_search = FALSE` at their own discretion and we
+#' recommend carefully checking for potential misses when doing so.
+#'
 #' @param return_unmatched (`logical`)
 #' If FALSE (default), the function will only return pharmacy entries that Rxnorm matched to the searched drugs.
 #' If TRUE, the function will additionally return all unmatched rows,
