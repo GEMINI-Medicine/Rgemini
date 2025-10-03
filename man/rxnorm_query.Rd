@@ -24,8 +24,9 @@ Name of drug to search for (e.g., "amoxicillin"). Generic or brand name is accep
 Multiple drugs can be provided as a character vector. If empty, function expects \code{drug_class} input instead.}
 
 \item{drug_class}{(\code{character})
-Optional input: Can be used as an alternative to `` to search whole drug classes based on ATC code
-(e.g., "J05" = Antivirals for systemic use), rather than searching for individual drug names.}
+Optional input: Can be used as an alternative to \code{drug_name} to search
+whole drug classes based on ATC code (e.g., "J05" = Antivirals for systemic
+use), rather than searching for individual drug names.}
 
 \item{cohort}{(\code{data.table} or \code{data.frame})
 Optional input allowing users to specify a cohort of interest.
@@ -43,9 +44,13 @@ The function will return a list with 2 items:
 }}
 
 \item{detailed_search}{(\code{logical})
-If TRUE (default), the function searches for every related concept to each selected drug,
-instead of just the selected drugs.
-This will greatly expand the search and increase sensitivity, but will sometimes result in false positive matches.}
+If TRUE (default), the function searches for every related concept to each
+selected drug. This may increase sensitivity, but can also result in false
+positive matches. The impact of \code{detailed_search = TRUE} may vary by drug
+group. In general, we recommend using the default option but users should
+carefully review the output for false positives.
+Users can run \code{detailed_search = FALSE} at their own discretion and we
+recommend carefully checking for potential misses when doing so.}
 
 \item{return_drug_list}{(\code{logical})
 Optional input allowing users to return the list of searched drugs,
