@@ -9,10 +9,7 @@
   * removed the `sites` parameter
   * added `detailed_search` and `return_drug_list` as explicit parameters
   * applied `find_db_tablename` to query `pharmacy_subset` on H4H
-
-* **New functions:**
-  * `prepare_pharm_for_validation()` function migrated from GEMINIpkg to standardize workflow for pharmacy mapping validation following rxnorm_query
-
+ 
 **Other changes**
 * Fixed `render_cell_suppression.strat()` to be compatible with table1 version 1.5.0
 * Removed age exclusion in `episodes_of_care()` to accommodate paeds cohort
