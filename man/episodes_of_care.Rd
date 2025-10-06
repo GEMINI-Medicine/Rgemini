@@ -18,7 +18,7 @@ table in the user-provided database (recommended approach).}
 }
 \value{
 (\code{data.frame})\cr
-This function returns a \code{data.table} excluding records with invalid \code{patient_id_hashed} or
+This function returns a \code{data.table} excluding records with invalid \code{patient_id_hashed}, \code{age < 18}, or
 \code{admit_category} of cadaveric donors in line with CIHI guidelines.
 Nine columns are returned: \code{genc_id}, \code{patient_id_hashed}, \code{time_to_next_admission} (\code{numeric}),
 \code{time_since_last_admission} (\code{numeric}), \code{AT_in_coded} (\code{TRUE}/\code{FALSE}), \code{AT_out_coded} (\code{TRUE}/\code{FALSE}),

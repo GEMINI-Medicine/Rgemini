@@ -1,27 +1,10 @@
 # Rgemini `develop`
 
-**Rxnorm migration**
-* added `GEMINIpkg::gemini_rxnorm_query()` as `rxnorm_query()`, with the following changes
-  * improved documentation
-  * changed the `db_con` parameter to `dbcon`
-  * changed `drug_input` argument name to `drug_name` and `class_input` to `drug_class`
-  * changed the `genc_ids` parameter to `cohort`
-  * removed the `sites` parameter
-  * added `detailed_search` and `return_drug_list` as explicit parameters
-  * applied `find_db_tablename` to query `pharmacy_subset` on H4H
-
 * **New functions:**
   * `prepare_pharm_for_validation()` function migrated from GEMINIpkg to standardize workflow for pharmacy mapping validation following rxnorm_query
 
-**Other changes**
-* Fixed `render_cell_suppression.strat()` to be compatible with table1 version 1.5.0
-* Removed age exclusion in `episodes_of_care()` to accommodate paeds cohort
-
 * **Testing improvements:**
   * Unit tests are now also run in Python via rpy2 to ensure cross-language compatibility
-
-* **Miscellanous:**
-  * Added hex sticker
 
 # Rgemini `1.1.0`
 

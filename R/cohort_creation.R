@@ -102,11 +102,11 @@ cohort_creation <- function(
   }
 
   ## check user input
-  check_input(cohort, "list")
-  check_input(labels, "character")
-  check_input(list(exclusion_flag, show_prct), "logical")
+  Rgemini:::check_input(cohort, "list")
+  Rgemini:::check_input(labels, "character")
+  Rgemini:::check_input(list(exclusion_flag, show_prct), "logical")
   if (!is.null(group_var)) {
-    check_input(group_var, "character")
+    Rgemini:::check_input(group_var, "character")
     ## check if group columns exist in all cohort list items
     lapply(cohort, function(cohort) {
       check_input(cohort, "data.table", colnames = group_var)

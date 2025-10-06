@@ -88,22 +88,3 @@ test_that("when a factor variable is missing levels, still can calculate SMD", {
     0.734
   )
 })
-
-test_that("strata render works without error (for table1 version 1.5.0 or newer)", {
-  set.seed(1)
-  continuous_data <- data.frame(
-    "age" = rnorm(100, mean = 70, sd = 10),
-    "laps" = abs(rnorm(100, mean = 1, sd = 1)),
-    "sex" = as.factor(c(rep("F", 30), rep("M", 70))),
-    "nobel" = sample(c("nobel prize won", "nobel prize not won"), 100, replace = TRUE, prob = c(0.01, 0.99))
-  )
-
-  expect_no_error(table1::table1(
-    ~ age + laps + sex | nobel,
-    data = continuous_data,
-    render.continuous = render_cell_suppression.continuous,
-    render.categorical = render_cell_suppression.categorical,
-    render.strat = render_cell_suppression.strat,
-    digits = 2
-  ))
-})

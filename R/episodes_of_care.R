@@ -60,7 +60,7 @@
 #' linked by transfers will have the same `epicare` number.
 #'
 #' @return (`data.frame`)\cr
-#' This function returns a `data.table` excluding records with invalid `patient_id_hashed` or
+#' This function returns a `data.table` excluding records with invalid `patient_id_hashed`, `age < 18`, or
 #' `admit_category` of cadaveric donors in line with CIHI guidelines.
 #' Nine columns are returned: `genc_id`, `patient_id_hashed`, `time_to_next_admission` (`numeric`),
 #' `time_since_last_admission` (`numeric`), `AT_in_coded` (`TRUE`/`FALSE`), `AT_out_coded` (`TRUE`/`FALSE`),
@@ -133,7 +133,7 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
       DBI::dbSendQuery(dbcon, "Analyze temp_data")
 
       admdad <- DBI::dbGetQuery(dbcon, paste0(
-        "select genc_id, patient_id_hashed, admit_category, admission_date_time,
+        "select genc_id, patient_id_hashed, age, admit_category, admission_date_time,
                                             discharge_date_time
                                             from ", admdad_name,
         " a where exists (select 1 from temp_data t where t.genc_id=a.genc_id); "
@@ -141,7 +141,7 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
     }
   } else {
     admdad <- DBI::dbGetQuery(dbcon, paste0(
-      "select genc_id, patient_id_hashed, admit_category, admission_date_time,
+      "select genc_id, patient_id_hashed, age, admit_category, admission_date_time,
                                             discharge_date_time
       from ", admdad_name
     )) %>% as.data.table()
@@ -152,7 +152,9 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
 
   ############  Exclude invalid records   ############
   data <- data[!is.na(patient_id_hashed) & patient_id_hashed != ""] # remove invalid patient_id
+
   data <- data[!admit_category %in% c("R", "RI"), ] # cadaveric donors should not be in DB
+  data <- data[age >= 18, ] # age < 18 should not be in DB
 
   ############  Convert date-times into appropriate format   ############
   data[, discharge_date_time := convert_dt(discharge_date_time)]
