@@ -4,22 +4,11 @@
 \alias{derive_covid_surge}
 \title{Derive COVID Surge}
 \usage{
-derive_covid_surge(
-  db,
-  time_period = c("2015-04-01", "2023-06-30"),
-  gim_only = FALSE,
-  include_er = FALSE
-)
+derive_covid_surge(db, gim_only = FALSE, include_er = FALSE)
 }
 \arguments{
 \item{db}{(\code{DBIConnection})\cr
 RPostgres DB connection.}
-
-\item{time_period}{(\code{vecotr})\cr
-A time period of interest to derive a surge index for.
-For example, if the user would like to investigate the surge from
-2020-10-01 to 2023-01-01, the user should supply
-\code{c('2020-10-01', '2023-01-01')}.}
 
 \item{gim_only}{(\code{logical})\cr
 Flag denoting if the user would like the surge index for GIM patients only.
@@ -37,7 +26,7 @@ Note: This argument is set to FALSE by default.}
 }
 \description{
 A function that derives the COVID-19 surge index for a given time period.
-For time periods before 2020, or where COVID was not yet diagnosed, the surge index will be 0.
+For time periods before 2020, or where COVID-19 was not yet diagnosed, the surge index will be 0.
 }
 \examples{
 \dontrun{
@@ -52,7 +41,6 @@ db <- DBI::dbConnect(
 )
 
 covid_surge <- derive_covid_surge(db = db, 
-time_period = c('2020-10-01','2023-01-01'),
 gim_only = FALSE,
 include_er = FALSE)
 
