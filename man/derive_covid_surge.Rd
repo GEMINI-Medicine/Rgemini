@@ -62,7 +62,4 @@ include_er = FALSE)
 \references{
 The formula to derive the COVID surge index is from :
 https://doi.org/10.1001/jamanetworkopen.2023.23035
-
-Data for hospital bed availability to be pulled from:
-https://www.cihi.ca/sites/default/files/document/beds-staffed-and-in-operation-2018-2019-en-web.xlsx
 }
