@@ -1,4 +1,9 @@
 # Rgemini `develop`
+* Added new files: `dummy_admdad_copy.R` and `dummy_diagnosis.R` in the "R" directory:
+  * `dummy_admdad_copy.R` uses a modified copy of the `dummy_ipadmdad()` function in `R/dummy_data.R`
+    * It samples `admission_date_time` differently, by sampling the admission time from a skewed normal distribution to reflect the distribution of the actual data
+    * It samples `discharge_date_time` by adding log-normally sampled time to the `admission_date_time`
+  * `dummy_diagnosis.R` uses a modified copy of the `dummy_diag()` function in `R/dummy_data.R` where the main change is that the user can input a new parameter, `cohort`, which is equivalent to an admdad table which the output table will be based on. 
 
 **Rxnorm migration**
 * added `GEMINIpkg::gemini_rxnorm_query()` as `rxnorm_query()`, with the following changes
