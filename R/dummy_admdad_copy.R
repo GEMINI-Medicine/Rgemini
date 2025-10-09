@@ -91,9 +91,9 @@
 #' ipadmdad <- dummy_ipadmdad(n = 10000, n_hospitals = 10, time_period = c(2018, 2020))
 #'
 dummy_ipadmdad_copy <- function(n = 1000,
-                           n_hospitals = 10,
-                           time_period = c(2015, 2023),
-                           seed = NULL) {
+                                n_hospitals = 10,
+                                time_period = c(2015, 2023),
+                                seed = NULL) {
   ############### CHECKS: Make sure n is at least n_hospitals * length(time_period)
   if (n < n_hospitals * length(time_period)) {
     stop("Invalid user input.
@@ -101,7 +101,7 @@ dummy_ipadmdad_copy <- function(n = 1000,
   }
 
   # set the seed if the input provided is not NULL
-  if(!is.null(seed)) {
+  if (!is.null(seed)) {
     set.seed(seed)
   }
 
@@ -129,7 +129,7 @@ dummy_ipadmdad_copy <- function(n = 1000,
       min = as.numeric(as.Date(start_date)),
       max = as.numeric(as.Date(end_date))
     )))
-    
+
     random_datetime <- format(as.POSIXct(random_datetime + dhours(sample_time_shifted(length(year), xi = 19.5, omega = 6.29, alpha = 0.20)), tz = "UTC"), format = "%Y-%m-%d %H:%M")
 
     return(random_datetime)
@@ -187,9 +187,10 @@ dummy_ipadmdad_copy <- function(n = 1000,
     # create right-skewed distribution with randomly drawn offset by site]
     hosp_data[, los := rlnorm(n_enc, meanlog = 1.52, sdlog = 1.21)]
 
-    hosp_data[, discharge_date_time := format(round_date(as.POSIXct(admission_date_time, tz = "UTC") + 
-    ddays(los), unit = "days") + 
-    dhours(sample_time_shifted(.N, xi = 11.37, omega = 4.79, alpha = 1.67, max = 28, seed = seed)),
+    hosp_data[, discharge_date_time := format(
+      round_date(as.POSIXct(admission_date_time, tz = "UTC") +
+        ddays(los), unit = "days") +
+        dhours(sample_time_shifted(.N, xi = 11.37, omega = 4.79, alpha = 1.67, max = 28, seed = seed)),
       format = "%Y-%m-%d %H:%M", tz = "UTC"
     )]
 
