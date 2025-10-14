@@ -1031,3 +1031,38 @@ create_ntiles <- function(x, n) {
   ## return output
   return(results)
 }
+
+
+#' Normalize string values
+#'
+#' This function performs a series of text cleaning and normalization on text data.
+#' For example, it is used in `prepare_pharm_for_validation()` to clean up RxNorm outputs for validation.
+#' The operations include:
+#' - Converts text to ASCII encoding, such that special characters can be intepreted properly by R.
+#' - Converts all characters to lowercase.
+#' - Trims leading and trailing whitespace.
+#' - Removes leading and trailing periods.
+#' - Optional: Converts to the singular form through lemmatization.
+#' @param x (`character`)\cr
+#' Text input to be normalized. Multiple values can be provided as a character vector.
+#' @param lemma (`logical`)\cr
+#' If set to `TRUE`, singularizes x via `textstem::lemmatize_words()`.
+#' For use in the RxNorm workflow: Note that lemmatization is an NLP technique that may not always convert drug
+#' names or classification terms into their respective singular form, but this processing is still helpful to a
+#' certain extent to help minimize variations due to plural forms.
+#' @importFrom textstem lemmatize_words
+#' @export
+#' @examples
+#' normalize_text(" Ámoxícíllíns. ")
+normalize_text <- function(x, lemma = FALSE) {
+  # non-convertible characters are removed
+  x <- iconv(x, from = "UTF-8", to = "ASCII//TRANSLIT", sub = "")
+  x <- tolower(x)
+  x <- trimws(x)
+  x <- gsub("^\\.|\\.$", "", x)
+  if (lemma == TRUE) {
+    x <- textstem::lemmatize_words(x)
+  }
+  return(x)
+}
+
