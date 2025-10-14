@@ -1049,12 +1049,13 @@ create_ntiles <- function(x, n) {
 #' names or classification terms into their respective singular form, but this processing is still helpful to a
 #' certain extent to help minimize variations due to plural forms.
 #' @importFrom textstem lemmatize_words
+#' @importFrom stringi stri_trans_general
 #' @export
 #' @examples
 #' normalize_text(" Ámoxícíllíns. ")
 normalize_text <- function(x, lemma = FALSE) {
-  # non-convertible characters are removed
-  x <- iconv(x, from = "UTF-8", to = "ASCII//TRANSLIT", sub = "")
+  # Convert special characters to ASCII equivalents, cross-platform
+  x <- stringi::stri_trans_general(x, "Latin-ASCII")
   x <- tolower(x)
   x <- trimws(x)
   x <- gsub("^\\.|\\.$", "", x)
