@@ -90,24 +90,25 @@
 #' @export
 #'
 plot_over_time <- function(
-    data,
-    plot_var = NULL,
-    time_var = "discharge_date_time",
-    line_group = "hospital_num",
-    color_group = NULL,
-    facet_group = "hospital_num",
-    time_int = "month",
-    func = "mean",
-    plot_cat = NULL,
-    show_overall = TRUE,
-    smooth_method = NULL,
-    line_width = 1,
-    ylimits = NULL,
-    min_n = 0,
-    colors = gemini_colors(1),
-    base_size = 12,
-    return_data = FALSE,
-    ...) {
+  data,
+  plot_var = NULL,
+  time_var = "discharge_date_time",
+  line_group = "hospital_num",
+  color_group = NULL,
+  facet_group = "hospital_num",
+  time_int = "month",
+  func = "mean",
+  plot_cat = NULL,
+  show_overall = TRUE,
+  smooth_method = NULL,
+  line_width = 1,
+  ylimits = NULL,
+  min_n = 0,
+  colors = gemini_colors(1),
+  base_size = 12,
+  return_data = FALSE,
+  ...
+) {
   ##### Check inputs #####
   if (missing(plot_var) && !grepl("^n|count", func, ignore.case = TRUE)) {
     stop(
@@ -561,7 +562,6 @@ plot_over_time <- function(
           na.rm = TRUE
         )
       )
-
 
 
       if (!is.null(facet_group)) {

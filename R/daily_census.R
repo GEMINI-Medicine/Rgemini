@@ -249,7 +249,6 @@ daily_census <- function(cohort,
   }
 
 
-
   ## Check if valid time_of_day input
   tryCatch(
     { # try to convert input to hms format
@@ -297,7 +296,6 @@ daily_census <- function(cohort,
     )
     cohort <- cohort[cohort$admission_date_time <= cohort$discharge_date_time, ]
   }
-
 
 
   #####  Prepare SCU data  #####
@@ -502,7 +500,6 @@ daily_census <- function(cohort,
 
   ##  Combine all
   census_all <- do.call(rbind, census)
-
 
 
   return(census_all)

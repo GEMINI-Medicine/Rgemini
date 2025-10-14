@@ -180,7 +180,6 @@ icd_to_ccsr <- function(dbcon, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, r
     as.data.table()
 
 
-
   #######  Prepare data  #######
   ## clean up dxtable
   dxtable <- coerce_to_datatable(dxtable)
@@ -216,7 +215,6 @@ icd_to_ccsr <- function(dbcon, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, r
     cat("\nAll diagnosis types will be returned in the output.\n")
     dxtable_final <- dxtable
   }
-
 
 
   #######  Quality checks  #######
@@ -291,14 +289,12 @@ icd_to_ccsr <- function(dbcon, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, r
   }
 
 
-
   #######  Get ICD-to-CCSR mapping  #######
   # merge with lookup table
   dxtable_final <- merge(dxtable_final, lookup_icd_to_ccsr[, -c("gemini_derived", "ccsr_version")],
     by = "diagnosis_code", all.x = TRUE
   )
   dxtable_final[is.na(ccsr_default_desc), ccsr_default_desc := "Unmapped"]
-
 
 
   #######  Replace invalid PDX (ccsr_default = 'XXX000')  #######
@@ -382,7 +378,6 @@ icd_to_ccsr <- function(dbcon, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, r
   }
 
 
-
   #######  Prepare final output  #######
   ## Missing Dx/MRDx codes: diagnosis_code/type = NA and ccsr_default_desc = "Missing diagnosis code"
   if (type_mrdx == TRUE) {
@@ -406,7 +401,6 @@ icd_to_ccsr <- function(dbcon, dxtable, type_mrdx = TRUE, unique_mrdx = FALSE, r
     setcolorder(dxtable_final, c("genc_id", setdiff(names(dxtable_final), "genc_id")))
     dxtable_final <- dxtable_final[order(genc_id)]
   }
-
 
 
   return(dxtable_final)
