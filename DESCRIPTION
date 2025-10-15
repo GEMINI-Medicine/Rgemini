@@ -13,6 +13,7 @@ Imports:
     data.table, 
     DBI, 
     dplyr,
+    FamilyRank,
 	ggplot2,
 	ggpubr,
 	ggthemes,
@@ -20,7 +21,9 @@ Imports:
     janitor,
     jsonlite,
 	lemon,
-    lubridate, 
+    lubridate,
+    MCMCpack,
+    mgcv,
     purrr,
     reactable,
     reshape2,
@@ -35,7 +38,8 @@ Imports:
     timeDate,
     fuzzyjoin,
     MCMCpack,
-    sn
+    sn,
+    SuppDists
 Suggests: 
     colorBlindness,
     ggsci,
