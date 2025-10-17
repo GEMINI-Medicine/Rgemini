@@ -21,6 +21,8 @@ Imports:
     jsonlite,
 	lemon,
     lubridate,
+    openxlsx,
+    lubridate,
     MCMCpack,
     mgcv,
     purrr,

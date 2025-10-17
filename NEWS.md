@@ -6,6 +6,9 @@
   * `dummy_diagnosis.R` uses a modified copy of the `dummy_diag()` function in `R/dummy_data.R` where the main change is that the user can input a new parameter, `cohort`, which is equivalent to an admdad table which the output table will be based on.
 * Added `utils.R`, containing functions commonly used for sampling from distributions to generate dummy data.
 
+* **New functions:**
+  * `prepare_pharm_for_validation()` function migrated from GEMINIpkg to standardize workflow for pharmacy mapping validation following rxnorm_query
+
 **Rxnorm migration**
 * added `GEMINIpkg::gemini_rxnorm_query()` as `rxnorm_query()`, with the following changes
   * improved documentation
@@ -25,6 +28,7 @@
 
 * **Miscellanous:**
   * Added hex sticker
+
 
 # Rgemini `1.1.0`
 
