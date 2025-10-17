@@ -358,9 +358,9 @@ dummy_diag <- function(
 #' ipadmdad <- dummy_ipadmdad(n = 10000, n_hospitals = 10, time_period = c(2018, 2020))
 #'
 dummy_ipadmdad <- function(n = 1000,
-                                n_hospitals = 10,
-                                time_period = c(2015, 2023),
-                                seed = NULL) {
+                           n_hospitals = 10,
+                           time_period = c(2015, 2023),
+                           seed = NULL) {
   ############### CHECKS: Make sure n is at least n_hospitals * length(time_period)
   if (n < n_hospitals * length(time_period)) {
     stop("Invalid user input.
