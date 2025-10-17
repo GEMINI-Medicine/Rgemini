@@ -1,6 +1,9 @@
 # Rgemini `add GEMINIpkg::gemini_rxnorm_query()`
 
-<<<<<<< HEAD
+* **New functions:**
+  * `prepare_pharm_for_validation()` function migrated from GEMINIpkg to standardize workflow for pharmacy mapping validation following rxnorm_query
+
+**Rxnorm migration**
 * added `GEMINIpkg::gemini_rxnorm_query()` as `rxnorm_query()`, with the following changes
   * improved documentation
   * changed the `db_con` parameter to `dbcon`
@@ -27,6 +30,7 @@
 
 * **Miscellanous:**
   * Added hex sticker
+
 
 # Rgemini `1.1.0`
 

@@ -118,15 +118,16 @@ max_pairwise_smd <- function(x, name, round_to = 3, ...) {
 #' @export
 #'
 render_cell_suppression.default <- function(
-    x,
-    name,
-    missing = any(is.na(x)),
-    transpose = FALSE,
-    render.empty = "NA",
-    render.continuous = render_cell_suppression.continuous,
-    render.categorical = render_cell_suppression.categorical,
-    render.missing = render_cell_suppression.missing,
-    ...) {
+  x,
+  name,
+  missing = any(is.na(x)),
+  transpose = FALSE,
+  render.empty = "NA",
+  render.continuous = render_cell_suppression.continuous,
+  render.categorical = render_cell_suppression.categorical,
+  render.missing = render_cell_suppression.missing,
+  ...
+) {
   args <- list(...)
 
   if (length(x) == 0) {
