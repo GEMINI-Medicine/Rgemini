@@ -184,8 +184,9 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #'   filter(diagnosis_type != "M") # remove default rows with diagnosis_type="M" from each ID
 #' }
 dummy_diagnosis <- function(
-    n = 1000, n_hospitals = 10, cohort = NULL,
-    cohort_type = "admdad", ipdiagnosis = TRUE, diagnosis_type = NULL, seed = NULL, ...) {
+  n = 1000, n_hospitals = 10, cohort = NULL,
+  cohort_type = "admdad", ipdiagnosis = TRUE, diagnosis_type = NULL, seed = NULL, ...
+) {
   if (!is.null(seed)) {
     set.seed(seed)
   }
@@ -239,11 +240,13 @@ dummy_diagnosis <- function(
       diagnosis_cluster = sample(c("", "A", "B"),
         size = nrow,
         replace = TRUE,
-        prob = c(0.92, 0.07, 0.01)),
+        prob = c(0.92, 0.07, 0.01)
+      ),
       diagnosis_prefix = sample(c("", "N", "Q", "6"),
         size = nrow,
         replace = TRUE,
-        prob = c(0.9, 0.05, 0.02, 0.01))
+        prob = c(0.9, 0.05, 0.02, 0.01)
+      )
     )
 
   if (ipdiagnosis == FALSE) {
@@ -591,9 +594,10 @@ dummy_lab <- function(id, omop, value, unit, mintime) {
     result_value = value,
     result_unit = rep(unit, length(value)),
     collection_date_time = format(as.POSIXct(mintime, tz = "UTC") +
-    sample(0:(24 * 60 * 60 - 1),
-    size = length(value),
-    replace = TRUE), "%Y-%m-%d %H:%M")
+      sample(0:(24 * 60 * 60 - 1),
+        size = length(value),
+        replace = TRUE
+      ), "%Y-%m-%d %H:%M")
   )
   return(res)
 }
