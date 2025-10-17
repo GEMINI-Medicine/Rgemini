@@ -16,48 +16,56 @@ prepare_pharm_for_validation(
 \item{pharm_dbcon}{(\code{DBIConnection})\cr
 A database connection to the Pharmacy Master Mapping Database. Only \code{DBI} connection is
 accepted as \code{odbc} connection may cause connection issues in certain environment.
-Note for GEMINI analysts: Unlike GEMINIpkg::prepare_pharm_for_validation(), Rgemini::prepare_pharm_for_validation() doesn't auto-connect to the mapping database, and you must supply the proper connection as the first argument. Please make sure to connect to the \code{pharmacy_master_mapping} database (not \code{staging.working_pharmacy_mapping}).}
+Note for GEMINI analysts: Unlike GEMINIpkg::prepare_pharm_for_validation(), Rgemini::prepare_pharm_for_validation()
+doesn't auto-connect to the mapping database, and you must supply the proper connection as the first argument.
+Please make sure to connect to the \code{pharmacy_master_mapping} database (not \code{staging.working_pharmacy_mapping}).}
 
 \item{rxnorm_res}{(\code{data.frame}, \code{data.table}, \code{list}) \cr
-An object returned by \code{rxnorm_query}, which may include matched rows only or it may additionally include unmatched rows.
+An object returned by \code{rxnorm_query}, which may include matched rows only or additionally include unmatched rows.
 If provided as a list, it should contain \code{matched_rows} and \code{unmatched_rows}.}
 
 \item{hierarchy}{(\code{logical})\cr
 Default is \code{TRUE}. If \code{TRUE}, applies predefined hierarchy filters to retain only
-the highest-priority drug-containing "raw_input" per pharmacy row (i.e. hierarchy filtering is applied at the level of individual drug orders).
+the highest-priority drug-containing "raw_input" per pharmacy row (i.e. hierarchy filtering is applied
+at the level of individual drug orders).
 The hierarchy rules prioritize drug information in the following order:
 \verb{med_id_generic_name_raw > med_id_brand_name_raw > med_id_hospital_code_raw > med_id_din > med_id_ndc > iv_component_type}.
-For each pharmacy row (identified by \code{row_num} of the pharmacy table), only the highest-priority column that was matched to
-the Drug(s)-of-Interest (DoI) is retained as the "raw_input" for that row.
-The hierarchy rules handle potentially redundant or conflicting information of different search columns for the same pharmacy order.
-It ensures consistent drug-containing information per row and streamlines validation process. Therefore, it is recommended to set hierarchy to \code{TRUE}.
+For each pharmacy row (identified by \code{row_num} of the pharmacy table), only the highest-priority column
+that was matched to the Drug(s)-of-Interest (DoI) is retained as the "raw_input" for that row.
+The hierarchy rules handle potentially redundant or conflicting information of different search columns
+for the same pharmacy order. It ensures consistent drug-containing information per row and streamlines
+validation process. Therefore, it is recommended to set hierarchy to \code{TRUE}.
 Only set to \code{FALSE} if user expects to apply non-standard hierarchy rules and conduct further detailed investigations.
 
 When the \code{rxnorm_res} object contains unmatched rows, hierarchy filters are applied to search for historical mappings.
 For unmatched rows, hierarchy filters cannot be disabled.}
 
 \item{cell_suppression}{(\code{logical})\cr
-Default is \code{TRUE}. If \code{TRUE}, suppresses data associated with less than 6 unique encounters to "<6" in the output frequency tables.}
+Default is \code{TRUE}, suppresses data associated with less than 6 unique encounters to "<6" in the output tables.}
 
 \item{outpath}{(\code{character})\cr
 Optional file path for saving the output files. Default is NULL, and no file will be exported to folder.
 If provided, two files are saved:
 \enumerate{
-\item an \code{.xlsx} file for SME review, 2) an \code{.RDS} file for analysts (\strong{This file should strictly be used within GEMINI's HPC/H4H environment and should NEVER be pushed to a GitLab repository}).
-Compared to the file for SMEs, the .RDS file for analysts contains an additional column \code{pharm_row_num} with all rows IDs in the pharmacy table
-(\code{row_num} as a list) corresponding to a given Rxnorm match.
-The IDs in the \code{pharm_row_num} serve as identifiers for analysts to merge the validated frequency table back to the pharmacy table.
-For example, this can be used to extract individual pharmacy orders that contain the SME-validated drug entry and perform additional filtering (e.g., by order date-time).
-Because \code{pharm_row_num} is not aggregated-level information, it cannot be shared and is restricted for internal use only.
+\item an \code{.xlsx} file for SME review, 2) an \code{.RDS} file for analysts (\strong{This file should strictly be used
+within GEMINI's HPC/H4H environment and should NEVER be pushed to a GitLab repository}).
+Compared to the file for SMEs, the .RDS file for analysts contains an additional column \code{pharm_row_num} with
+all rows IDs in the pharmacy table (\code{row_num} as a list) corresponding to a given Rxnorm match.
+The IDs in the \code{pharm_row_num} serve as identifiers for analysts to merge the validated frequency table back to
+the pharmacy table. For example, this can be used to extract individual pharmacy orders that contain the
+SME-validated drug entry and perform additional filtering (e.g., by order date-time). Because \code{pharm_row_num} is not
+aggregated-level information, it cannot be shared and is restricted for internal use only.
 Note: Files can only be saved to outpath when \code{cell_suppression = TRUE}.
 }}
 }
 \value{
 A list containing two or three data tables:
 \itemize{
-\item {sme: } {Frequency table for SME validation with columns \code{count}, \code{search_type}, \code{raw_input}, \code{rxnorm_match}, \code{drug_group}, \code{times_validated},
+\item {sme: } {Frequency table for SME validation with columns \code{count}, \code{search_type}, \code{raw_input}, \code{rxnorm_match},
+\code{drug_group}, \code{times_validated},
 \code{SME_confirm} (for SME to confirm each "raw_input ~ rxnorm_match" pair; must provide a logical value TRUE/FALSE),
-\code{SME_comments} (for SME to add comments, e.g. whether the drug should be included in the study, regardless of whether the match itself is validated)}
+\code{SME_comments} (for SME to add comments, e.g. whether the drug should be included in the study, regardless of
+whether the match itself is validated)}
 \item {analyst: } {Frequency table for analyst use, with columns \code{count}, \code{search_type}, \code{raw_input}, \code{rxnorm_match},
 \code{drug_group}, \code{times_validated}, and \verb{pharm_row_num (as a list)}}
 \item{unmatched_rows: } {Frequency table for unmatched pharmacy rows if they exist in the input \code{rxnorm_res}.
@@ -73,38 +81,49 @@ Additionally, if \code{outpath} is provided, two files are saved to the specifie
 }
 }
 \description{
-This function processes data returned by \code{rxnorm_query} to prepare it for validation by Subject Matter Expert (SME).
-It connects to the \code{pharmacy_mapping} database, retrieves previous validation information for each "raw_input ~ rxnorm_match" pair (fields returned by \code{rxnorm_query})
+This function processes data returned by \code{rxnorm_query} to prepare it for validation by Subject Matter
+Expert (SME). It connects to the \code{pharmacy_mapping} database, retrieves previous validation information for
+each "raw_input ~ rxnorm_match" pair (fields returned by \code{rxnorm_query})
 from the \code{pharmacy_master_mapping} table, and applies optional hierarchy filtering and small cell suppression to
 generate frequency tables ready for SME to conduct validation.
 It also provides analyst with structured tables for subsequent analytical work post-validation.
-When the input \code{rxnorm_query} object contains unmatched rows of the pharmacy table, the function also retrieves previous mapping
-information found in the \code{pharmacy_master_mapping} table in the DB for each relevant drug-containing column.
+When the input \code{rxnorm_query} object contains unmatched rows of the pharmacy table,
+the function also retrieves previous mapping information found in the \code{pharmacy_master_mapping} table in the DB
+for each relevant drug-containing column.
 }
 \details{
-The function takes results from \code{rxnorm_query} and generates structured frequency tables of pharmacy data for SME review and
-for analyst use post-validation. Below are the key processing steps performed by the function:
+The function takes results from \code{rxnorm_query} and generates structured frequency tables of pharmacy data for SME
+review and for analyst use post-validation. Below are the key processing steps performed by the function:
 \itemize{
-\item Normalizes pharmacy data by converting all text values to lowercase, to ASCII encoding for compatible handling of special characters by R,
-and by trimming off leading and trailing white spaces and periods.
-\item For user-specified text values 'rxnorm_match' and 'drug_group', additional normalization is applied to convert plural words to their singular form.
-\item Retrieves previous validation and adds the \code{times_validated} column to the returned table capturing how many times each
-"raw_input ~ rxnorm_match" pair has been previously validated by individual projects (0-never been validated, 1-validated by one project,
-2+-validated by two or more projects). The function additionally retrieves information about the broader classification of each drug from previous projects;
+\item Normalizes pharmacy data by converting all text values to lowercase, to ASCII encoding for compatible handling of
+special characters by R, and by trimming off leading and trailing white spaces and periods.
+\item For user-specified text values 'rxnorm_match' and 'drug_group', additional normalization is applied to convert
+plural words to their singular form.
+\item Retrieves previous validation and adds the \code{times_validated} column to the returned table capturing how many times
+each "raw_input ~ rxnorm_match" pair has been previously validated by individual projects (0-never been validated,
+1-validated by one project, 2+-validated by two or more projects).
+The function additionally retrieves information about the broader classification of each drug from previous projects;
 however, please note that the classification is not standardized and should be used as supplementary details.
-\item Applies hierarchy filtering on \code{search_type} such that only drug information at the highest priority is retained for consideration
-per row of pharmacy table (see details in parameter description of \code{hierarchy}).
-\item Computes occurrence frequencies for each "search_type ~ raw_input ~ rxnorm_match" entry. Occurrences less than 6 are suppressed to "<6".
-Note that, occurrences are computed by counting the number of unique \code{genc_ids} associated with each entry.
-\item Generates a frequency table for SME to perform validation for each "raw_input ~ rxnorm_match" pair (note: validation should be agnostic to all other fields).
-Each row of the frequency table is uniquely identified by \code{row_id}. When an \code{outpath} is provided, the function outputs a .xlsx file.
-\item Generates a frequency table for analyst use following SME validation. The table is identical to the SME version but includes an addition column
-\code{pharm_row_num}, which is a list storing \code{row_num} values (of the pharmacy table) associated with each "search_type ~ raw_input ~ rxnorm_match" entry.
-The \code{row_num} is an identifier allowing analysts to trace each entry back to the original pharmacy table.
-\item Performs secondary search on unmatched rows if \code{rxnorm_query} was executed with \code{return_unmatched = TRUE}. The secondary search matches each drug-containing field (i.e. search_type)
-with existing mappings in the \code{pharmacy_master_mapping} database in order of hierarchy \verb{med_id_generic_name_raw > med_id_brand_name_raw > med_id_hospital_code_raw > med_id_din > med_id_ndc > iv_component_type}. The highest priority match is returned per row, along with the match's corresponding drug_group.
-The search is not specific to the DoI searched by \code{rxnorm_query}. It is a broad search against all existing mapped drugs found in the \code{pharmacy_master_mapping}.
-Users may need to apply filters (e.g. via regex) and manual mapping to identify if any entries in the unmatched rows may contain the DoI.
+\item Applies hierarchy filtering on \code{search_type} such that only drug information at the highest priority is retained
+for consideration per row of pharmacy table (see details in parameter description of \code{hierarchy}).
+\item Computes occurrence frequencies for each "search_type ~ raw_input ~ rxnorm_match" entry. Occurrences less than 6
+are suppressed to "<6". Note that, occurrences are computed by counting the number of unique \code{genc_ids}
+associated with each entry.
+\item Generates a frequency table for SME to perform validation for each "raw_input ~ rxnorm_match" pair
+(note: validation should be agnostic to all other fields). Each row of the frequency table is uniquely identified by
+\code{row_id}. When an \code{outpath} is provided, the function outputs a .xlsx file.
+\item Generates a frequency table for analyst use following SME validation. The table is identical to the SME version
+but includes an addition column \code{pharm_row_num}, which is a list storing \code{row_num} values (of the pharmacy table)
+associated with each "search_type ~ raw_input ~ rxnorm_match" entry. The \code{row_num} is an identifier allowing
+analysts to trace each entry back to the original pharmacy table.
+\item Performs secondary search on unmatched rows if \code{rxnorm_query} was executed with \code{return_unmatched = TRUE}.
+The secondary search matches each drug-containing field (i.e. search_type) with existing mappings in the
+\code{pharmacy_master_mapping} database in order of hierarchy
+\verb{med_id_generic_name_raw > med_id_brand_name_raw > med_id_hospital_code_raw > med_id_din > med_id_ndc > iv_component_type}.
+The highest priority match is returned per row, along with the match's corresponding drug_group. The search is not
+specific to the DoI searched by \code{rxnorm_query}. It is a broad search against all existing mapped drugs found in
+the \code{pharmacy_master_mapping}. Users may need to apply filters (e.g. via regex) and manual mapping
+to identify if any entries in the unmatched rows may contain the DoI.
 }
 }
 \examples{
@@ -128,14 +147,21 @@ pharm_db <- DBI::dbConnect(drv,
   user = getPass("Enter user:"),
   password = getPass("password")
 )
-res <- prepare_pharm_for_validation(pharm_dbcon = pharm_db, rxnorm_res = rxnorm_res, hierarchy = T, cell_suppression = T, outpath = "/user_path/")
+res <- prepare_pharm_for_validation(
+  pharm_dbcon = pharm_db,
+  rxnorm_res = rxnorm_res,
+  hierarchy = T,
+  cell_suppression = T,
+  outpath = "/user_path/")
 
 res$sme # frequency table to be validated by SME
 res$analyst # frequency table with `pharm_row_num` to be used by analysts after SME validation.
 
-## Two files are saved to the file path provided to `outpath`: `pharmacy_mapping_for_SME.xlsx` is for SME review; `pharm_res_INTERNAL_USE_ONLY.rds` is for analyst use only.
+## Two files are saved to the file path provided to `outpath`: `pharmacy_mapping_for_SME.xlsx` is for SME review;
+`pharm_res_INTERNAL_USE_ONLY.rds` is for analyst use only.
 
-## After SME validation, use "pharm_row_num" in the frequency table to retrieve genc_id and other fields of the pharmacy table
+## After SME validation, use "pharm_row_num" in the frequency table to retrieve genc_id and other fields of
+the pharmacy table
 validated_rows <- res$analyst[row_id \%in\% res$sme[SME_confirm == TRUE]$row_id, ] # get rows validated by SME
 validated_pharm_rows <- unlist(validated_rows$pharm_row_num) # extract corresponding pharm_row_num
 query <- paste0("SELECT row_num, genc_id, med_start_date_time
