@@ -93,7 +93,6 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #' or `erdiagnosis` tables that can be used for testing or demonstration purposes.
 #' It internally calls `sample_icd()` function to sample ICD-10 codes and
 #' accepts arguments passed to `sample_icd()` for customizing the sampling scheme.
-#' It is a copied, edited version of the `dummy_diag` function from the Rgemini package.
 #'
 #' @details
 #' To ensure simulated table resembles "ip(er)diagnosis" table, the following characteristics are applied to fields:
@@ -168,22 +167,22 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #' }
 #'
 #' ### Simulate an erdiagnosis table including data from `cohort`
-#' cohort <- dummy_ipadmdad_copy()
-#' erdiag <- dummy_diagnosis(cohort = cohort)
+#' cohort <- dummy_ipadmdad()
+#' erdiag <- dummy_diag(cohort = cohort)
 #'
 #' ### Simulate an ipdiagnosis table with diagnosis codes starting with "E11":
 #' \dontrun{
 #' set.seed(1)
-#' ipdiag <- dummy_diagnosis(n = 50, n_hospitals = 20, ipdiagnosis = T, pattern = "^E11")
+#' ipdiag <- dummy_diag(n = 50, n_hospitals = 20, ipdiagnosis = T, pattern = "^E11")
 #' }
 #'
 #' ### Simulate a ipdiagnosis table with random diagnosis codes in diagnosis type 3 or 6 only:
 #' \dontrun{
 #' set.seed(1)
-#' ipdiag <- dummy_diagnosis(n = 50, n_hospitals = 10, diagnosis_type = (c("3", "6"))) %>%
+#' ipdiag <- dummy_diag(n = 50, n_hospitals = 10, diagnosis_type = (c("3", "6"))) %>%
 #'   filter(diagnosis_type != "M") # remove default rows with diagnosis_type="M" from each ID
 #' }
-dummy_diagnosis <- function(
+dummy_diag <- function(
   n = 1000, n_hospitals = 10, cohort = NULL,
   cohort_type = "admdad", ipdiagnosis = TRUE, diagnosis_type = NULL, seed = NULL, ...
 ) {
@@ -273,7 +272,6 @@ dummy_diagnosis <- function(
 #' This function creates a dummy dataset with a subset of variables that
 #' are contained in the GEMINI "ipadmdad" table (see details in
 #' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/)).
-#' It is a copy of the Rgemini function `dummy_ipadmdad`.
 #'
 #' The simulated encounter-level variables that are returned by this function
 #' are currently: Admission date-time, discharge date-time, age, gender,
@@ -359,7 +357,7 @@ dummy_diagnosis <- function(
 #' # Simulate 10,000 encounters from 10 hospitals for fiscal years 2018-2020.
 #' ipadmdad <- dummy_ipadmdad(n = 10000, n_hospitals = 10, time_period = c(2018, 2020))
 #'
-dummy_ipadmdad_copy <- function(n = 1000,
+dummy_ipadmdad <- function(n = 1000,
                                 n_hospitals = 10,
                                 time_period = c(2015, 2023),
                                 seed = NULL) {
