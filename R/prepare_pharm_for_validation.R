@@ -125,7 +125,7 @@
 #'                   WHERE row_num IN (", paste(validated_pharm_rows, collapse = ", "), ");")
 #' pharm_tab <- dbGetQuery(clean_db, query) # pull pharm rows containing validated drugs
 #' }
-#'
+#' @import openxlsx
 #' @export
 #'
 prepare_pharm_for_validation <- function(pharm_dbcon, rxnorm_res, hierarchy = TRUE, cell_suppression = TRUE, outpath = NULL) {
