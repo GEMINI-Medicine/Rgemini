@@ -36,7 +36,6 @@ NULL
 }
 
 
-
 #' @title
 #' Returns number of unique values
 #'
@@ -498,7 +497,6 @@ check_input <- function(arginput, argtype,
         call. = FALSE
       )
     }
-
 
 
     ###### CHECK 2: Check if length of input argument is as expected [optional]

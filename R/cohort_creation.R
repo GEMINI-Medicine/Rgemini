@@ -90,12 +90,13 @@
 #'
 #' @export
 cohort_creation <- function(
-    cohort,
-    labels,
-    exclusion_flag = NULL,
-    show_prct = TRUE,
-    group_var = NULL,
-    ...) {
+  cohort,
+  labels,
+  exclusion_flag = NULL,
+  show_prct = TRUE,
+  group_var = NULL,
+  ...
+) {
   ## if no exclusion flags provided, interpret all steps as "inclusions"
   if (is.null(exclusion_flag)) {
     exclusion_flag <- c(rep(FALSE, length(cohort)))

@@ -259,7 +259,6 @@ readmission <- function(dbcon,
   })
 
 
-
   ############ ** Special condition to GEMINI readmission computation ** ############
   # If the very last encounter of an EPICARE has transfer out coding (defined by institution_to_type=='AT' |
   # acute_transfer_out=='AT in `episodes_of_care()`) AND time_to_next_admission >12, the epicare is excluded from
