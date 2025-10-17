@@ -44,10 +44,11 @@ Optional file path for saving the output files. Default is NULL, and no file wil
 If provided, two files are saved:
 \enumerate{
 \item an \code{.xlsx} file for SME review, 2) an \code{.RDS} file for analysts (\strong{This file should strictly be used within GEMINI's HPC/H4H environment and should NEVER be pushed to a GitLab repository}).
-Compared to the file for SME, the .RDS file for analysts contains additional information on \code{row_num} (as a list) from the pharmacy table.
-The \code{row_num} serves as an identifier for analysts to merge the validated frequency table back to the pharmacy table.
+Compared to the file for SMEs, the .RDS file for analysts contains an additional column \code{pharm_row_num} with all rows IDs in the pharmacy table
+(\code{row_num} as a list) corresponding to a given Rxnorm match.
+The IDs in the \code{pharm_row_num} serve as identifiers for analysts to merge the validated frequency table back to the pharmacy table.
 For example, this can be used to extract individual pharmacy orders that contain the SME-validated drug entry and perform additional filtering (e.g., by order date-time).
-Because this \code{row_num} is not aggregated-level information, it cannot be shared and is restricted for internal use only.
+Because \code{pharm_row_num} is not aggregated-level information, it cannot be shared and is restricted for internal use only.
 Note: Files can only be saved to outpath when \code{cell_suppression = TRUE}.
 }}
 }
@@ -135,7 +136,7 @@ res$analyst # frequency table with `pharm_row_num` to be used by analysts after 
 ## Two files are saved to the file path provided to `outpath`: `pharmacy_mapping_for_SME.xlsx` is for SME review; `pharm_res_INTERNAL_USE_ONLY.rds` is for analyst use only.
 
 ## After SME validation, use "pharm_row_num" in the frequency table to retrieve genc_id and other fields of the pharmacy table
-validated_rows <- hier$analyst[row_id \%in\% c(1, 2), ] # as a minimal example, assume SME valided the entries of row_id 1 and 2
+validated_rows <- res$analyst[row_id \%in\% res$sme[SME_confirm == TRUE]$row_id, ] # get rows validated by SME
 validated_pharm_rows <- unlist(validated_rows$pharm_row_num) # extract corresponding pharm_row_num
 query <- paste0("SELECT row_num, genc_id, med_start_date_time
                   FROM pharmacy

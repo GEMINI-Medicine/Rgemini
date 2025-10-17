@@ -119,7 +119,7 @@
 #' ## Two files are saved to the file path provided to `outpath`: `pharmacy_mapping_for_SME.xlsx` is for SME review; `pharm_res_INTERNAL_USE_ONLY.rds` is for analyst use only.
 #'
 #' ## After SME validation, use "pharm_row_num" in the frequency table to retrieve genc_id and other fields of the pharmacy table
-#' validated_rows <- res$analyst[row_id %in% res$sme[SME_confirm == TRUE]$row_id,] # get rows validated by SME
+#' validated_rows <- res$analyst[row_id %in% res$sme[SME_confirm == TRUE]$row_id, ] # get rows validated by SME
 #' validated_pharm_rows <- unlist(validated_rows$pharm_row_num) # extract corresponding pharm_row_num
 #' query <- paste0("SELECT row_num, genc_id, med_start_date_time
 #'                   FROM pharmacy
