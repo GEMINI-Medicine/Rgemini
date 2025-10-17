@@ -30,10 +30,11 @@
 #' @export
 #'
 plot_theme <- function(
-    base_size = 12,
-    base_family = "sans",
-    show_grid = NULL,
-    ...) {
+  base_size = 12,
+  base_family = "sans",
+  show_grid = NULL,
+  ...
+) {
   res <- (
     theme_foundation(
       base_size = base_size,
@@ -90,7 +91,6 @@ plot_theme <- function(
 
   return(res)
 }
-
 
 
 #' @title
