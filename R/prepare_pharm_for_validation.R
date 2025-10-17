@@ -37,7 +37,7 @@
 #' @param outpath (`character`)\cr
 #' Optional file path for saving the output files. Default is NULL, and no file will be exported to folder.
 #' If provided, two files are saved:
-#' 1) an `.xlsx` file for SME review, 2) an `.RDS` file for analysts (**This file is strictly used within GEMINI's HPC environment**).
+#' 1) an `.xlsx` file for SME review, 2) an `.RDS` file for analysts (**This file should strictly be used within GEMINI's HPC/H4H environment and should NEVER be pushed to a GitLab repository**).
 #' Compared to the file for SME, the .RDS file for analysts contains additional information on `row_num` (as a list) from the pharmacy table.
 #' The `row_num` serves as an identifier for analysts to merge the validated frequency table back to the pharmacy table.
 #' For example, this can be used to extract individual pharmacy orders that contain the SME-validated drug entry and perform additional filtering (e.g., by order date-time).
@@ -53,8 +53,8 @@
 #'  \item {analyst: } {Frequency table for analyst use, with columns `count`, `search_type`, `raw_input`, `rxnorm_match`,
 #'      `drug_group`, `times_validated`, and `pharm_row_num (as a list)`}
 #'  \item{unmatched_rows: } {Frequency table for unmatched pharmacy rows if they exist in the input `rxnorm_res`.
-#'          Contains pharmarcy columns searched by gemini-rxnorm-query and additionally,
-#'          `historically_mapped_to_drug` (agnostic to user's DoI), `historically_mapped_to_drug_group` (agnostic to user's DoI),
+#'          Contains pharmarcy columns searched by `rxnorm_query()` and additionally,
+#' `historically_mapped_to_drug` and `historically_mapped_to_drug_group` (agnostic to user's DoI),
 #'          `SME_mapped_search_type`, `SME_mapped_drug`, `SME_mapped_drug_group`, `SME_comment`}
 #' }
 #'
@@ -70,37 +70,37 @@
 #'     and by trimming off leading and trailing white spaces and periods.
 #' - For user-specified text values 'rxnorm_match' and 'drug_group', additional normalization is applied to convert plural words to their singular form.
 #' - Retrieves previous validation and adds the `times_validated` column to the returned table capturing how many times each
-#'    "raw_input ~ rxnorm_match" pair has been previously validated by individual project (0-never been validated, 1-validated by one project,
+#'    "raw_input ~ rxnorm_match" pair has been previously validated by individual projects (0-never been validated, 1-validated by one project,
 #'     2+-validated by two or more projects). The function additionally retrieves information about the broader classification of each drug from previous projects;
 #'     however, please note that the classification is not standardized and should be used as supplementary details.
 #' - Applies hierarchy filtering on `search_type` such that only drug information at the highest priority is retained for consideration
 #'     per row of pharmacy table (see details in parameter description of `hierarchy`).
 #' - Computes occurrence frequencies for each "search_type ~ raw_input ~ rxnorm_match" entry. Occurrences less than 6 are suppressed to "<6".
-#'     Note that, occurrences are computed by counting the number of unique `genc_ids` associating with each entry.
+#'     Note that, occurrences are computed by counting the number of unique `genc_ids` associated with each entry.
 #' - Generates a frequency table for SME to perform validation for each "raw_input ~ rxnorm_match" pair (note: validation should be agnostic to all other fields).
 #'     Each row of the frequency table is uniquely identified by `row_id`. When an `outpath` is provided, the function outputs a .xlsx file.
 #' - Generates a frequency table for analyst use following SME validation. The table is identical to the SME version but includes an addition column
 #'    `pharm_row_num`, which is a list storing `row_num` values (of the pharmacy table) associated with each "search_type ~ raw_input ~ rxnorm_match" entry.
 #'     The `row_num` is an identifier allowing analysts to trace each entry back to the original pharmacy table.
-#' - Performs secondary search on unmatched rows when exist. The secondary search matches each drug-containing field (i.e. search_type)
-#'     with existing mappings in the `pharmacy_master_mapping` in order of hierarchy `med_id_generic_name_raw > med_id_brand_name_raw >
+#' - Performs secondary search on unmatched rows if `rxnorm_query` was executed with `return_unmatched = TRUE`. The secondary search matches each drug-containing field (i.e. search_type)
+#'     with existing mappings in the `pharmacy_master_mapping` database in order of hierarchy `med_id_generic_name_raw > med_id_brand_name_raw >
 #'     med_id_hospital_code_raw > med_id_din > med_id_ndc > iv_component_type`. The highest priority match is returned per row, along with the match's corresponding drug_group.
 #'     The search is not specific to the DoI searched by `rxnorm_query`. It is a broad search against all existing mapped drugs found in the `pharmacy_master_mapping`.
-#'     Users may need to apply filters (e.g.via regex) and manual mapping to identify if any entries in the unmatched rows may contain the DoI.
+#'     Users may need to apply filters (e.g. via regex) and manual mapping to identify if any entries in the unmatched rows may contain the DoI.
 #'
 #'
 #' @examples
 #' \dontrun{
 #' drv <- dbDriver("PostgreSQL")
 #' # Connect to GEMINI data DB for Rxnorm search
-#' clean_db <- DBI::dbConnect(drv,
-#'   dbname = "drm_cleandb_xxx",
+#' dbcon <- DBI::dbConnect(drv,
+#'   dbname = "db",
 #'   host = "domain_name.ca",
-#'   port = xxxx,
-#'   user = getPass("Enter user:"),
-#'   password = getPass("password")
+#'   port = 1234,
+#'   user = getPass("Username: "),
+#'   password = getPass("Password: ")
 #' )
-#' rxnorm_res <- rxnorm_query(clean_db, drug_input = c("warfarin"), return_unmatched = F)
+#' rxnorm_res <- rxnorm_query(dbcon, drug_name = c("warfarin"), return_unmatched = FALSE)
 #'
 #' # Connect to Pharmacy Master Mapping DB for validated mappings from previous projects
 #' pharm_db <- DBI::dbConnect(drv,
@@ -113,17 +113,17 @@
 #' res <- prepare_pharm_for_validation(pharm_dbcon = pharm_db, rxnorm_res = rxnorm_res, hierarchy = T, cell_suppression = T, outpath = "/user_path/")
 #'
 #' res$sme # frequency table to be validated by SME
-#' res$analyst # frequency table with `pharm_row_num` containing row_num information to be used by analysts after SME validation.
+#' res$analyst # frequency table with `pharm_row_num` to be used by analysts after SME validation.
 #'
 #' ## Two files are saved to the file path provided to `outpath`: `pharmacy_mapping_for_SME.xlsx` is for SME review; `pharm_res_INTERNAL_USE_ONLY.rds` is for analyst use only.
 #'
-#' ## After SME validatioin, use "pharm_row_num" in the frequency table to retrieve genc_id and other fields of the pharmacy table
+#' ## After SME validation, use "pharm_row_num" in the frequency table to retrieve genc_id and other fields of the pharmacy table
 #' validated_rows <- hier$analyst[row_id %in% c(1, 2), ] # as a minimal example, assume SME valided the entries of row_id 1 and 2
 #' validated_pharm_rows <- unlist(validated_rows$pharm_row_num) # extract corresponding pharm_row_num
 #' query <- paste0("SELECT row_num, genc_id, med_start_date_time
 #'                   FROM pharmacy
 #'                   WHERE row_num IN (", paste(validated_pharm_rows, collapse = ", "), ");")
-#' pharm_tab <- dbGetQuery(clean_db, query) # pull pharm rows containing validated drugs
+#' pharm_tab <- dbGetQuery(dbcon, query) # pull pharm rows containing validated drugs
 #' }
 #' @import openxlsx
 #' @export
@@ -141,7 +141,6 @@ prepare_pharm_for_validation <- function(pharm_dbcon, rxnorm_res, hierarchy = TR
     .SDcols = setdiff(names(masterfile), c("rxnorm_match", "drug_group"))
   ] # normalize text for remaining cols
 
-  dbDisconnect(pharm_dbcon)
   ## CHECK AND STANDARDIZE INPUT RXNORM DATA
   if (!all(class(rxnorm_res) %in% c("data.table", "data.frame", "list"))) {
     stop("Invalid input. rxnorm_res must be a dataframe or a list")
@@ -179,7 +178,7 @@ prepare_pharm_for_validation <- function(pharm_dbcon, rxnorm_res, hierarchy = TR
       by = .(genc_id, row_num, search_type, raw_input)
     ]
   } else {
-    message("Skiping order-level hierarchy filtering based on user's input ...\n All drug-containing records identified by rxnorm will be returned, including possibly redundent or conflicting records associating with the same pharmacy order.\n Only set `hierarchy=False` when users expect to apply non-standard hierarchy rules or conduct further order-level investigations.\n")
+    message("Skipping order-level hierarchy filtering based on user's input ...\n All drug-containing records identified by rxnorm will be returned, including possibly redundant or conflicting records associated with the same pharmacy order.\n Only set `hierarchy=False` when users expect to apply non-standard hierarchy rules or conduct further order-level investigations.\n")
     rxnorm_res_final <- rxnorm_res
   }
 
