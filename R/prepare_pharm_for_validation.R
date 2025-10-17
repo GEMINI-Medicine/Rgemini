@@ -28,7 +28,7 @@
 #' It ensures consistent drug-containing information per row and streamlines validation process. Therefore, it is recommended to set hierarchy to `TRUE`.
 #' Only set to `FALSE` if user expects to apply non-standard hierarchy rules and conduct further detailed investigations.
 #'
-#' When the the `rxnorm_res` object contains unmatched rows, hierarchy filters are applied to search for historical mappings.
+#' When the `rxnorm_res` object contains unmatched rows, hierarchy filters are applied to search for historical mappings.
 #' For unmatched rows, hierarchy filters cannot be disabled.
 #'
 #' @param cell_suppression (`logical`)\cr
