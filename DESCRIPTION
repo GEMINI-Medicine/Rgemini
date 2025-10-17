@@ -13,7 +13,6 @@ Imports:
     data.table, 
     DBI, 
     dplyr,
-    getPass,
 	ggplot2,
 	ggpubr,
 	ggthemes,
