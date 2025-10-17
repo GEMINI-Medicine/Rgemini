@@ -98,7 +98,7 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #' To ensure simulated table resembles "ip(er)diagnosis" table, the following characteristics are applied to fields:
 #'
 #' - `genc_id`: Numerical identification of encounters starting from 1.
-#' The number of unique encounters is defined by `nid`. The total number of rows is defined by `nrow`,
+#' The number of unique encounters is defined by `n`. The total number of rows is defined by `nrow`,
 #'   where the number of rows for each encounter is random, but each encounter has at least one row.
 #' - `hospital_num`: Numerical identification of hospitals from 1 to 5.
 #' All rows of an encounter are linked to a single hospital
@@ -163,7 +163,7 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #' ### Simulate an erdiagnosis table for 5 unique subjects with total 20 records:
 #' \dontrun{
 #' set.seed(1)
-#' erdiag <- dummy_diag(n = 50, n_hospitals = 2, ipdiagnosis = F)
+#' erdiag <- dummy_diag(nid = 50, n_hospitals = 2, ipdiagnosis = F)
 #' }
 #'
 #' ### Simulate an erdiagnosis table including data from `cohort`
@@ -173,17 +173,17 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #' ### Simulate an ipdiagnosis table with diagnosis codes starting with "E11":
 #' \dontrun{
 #' set.seed(1)
-#' ipdiag <- dummy_diag(n = 50, n_hospitals = 20, ipdiagnosis = T, pattern = "^E11")
+#' ipdiag <- dummy_diag(nid = 50, n_hospitals = 20, ipdiagnosis = T, pattern = "^E11")
 #' }
 #'
 #' ### Simulate a ipdiagnosis table with random diagnosis codes in diagnosis type 3 or 6 only:
 #' \dontrun{
 #' set.seed(1)
-#' ipdiag <- dummy_diag(n = 50, n_hospitals = 10, diagnosis_type = (c("3", "6"))) %>%
+#' ipdiag <- dummy_diag(nid = 50, n_hospitals = 10, diagnosis_type = (c("3", "6"))) %>%
 #'   filter(diagnosis_type != "M") # remove default rows with diagnosis_type="M" from each ID
 #' }
 dummy_diag <- function(
-  n = 1000, n_hospitals = 10, cohort = NULL,
+  nid = 1000, n_hospitals = 10, cohort = NULL,
   cohort_type = "admdad", ipdiagnosis = TRUE, diagnosis_type = NULL, seed = NULL, ...
 ) {
   if (!is.null(seed)) {
@@ -196,7 +196,7 @@ dummy_diag <- function(
   avg_repeats <- ifelse(ipdiagnosis, 9.05, 2.92)
   include_prop <- ifelse(ipdiagnosis, 1, 0.82)
   if (is.null(cohort)) {
-    df2 <- generate_id_hospital(nid = n, n_hospitals = n_hospitals, avg_repeats = avg_repeats, seed = seed)
+    df2 <- generate_id_hospital(nid = nid, n_hospitals = n_hospitals, avg_repeats = avg_repeats, seed = seed)
   } else {
     # consider if `cohort` is IP or `er` data
     # if it is `er` then include all encounters from it
