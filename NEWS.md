@@ -12,6 +12,7 @@
   * removed the `sites` parameter
   * added `detailed_search` and `return_drug_list` as explicit parameters
   * applied `find_db_tablename` to query `pharmacy_subset` on H4H
+<<<<<<< HEAD
 =======
 * added GEMINIpkg::gemini_rxnorm_query() as rxnorm_query()
 * changed the db_con parameter to dbcon
@@ -24,6 +25,13 @@
 # Rgemini `develop`
 
 * Fixed `render_cell_suppression.strat()` to be compatible with table1 version 1.5.0 
+=======
+* Added `normalize_text()` utility function
+ 
+**Other changes**
+* Fixed `render_cell_suppression.strat()` to be compatible with table1 version 1.5.0
+* Removed age exclusion in `episodes_of_care()` to accommodate paeds cohort
+>>>>>>> 03d19e4 (228 add normalize text (#229))
 
 * **Testing improvements:**
   * Unit tests are now also run in Python via rpy2 to ensure cross-language compatibility
