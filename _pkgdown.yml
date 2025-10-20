@@ -87,5 +87,6 @@ reference:
   - lunique
   - mapping_message
   - matches("ni")
+  - normalize_text
   - return_hospital_field
   - quiet
