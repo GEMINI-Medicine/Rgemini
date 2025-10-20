@@ -229,20 +229,20 @@ dummy_diag <- function(
   }
 
   # total number of rows in dummy data table
-  nrow <- nrow(df1) + nrow(df2)
+  n_rows <- nrow(df1) + nrow(df2)
 
   ##### sample `diagnosis_codes` #####
   # combine `df1` with "M" diagnosis types and `df2` with other diagnosis types
   dummy_data <- rbind(df1, df2) %>%
     mutate(
-      diagnosis_code = sample_icd(n = nrow, ...),
+      diagnosis_code = sample_icd(n = n_rows, ...),
       diagnosis_cluster = sample(c("", "A", "B"),
-        size = nrow,
+        size = n_rows,
         replace = TRUE,
         prob = c(0.92, 0.07, 0.01)
       ),
       diagnosis_prefix = sample(c("", "N", "Q", "6"),
-        size = nrow,
+        size = n_rows,
         replace = TRUE,
         prob = c(0.9, 0.05, 0.02, 0.01)
       )
@@ -250,10 +250,10 @@ dummy_diag <- function(
 
   if (ipdiagnosis == FALSE) {
     if (!is.null(diagnosis_type)) {
-      er_diagnosis_type <- sample(diagnosis_type, size = nrow, replace = TRUE)
+      er_diagnosis_type <- sample(diagnosis_type, size = n_rows, replace = TRUE)
     } else {
       er_diagnosis_type <- sample(c("", "M", "9", "3", "O"),
-        size = nrow, replace = TRUE, prob = c(0.53, 0.38, 0.06, 0.02, 0.01)
+        size = n_rows, replace = TRUE, prob = c(0.53, 0.38, 0.06, 0.02, 0.01)
       )
     }
     dummy_data <- dummy_data %>%
