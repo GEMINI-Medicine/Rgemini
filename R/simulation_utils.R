@@ -270,7 +270,7 @@ generate_id_hospital <- function(nid = 1000, n_hospitals = 10, avg_repeats = 1.5
       format = "%Y-%m-%d %H:%M"
     )
 
-    include_set <- cohort[sample(1:nrow(cohort), round(include_prop * nrow(cohort))), ]
+    include_set <- cohort[sample(seq_len(nrow(cohort)), round(include_prop * nrow(cohort))), ]
 
     if (avg_repeats == 1) {
       n_repeats <- rep(1, nrow(include_set))
