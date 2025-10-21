@@ -17,6 +17,9 @@
 #' @param seed (`integer`) Optional, a number for setting the seed for reproducible results
 #'
 #' @return A numeric vector following the log normal distribution, truncated to the specified range.
+#' 
+#' @export
+#' 
 rlnorm_trunc <- function(n, meanlog, sdlog, min_n, max_n, seed = NULL) {
   if (!is.null(seed)) {
     set.seed(seed)
@@ -50,6 +53,9 @@ rlnorm_trunc <- function(n, meanlog, sdlog, min_n, max_n, seed = NULL) {
 #' @param seed (`integer`) Optional, a number for setting the seed for reproducible results
 #'
 #' @return A numeric vector following the normal distribution, truncated to the specified range.
+#' 
+#' @export
+#' 
 rnorm_trunc <- function(n, mean, sd, min_n, max_n, seed = NULL) {
   if (!is.null(seed)) {
     set.seed(seed)
@@ -86,6 +92,9 @@ rnorm_trunc <- function(n, mean, sd, min_n, max_n, seed = NULL) {
 #' @param seed (`integer`) Optional, a number for setting the seed for reproducible results
 #'
 #' @return A numeric vector following the skewed normal distribution, truncated to the specified range.
+#' 
+#' @export
+#' 
 rsn_trunc <- function(n, xi, omega, alpha, min_n, max_n, seed = NULL) {
   # checks for input validity
   if (min_n > max_n) {
@@ -139,6 +148,8 @@ rsn_trunc <- function(n, xi, omega, alpha, min_n, max_n, seed = NULL) {
 #'
 #' @return A numeric vector following the specified distribution.
 #'
+#' @export
+#' 
 sample_time_shifted <- function(nrow, xi, omega, alpha, min = 0, max = 48, seed = NULL) {
   if (!is.null(seed)) {
     set.seed(seed)
@@ -182,6 +193,8 @@ sample_time_shifted <- function(nrow, xi, omega, alpha, min = 0, max = 48, seed 
 #'
 #'
 #' @return A numeric vector following the specified distribution.
+#' 
+#' @export
 #'
 sample_time_shifted_lnorm <- function(nrow, meanlog, sdlog, min = 0, max = 48, seed = NULL) {
   if (!is.null(seed)) {
@@ -234,6 +247,8 @@ sample_time_shifted_lnorm <- function(nrow, meanlog, sdlog, min = 0, max = 48, s
 #' @return (`data.table`)\cr A data.table object with the same columns as `cohort`, but with some rows excluded and/or repeated based on user specifications. If `cohort` is not included, then it will only have the following fields:
 #' - `genc_id` (`integer`): GEMINI encounter number, may be repeated in multiple rows based on avg_repeats
 #' - `hospital_num` (`integer`): An integer identifying the hospital attached to the encounter
+#' 
+#' @export
 #'
 #' @examples
 #' sample_cohort <- data.table::data.table(genc_id = 1:100, hospital_num = rep(1:5, each = 20))
