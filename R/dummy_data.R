@@ -63,7 +63,7 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
       if (!is.null(dbcon)) {
         lookup <- RPostgreSQL::dbGetQuery(
           dbcon,
-          "SELECT diagnosis_code  FROM lookup_icd10_ca_description where type != 'category'"
+          "SELECT diagnosis_code FROM lookup_icd10_ca_description where type != 'category'"
         ) %>% as.data.table()
 
         if (!is.null(pattern)) {
@@ -140,6 +140,10 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #'
 #' @param cohort (`data.frame`)\cr Optional, the administrative data frame containing `genc_id`
 #' and `hospital_num` information to be used in the output
+#' 
+#' @param is_er_cohort (`logical`)\cr Optional, a flag indicating whether
+#' the `cohort` table is an "er" table or not. If not, it should be an
+#' ipadmdad table.
 #'
 #' @param ipdiagnosis (`logical`)\cr Default to "TRUE" and returns simulated "ipdiagnosis" table.
 #' If FALSE, returns simulated "erdiagnosis" table.
@@ -182,9 +186,25 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #' ipdiag <- dummy_diag(nid = 50, n_hospitals = 10, diagnosis_type = (c("3", "6"))) %>%
 #'   filter(diagnosis_type != "M") # remove default rows with diagnosis_type="M" from each ID
 #' }
+#'
+#' ### Simulate a ipdiagnosis table with ICD-10-CA codes:
+#' \dontrun{
+#' drv <- dbDriver("PostgreSQL")
+#' dbcon <- DBI::dbConnect(drv,
+#'   dbname = "db",
+#'   host = "172.XX.XX.XXX",
+#'   port = 1234,
+#'   user = getPass("Enter user:"),
+#'   password = getPass("password")
+#' )
+#'
+#' set.seed(1)
+#' ipdiag <- dummy_diag(nid = 5, n_hospitals = 2, ipdiagnosis = T, dbcon = dbcon, source = "icd_lookup")
+#' }
+#'
 dummy_diag <- function(
   nid = 1000, n_hospitals = 10, cohort = NULL,
-  cohort_type = "admdad", ipdiagnosis = TRUE, diagnosis_type = NULL, seed = NULL, ...
+  is_er_cohort = FALSE, ipdiagnosis = TRUE, diagnosis_type = NULL, seed = NULL, ...
 ) {
   if (!is.null(seed)) {
     set.seed(seed)
@@ -200,7 +220,7 @@ dummy_diag <- function(
   } else {
     # consider if `cohort` is IP or `er` data
     # if it is `er` then include all encounters from it
-    if (cohort_type != "admdad" && ipdiagnosis == FALSE) {
+    if (is_er_cohort == TRUE && ipdiagnosis == FALSE) {
       include_prop <- 1
     }
     cohort <- as.data.table(cohort)
@@ -293,7 +313,7 @@ dummy_diag <- function(
 #' is arbitrary and does not reflect true differences between hospitals in the
 #' real GEMINI dataset.
 #'
-#' @param n (`integer`)\cr Total number of encounters (`genc_ids`) to be
+#' @param nid (`integer`)\cr Total number of encounters (`genc_ids`) to be
 #' simulated.
 #'
 #' @param n_hospitals (`integer`)\cr
@@ -355,9 +375,9 @@ dummy_diag <- function(
 #'
 #' @examples
 #' # Simulate 10,000 encounters from 10 hospitals for fiscal years 2018-2020.
-#' ipadmdad <- dummy_ipadmdad(n = 10000, n_hospitals = 10, time_period = c(2018, 2020))
+#' ipadmdad <- dummy_ipadmdad(nid = 10000, n_hospitals = 10, time_period = c(2018, 2020))
 #'
-dummy_ipadmdad <- function(n = 1000,
+dummy_ipadmdad <- function(nid = 1000,
                            n_hospitals = 10,
                            time_period = c(2015, 2023),
                            seed = NULL) {
@@ -381,7 +401,7 @@ dummy_ipadmdad <- function(n = 1000,
 
   # randomly draw number of encounters per hospital*year combo
   # make sure they add up to desired total number of encounters
-  data[, n := rmultinom(1, n, rep.int(1 / nrow(data), nrow(data)))]
+  data[, n := rmultinom(1, nid, rep.int(1 / nrow(data), nrow(data)))]
   sum(data$n)
 
   # blow up row number according to encounter per combo
@@ -414,8 +434,8 @@ dummy_ipadmdad <- function(n = 1000,
   ############### DEFINE VARIABLE DISTRIBUTIONS ###############
   ## AGE
   # create left-skewed distribution, truncated from 18-110
-  age_distr <- function(n = 10000, xi = 95, omega = 30, alpha = -10) {
-    age <- rsn(n, xi, omega, alpha)
+  age_distr <- function(nid = 10000, xi = 95, omega = 30, alpha = -10) {
+    age <- rsn(nid, xi, omega, alpha)
 
     # truncate at [18, 110]
     age <- as.integer(age[age >= 18 & age <= 110])
