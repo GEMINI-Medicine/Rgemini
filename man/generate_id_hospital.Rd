@@ -40,7 +40,8 @@ generate_id_hospital(
 This function creates a data table based on the input, either based on a number of unique IDs or an existing inpatient data table. It can be used to create long format data tables based on inpatient data or to create a new data based on user specifications.
 }
 \examples{
-generate_id_hospital(cohort = admdad, include_prop = 0.8, avg_repeats = 1.5, by_los = TRUE, seed = 1)
+sample_cohort <- data.table::data.table(genc_id = 1:100, hospital_num = rep(1:5, each = 20))
+generate_id_hospital(cohort = sample_cohort, include_prop = 0.8, avg_repeats = 1.5, by_los = TRUE, seed = 1)
 generate_id_hospital(nid = 1000, n_hospitals = 10, avg_repeats = 1)
 
 }

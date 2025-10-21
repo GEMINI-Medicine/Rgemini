@@ -16,6 +16,8 @@ dummy_diag(
 )
 }
 \arguments{
+\item{nid}{(\code{integer})\cr Number of unique encounter IDs (\code{genc_id}) to simulate. Value must be greater than 0.}
+
 \item{n_hospitals}{(\code{integer})\cr Number of hospitals to simulate in the resulting data table}
 
 \item{cohort}{(\code{data.frame})\cr Optional, the administrative data frame containing \code{genc_id}
@@ -34,9 +36,9 @@ Possible diagnosis types are
 ("M", 1", "2", "3", "4", "5", "6", "9", "W", "X", and "Y"). Regardless of \code{diagnosis_type} input,
 the \code{ipdiagnosis} table is defaulted to always return type "M" for the first row of each encounter.}
 
-\item{...}{Additional arguments for ICD code sampling scheme. See \code{sample_icd()} for details.}
+\item{seed}{(\code{integer})\Cr Optional, a number to assign the seed to.}
 
-\item{n}{(\code{integer})\cr Number of unique encounter IDs (\code{genc_id}) to simulate. Value must be greater than 0.}
+\item{...}{Additional arguments for ICD code sampling scheme. See \code{sample_icd()} for details.}
 }
 \value{
 (\code{data.table})\cr A data table containing simulated data of

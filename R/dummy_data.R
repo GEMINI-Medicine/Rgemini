@@ -134,7 +134,7 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #' Users require specific linkages between these fields should consider customizing
 #' the output data or manually generating the desired combinations.
 #'
-#' @param n (`integer`)\cr Number of unique encounter IDs (`genc_id`) to simulate. Value must be greater than 0.
+#' @param nid (`integer`)\cr Number of unique encounter IDs (`genc_id`) to simulate. Value must be greater than 0.
 #'
 #' @param n_hospitals (`integer`)\cr Number of hospitals to simulate in the resulting data table
 #'
@@ -153,6 +153,8 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #' Possible diagnosis types are
 #' ("M", 1", "2", "3", "4", "5", "6", "9", "W", "X", and "Y"). Regardless of `diagnosis_type` input,
 #' the `ipdiagnosis` table is defaulted to always return type "M" for the first row of each encounter.
+#' 
+#' @param seed (`integer`)\Cr Optional, a number to assign the seed to.
 #'
 #' @param ... Additional arguments for ICD code sampling scheme. See `sample_icd()` for details.
 #'
