@@ -140,7 +140,7 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #'
 #' @param cohort (`data.frame`)\cr Optional, the administrative data frame containing `genc_id`
 #' and `hospital_num` information to be used in the output
-#' 
+#'
 #' @param is_er_cohort (`logical`)\cr Optional, a flag indicating whether
 #' the `cohort` table is an "er" table or not. If not, it should be an
 #' ipadmdad table.

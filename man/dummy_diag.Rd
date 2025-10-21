@@ -8,7 +8,7 @@ dummy_diag(
   nid = 1000,
   n_hospitals = 10,
   cohort = NULL,
-  cohort_type = "admdad",
+  is_er_cohort = FALSE,
   ipdiagnosis = TRUE,
   diagnosis_type = NULL,
   seed = NULL,
@@ -20,6 +20,10 @@ dummy_diag(
 
 \item{cohort}{(\code{data.frame})\cr Optional, the administrative data frame containing \code{genc_id}
 and \code{hospital_num} information to be used in the output}
+
+\item{is_er_cohort}{(\code{logical})\cr Optional, a flag indicating whether
+the \code{cohort} table is an "er" table or not. If not, it should be an
+ipadmdad table.}
 
 \item{ipdiagnosis}{(\code{logical})\cr Default to "TRUE" and returns simulated "ipdiagnosis" table.
 If FALSE, returns simulated "erdiagnosis" table.
@@ -110,4 +114,20 @@ set.seed(1)
 ipdiag <- dummy_diag(nid = 50, n_hospitals = 10, diagnosis_type = (c("3", "6"))) \%>\%
   filter(diagnosis_type != "M") # remove default rows with diagnosis_type="M" from each ID
 }
+
+### Simulate a ipdiagnosis table with ICD-10-CA codes:
+\dontrun{
+drv <- dbDriver("PostgreSQL")
+dbcon <- DBI::dbConnect(drv,
+  dbname = "db",
+  host = "172.XX.XX.XXX",
+  port = 1234,
+  user = getPass("Enter user:"),
+  password = getPass("password")
+)
+
+set.seed(1)
+ipdiag <- dummy_diag(nid = 5, n_hospitals = 2, ipdiagnosis = T, dbcon = dbcon, source = "icd_lookup")
+}
+
 }
