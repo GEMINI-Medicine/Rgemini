@@ -382,9 +382,9 @@ dummy_ipadmdad <- function(nid = 1000,
                            time_period = c(2015, 2023),
                            seed = NULL) {
   ############### CHECKS: Make sure n is at least n_hospitals * length(time_period)
-  if (n < n_hospitals * length(time_period)) {
+  if (nid < n_hospitals * length(time_period)) {
     stop("Invalid user input.
-    Number of encounters `n` should at least be equal to `n_hospitals` * `length(time_period)`")
+    Number of encounters `nid` should at least be equal to `n_hospitals` * `length(time_period)`")
   }
 
   # set the seed if the input provided is not NULL
