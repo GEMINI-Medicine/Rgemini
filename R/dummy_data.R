@@ -213,9 +213,12 @@ dummy_diag <- function(
   }
 
   #### get data.tables with  `genc_id` and `hospital_num` ####
-  # average number of repeats is 3.9, but `df1` and `df2` will be joined
-  # df2 will have 2.9 + 1 repeats on average
-  avg_repeats <- ifelse(ipdiagnosis, 9.05, 2.92)
+  # `ipdiagnosis`: average number of repeats is 9.05
+  # `df1` and `df2` will be joined, so `df2` has 8.05 repeats on average
+  # `df` has one repeat per genc_id
+  # `erdiagnosis` has 3.92 repeats per genc_id on average
+  # the average repeats in `df2` is 2.92 for `erdiagnosis`
+  avg_repeats <- ifelse(ipdiagnosis, 8.05, 2.92)
   include_prop <- ifelse(ipdiagnosis, 1, 0.82)
   if (is.null(cohort)) {
     df2 <- generate_id_hospital(nid = nid, n_hospitals = n_hospitals, avg_repeats = avg_repeats, seed = seed)
