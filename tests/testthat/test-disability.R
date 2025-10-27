@@ -2,15 +2,15 @@ test_that("global and component-wise outputs align", {
   ## Check 1: Make sure that global & component-wise flags don't contradict each other
   # create dummy data
   set.seed(1)
-  ipdiagnosis <- dummy_diag(nid = 100, n_hospitals = 40)
-  erdiagnosis <- dummy_diag(nid = 80, n_hospitals = 20, ipdiagnosis = FALSE)
+  ipdiagnosis <- dummy_diag(nid = 100, n_hospitals = 40, seed = 1)
+  erdiagnosis <- dummy_diag(nid = 80, n_hospitals = 20, ipdiagnosis = FALSE, seed = 1)
   cohort <- data.table(genc_id = c(unique(ipdiagnosis$genc_id)[1:(length(unique(ipdiagnosis$genc_id)) - 1)], 888, 999)) # add some genc_ids with no diagnosis entries, remove one genc_id to test component_wise = TRUE bug
 
   check1_no_cat <- disability(cohort, ipdiag = ipdiagnosis, erdiag = erdiagnosis, component_wise = FALSE)
   check1_cat <- disability(cohort, ipdiag = ipdiagnosis, erdiag = erdiagnosis, component_wise = TRUE)
 
   ## Check genc_ids with disability == TRUE
-  expect_equal(c(sum(check1_no_cat$disability, na.rm = TRUE), length(unique(check1_cat$genc_id))), c(57, 57))
+  expect_equal(c(sum(check1_no_cat$disability, na.rm = TRUE), length(unique(check1_cat$genc_id))), c(48, 48))
 
   ## All genc_ids where global disability flag = TRUE should exist in component-wise output (and v.v.)
   expect_true(all(check1_no_cat[disability == TRUE]$genc_id %in% check1_cat$genc_id == TRUE))
@@ -26,8 +26,11 @@ test_that("global and component-wise outputs align", {
 
 test_that("returned with disability = TRUE", {
   ## Check 2: Unit test for some diagnosis codes that should have disability = TRUE
-  set.seed(2)
-  ipdiag <- dummy_diag(nid = 6, n_hospitals = 2, ipdiagnosis = T, pattern = "^F840|^S07|^M05|^Q66|^H90|^H30|^G25")
+  set.seed(1)
+  ipdiag <- dummy_diag(
+    nid = 6, n_hospitals = 2, ipdiagnosis = T, pattern = "^F840|^S07|^M05|^Q66|^H90|^H30|^G25",
+    seed = 1
+  )
   check2 <- disability(
     cohort = data.table(genc_id = unique(ipdiag$genc_id)),
     ipdiag,
@@ -37,7 +40,7 @@ test_that("returned with disability = TRUE", {
   expect_true(nrow(check2) == nrow(ipdiag)) # all rows from cohort input should be returned
 
   # check number of returned rows per genc_id
-  expect_equal(check2$genc_id, c(1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6))
+  expect_equal(check2$genc_id, c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6))
 
   # check subcategories
   expect_equal(unique(check2[grepl("^F840", diagnosis_code), disability_category]), "Developmental Disabilities")

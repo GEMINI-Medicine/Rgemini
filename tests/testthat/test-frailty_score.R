@@ -8,7 +8,7 @@ testthat::test_that("Correct score calculated for frailty conditions and subleve
   testthat::expect_equal(res$frailty_score_derived, 2)
 
   res <- frailty_score(cohort_dum, ipdiag_dum, erdiag_dum, component_wise = T)
-  testthat::expect_equal(unique(res$diagnosis_code), c("I509", "M120", "M123", "M125", "M128"))
+  testthat::expect_equal(unique(res$diagnosis_code), c("M128", "I509", "M120", "M123", "M125"))
 })
 
 testthat::test_that("Setting erdiag to NULL removes erdiagosis codes with a warning message", {
