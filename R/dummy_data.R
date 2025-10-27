@@ -219,20 +219,16 @@ dummy_diag <- function(
   # `erdiagnosis` has 3.92 repeats per genc_id on average
   # the average repeats in `df2` is 2.92 for `erdiagnosis`
   avg_repeats <- ifelse(ipdiagnosis, 8.05, 2.92)
-  include_prop <- ifelse(ipdiagnosis, 1, 0.82)
   if (is.null(cohort)) {
     df2 <- generate_id_hospital(nid = nid, n_hospitals = n_hospitals, avg_repeats = avg_repeats, seed = seed)
   } else {
     # consider if `cohort` is IP or `er` data
     # if it is `er` then include all encounters from it
-    if (is_er_cohort == TRUE && ipdiagnosis == FALSE) {
-      include_prop <- 1
-    }
     cohort <- as.data.table(cohort)
     df2 <- generate_id_hospital(
       cohort = cohort,
       avg_repeats = avg_repeats,
-      include_prop = include_prop,
+      include_prop = 1,
       seed = seed
     )
     # only include the genc_id and hospital_num columns from `cohort`
@@ -488,7 +484,10 @@ dummy_ipadmdad <- function(nid = 1000,
 
     ## Simulate LOS to derive discharge_date_time
     # create right-skewed distribution with randomly drawn offset by site]
-    hosp_data[, los := rlnorm(n_enc, meanlog = 1.52, sdlog = 1.21)]
+    hosp_data[, los := {
+        mean_hosp <- rnorm(1, mean = 1.27, sd = 0.42)
+        rlnorm(.N, meanlog = mean_hosp, sdlog = 1.38)
+    }, by = hospital_num] # hospital-level variation in distribution
 
     hosp_data[, discharge_date_time := format(
       round_date(as.POSIXct(admission_date_time, tz = "UTC") +
@@ -565,7 +564,6 @@ dummy_ipadmdad <- function(nid = 1000,
     hospital_num,
     admission_date_time,
     discharge_date_time,
-    los,
     age,
     gender,
     discharge_disposition,
