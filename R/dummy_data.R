@@ -485,8 +485,8 @@ dummy_ipadmdad <- function(nid = 1000,
     ## Simulate LOS to derive discharge_date_time
     # create right-skewed distribution with randomly drawn offset by site]
     hosp_data[, los := {
-        mean_hosp <- rnorm(1, mean = 1.27, sd = 0.42)
-        rlnorm(.N, meanlog = mean_hosp, sdlog = 1.38)
+      mean_hosp <- rnorm(1, mean = 1.27, sd = 0.42)
+      rlnorm(.N, meanlog = mean_hosp, sdlog = 1.38)
     }, by = hospital_num] # hospital-level variation in distribution
 
     hosp_data[, discharge_date_time := format(
