@@ -36,7 +36,7 @@ Possible diagnosis types are
 ("M", 1", "2", "3", "4", "5", "6", "9", "W", "X", and "Y"). Regardless of \code{diagnosis_type} input,
 the \code{ipdiagnosis} table is defaulted to always return type "M" for the first row of each encounter.}
 
-\item{seed}{(\code{integer})\Cr Optional, a number to assign the seed to.}
+\item{seed}{(\code{integer})\cr Optional, a number to assign the seed to.}
 
 \item{...}{Additional arguments for ICD code sampling scheme. See \code{sample_icd()} for details.}
 }
