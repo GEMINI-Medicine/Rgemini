@@ -141,10 +141,6 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #' @param cohort (`data.frame`)\cr Optional, the administrative data frame containing `genc_id`
 #' and `hospital_num` information to be used in the output
 #'
-#' @param is_er_cohort (`logical`)\cr Optional, a flag indicating whether
-#' the `cohort` table is an "er" table or not. If not, it should be an
-#' ipadmdad table.
-#'
 #' @param ipdiagnosis (`logical`)\cr Default to "TRUE" and returns simulated "ipdiagnosis" table.
 #' If FALSE, returns simulated "erdiagnosis" table.
 #' See tables in [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
@@ -205,8 +201,7 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #' }
 #'
 dummy_diag <- function(
-  nid = 1000, n_hospitals = 10, cohort = NULL,
-  is_er_cohort = FALSE, ipdiagnosis = TRUE, diagnosis_type = NULL, seed = NULL, ...
+  nid = 1000, n_hospitals = 10, cohort = NULL, ipdiagnosis = TRUE, diagnosis_type = NULL, seed = NULL, ...
 ) {
   if (!is.null(seed)) {
     set.seed(seed)
@@ -222,8 +217,6 @@ dummy_diag <- function(
   if (is.null(cohort)) {
     df2 <- generate_id_hospital(nid = nid, n_hospitals = n_hospitals, avg_repeats = avg_repeats, seed = seed)
   } else {
-    # consider if `cohort` is IP or `er` data
-    # if it is `er` then include all encounters from it
     cohort <- as.data.table(cohort)
     df2 <- generate_id_hospital(
       cohort = cohort,
@@ -485,7 +478,7 @@ dummy_ipadmdad <- function(nid = 1000,
     ## Simulate LOS to derive discharge_date_time
     # create right-skewed distribution with randomly drawn offset by site]
     hosp_data[, los := {
-      mean_hosp <- rnorm(1, mean = 1.27, sd = 0.42)
+      mean_hosp <- rnorm(1, mean = 1.27, sd = 0.11)
       rlnorm(.N, meanlog = mean_hosp, sdlog = 1.38)
     }, by = hospital_num] # hospital-level variation in distribution
 
