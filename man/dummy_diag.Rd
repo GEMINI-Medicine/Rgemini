@@ -8,7 +8,6 @@ dummy_diag(
   nid = 1000,
   n_hospitals = 10,
   cohort = NULL,
-  is_er_cohort = FALSE,
   ipdiagnosis = TRUE,
   diagnosis_type = NULL,
   seed = NULL,
@@ -22,10 +21,6 @@ dummy_diag(
 
 \item{cohort}{(\code{data.frame})\cr Optional, the administrative data frame containing \code{genc_id}
 and \code{hospital_num} information to be used in the output}
-
-\item{is_er_cohort}{(\code{logical})\cr Optional, a flag indicating whether
-the \code{cohort} table is an "er" table or not. If not, it should be an
-ipadmdad table.}
 
 \item{ipdiagnosis}{(\code{logical})\cr Default to "TRUE" and returns simulated "ipdiagnosis" table.
 If FALSE, returns simulated "erdiagnosis" table.
