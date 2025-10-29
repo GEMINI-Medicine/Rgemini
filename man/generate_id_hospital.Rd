@@ -28,7 +28,9 @@ for the proportion of unique rows in \code{cohort} to include in the final data 
 
 \item{cohort}{(\code{data.table})\cr Optional, resembling the GEMINI "admdad" table to build the returned data table from}
 
-\item{by_los}{(\code{logical})\cr Optional, whether to assign more repeats to longer hospital stays or not. Default to FALSE. When TRUE, two additional columns are required in the input \code{cohort} dataset - \code{admission_date_time} and \code{discharge_date_time} for calculating length of stay.}
+\item{by_los}{(\code{logical})\cr Optional, whether to assign more repeats to longer hospital stays or not.
+Default to FALSE. When TRUE, two additional columns are required in the input \code{cohort} dataset -
+\code{admission_date_time} and \code{discharge_date_time} for calculating length of stay.}
 
 \item{seed}{(\code{integer})\cr Optional, a number for setting the seed for reproducible results}
 }
@@ -42,10 +44,10 @@ If \code{cohort} is not included, then it will have the following fields:
 }
 }
 \description{
-This function creates a data table based on the input, either based on a number of unique IDs or
-an existing inpatient data table.
-It can be used to create long format data tables based on inpatient data or to create a new data table
-based on user specifications.
+This function creates a data table of simulated encounter IDs and hospital IDs.
+The creation is either based on user's desired number of encounters and unique hospitals,
+or based on a given set of encounter IDs. It can be used to create long format data tables
+where users have control over average repeat frequency.
 }
 \examples{
 sample_cohort <- data.table::data.table(genc_id = 1:100, hospital_num = rep(1:5, each = 20))
