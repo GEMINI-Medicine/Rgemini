@@ -1314,10 +1314,11 @@ sample_time_shifted_lnorm <- function(nrow, meanlog, sdlog, min = 0, max = 48, s
 #' along with other information if `cohort` is included in the input.
 #'
 #' @description
-#' This function creates a data table based on the input, either based on a number of unique IDs or
-#' an existing inpatient data table.
-#' It can be used to create long format data tables based on inpatient data or to create a new data table
-#' based on user specifications.
+#' This function creates a data table of simulated encounter IDs and hospital IDs.
+#' The creation is either based on user's desired number of encounters and unique hospitals,
+#' or based on a given set of encounter IDs. It can be used to create long format data tables
+#' where users have control over average repeat frequency.
+
 #'
 #' @param nid (`integer`)\cr Optional, number of unique encounter IDs to simulate
 #'
@@ -1330,7 +1331,9 @@ sample_time_shifted_lnorm <- function(nrow, meanlog, sdlog, min = 0, max = 48, s
 #'
 #' @param cohort (`data.table`)\cr Optional, resembling the GEMINI "admdad" table to build the returned data table from
 #'
-#' @param by_los (`logical`)\cr Optional, whether to assign more repeats to longer hospital stays or not. Default to FALSE. When TRUE, two additional columns are required in the input `cohort` dataset - `admission_date_time` and `discharge_date_time` for calculating length of stay.
+#' @param by_los (`logical`)\cr Optional, whether to assign more repeats to longer hospital stays or not.
+#' Default to FALSE. When TRUE, two additional columns are required in the input `cohort` dataset -
+#' `admission_date_time` and `discharge_date_time` for calculating length of stay.
 #'
 #' @param seed (`integer`)\cr Optional, a number for setting the seed for reproducible results
 #'
