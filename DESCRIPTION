@@ -22,6 +22,8 @@ Imports:
 	lemon,
     lubridate,
     openxlsx,
+    MCMCpack,
+    mgcv,
     purrr,
     reactable,
     reshape2,
@@ -36,8 +38,8 @@ Imports:
     tidyr, 
     timeDate,
     fuzzyjoin,
-    MCMCpack,
-    sn
+    sn,
+    SuppDists
 Suggests: 
     colorBlindness,
     ggsci,
