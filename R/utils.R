@@ -1292,7 +1292,7 @@ sample_time_shifted_lnorm <- function(nrow, meanlog, sdlog, min = 0, max = 48, s
 
 
 #' @title
-#' Generate a data table with basic inpatient stay information. At the minimum, it will include an encounter and hospital ID, along with other information if `cohort` is included in the input.
+#' Simulate encounter IDs and hospital assignment.
 #'
 #' @description
 #' This function creates a data table based on the input, either based on a number of unique IDs or an existing inpatient data table. It can be used to create long format data tables based on inpatient data or to create a new data based on user specifications.
