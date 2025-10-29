@@ -1330,7 +1330,7 @@ sample_time_shifted_lnorm <- function(nrow, meanlog, sdlog, min = 0, max = 48, s
 #'
 #' @param cohort (`data.table`)\cr Optional, resembling the GEMINI "admdad" table to build the returned data table from
 #'
-#' @param by_los (`logical`)\cr Optional, whether to assign more repeats to longer hospital stays or not
+#' @param by_los (`logical`)\cr Optional, whether to assign more repeats to longer hospital stays or not. Default to FALSE. When TRUE, two additional columns are required in the input `cohort` dataset - `admission_date_time` and `discharge_date_time` for calculating length of stay.
 #'
 #' @param seed (`integer`)\cr Optional, a number for setting the seed for reproducible results
 #'
