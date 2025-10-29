@@ -139,7 +139,8 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #' @param n_hospitals (`integer`)\cr Number of hospitals to simulate in the resulting data table
 #'
 #' @param cohort (`data.frame`)\cr Optional, the administrative data frame containing `genc_id`
-#' and `hospital_num` information to be used in the output
+#' and `hospital_num` information to be used in the output. `cohort` takes precedence over parameters `nid` and
+#' `n_hospitals`: when `cohort` is not NULL, `nid` and `n_hospitals` are ignored.
 #'
 #' @param ipdiagnosis (`logical`)\cr Default to "TRUE" and returns simulated "ipdiagnosis" table.
 #' If FALSE, returns simulated "erdiagnosis" table.
@@ -394,9 +395,7 @@ dummy_ipadmdad <- function(nid = 1000,
   data <- expand.grid(hospital_num = hospital_num, year = year) %>% data.table()
 
   # randomly draw number of encounters per hospital*year combo
-  # make sure they add up to desired total number of encounters
   data[, n := rmultinom(1, nid, rep.int(1 / nrow(data), nrow(data)))]
-  sum(data$n)
 
   # blow up row number according to encounter per combo
   data <- data[rep(seq_len(nrow(data)), data$n), ]
@@ -406,12 +405,12 @@ dummy_ipadmdad <- function(nid = 1000,
     start_date <- paste0(year, "-04-01 00:00 UTC") # start each fisc year on Apr 1
     end_date <- paste0(year + 1, "-03-31 23:59 UTC") # end of fisc year
 
-    random_datetime <- as.Date(round(runif(length(year),
+    random_date <- as.Date(round(runif(length(year),
       min = as.numeric(as.Date(start_date)),
       max = as.numeric(as.Date(end_date))
     )))
 
-    random_datetime <- format(as.POSIXct(random_datetime + dhours(sample_time_shifted(length(year),
+    random_datetime <- format(as.POSIXct(random_date + dhours(sample_time_shifted(length(year),
       xi = 19.5, omega = 6.29, alpha = 0.20
     )), tz = "UTC"), format = "%Y-%m-%d %H:%M")
 
@@ -488,6 +487,11 @@ dummy_ipadmdad <- function(nid = 1000,
         dhours(sample_time_shifted(.N, xi = 11.37, omega = 4.79, alpha = 1.67, max = 28, seed = seed)),
       format = "%Y-%m-%d %H:%M", tz = "UTC"
     )]
+
+    # if `discharge_date_time` ends up before `admission_date_time`
+    hosp_data[, los := as.numeric(difftime(ymd_hm(discharge_date_time), ymd_hm(admission_date_time), units = "days"))]
+    hosp_data[los < 0, discharge_date_time := format(ymd_hm(discharge_date_time) + days(1), "%Y-%m-%d %H:%M")]
+    #handle sampling edge case with negative los
 
     ## Alternate level of care (ALC) & days spent in ALC
     # ALC flag

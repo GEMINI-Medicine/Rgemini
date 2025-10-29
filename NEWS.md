@@ -1,10 +1,7 @@
 # Rgemini `develop`
-* Added new files: `dummy_admdad_copy.R` and `dummy_diagnosis.R` in the "R" directory:
-  * `dummy_admdad_copy.R` uses a modified copy of the `dummy_ipadmdad()` function in `R/dummy_data.R`
-    * It samples `admission_date_time` differently, by sampling the admission time from a skewed normal distribution to reflect the distribution of the actual data
-    * It samples `discharge_date_time` by adding log-normally sampled time to the `admission_date_time`
-  * `dummy_diagnosis.R` uses a modified copy of the `dummy_diag()` function in `R/dummy_data.R` where the main change is that the user can input a new parameter, `cohort`, which is equivalent to an admdad table which the output table will be based on.
-* Added `utils.R`, containing functions commonly used for sampling from distributions to generate dummy data.
+* Updated the `dummy_ipadmdad()` function to generate more realistic `admission_date_time` and `discharge_date_time` values by accounting for typical lengths of stay and time-of-day patterns.
+* Updated the `dummy_diag()` function to include a new parameter, `cohort`, to allow users to simulate diagnosis data for a given set of encounters, enabling the creation of linked data tables.
+* Added six utility functions to `utils.R` for special distribution sampling and for robust hospital-encounter simulation.
 
 * **New functions:**
   * `prepare_pharm_for_validation()` function migrated from GEMINIpkg to standardize workflow for pharmacy mapping validation following rxnorm_query

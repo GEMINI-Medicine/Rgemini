@@ -1069,7 +1069,8 @@ normalize_text <- function(x, lemma = FALSE) {
 #' Sample a truncated log normal distribution
 #'
 #' @description
-#' Sample from a log normal distribution using the `rlnorm` function but truncate it to specified minimum and maximum values
+#' Sample from a log normal distribution using the `rlnorm` function
+#' Truncate it to specified minimum and maximum values
 #'
 #' @param n (`integer`) The length of the output vector
 #'
@@ -1077,9 +1078,9 @@ normalize_text <- function(x, lemma = FALSE) {
 #'
 #' @param sdlog (`numeric`) The standard deviation of the log normal distribution
 #'
-#' @param min_n (`numeric`) The minimum value to truncate the data to.
+#' @param min (`numeric`) The minimum value to truncate the data to.
 #'
-#' @param max_n (`numeric`) The maximum value to truncate the data to.
+#' @param max (`numeric`) The maximum value to truncate the data to.
 #'
 #' @param seed (`integer`) Optional, a number for setting the seed for reproducible results
 #'
@@ -1087,16 +1088,20 @@ normalize_text <- function(x, lemma = FALSE) {
 #'
 #' @export
 #'
-rlnorm_trunc <- function(n, meanlog, sdlog, min_n, max_n, seed = NULL) {
+rlnorm_trunc <- function(n, meanlog, sdlog, min, max, seed = NULL) {
   if (!is.null(seed)) {
     set.seed(seed)
   }
+  if (min > max) {
+    stop("The min is greater than the max. Invalid sampling range provided - stopping.")
+  }
   res <- rlnorm(n, meanlog, sdlog)
   # keep redrawing until all are in range
-  bad <- (res < min_n) | (res > max_n)
-  while (any(bad)) {
-    res[bad] <- rlnorm(sum(bad, na.rm = TRUE), meanlog, sdlog)
-    bad <- (res < min_n) | (res > max_n)
+  # get out of range values
+  oor <- (res < min) | (res > max)
+  while (any(oor)) {
+    res[oor] <- rlnorm(sum(oor, na.rm = TRUE), meanlog, sdlog)
+    oor <- (res < min) | (res > max)
   }
   return(res)
 }
@@ -1113,9 +1118,9 @@ rlnorm_trunc <- function(n, meanlog, sdlog, min_n, max_n, seed = NULL) {
 #'
 #' @param sd (`numeric`) The standard deviation of the normal distribution
 #'
-#' @param min_n (`numeric`) The minimum value to truncate the data to.
+#' @param min (`numeric`) The minimum value to truncate the data to.
 #'
-#' @param max_n (`numeric`) The maximum value to truncate the data to.
+#' @param max (`numeric`) The maximum value to truncate the data to.
 #'
 #' @param seed (`integer`) Optional, a number for setting the seed for reproducible results
 #'
@@ -1123,14 +1128,17 @@ rlnorm_trunc <- function(n, meanlog, sdlog, min_n, max_n, seed = NULL) {
 #'
 #' @export
 #'
-rnorm_trunc <- function(n, mean, sd, min_n, max_n, seed = NULL) {
+rnorm_trunc <- function(n, mean, sd, min, max, seed = NULL) {
   if (!is.null(seed)) {
     set.seed(seed)
   }
+  if (min > max) {
+    stop("The min is greater than the max. Invalid sampling range provided - stopping.")
+  }
   res <- rnorm(n, mean, sd)
-  while (sum(res < min_n) + sum(res > max_n) > 0) {
-    res[c(res < min_n | res > max_n)] <- rnorm(
-      sum(res < min_n) + sum(res > max_n),
+  while (sum(res < min) + sum(res > max) > 0) {
+    res[c(res < min | res > max)] <- rnorm(
+      sum(res < min) + sum(res > max),
       mean,
       sd
     )
@@ -1142,7 +1150,8 @@ rnorm_trunc <- function(n, mean, sd, min_n, max_n, seed = NULL) {
 #' Sample a truncated skewed normal distribution
 #'
 #' @description
-#' Sample from a skewed normal distribution using the `rsn` function but truncate it to specified minimum and maximum values
+#' Sample from a skewed normal distribution using the `rsn` function
+#' Truncate it to specified minimum and maximum values
 #'
 #' @param n (`integer`) The length of the output vector
 #'
@@ -1152,9 +1161,9 @@ rnorm_trunc <- function(n, mean, sd, min_n, max_n, seed = NULL) {
 #'
 #' @param alpha (`numeric`) The skewness of the skewed normal distribution
 #'
-#' @param min_n (`numeric`) The minimum value to truncate the data to.
+#' @param min (`numeric`) The minimum value to truncate the data to.
 #'
-#' @param max_n (`numeric`) The maximum value to truncate the data to.
+#' @param max (`numeric`) The maximum value to truncate the data to.
 #'
 #' @param seed (`integer`) Optional, a number for setting the seed for reproducible results
 #'
@@ -1162,10 +1171,10 @@ rnorm_trunc <- function(n, mean, sd, min_n, max_n, seed = NULL) {
 #'
 #' @export
 #'
-rsn_trunc <- function(n, xi, omega, alpha, min_n, max_n, seed = NULL) {
+rsn_trunc <- function(n, xi, omega, alpha, min, max, seed = NULL) {
   # checks for input validity
-  if (min_n > max_n) {
-    stop()
+  if (min > max) {
+    stop("The min is greater than the max. Invalid sampling range provided - stopping.")
   }
   if (!is.null(seed)) {
     set.seed(seed)
@@ -1174,15 +1183,15 @@ rsn_trunc <- function(n, xi, omega, alpha, min_n, max_n, seed = NULL) {
   res <- rsn(n = n, xi = xi, omega = omega, alpha = alpha)
   if (n == 1) {
     # if only one number is sampled
-    while (res[1] < min_n | res[1] > max_n) {
+    while (res[1] < min | res[1] > max) {
       res <- rsn(n = 1, xi = xi, omega = omega, alpha = alpha)
     }
     return(res[1])
   } else {
     # re-sample until all values are in the specified range
-    while (sum(res < min_n) + sum(res > max_n) > 0) {
-      res[c(res < min_n | res > max_n)] <- rsn(
-        n = sum(res < min_n) + sum(res > max_n),
+    while (sum(res < min) + sum(res > max) > 0) {
+      res[c(res < min | res > max)] <- rsn(
+        n = sum(res < min) + sum(res > max),
         xi = xi,
         omega = omega,
         alpha = alpha
@@ -1196,7 +1205,8 @@ rsn_trunc <- function(n, xi, omega, alpha, min_n, max_n, seed = NULL) {
 #' Chopped, skewed normal distribution for time variables
 #'
 #' @description
-#' The function samples from a skewed normal distribution using `rsn` to obtain time of day data in hours. Values greater than 24 are subtracted by 24 (moved to the next day) so that a real time variable is observed.
+#' The function samples from a skewed normal distribution using `rsn` to obtain time of day data in hours.
+#' Values greater than 24 are subtracted by 24 (moved to the next day) so that a real time variable is observed.
 #'
 #' @param nrow (`integer`) The number of data points to sample
 #'
@@ -1221,14 +1231,17 @@ sample_time_shifted <- function(nrow, xi, omega, alpha, min = 0, max = 48, seed 
   if (!is.null(seed)) {
     set.seed(seed)
   }
+  if (min > max) {
+    stop("The min is greater than the max. Invalid sampling range provided - stopping.")
+  }
   # sampling of skewed normal distribution
   time_orig <- rsn_trunc(
     n = nrow,
     xi = xi,
     omega = omega,
     alpha = alpha,
-    min_n = min,
-    max_n = max,
+    min = min,
+    max = max,
   )
   # times greater than 24 hours are after 12am
   # subtract 25 to turn 12am into 00:00
@@ -1244,7 +1257,8 @@ sample_time_shifted <- function(nrow, xi, omega, alpha, min = 0, max = 48, seed 
 #' Chopped log normal distribution for time variables
 #'
 #' @description
-#' The function samples from a log normal using `rlnorm` to obtain time of day data in hours. Values greater than 24 are subtracted by 24 (moved to the next day) so that a real time variable is observed.
+#' The function samples from a log normal using `rlnorm` to obtain time of day data in hours.
+#' Values greater than 24 are subtracted by 24 (moved to the next day) so that a real time variable is observed.
 #'
 #' @param nrow (`integer`) The number of data points to sample
 #'
@@ -1267,6 +1281,9 @@ sample_time_shifted_lnorm <- function(nrow, meanlog, sdlog, min = 0, max = 48, s
   if (!is.null(seed)) {
     set.seed(seed)
   }
+  if (min > max) {
+    stop("The min is greater than the max. Invalid sampling range provided - stopping.")
+  }
   sample_dist <- function(nrow, meanlog, sdlog) {
     # sampling of skewed normal distribution
     time_orig <- rlnorm(
@@ -1284,34 +1301,42 @@ sample_time_shifted_lnorm <- function(nrow, meanlog, sdlog, min = 0, max = 48, s
   }
   res <- sample_dist(nrow, meanlog, sdlog)
   while (sum(res < min) + sum(res > max) > 0) {
-    bad_sum <- sum(res < min) + sum(res > max)
-    res[c(res < min | res > max)] <- sample_dist(bad_sum, meanlog, sdlog)
+    oor_sum <- sum(res < min) + sum(res > max)
+    res[c(res < min | res > max)] <- sample_dist(oor_sum, meanlog, sdlog)
   }
   return(res)
 }
 
 
 #' @title
-#' Generate a data table with basic inpatient stay information. At the minimum, it will include an encounter and hospital ID, along with other information if `cohort` is included in the input.
+#' Generate a data table with basic inpatient stay information.
+#' At the minimum, it will include an encounter and hospital ID,
+#' along with other information if `cohort` is included in the input.
 #'
 #' @description
-#' This function creates a data table based on the input, either based on a number of unique IDs or an existing inpatient data table. It can be used to create long format data tables based on inpatient data or to create a new data based on user specifications.
+#' This function creates a data table based on the input, either based on a number of unique IDs or
+#' an existing inpatient data table.
+#' It can be used to create long format data tables based on inpatient data or to create a new data table
+#' based on user specifications.
 #'
 #' @param nid (`integer`)\cr Optional, number of unique encounter IDs to simulate
 #'
 #' @param n_hospitals (`integer`)\cr Optional, number of hospitals to simulate and assign to encounter IDs
 #'
-#' @param cohort (`data.table`)\cr Optional, resembling the GEMINI "admdad" table to build the returned data table from
-#'
-#' @param include_prop (`numeric`)\cr A number between 0 and 1, for the proportion of unique rows in `cohort` to include in the final data table
-#'
 #' @param avg_repeats (`numeric`)\cr The average number of repeats per row in the final data table
+#' 
+#' @param include_prop (`numeric`)\cr A number between 0 and 1,
+#' for the proportion of unique rows in `cohort` to include in the final data table
+#'
+#' @param cohort (`data.table`)\cr Optional, resembling the GEMINI "admdad" table to build the returned data table from
 #'
 #' @param by_los (`logical`)\cr Optional, whether to assign more repeats to longer hospital stays or not
 #'
 #' @param seed (`integer`)\cr Optional, a number for setting the seed for reproducible results
 #'
-#' @return (`data.table`)\cr A data.table object with the same columns as `cohort`, but with some rows excluded and/or repeated based on user specifications. If `cohort` is not included, then it will only have the following fields:
+#' @return (`data.table`)\cr A data.table object with the same columns as `cohort`, 
+#' but with some rows excluded and/or repeated based on user specifications.
+#' If `cohort` is not included, then it will have the following fields:
 #' - `genc_id` (`integer`): GEMINI encounter number, may be repeated in multiple rows based on avg_repeats
 #' - `hospital_num` (`integer`): An integer identifying the hospital attached to the encounter
 #'
@@ -1346,13 +1371,7 @@ generate_id_hospital <- function(nid = 1000, n_hospitals = 10, avg_repeats = 1.5
 
     res <- data.table(genc_id = id_vector, hospital_num = site_vector, stringsAsFactors = FALSE)
   } else {
-    cohort$admission_date_time <- as.POSIXct(cohort$admission_date_time,
-      format = "%Y-%m-%d %H:%M"
-    )
-    cohort$discharge_date_time <- as.POSIXct(cohort$discharge_date_time,
-      format = "%Y-%m-%d %H:%M"
-    )
-
+    
     include_set <- cohort[sample(seq_len(nrow(cohort)), round(include_prop * nrow(cohort))), ]
 
     if (avg_repeats == 1) {
@@ -1365,6 +1384,13 @@ generate_id_hospital <- function(nid = 1000, n_hospitals = 10, avg_repeats = 1.5
 
     # may sort by LOS to assign more repeats to longer stays
     if (by_los) {
+      # covert date times to a useable format
+      cohort$admission_date_time <- as.POSIXct(cohort$admission_date_time,
+        format = "%Y-%m-%d %H:%M"
+      )
+      cohort$discharge_date_time <- as.POSIXct(cohort$discharge_date_time,
+        format = "%Y-%m-%d %H:%M"
+      )
       include_set$los <- as.numeric(difftime(
         include_set$discharge_date_time,
         include_set$admission_date_time,
