@@ -1384,23 +1384,18 @@ generate_id_hospital <- function(nid = 1000, n_hospitals = 10, avg_repeats = 1.5
 
     # may sort by LOS to assign more repeats to longer stays
     if (by_los) {
-      # covert date times to a useable format
-      cohort$admission_date_time <- as.POSIXct(cohort$admission_date_time,
-        format = "%Y-%m-%d %H:%M"
-      )
-      cohort$discharge_date_time <- as.POSIXct(cohort$discharge_date_time,
-        format = "%Y-%m-%d %H:%M"
-    if (by_los) {
-    include_set$admission_date_time <- as.POSIXct(include_set$admission_date_time,
+      # convert date times to a useable format
+      include_set$admission_date_time <- as.POSIXct(include_set$admission_date_time,
       format = "%Y-%m-%d %H:%M")
-    include_set$discharge_date_time <- as.POSIXct(include_set$discharge_date_time,
+      include_set$discharge_date_time <- as.POSIXct(include_set$discharge_date_time,
       format = "%Y-%m-%d %H:%M")
       
       include_set$los <- as.numeric(difftime(
         include_set$discharge_date_time,
         include_set$admission_date_time,
         units = "hours"
-      ))
+        )
+      )
       # order from shortest to longest
       include_set <- include_set[order(los)]
       n_repeats <- sort(n_repeats)
