@@ -2,7 +2,9 @@
 % Please edit documentation in R/utils.R
 \name{generate_id_hospital}
 \alias{generate_id_hospital}
-\title{Simulate encounter IDs and hospital assignment.}
+\title{Generate a data table with basic inpatient stay information.
+At the minimum, it will include an encounter and hospital ID,
+along with other information if \code{cohort} is included in the input.}
 \usage{
 generate_id_hospital(
   nid = 1000,
@@ -21,23 +23,29 @@ generate_id_hospital(
 
 \item{avg_repeats}{(\code{numeric})\cr The average number of repeats per row in the final data table}
 
-\item{include_prop}{(\code{numeric})\cr A number between 0 and 1, for the proportion of unique rows in \code{cohort} to include in the final data table}
+\item{include_prop}{(\code{numeric})\cr A number between 0 and 1,
+for the proportion of unique rows in \code{cohort} to include in the final data table}
 
 \item{cohort}{(\code{data.table})\cr Optional, resembling the GEMINI "admdad" table to build the returned data table from}
 
-\item{by_los}{(\code{logical})\cr Optional, whether to assign more repeats to longer hospital stays or not}
+\item{by_los}{(\code{logical})\cr Optional, whether to assign more repeats to longer hospital stays or not. Default to FALSE. When TRUE, two additional columns are required in the input \code{cohort} dataset - \code{admission_date_time} and \code{discharge_date_time} for calculating length of stay.}
 
 \item{seed}{(\code{integer})\cr Optional, a number for setting the seed for reproducible results}
 }
 \value{
-(\code{data.table})\cr A data.table object with the same columns as \code{cohort}, but with some rows excluded and/or repeated based on user specifications. If \code{cohort} is not included, then it will only have the following fields:
+(\code{data.table})\cr A data.table object with the same columns as \code{cohort},
+but with some rows excluded and/or repeated based on user specifications.
+If \code{cohort} is not included, then it will have the following fields:
 \itemize{
 \item \code{genc_id} (\code{integer}): GEMINI encounter number, may be repeated in multiple rows based on avg_repeats
 \item \code{hospital_num} (\code{integer}): An integer identifying the hospital attached to the encounter
 }
 }
 \description{
-This function creates a data table based on the input, either based on a number of unique IDs or an existing inpatient data table. It can be used to create long format data tables based on inpatient data or to create a new data based on user specifications.
+This function creates a data table based on the input, either based on a number of unique IDs or
+an existing inpatient data table.
+It can be used to create long format data tables based on inpatient data or to create a new data table
+based on user specifications.
 }
 \examples{
 sample_cohort <- data.table::data.table(genc_id = 1:100, hospital_num = rep(1:5, each = 20))

@@ -25,5 +25,6 @@ sample_time_shifted(nrow, xi, omega, alpha, min = 0, max = 48, seed = NULL)
 A numeric vector following the specified distribution.
 }
 \description{
-The function samples from a skewed normal distribution using \code{rsn} to obtain time of day data in hours. Values greater than 24 are subtracted by 24 (moved to the next day) so that a real time variable is observed.
+The function samples from a skewed normal distribution using \code{rsn} to obtain time of day data in hours.
+Values greater than 24 are subtracted by 24 (moved to the next day) so that a real time variable is observed.
 }

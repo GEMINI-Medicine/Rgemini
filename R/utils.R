@@ -1324,7 +1324,7 @@ sample_time_shifted_lnorm <- function(nrow, meanlog, sdlog, min = 0, max = 48, s
 #' @param n_hospitals (`integer`)\cr Optional, number of hospitals to simulate and assign to encounter IDs
 #'
 #' @param avg_repeats (`numeric`)\cr The average number of repeats per row in the final data table
-#' 
+#'
 #' @param include_prop (`numeric`)\cr A number between 0 and 1,
 #' for the proportion of unique rows in `cohort` to include in the final data table
 #'
@@ -1334,7 +1334,7 @@ sample_time_shifted_lnorm <- function(nrow, meanlog, sdlog, min = 0, max = 48, s
 #'
 #' @param seed (`integer`)\cr Optional, a number for setting the seed for reproducible results
 #'
-#' @return (`data.table`)\cr A data.table object with the same columns as `cohort`, 
+#' @return (`data.table`)\cr A data.table object with the same columns as `cohort`,
 #' but with some rows excluded and/or repeated based on user specifications.
 #' If `cohort` is not included, then it will have the following fields:
 #' - `genc_id` (`integer`): GEMINI encounter number, may be repeated in multiple rows based on avg_repeats
@@ -1371,7 +1371,6 @@ generate_id_hospital <- function(nid = 1000, n_hospitals = 10, avg_repeats = 1.5
 
     res <- data.table(genc_id = id_vector, hospital_num = site_vector, stringsAsFactors = FALSE)
   } else {
-    
     include_set <- cohort[sample(seq_len(nrow(cohort)), round(include_prop * nrow(cohort))), ]
 
     if (avg_repeats == 1) {
@@ -1386,16 +1385,17 @@ generate_id_hospital <- function(nid = 1000, n_hospitals = 10, avg_repeats = 1.5
     if (by_los) {
       # convert date times to a useable format
       include_set$admission_date_time <- as.POSIXct(include_set$admission_date_time,
-      format = "%Y-%m-%d %H:%M")
+        format = "%Y-%m-%d %H:%M"
+      )
       include_set$discharge_date_time <- as.POSIXct(include_set$discharge_date_time,
-      format = "%Y-%m-%d %H:%M")
-      
+        format = "%Y-%m-%d %H:%M"
+      )
+
       include_set$los <- as.numeric(difftime(
         include_set$discharge_date_time,
         include_set$admission_date_time,
         units = "hours"
-        )
-      )
+      ))
       # order from shortest to longest
       include_set <- include_set[order(los)]
       n_repeats <- sort(n_repeats)

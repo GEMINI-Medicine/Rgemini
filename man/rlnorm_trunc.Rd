@@ -4,7 +4,7 @@
 \alias{rlnorm_trunc}
 \title{Sample a truncated log normal distribution}
 \usage{
-rlnorm_trunc(n, meanlog, sdlog, min_n, max_n, seed = NULL)
+rlnorm_trunc(n, meanlog, sdlog, min, max, seed = NULL)
 }
 \arguments{
 \item{n}{(\code{integer}) The length of the output vector}
@@ -13,9 +13,9 @@ rlnorm_trunc(n, meanlog, sdlog, min_n, max_n, seed = NULL)
 
 \item{sdlog}{(\code{numeric}) The standard deviation of the log normal distribution}
 
-\item{min_n}{(\code{numeric}) The minimum value to truncate the data to.}
+\item{min}{(\code{numeric}) The minimum value to truncate the data to.}
 
-\item{max_n}{(\code{numeric}) The maximum value to truncate the data to.}
+\item{max}{(\code{numeric}) The maximum value to truncate the data to.}
 
 \item{seed}{(\code{integer}) Optional, a number for setting the seed for reproducible results}
 }
@@ -23,5 +23,6 @@ rlnorm_trunc(n, meanlog, sdlog, min_n, max_n, seed = NULL)
 A numeric vector following the log normal distribution, truncated to the specified range.
 }
 \description{
-Sample from a log normal distribution using the \code{rlnorm} function but truncate it to specified minimum and maximum values
+Sample from a log normal distribution using the \code{rlnorm} function
+Truncate it to specified minimum and maximum values
 }

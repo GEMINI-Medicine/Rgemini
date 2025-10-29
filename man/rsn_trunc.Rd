@@ -4,7 +4,7 @@
 \alias{rsn_trunc}
 \title{Sample a truncated skewed normal distribution}
 \usage{
-rsn_trunc(n, xi, omega, alpha, min_n, max_n, seed = NULL)
+rsn_trunc(n, xi, omega, alpha, min, max, seed = NULL)
 }
 \arguments{
 \item{n}{(\code{integer}) The length of the output vector}
@@ -15,9 +15,9 @@ rsn_trunc(n, xi, omega, alpha, min_n, max_n, seed = NULL)
 
 \item{alpha}{(\code{numeric}) The skewness of the skewed normal distribution}
 
-\item{min_n}{(\code{numeric}) The minimum value to truncate the data to.}
+\item{min}{(\code{numeric}) The minimum value to truncate the data to.}
 
-\item{max_n}{(\code{numeric}) The maximum value to truncate the data to.}
+\item{max}{(\code{numeric}) The maximum value to truncate the data to.}
 
 \item{seed}{(\code{integer}) Optional, a number for setting the seed for reproducible results}
 }
@@ -25,5 +25,6 @@ rsn_trunc(n, xi, omega, alpha, min_n, max_n, seed = NULL)
 A numeric vector following the skewed normal distribution, truncated to the specified range.
 }
 \description{
-Sample from a skewed normal distribution using the \code{rsn} function but truncate it to specified minimum and maximum values
+Sample from a skewed normal distribution using the \code{rsn} function
+Truncate it to specified minimum and maximum values
 }

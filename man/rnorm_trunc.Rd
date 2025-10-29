@@ -4,7 +4,7 @@
 \alias{rnorm_trunc}
 \title{Sample a truncated normal distribution}
 \usage{
-rnorm_trunc(n, mean, sd, min_n, max_n, seed = NULL)
+rnorm_trunc(n, mean, sd, min, max, seed = NULL)
 }
 \arguments{
 \item{n}{(\code{integer}) The length of the output vector}
@@ -13,9 +13,9 @@ rnorm_trunc(n, mean, sd, min_n, max_n, seed = NULL)
 
 \item{sd}{(\code{numeric}) The standard deviation of the normal distribution}
 
-\item{min_n}{(\code{numeric}) The minimum value to truncate the data to.}
+\item{min}{(\code{numeric}) The minimum value to truncate the data to.}
 
-\item{max_n}{(\code{numeric}) The maximum value to truncate the data to.}
+\item{max}{(\code{numeric}) The maximum value to truncate the data to.}
 
 \item{seed}{(\code{integer}) Optional, a number for setting the seed for reproducible results}
 }

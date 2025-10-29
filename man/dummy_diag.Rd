@@ -20,7 +20,8 @@ dummy_diag(
 \item{n_hospitals}{(\code{integer})\cr Number of hospitals to simulate in the resulting data table}
 
 \item{cohort}{(\code{data.frame})\cr Optional, the administrative data frame containing \code{genc_id}
-and \code{hospital_num} information to be used in the output}
+and \code{hospital_num} information to be used in the output. \code{cohort} takes precedence over parameters \code{nid} and
+\code{n_hospitals}: when \code{cohort} is not NULL, \code{nid} and \code{n_hospitals} are ignored.}
 
 \item{ipdiagnosis}{(\code{logical})\cr Default to "TRUE" and returns simulated "ipdiagnosis" table.
 If FALSE, returns simulated "erdiagnosis" table.

@@ -491,7 +491,7 @@ dummy_ipadmdad <- function(nid = 1000,
     # if `discharge_date_time` ends up before `admission_date_time`
     hosp_data[, los := as.numeric(difftime(ymd_hm(discharge_date_time), ymd_hm(admission_date_time), units = "days"))]
     hosp_data[los < 0, discharge_date_time := format(ymd_hm(discharge_date_time) + days(1), "%Y-%m-%d %H:%M")]
-    #handle sampling edge case with negative los
+    # handle sampling edge case with negative los
 
     ## Alternate level of care (ALC) & days spent in ALC
     # ALC flag
