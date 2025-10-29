@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{generate_id_hospital}
 \alias{generate_id_hospital}
-\title{Generate a data table with basic inpatient stay information. At the minimum, it will include an encounter and hospital ID, along with other information if \code{cohort} is included in the input.}
+\title{Simulate encounter IDs and hospital assignment.}
 \usage{
 generate_id_hospital(
   nid = 1000,
