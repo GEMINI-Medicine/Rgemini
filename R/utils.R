@@ -1390,7 +1390,12 @@ generate_id_hospital <- function(nid = 1000, n_hospitals = 10, avg_repeats = 1.5
       )
       cohort$discharge_date_time <- as.POSIXct(cohort$discharge_date_time,
         format = "%Y-%m-%d %H:%M"
-      )
+    if (by_los) {
+    include_set$admission_date_time <- as.POSIXct(include_set$admission_date_time,
+      format = "%Y-%m-%d %H:%M")
+    include_set$discharge_date_time <- as.POSIXct(include_set$discharge_date_time,
+      format = "%Y-%m-%d %H:%M")
+      
       include_set$los <- as.numeric(difftime(
         include_set$discharge_date_time,
         include_set$admission_date_time,
