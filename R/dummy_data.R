@@ -202,7 +202,8 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #' }
 #'
 dummy_diag <- function(
-    nid = 1000, n_hospitals = 10, cohort = NULL, ipdiagnosis = TRUE, diagnosis_type = NULL, seed = NULL, ...) {
+  nid = 1000, n_hospitals = 10, cohort = NULL, ipdiagnosis = TRUE, diagnosis_type = NULL, seed = NULL, ...
+) {
   if (!is.null(seed)) {
     set.seed(seed)
   }
@@ -750,9 +751,11 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 
       # re-sample if SCU discharge < SCU admit
       while (nrow(scu_cohort[scu_discharge_date_time < scu_admit_date_time, ]) > 0) {
-        scu_cohort[genc_occurrence == i & scu_discharge_date_time < scu_admit_date_time,
-        scu_discharge_date_time := round_date(scu_discharge_date_time) +
-          dhours(sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29))]
+        scu_cohort[
+          genc_occurrence == i & scu_discharge_date_time < scu_admit_date_time,
+          scu_discharge_date_time := round_date(scu_discharge_date_time) +
+            dhours(sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29))
+        ]
       }
 
       # re-sample bad values where SCU discharge > IP discharge
@@ -855,7 +858,8 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
           scu_cohort[
             genc_occurrence == i & scu_discharge_date_time > discharge_date_time,
             scu_discharge_date_time := round_date(scu_admit_date_time + ddays(floor(scu_los))) + dhours(
-              sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29))
+              sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29)
+            )
           ]
         }
         scu_cohort <- scu_cohort[, -c("discharge_lim")]
