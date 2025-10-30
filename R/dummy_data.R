@@ -975,7 +975,7 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
       print("Time period needs to end later than it starts")
       stop()
     }
-    if (n < n_hospitals) {
+    if (nid < n_hospitals) {
       print("Number of encounters must be greater than or equal to the number of hospitals")
       stop()
     }
@@ -995,7 +995,7 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
     )
 
     ####### Generate the data table #######
-    df1 <- generate_id_hospital(n, n_hospitals, avg_repeats = 1.2, seed = seed)
+    df1 <- generate_id_hospital(nid, n_hospitals, avg_repeats = 1.2, seed = seed)
 
     # Number each SCU stay per genc_id
     df1[, genc_occurrence := seq_len(.N), by = genc_id]
