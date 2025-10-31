@@ -680,6 +680,7 @@ dummy_admdad <- function(id, admtime) {
 #' - `scu_discharge_date_time` (`character`): the date and time of discharge from the SCU
 #'
 #' @examples
+#' cohort <- dummy_ipadmdad()
 #' sample_scu_date_time(cohort, use_ip_dates = TRUE, seed = 1)
 #' sample_scu_date_time(cohort,
 #'   use_ip_dates = FALSE,
@@ -923,8 +924,8 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 #'   - 95: Step-Down Surgical Unit
 #'
 #' @examples
-#' dummy_ipscu(100, c(2015, 2023), 10)
-#' dummy_ipscu(1, c("2020-01-01", "2021-01-01"), 1)
+#' dummy_ipscu(nid = 100, n_hospitals = 10, time_period = c(2015, 2023))
+#' dummy_ipscu(nid = 11, n_hospitals = 1, time_period = c("2020-01-01", "2021-01-01"))
 #'
 dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), cohort = NULL, seed = NULL) {
   if (is.numeric(seed)) {
@@ -1098,6 +1099,11 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 #' - `genc_id` (`integer`): GEMINI encounter ID
 #' - `hospital_num` (`integer`): Hospital ID
 #' - `triage_date_time` (`character`): The date and time of triage
+#' 
+#' @examples
+#' cohort <- dummy_ipadmdad()
+#' dummy_er(cohort = cohort, seed = 1)
+#' dummy_er(nid = 10, n_hospitals = 1, seed = 2)
 
 dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), cohort = NULL, seed = NULL) {
   if (!is.null(seed)) {
