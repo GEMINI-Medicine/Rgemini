@@ -60,7 +60,7 @@ are contained in the GEMINI "ipscu" table, as seen in
 \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
 }
 \examples{
-dummy_ipscu(100, c(2015, 2023), 10)
-dummy_ipscu(1, c("2020-01-01", "2021-01-01"), 1)
+dummy_ipscu(nid = 100, n_hospitals = 10, time_period = c(2015, 2023))
+dummy_ipscu(nid = 11, n_hospitals = 1, time_period = c("2020-01-01", "2021-01-01"))
 
 }

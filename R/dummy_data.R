@@ -320,7 +320,7 @@ dummy_diag <- function(
 #' A numeric vector containing the time period, specified as fiscal years
 #' (starting in April each year). For example, `c(2015, 2019)` generates data
 #' from 2015-04-01 to 2020-03-31.
-#' 
+#'
 #' @param seed (`numeric`)\cr
 #' Optional, a number to set the seed for reproducible results
 #'
@@ -1102,12 +1102,11 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 #' - `genc_id` (`integer`): GEMINI encounter ID
 #' - `hospital_num` (`integer`): Hospital ID
 #' - `triage_date_time` (`character`): The date and time of triage
-#' 
+#'
 #' @examples
 #' cohort <- dummy_ipadmdad()
 #' dummy_er(cohort = cohort, seed = 1)
 #' dummy_er(nid = 10, n_hospitals = 1, seed = 2)
-
 dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), cohort = NULL, seed = NULL) {
   if (!is.null(seed)) {
     set.seed(seed)
