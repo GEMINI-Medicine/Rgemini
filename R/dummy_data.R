@@ -684,14 +684,6 @@ dummy_admdad <- function(id, admtime) {
 #'
 #' @import lubridate
 #' @export
-#' 
-#' @examples
-#' cohort <- dummy_ipadmdad()
-#' sample_scu_date_time(cohort, use_ip_dates = TRUE, seed = 1)
-#' sample_scu_date_time(cohort,
-#'   use_ip_dates = FALSE,
-#'   start_date = as.Date("2015-01-01"), end_date = as.Date("2023-12-31")
-#' )
 #'
 sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = NULL, end_date = NULL, seed = NULL) {
   if (!is.null(seed)) {
@@ -932,8 +924,8 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 #' @export
 #' 
 #' @examples
-#' dummy_ipscu(nid = 100, n_hospitals = 10, time_period = c(2015, 2023))
-#' dummy_ipscu(nid = 11, n_hospitals = 1, time_period = c("2020-01-01", "2021-01-01"))
+#' dummy_ipscu(nid = 100, n_hospitals = 10, time_period = c(2015, 2023), seed = 1)
+#' dummy_ipscu(nid = 11, n_hospitals = 1, time_period = c("2020-01-01", "2021-01-01"), seed = 2)
 #'
 dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), cohort = NULL, seed = NULL) {
   if (is.numeric(seed)) {
