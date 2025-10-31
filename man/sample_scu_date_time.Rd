@@ -42,12 +42,3 @@ They must be sampled such that SCU stays occur between inpatient admission and d
 and that if a patient has multiple SCU stays, they do not overlap.
 It is a helper function for \code{dummy_ipscu}.
 }
-\examples{
-cohort <- dummy_ipadmdad()
-sample_scu_date_time(cohort, use_ip_dates = TRUE, seed = 1)
-sample_scu_date_time(cohort,
-  use_ip_dates = FALSE,
-  start_date = as.Date("2015-01-01"), end_date = as.Date("2023-12-31")
-)
-
-}
