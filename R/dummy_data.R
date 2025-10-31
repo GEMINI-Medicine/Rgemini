@@ -682,6 +682,9 @@ dummy_admdad <- function(id, admtime) {
 #' - `scu_admit_date_time` (`character`): the date and time of admission to the SCU
 #' - `scu_discharge_date_time` (`character`): the date and time of discharge from the SCU
 #'
+#' @import lubridate
+#' @export
+#' 
 #' @examples
 #' cohort <- dummy_ipadmdad()
 #' sample_scu_date_time(cohort, use_ip_dates = TRUE, seed = 1)
@@ -926,6 +929,8 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 #'   - 93: Combined Medical/Surgical Step-Down Unit
 #'   - 95: Step-Down Surgical Unit
 #'
+#' @export
+#' 
 #' @examples
 #' dummy_ipscu(nid = 100, n_hospitals = 10, time_period = c(2015, 2023))
 #' dummy_ipscu(nid = 11, n_hospitals = 1, time_period = c("2020-01-01", "2021-01-01"))
@@ -1102,6 +1107,9 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 #' - `genc_id` (`integer`): GEMINI encounter ID
 #' - `hospital_num` (`integer`): Hospital ID
 #' - `triage_date_time` (`character`): The date and time of triage
+#' 
+#' @import lubridate
+#' @export
 #' 
 #' @examples
 #' cohort <- dummy_ipadmdad()

@@ -1169,6 +1169,7 @@ rnorm_trunc <- function(n, mean, sd, min, max, seed = NULL) {
 #'
 #' @return A numeric vector following the skewed normal distribution, truncated to the specified range.
 #'
+#' @importFrom sn rsn
 #' @export
 #'
 rsn_trunc <- function(n, xi, omega, alpha, min, max, seed = NULL) {
