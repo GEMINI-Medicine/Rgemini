@@ -21,7 +21,7 @@ test_that("default census counts are returned correctly (include_zero = TRUE)", 
   expect_equal(round(mean(census$census, na.rm = TRUE), digits = 2), 1.30)
   expect_equal(round(mean(census$capacity_ratio, na.rm = TRUE), digits = 2), 1.20)
   expect_true(sum(census$census == 0, na.rm = TRUE) == 3) # should include 0s
-  # make sure all relevant columns are included in output 
+  # make sure all relevant columns are included in output
   expect_equal(colnames(census), c("hospital_id", "hospital_num", "date_time", "census", "capacity_ratio"))
 })
 

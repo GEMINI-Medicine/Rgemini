@@ -173,7 +173,7 @@ daily_census <- function(cohort,
       }
     )
   }
-  
+
   cat(paste0(
     "\n*** Calculating daily census for input table ", deparse(substitute(cohort)),
     " for time period from ", time_period_start, " to ", time_period_end, " ***\n "
@@ -186,7 +186,7 @@ daily_census <- function(cohort,
     colnames = c("genc_id", "admission_date_time", "discharge_date_time"),
     unique = TRUE # make sure there are no duplicate entries in input table
   )
-  
+
   ## Make sure either hospital_id or hospital_num exist in cohort input
   if (!any(colnames(cohort) %in% c("hospital_num", "hospital_id"))) {
     stop("'cohort' input table needs to contain either 'hospital_num' or 'hospital_id' variable.")
@@ -194,8 +194,8 @@ daily_census <- function(cohort,
     # identify which hospital identifier(s) exist in cohort input
     hosp_var <- intersect(c("hospital_id", "hospital_num"), colnames(cohort))
   }
-  
-  
+
+
   ## if grouping variable is specified, does it exist in cohort?
   if (!is.null(group_var)) {
     check_input(cohort, c("data.table", "data.frame"),
@@ -204,11 +204,14 @@ daily_census <- function(cohort,
 
     # if hospital_num specified as grouping var, show warning
     if (!is.null(group_var) && (any(group_var == "hospital_id") || any(group_var == "hospital_num"))) {
-      warning(paste0("Ignoring hospital-level 'group_var' input '",
-                     paste(group_var[group_var %in% c("hospital_num", "hospital_id")], collapse = "'/'"), "'. ",
-                    "Daily census is automatically calculated separately for each hospital. ",
-                    "Only specify a grouping variable if you want to group by variables other than hospital.\n"),
-              immediate. = TRUE
+      warning(
+        paste0(
+          "Ignoring hospital-level 'group_var' input '",
+          paste(group_var[group_var %in% c("hospital_num", "hospital_id")], collapse = "'/'"), "'. ",
+          "Daily census is automatically calculated separately for each hospital. ",
+          "Only specify a grouping variable if you want to group by variables other than hospital.\n"
+        ),
+        immediate. = TRUE
       )
 
       # remove hospital_num/hospital_id from grouping variables
@@ -499,7 +502,7 @@ daily_census <- function(cohort,
   #####  calculate census separately for each hospital  #####
   # note: split data by hospital before running foverlaps to avoid working with massive tables
   cohort_hospitals <- split(cohort, by = hosp_var)
-  
+
   census <- lapply(cohort_hospitals, get_census,
     time_period_start = time_period_start,
     time_period_end = time_period_end,
