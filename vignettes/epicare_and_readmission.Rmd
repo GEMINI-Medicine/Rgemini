@@ -92,7 +92,7 @@ library(getPass)
 # Establish database connection
 db <- DBI::dbConnect(drv,
   dbname = "db",
-  host = "172.XX.XX.XXX",
+  host = "domain_name.ca",
   port = 1234,
   user = getPass("Enter user:")
 )
