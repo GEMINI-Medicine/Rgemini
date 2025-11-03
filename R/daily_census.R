@@ -204,15 +204,18 @@ daily_census <- function(cohort,
 
     # if hospital_num specified as grouping var, show warning
     if (!is.null(group_var) && (any(group_var == "hospital_id") || any(group_var == "hospital_num"))) {
-      warning(paste0("Ignoring hospital-level 'group_var' input '", group_var, "'. ",
-      "Daily census is automatically calculated separately for each hospital. ",
-      "Only specify a grouping variable if you want to group by variables other than hospital.\n"),
-        immediate. = TRUE
+      warning(paste0("Ignoring hospital-level 'group_var' input '",
+                     paste(group_var[group_var %in% c("hospital_num", "hospital_id")], collapse = "'/'"), "'. ",
+                    "Daily census is automatically calculated separately for each hospital. ",
+                    "Only specify a grouping variable if you want to group by variables other than hospital.\n"),
+              immediate. = TRUE
       )
 
-      # remove hospital_num from grouping variables
-      group_var[group_var == "hospital_num"] <- NA
-      group_var[group_var == "hospital_id"] <- NA
+      # remove hospital_num/hospital_id from grouping variables
+      group_var <- setdiff(group_var, c("hospital_num", "hospital_id"))
+      if (length(group_var) < 1) {
+        group_var <- NULL
+      }
     }
   }
 
