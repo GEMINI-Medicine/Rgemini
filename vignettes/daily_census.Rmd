@@ -45,8 +45,8 @@ library(getPass)
 
 # Establish database connection
 db <- DBI::dbConnect(drv,
-  dbname = "DB_name",
-  host = "172.XX.XX.XXX",
+  dbname = "db_name",
+  host = "domain_name.ca",
   port = 1234,
   user = getPass("Enter user:"),
   password = getPass("Enter Password:")
@@ -74,7 +74,7 @@ dummy_census[, hospital_num := as.factor(hospital_num)]
 # dummy date includes larger time period and grouping variables, let's ignore them for now
 census_output <- dummy_census[as.Date(date_time) < "2017-04-01", .(census = sum(census)), by = c("date_time", "hospital_num")]
 census_output <- census_output[order(date_time)]
-census_output[, capacity_ratio := census / median(census), by = hospital_num]
+census_output[, capacity_ratio := census / median(census, na.rm = TRUE), by = hospital_num]
 
 # show output example
 head(census_output, 10) %>% knitr::kable(align = c("c", "c", "c", "c"))
@@ -88,7 +88,7 @@ Based on this table, users could extract further information, such as the median
 library(data.table) #  we are using data.table operations below, but users could also use tidyverse to analyze the function output
 
 # Compute median census at each site
-median_census <- census_output[, .(median_census = median(census)), by = hospital_num]
+median_census <- census_output[, .(median_census = median(census, na.rm = TRUE)), by = hospital_num]
 ```
 
 ```{r, eval=T, echo=F}
@@ -251,7 +251,7 @@ In addition to the flexibility provided by the function itself, users may want t
 ```{r, eval=F}
 # calculate capacity_ratio based on median census *per year*
 census_output[, year := year(census_output$date_time)]
-census_output[, capacity_ratio_yoy := census / median(census), by = c("hospital_num", "year")]
+census_output[, capacity_ratio_yoy := census / median(census, na.rm = TRUE), by = c("hospital_num", "year")]
 ```
 
 Similarly, users could define other indicators of typical occupancy that are currently not supported by the function (e.g., trimmed means).
