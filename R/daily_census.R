@@ -272,9 +272,7 @@ daily_census <- function(cohort,
 
   #######  Prepare data  #######
   cohort <- coerce_to_datatable(cohort)
-  # make sure hospital_id/hospital_num are factors
-  cohort[, (hosp_var) := lapply(.SD, as.factor), .SDcols = hosp_var]
-  
+
   ## make sure dates are in correct format
   cohort[, admission_date_time := convert_dt(
     admission_date_time,
