@@ -13,6 +13,7 @@ ipadmdad <- data.table(
   )
 )
 
+
 test_that("default census counts are returned correctly (include_zero = TRUE)", {
   # calculate census
   census <- daily_census(ipadmdad, buffer = 0)

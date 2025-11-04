@@ -1,15 +1,29 @@
 # Workflow derived from https://github.com/r-lib/actions/tree/master/examples
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
+  # Run normally on pushes or PRs (e.g., when non-R files change)
   push:
     branches: [main]
   pull_request:
     branches: [main, develop]
+    
+  # ALSO run after Style & Document workflow completes successfully
+  workflow_run:
+    workflows: ["Style & Document"]
+    types:
+      - completed
 
 name: R-CMD-check
 
 jobs:
   R-CMD-check:
+    # Only run if Style & Document succeeded OR if triggered by push/PR
+    if: >
+      github.event_name == 'push' ||
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success')
+       
     runs-on: ${{ matrix.config.os }}
 
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
