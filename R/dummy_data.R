@@ -202,7 +202,8 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #' }
 #'
 dummy_diag <- function(
-    nid = 1000, n_hospitals = 10, cohort = NULL, ipdiagnosis = TRUE, diagnosis_type = NULL, seed = NULL, ...) {
+  nid = 1000, n_hospitals = 10, cohort = NULL, ipdiagnosis = TRUE, diagnosis_type = NULL, seed = NULL, ...
+) {
   if (!is.null(seed)) {
     set.seed(seed)
   }
