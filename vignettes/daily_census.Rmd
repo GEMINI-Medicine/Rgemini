@@ -101,12 +101,23 @@ Additionally, users could plot `census` and `capacity_ratio` over time, separate
 ```{r, eval=T,fig.height=5,fig.width=8,out.width = "80%", fig.align = "center"}
 library(ggplot2)
 
+# for plotting purposes, treat hospital_num (numeric) as a factor
+census_output$hospital_num <- as.factor(census_output$hospital_num)
+
 # Plot census over time
 ggplot(census_output, aes(x = as.Date(date_time), y = census, group = hospital_num, color = hospital_num)) +
   geom_line(linewidth = 1.5, show.legend = TRUE) +
   scale_x_date(name = "Date", breaks = seq(min(as.Date(census_output$date_time)), max(as.Date(census_output$date_time)), by = "1 months"), date_labels = "%b\n%Y") +
   ggtitle("Mock figure: Daily census by hospital") +
   theme_classic()
+
+## Or alternatively, use Rgemini::plot_over_time
+# e.g., this will plot the average census per hospital per month
+# Rgemini::plot_over_time(
+#     census_output,
+#     plot_var = "census",
+#     time_var = "date_time"
+# )
 ```
 
 
