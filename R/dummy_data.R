@@ -320,6 +320,8 @@ dummy_diag <- function(
 #' A numeric vector containing the time period, specified as fiscal years
 #' (starting in April each year). For example, `c(2015, 2019)` generates data
 #' from 2015-04-01 to 2020-03-31.
+#' 
+#' @param seed (`integer`)\cr Optional, a number to assign the seed to.
 #'
 #' @param seed (`integer`)\cr Optional, a number to assign the seed to.
 #'
