@@ -20,6 +20,7 @@
 **Other changes**
 * Fixed `render_cell_suppression.strat()` to be compatible with table1 version 1.5.0
 * Removed age exclusion in `episodes_of_care()` to accommodate paeds cohort
+* Small bug fix in `daily_census` to return all hospital ID variables provided in `cohort` input
 
 * **Testing improvements:**
   * Unit tests are now also run in Python via rpy2 to ensure cross-language compatibility
