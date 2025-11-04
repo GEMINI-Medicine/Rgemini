@@ -43,6 +43,9 @@ are contained in the GEMINI "physicians" table, as seen in
 }
 \examples{
 dummy_physicians(nid = 1000, n_hospitals = 10, seed = 1)
+<<<<<<< HEAD
 dummy_physicians(cohort = dummy_ipadmdad(), seed = 2)
+=======
+>>>>>>> 71db6ad (#235 NAMESPACE update)
 
 }
