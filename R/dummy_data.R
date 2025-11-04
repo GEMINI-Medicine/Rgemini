@@ -204,6 +204,8 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 dummy_diag <- function(
   nid = 1000, n_hospitals = 10, cohort = NULL, ipdiagnosis = TRUE, diagnosis_type = NULL, seed = NULL, ...
 ) {
+  nid = 1000, n_hospitals = 10, cohort = NULL, ipdiagnosis = TRUE, diagnosis_type = NULL, seed = NULL, ...
+) {
   if (!is.null(seed)) {
     set.seed(seed)
   }
@@ -320,7 +322,7 @@ dummy_diag <- function(
 #' A numeric vector containing the time period, specified as fiscal years
 #' (starting in April each year). For example, `c(2015, 2019)` generates data
 #' from 2015-04-01 to 2020-03-31.
-#' 
+#'
 #' @param seed (`integer`)\cr Optional, a number to assign the seed to.
 #'
 #' @param seed (`integer`)\cr Optional, a number to assign the seed to.
