@@ -319,6 +319,8 @@ dummy_diag <- function(
 #' A numeric vector containing the time period, specified as fiscal years
 #' (starting in April each year). For example, `c(2015, 2019)` generates data
 #' from 2015-04-01 to 2020-03-31.
+#' 
+#' @param seed (`integer`)\cr Optional, a number to assign the seed to.
 #'
 #' @return (`data.frame`)\cr A data.frame object similar to the "ipadmdad" table
 #' containing the following fields:
@@ -681,6 +683,8 @@ dummy_admdad <- function(id, admtime) {
 #' - `genc_id` (`integer`): GEMINI encounter ID
 #' - `da21uid` (`integer`): Dissemination area ID based on 2021 Canadian census data using PCCF Version 8A
 #'
+#' @export
+
 dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = NULL, da21uid = NULL, seed = NULL) {
   if (is.null(dbcon) && is.null(da21uid)) {
     print("A DB connection or list of dissemination codes is required.")
@@ -792,6 +796,8 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
 #' @examples
 #' dummy_physicians(nid = 1000, n_hospitals = 10, seed = 1)
 #'
+#' @export
+
 dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed = NULL) {
     if (!is.null(seed)) {
         set.seed(seed)
