@@ -38,7 +38,7 @@
 #'     password = getPass::getPass("Enter Password")
 #' )
 #'
-#' covid_surge <- derive_covid_surge(db = db, 
+#' covid_surge <- derive_covid_surge(db = db,
 #' gim_only = FALSE,
 #' include_er = FALSE)
 #'
@@ -49,10 +49,6 @@
 #' https://doi.org/10.1001/jamanetworkopen.2023.23035
 #'
 
-## to address:
-### - cell supression: since bed counts are easily accessible online, is it possible to back-calculate number of encounters in a given month? (especially on fringe months)
-
-
 derive_covid_surge <- function(db, gim_only = FALSE, include_er = FALSE){
     # Surge index (per hospital-month) = ([(n without ICU, noninvasive positive pressure ventilation, or mechanical ventilation) + 2 × (n with noninvasive positive pressure ventilation or ICU) + 5 × (n with mechanical ventilation)] × 10) / (pre–COVID-19 baseline bed capacity of medical and ICU beds).
 
@@ -61,42 +57,42 @@ derive_covid_surge <- function(db, gim_only = FALSE, include_er = FALSE){
     ## invasive - 1GZ31CBND
     ## non-invasive - 1GZ31CAND
     ### pull icu encounters
-    icu_encounters <- dbGetQuery(db, "select distinct genc_id from ipscu where icu_flag = TRUE;") %>% data.table()
+    icu_encounters <- dbGetQuery(db, "select distinct icu.genc_id from ipscu icu join admdad a on icu.genc_id = a.genc_id where icu_flag = TRUE and a.age >= 18;") %>% data.table()
 
     ## account for include_er == TRUE
     if (include_er) {
         ## pull invasive ventilation encounters
-        invasive_vent_encounters_ip <- dbGetQuery(db, "select distinct genc_id from ipintervention where intervention_code = '1GZ31CBND'") %>% data.table()
+        invasive_vent_encounters_ip <- dbGetQuery(db, "select distinct ip.genc_id from ipintervention ip join admdad a on ip.genc_id = a.genc_id where intervention_code = '1GZ31CBND' and a.age >= 18") %>% data.table()
 
-        invasive_vent_encounters_er <- dbGetQuery(db, "select distinct genc_id from erintervention where intervention_code = '1GZ31CBND'") %>% data.table()
+        invasive_vent_encounters_er <- dbGetQuery(db, "select distinct er.genc_id from erintervention er join admdad a on er.genc_id = a.genc_id where intervention_code = '1GZ31CBND' and a.age >= 18") %>% data.table()
 
         invasive_vent_encounters <- c(invasive_vent_encounters_ip, invasive_vent_encounters_er) %>% unique()
 
         ## pull non-invasive ventilation encounters
-        non_invasive_vent_encounters_ip <- dbGetQuery(db, "select distinct genc_id from ipintervention where intervention_code = '1GZ31CAND'") %>% data.table()
+        non_invasive_vent_encounters_ip <- dbGetQuery(db, "select distinct ip.genc_id from ipintervention ip join admdad a on ip.genc_id = a.genc_id where intervention_code = '1GZ31CAND' and a.age >= 18") %>% data.table()
 
-        non_invasive_vent_encounters_er <- dbGetQuery(db, "select distinct genc_id from erintervention where intervention_code = '1GZ31CAND'") %>% data.table()
+        non_invasive_vent_encounters_er <- dbGetQuery(db, "select distinct er.genc_id from erintervention er join admdad a on er.genc_id = a.genc_id where intervention_code = '1GZ31CAND' and a.age >= 18") %>% data.table()
 
         non_invasive_vent_encounters <- c(non_invasive_vent_encounters_ip, non_invasive_vent_encounters_er) %>% unique()
 
 
         ## now pull covid encounters
-        covid_encounters_ip <- dbGetQuery(db, "select distinct ip.genc_id, ip.hospital_id, a.discharge_date_time from ipdiagnosis ip join admdad a on ip.genc_id = a.genc_id where ip.diagnosis_code ~ '^U071'") %>%
+        covid_encounters_ip <- dbGetQuery(db, "select distinct ip.genc_id, ip.hospital_id, a.discharge_date_time from ipdiagnosis ip join admdad a on ip.genc_id = a.genc_id where ip.diagnosis_code ~ '^U071' and a.age >= 18") %>%
             data.table()
 
-        covid_encounters_ed <- dbGetQuery(db, "select distinct er.genc_id, er.hospital_id, a.discharge_date_time from erdiagnosis er join admdad a on er.genc_id = a.genc_id where er.er_diagnosis_code ~ '^U071'") %>%
+        covid_encounters_ed <- dbGetQuery(db, "select distinct er.genc_id, er.hospital_id, a.discharge_date_time from erdiagnosis er join admdad a on er.genc_id = a.genc_id where er.er_diagnosis_code ~ '^U071' and a.age >= 18") %>%
             data.table()
 
         covid_encounters <- rbind(covid_encounters_ip, covid_encounters_ed) %>% unique()
     } else {
         ## pull invasive ventilation encounters
-        invasive_vent_encounters <- dbGetQuery(db, "select distinct genc_id from ipintervention where intervention_code = '1GZ31CBND'") %>% data.table()
+        invasive_vent_encounters <- dbGetQuery(db, "select distinct ip.genc_id from ipintervention ip join admdad a on ip.genc_id = a.genc_id where intervention_code = '1GZ31CBND' and a.age >= 18") %>% data.table()
 
         ## pull non-invasive ventilation encounters
-        non_invasive_vent_encounters <- dbGetQuery(db, "select distinct genc_id from ipintervention where intervention_code = '1GZ31CAND'") %>% data.table()
+        non_invasive_vent_encounters <- dbGetQuery(db, "select distinct ip.genc_id from ipintervention ip join admdad a on ip.genc_id = a.genc_id where intervention_code = '1GZ31CAND' and a.age >= 18") %>% data.table()
 
         ## now pull covid encounters
-        covid_encounters <- dbGetQuery(db, "select distinct ip.genc_id, ip.hospital_id, a.discharge_date_time from ipdiagnosis ip join admdad a on ip.genc_id = a.genc_id where ip.diagnosis_code ~ '^U071'") %>%
+        covid_encounters <- dbGetQuery(db, "select distinct ip.genc_id, ip.hospital_id, a.discharge_date_time from ipdiagnosis ip join admdad a on ip.genc_id = a.genc_id where ip.diagnosis_code ~ '^U071' and a.age >= 18") %>%
             data.table()
     }
 
@@ -118,14 +114,14 @@ derive_covid_surge <- function(db, gim_only = FALSE, include_er = FALSE){
     ## pull encounters in time period
     #### keeping hospital_id since num is not on cleandb dad rn
     ## create query first
-    cohort <- dbGetQuery(db, "select a.genc_id, l.hospital_num, a.hospital_id, a.admission_date_time, a.discharge_date_time from admdad a join lookup_hospital l on a.hospital_id = l.hospital_id") %>%
+    cohort <- dbGetQuery(db, "select a.genc_id, l.hospital_num, a.hospital_id, a.admission_date_time, a.discharge_date_time from admdad a join lookup_hospital l on a.hospital_id = l.hospital_id where a.age >= 18") %>%
         data.table()
 
     ## merge in surge table data, replace NAs in non-COVID encounters
     ## create month_year for aggregating
     if (gim_only == TRUE) {
         ## pull GIM encounters
-        gims <- dbGetQuery(db, "select genc_id, hospital_id from derived_variables where gim = 't';") %>% data.table()
+        gims <- dbGetQuery(db, "select d.genc_id, hospital_id from derived_variables d join admdad a on d.genc_id = a.genc_id where gim = 't' and a.age >= 18;") %>% data.table()
 
         cohort <- cohort %>%
             merge(covid_encounters, all.x = TRUE) %>%
@@ -153,19 +149,22 @@ derive_covid_surge <- function(db, gim_only = FALSE, include_er = FALSE){
     cohort$hospital_num <- as.factor(cohort$hospital_num)
 
     ### now pull census data, take most recent data
-    daily_census_data <- quiet(Rgemini::daily_census(cohort, time_period = c("2015-04-01", "2019-12-31"), capacity_func = "max")) %>%
-        filter(!is.na(capacity_ratio)) %>% 
+    ## semi hard-code start and end dates
+    start_date <- substr(min(cohort$discharge_date_time), 1, 10)
+    end_date <- substr(max(cohort$discharge_date_time), 1, 10)
+
+    ### pull max bed #, get median by site
+    # since capacity_ratio = census/measure
+    # max_beds = census/capacity_ratio
+    daily_census_data <- quiet(Rgemini::daily_census(cohort, time_period = c(start_date, end_date), capacity_func = "max")) %>%
+        filter(!is.na(capacity_ratio)) %>%
+        mutate(max_beds = census/capacity_ratio) %>% 
         group_by(hospital_num) %>%
-        slice_max(date_time) %>%
+        summarise(max_beds = median(max_beds, na.rm = TRUE)) %>% 
         data.table()
     
     ## add hospital_id back in
     daily_census_data <- merge(daily_census_data, unique(cohort[, .(hospital_num, hospital_id)]), by = "hospital_num")
-
-    ### pull max bed #
-    # since capacity_ratio = census/measure
-    # max_beds = census/capacity_ratio
-    daily_census_data[, max_beds := round(census/capacity_ratio)]
 
     ## add denominator to surge_table
     surge_table <- merge(surge_table, daily_census_data[, .(hospital_id, max_beds)], by = "hospital_id")
