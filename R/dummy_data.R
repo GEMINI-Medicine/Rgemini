@@ -762,146 +762,155 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
 }
 
 #' @title
-#' Generate simulated ER data
+#' Generate simulated physician data
 #'
 #' @description
-#'  This function creates a dummy dataset with a subset of variables that
-#' are contained in the GEMINI "er" table, as seen in
+#' This function creates a dummy dataset with a subset of variables that
+#' are contained in the GEMINI "physicians" table, as seen in
 #' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #'
-#' This function will return one triage date time for each encounter ID.
 #'
-#' @param nid (`integer`) Number of unique encounter IDs to simulate. In this data table, each ID occurs once.
+#' @param n (`integer`)\cr Number of unique encounter IDs to simulate.
 #'
-#' @param n_hospitals (`integer`) Number of hospitals in simulated dataset
+#' @param n_hospitals (`integer`)\cr Number of hospitals in simulated dataset.
 #'
-#' @param time_period (`numeric`): Date range of data, by years or specific dates in either format:
-#' ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy)
+#' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
 #'
-#' @param cohort (`data.frame`): Optional, data frame containing inpatient information
-#' (encounter ID, hospital numbers, admission and discharge dates and times), resembling the GEMINI "admdad" table.
+#' @param cohort (`data.frame`) Optional, an existing data table similar to `admdad` in GEMINI
+#' containing administrative information, at least the GEMINI encounter ID and hospital number.
 #'
-#' @param seed (`integer`) Optional, a number for setting the seed to get reproducible results.
-#'
-#' @return (`data.table`) A data.table object similar to the "er" table that contains the following fields:
+#' @return (`data.table`)\cr A data.table object similar to the "physicians" table that contains the
+#' following fields (if `cohort` is included, these are in addition to any columns in `cohort`):
 #' - `genc_id` (`integer`): GEMINI encounter ID
-#' - `hospital_num` (`integer`): Hospital ID
-#' - `triage_date_time` (`character`): The date and time of triage
-
-dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), cohort = NULL, seed = NULL) {
-  if (!is.null(seed)) {
-    set.seed(seed)
-  }
-
-  # check for input variables
-  if (as.Date(time_period[1]) > as.Date(time_period[2])) {
-    print("Time period needs to end later than it starts")
-    stop()
-  }
-  if (n < n_hospitals) {
-    print("Number of encounters must be greater than or equal to the number of hospitals")
-    stop()
-  }
-
-  if (!is.null(cohort)) {
-    ##### get genc_id and hospital_num if `cohort` is provided #####
-    cohort <- as.data.table(cohort)
-
-    cohort$admission_date_time <- as.POSIXct(cohort$admission_date_time,
-      format = "%Y-%m-%d %H:%M",
-      tz = "UTC"
-    )
-
-    cohort$discharge_date_time <- as.POSIXct(cohort$discharge_date_time,
-      format = "%Y-%m-%d %H:%M",
-      tz = "UTC"
-    )
-
-    # get the `data.table` for simulation
-    # one repeat per genc_id and include 0.81 of IP admits
-    df1 <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 1, seed = seed)
-
-    ##### sample `triage_date_time` by adding to IP admit time #####
-    # the output of `rsn` will be negative
-    # triage occurs before inpatient admissions
-    df1[, triage_date := floor_date(admission_date_time - ddays(
-      rsn_trunc(
-        .N,
-        xi = 0.098, omega = 0.285, alpha = 4.45, min_n = 0, max_n = 370
-      )
-    ), unit = "day")]
-
-    # log normal distribution of `triage_date_time`
-    df1[, triage_time_hour := rlnorm_trunc(.N, meanlog = 2.69, sdlog = 0.38, min_n = 4, max_n = 30, seed = seed)]
-
-    # move times > 24 hours to 12am and after (early AM)
-    df1[, triage_time_hour := ifelse(triage_time_hour < 24, triage_time_hour, triage_time_hour - 24)]
-
-    df1[, triage_date_time := triage_date + dhours(triage_time_hour)]
-
-    df1[, admission_time := as.numeric(format(admission_date_time, "%H")) +
-      as.numeric(format(admission_date_time, "%M")) / 60 +
-      as.numeric(format(admission_date_time, "%S")) / 3600]
-
-    # re-sample bad values where triage comes up after admission
-    while (nrow(df1[triage_date_time > admission_date_time, ]) > 0) {
-      df1[triage_date_time > admission_date_time, triage_date := floor_date(
-        admission_date_time - ddays(rsn_trunc(.N, xi = 0.098, omega = 0.285, alpha = 4.45, min = 0, max = 370)),
-        unit = "day"
-      )]
-
-      df1[triage_date_time > admission_date_time, triage_time_hour := rlnorm_trunc(
-        .N,
-        meanlog = 2.69, sdlog = 0.38, min = 4, max = 30
-      )]
-
-      # move times > 24 hours to 12am and after
-      df1[triage_date_time > admission_date_time, triage_time_hour := ifelse(
-        triage_time_hour < 24, triage_time_hour, triage_time_hour - 24
-      )]
-
-      df1[triage_date_time > admission_date_time, triage_date_time := triage_date + dhours(triage_time_hour)]
+#' - `hospital_num` (`integer`): Hospital ID number
+#' - `admitting_physician_gim` (`logical`): Whether the admitting physician attends a general medicine ward
+#' - `discharging_physician_gim` (`logical`): Whether the discharging physician attends a general medicine ward
+#' - `adm_phy_cpso_mapped` (`integer`): Unique hash of admitting physician CPSO Number
+#' - `mrp_cpso_mapped` (`integer`): Unique hash of most responsible physician (MRP) CPSO Number
+#' - `dis_phy_cpso_mapped` (`integer`): Unique hash of discharging physician CPSO Number
+#'
+#' @examples
+#' dummy_physicians(nid = 1000, n_hospitals = 10, seed = 1)
+#'
+dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed = NULL) {
+    if (!is.null(seed)) {
+        set.seed(seed)
     }
-  } else {
-    time_period <- as.character(time_period)
-    # User can enter a year range or specific dates
-    # Can be of type integer or character
-    # convert time_period into Date types
-    start_date <- ifelse(grepl("^\\d{4}$", time_period[1]),
-      as.Date(paste0(time_period[1], "-01-01")),
-      as.Date(time_period[1])
+
+    if (!is.null(cohort)) {
+        # if `cohort` is provided, use its `genc_id` and `hospital_num`
+        cohort <- as.data.table(cohort)
+        df1 <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 1, seed = seed)
+
+        nid <- length(unique(df1$genc_id))
+        n_hospitals <- length(unique(df1$hospital_num))
+
+        # only include the genc_id and hospital_num columns from `cohort`
+        df1 <- df1[, c("genc_id", "hospital_num")]
+    } else {
+        # no repeating genc_id in physicians data table
+        df1 <- generate_id_hospital(nid, n_hospitals, avg_repeats = 1, seed = seed)
+    }
+
+    # Function that samples a value from a given vector with replacement
+    sample_from_col <- function(dat) {
+        return(sample(dat, 1, replace = TRUE))
+    }
+
+    # set the NA proportions per hospital per variable
+    # sampling creates hospital-level variation
+    # each row is a different hopsital
+    hosp_na_prop <- df1 %>%
+        group_by(
+            hospital_num
+        ) %>%
+        reframe(
+            admitting_phy_gim_NA = runif(1, 0, 1),
+            discharging_phy_gim_NA = runif(1, 0, 1),
+            adm_phy_cpso_mapped_NA = rbeta(1, 0.2, 1.1),
+            dis_phy_cpso_mapped_NA = rbeta(1, 0.25, 2.7),
+            mrp_cpso_mapped_NA = rbeta(1, 0.4, 11.2),
+            admitting_phy_gim_NA = runif(1, 0, 1),
+            admitting_phy_gim_Y = runif(1, 0, 1),
+            discharging_phy_gim_NA = runif(1, 0, 1),
+            discharging_phy_gim_Y = runif(1, 0, 1),
+        ) %>%
+        data.table()
+
+    # edit `adm_phy_cpso_mapped` and `dis_phy_cpso_mapped`
+    # hospitals with highest adm also have highest dis NA proportion
+    # artificially add some counts of proportion 1.0 NA
+    na_order_adm <- order(hosp_na_prop[["adm_phy_cpso_mapped_NA"]], decreasing = TRUE)
+    hosp_na_prop[["dis_phy_cpso_mapped_NA"]][na_order_adm[1:round(0.15 * n_hospitals)]] <- jitter(
+      hosp_na_prop[["dis_phy_cpso_mapped_NA"]][na_order_adm[1:round(0.15 * n_hospitals)]],
+      factor = 0.1
     )
 
-    end_date <- ifelse(grepl("^\\d{4}$", time_period[2]),
-      as.Date(paste0(time_period[2], "-12-31")),
-      as.Date(time_period[2])
-    )
+    hosp_na_prop[["adm_phy_cpso_mapped_NA"]][na_order_adm[1:round(0.07 * n_hospitals)]] <- 1
+    hosp_na_prop[["dis_phy_cpso_mapped_NA"]][na_order_adm[1:round(0.07 * n_hospitals)]] <- 1
 
-    ##### get genc_id and hospital_num if `cohort` is not provided #####
-    # one repeat per genc_id
-    df1 <- generate_id_hospital(nid = nid, n_hospitals = n_hospitals, avg_repeats = 1, seed = seed)
+    # sample all physician numbers
+    # each hospital has about 280 physicians on average
+    # multiply this average by n_hospitals to get the total set of physicians across all hospitals
+    sample_cpso <- round(runif(280 * n_hospitals, min = 1e4, max = 3e5))
 
-    ##### get `triage_date_time` #####
-    # dates are distributed uniformly between the min and max date
-    df1[, triage_date := as.Date(round(runif(.N,
-      min = as.numeric(start_date),
-      max = as.numeric(end_date)
-    )))]
+    # sample a set of unique physicians for each hospital
+    hosp_na_prop$n_physicians <- rsn_trunc(n_hospitals, 470, 220, -1.6, 1, 650)
+    hosp_na_prop[, phy_set := sapply(n_physicians, function(x) sample(sample_cpso, x, replace = TRUE))]
 
-    # log normal distribution of `triage_date_time`
-    df1[, triage_time_hour := rlnorm_trunc(.N, meanlog = 2.69, sdlog = 0.38, min = 4, max = 30, seed = seed)]
+    # merge df1, the output data table, with hospital information
+    df1 <- merge(df1, hosp_na_prop, by = "hospital_num", all.x = TRUE)
 
-    # move times > 24 hours to 12am and after
-    df1[, triage_time_hour := ifelse(triage_time_hour < 24, triage_time_hour, triage_time_hour - 24)]
+    # now sample all variables
+    ####### `admitting_physician_gim` #######
+    df1[, admitting_physician_gim := ifelse(rbinom(.N, 1, admitting_phy_gim_Y), "y", "n")]
 
-    df1[, triage_date_time := triage_date + dhours(triage_time_hour)]
-  }
+    # sample the NAs in admitting_physician_gim
+    df1[, admitting_physician_gim := ifelse(rbinom(
+        .N, 1,
+        admitting_phy_gim_NA
+    ), NA, admitting_physician_gim)]
 
-  # turn date times into a string and remove seconds
-  df1[, triage_date_time := substr(as.character(triage_date_time), 1, 16)]
+    ####### `discharging_physician_gim` #######
+    df1[, discharging_physician_gim := ifelse(rbinom(.N, 1, discharging_phy_gim_Y), "y", "n")]
 
-  # keep only the relevant columns and return
-  df1 <- df1[, c("genc_id", "hospital_num", "triage_date_time")]
+    # sample the NAs in discharging_physician_gim
+    df1[, discharging_physician_gim := ifelse(rbinom(
+        .N, 1,
+        discharging_phy_gim_NA
+    ), NA, discharging_physician_gim)]
 
-  return(df1[order(df1$genc_id)])
+    ####### `adm_phy_cpso_mapped` #######
+    # Set adm physician
+    df1[, adm_phy_cpso_mapped := sapply(phy_set, sample_from_col)]
+
+    ####### `mrp_cpso_mapped` #######
+    # 0.36 of encounters have mrp = adm
+    df1[, mrp_cpso_mapped := ifelse(rbinom(.N, 1, 0.36),
+        adm_phy_cpso_mapped, sapply(setdiff(phy_set, adm_phy_cpso_mapped), sample_from_col)
+    )]
+
+    ####### `dis_phy_cpso_mapped` #######
+    # 0.3 of encounters have adm = mrp = dis overall
+    # when adm = mrp, 0.9 of encounters have adm = mrp = dis
+    df1[adm_phy_cpso_mapped == mrp_cpso_mapped, dis_phy_cpso_mapped := ifelse(rbinom(.N, 1, 0.9),
+        adm_phy_cpso_mapped,
+        sapply(setdiff(phy_set, adm_phy_cpso_mapped), sample_from_col)
+    )]
+
+    # when adm != mrp, 0.84 of dis = mrp and dis != adm always
+    # these will cover all cases of relations between adm, mrp, and dis
+    df1[adm_phy_cpso_mapped != mrp_cpso_mapped, dis_phy_cpso_mapped := ifelse(rbinom(.N, 1, 0.87),
+        mrp_cpso_mapped,
+        sapply(setdiff(phy_set, c(mrp_cpso_mapped)), sample_from_col)
+    )]
+
+    # return df1 without the columns with proportions
+    df1 <- df1[, -c(
+      "admitting_phy_gim_NA", "discharging_phy_gim_NA", "adm_phy_cpso_mapped_NA",
+      "dis_phy_cpso_mapped_NA", "mrp_cpso_mapped_NA", "admitting_phy_gim_Y", "discharging_phy_gim_Y",
+      "n_physicians", "phy_set"
+    )]
+
+    return(df1[order(df1$genc_id)])
 }
