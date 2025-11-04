@@ -97,16 +97,17 @@
 #' or as numeric input (e.g., `14` for 2pm).
 #'
 #' @param include_zero (`logical`)
-#' Flag indicating whether days with census counts of `0` should be treated as real 0s or whether they should be returned
-#' as `census = NA`. Note that this is only relevant for edge cases where this function is applied to small cohorts or if
-#' users specify a `group_var` with small samples resulting in counts of 0 on some days. In those cases,
-#' the decision on whether or not to include 0s can affect the estimated typical capacity (and thus, the `capacity_ratio`
-#' output).
+#' Flag indicating whether days with census counts of `0` should be treated as real 0s or whether they should be
+#' returned as `census = NA`. Note that this is only relevant for edge cases where this function is applied to small
+#' cohorts or if users specify a `group_var` with small samples resulting in counts of 0 on some days. In those cases,
+#' the decision on whether or not to include 0s can affect the estimated typical capacity (and thus, the
+#' `capacity_ratio` output).
 #'
-#' By default (`include_zero = TRUE`), the function will return days where no `genc_ids` were hospitalized as `census = 0`.
-#' This is the desired behavior in cases where counts of 0 patients are conceptually meaningful. For example, when users
-#' want to analyze how many patients with a rare condition are in hospital on a typical day, days where `census = 0`
-#' represent true counts of 0 patients (assuming the cohort provides sufficient coverage of all hospitalized patients).
+#' By default (`include_zero = TRUE`), the function will return days where no `genc_ids` were hospitalized as
+#' `census = 0`. This is the desired behavior in cases where counts of 0 patients are conceptually meaningful.
+#' For example, when users want to analyze how many patients with a rare condition are in hospital on a typical
+#' day, days where `census = 0` represent true counts of 0 patients (assuming the cohort provides sufficient coverage
+#' of all hospitalized patients).
 #' Note: If data availability periods differ between hospitals, `census` counts will only be set to 0 for dates
 #' that fall within the min-max date range for that particular site.
 #'
@@ -246,7 +247,8 @@ daily_census <- function(cohort,
   if (time_period_start < min(as.Date(cohort$discharge_date_time), na.rm = TRUE)) {
     stop(paste0(
       "Invalid user input for argument 'time_period'.
-        The start of the time period you specified (", time_period[1], ") is earlier than the earliest discharge date in the cohort (",
+        The start of the time period you specified (", time_period[1],
+      ") is earlier than the earliest discharge date in the cohort (",
       min(as.Date(cohort$discharge_date_time)), ").\nPlease adjust the time period input accordingly."
     ))
   }
@@ -254,7 +256,8 @@ daily_census <- function(cohort,
   if (time_period_end > max(as.Date(cohort$discharge_date_time), na.rm = TRUE)) {
     stop(paste0(
       "Invalid user input for argument 'time_period'.
-        The end of the time period you specified (", time_period[2], ") is later than the latest discharge date in the cohort (",
+        The end of the time period you specified (", time_period[2],
+      ") is later than the latest discharge date in the cohort (",
       max(as.Date(cohort$discharge_date_time)), ").
         Please adjust the time period input accordingly."
     ))
@@ -313,7 +316,9 @@ daily_census <- function(cohort,
   if (!is.null(scu_exclude)) {
     scu_exclude <- coerce_to_datatable(scu_exclude)
     # only keep genc_ids that are relevant for cohort
-    scu_exclude <- scu_exclude[genc_id %in% cohort$genc_id, .(genc_id, scu_unit_number, scu_admit_date_time, scu_discharge_date_time)]
+    scu_exclude <- scu_exclude[
+      genc_id %in% cohort$genc_id, .(genc_id, scu_unit_number, scu_admit_date_time, scu_discharge_date_time)
+    ]
 
     ## Exclude SCU unit 99 ("no SCU")
     # Note this is only relevant for older DBs, newer DBs do not contain SCU unit numbers 99
@@ -452,7 +457,8 @@ daily_census <- function(cohort,
         # if data availability ends before/at time_period_end, apply buffer as specified
         buffer_period <- buffer
       } else if (difftime(max_date, time_period_end, units = "days") > 0) {
-        # if hospital has data available past time_period_end, buffer_period = buffer minus any additional days available
+        # if hospital has data available past time_period_end:
+        # buffer_period = buffer minus any additional days available
         # (or 0 if hospital has more extra days available than specified as buffer period)
         buffer_period <- max(0, as.integer(buffer - difftime(max_date, time_period_end)))
       }
