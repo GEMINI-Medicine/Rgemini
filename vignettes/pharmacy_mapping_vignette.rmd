@@ -447,7 +447,7 @@ Linkages between these tables are:
 </div>
 
 <hr style="border-top: 0.5px solid #ccc; margin: 20px 0;">
-Recall the goal of the Insluin study - determine the proportion of encounters had an order for 'insulin' during their hospital stay. 
+Recall the goal of the Insulin study - determine the proportion of encounters that had an order for 'insulin' during their hospital stay. 
 
 Now, the SME has confirmed drug entries corresponding to 'insulin', and also indicated a few drug entries to be excluded from the study (despite correct rxnorm match), the next steps are to identify a list of encounters with drug entries matching these criteria.
 
@@ -517,9 +517,9 @@ insulin_pharm_row_num[1:5] # mock example of row numbers
 # Send a list of row_num as a temp table in case the number of row_num is very long,
 # since dbGetQuery has a character limit.
 
-insulin_pharm_row_num <- data.table(row_num = insulin_pharm_row_num) # ensure it's data.frame
+insulin_pharm_row_num <- data.table(row_num = as.numeric(insulin_pharm_row_num)) # ensure it's data.frame
 
-dbWritetable(db_con, c("pg_temp", "temp_row_num"), insulin_pharm_row_num,
+dbWriteTable(db_con, c("pg_temp", "temp_row_num"), insulin_pharm_row_num,
   temporary = T, row.names = F
 ) # write the row_num into a temp table
 
@@ -544,7 +544,7 @@ length(insulin_cohort)
 ```
 </div>
 
-<br><div style="padding-left: 40px; font-size:13px">In the pharmacy table, one encounter can have multiple pharmacy orders. **row_num** is, therefore, also useful for *tracing order-level information*. For example, instead of identifying encounters with at least 1 insulin prescription, the study is now interested in identifying encounters who had **at least one insulin prescribed during the first 24 hours of inpatient admission**. The analyst can use row number along with order date-time to refine the cohort:</div>
+<br><div style="padding-left: 40px; font-size:13px">In the pharmacy table, one encounter can have multiple pharmacy orders. **row_num** is therefore also useful for *tracing order-level information*. For example, instead of identifying encounters with at least one insulin prescription, the study is now interested in identifying encounters who had **at least one insulin prescription during the first 24 hours of inpatient admission**. The analyst can use row number along with order date-time to refine the cohort:</div>
 
 <div style="padding-left: 40px">
 ```{r, eval=F}
@@ -563,7 +563,7 @@ adm_query <- paste0(
   "SELECT genc_id, admission_date_time
    FROM admdad
    WHERE genc_id IN (", # this approach only suitable for a small number of genc_ids,
-  paste(example_cohort, collapse = ", "), ");" # if cohort is large, send the list of genc_id as a temp table instead
+  paste(example_cohort$genc_id, collapse = ", "), ");" # if cohort is large, send the list of genc_id as a temp table instead
 )
 adm_tab <- dbGetQuery(db_con, adm_query) %>%
   mutate(admission_date_time = ymd_hm(admission_date_time))
@@ -598,7 +598,7 @@ length(insulin_24hr_cohort)
 
 The pharmacy table has multiple fields containing drug information. For a single pharmacy order, RxNorm may match these fields to the same drug or different drugs. 
 
-Setting **hierarchy=TRUE** prioritizes fields to ensure a one-to-one match (i.e. one order to one drug) to reduce unnecessary mapping efforts. When **hierarchy=FALSE**, all matching entries are returned without applying hierarchy rules to the drug-containing fields. While setting hierarchy to FALSE is generally discouraged, it may be useful for project-specific scenarios requiring no or non-standard hierarchy rules. To apply customized hierarchy rules, analysts could refer to the detailed code logic of applying hierarchical filters in `prepare_pharm_for_validation` function.
+Setting **hierarchy=TRUE** prioritizes fields to ensure a one-to-one match (i.e. one order to one drug) to reduce unnecessary mapping efforts. When **hierarchy=FALSE**, all matching entries are returned without applying hierarchy rules to the drug-containing fields. While setting hierarchy to FALSE is generally discouraged, it may be useful for project-specific scenarios requiring no or non-standard hierarchy rules. To apply customized hierarchy rules, analysts could refer to the detailed code logic of applying hierarchical filters in the `prepare_pharm_for_validation` function.
 
 <hr style="border-top: 0.5px solid #ccc; margin: 20px 0;">
 Insulin example, `hierarchy=T` vs. `hierarchy=F`:
@@ -629,12 +629,13 @@ knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/f
 ```
 ```{r, eval=F, echo=F}
 # code to generate result figure below
-rxnorm_res %>%
-  filter(row_num == 1695237) %>%
-  mutate(
-    genc_id = "fake_id 1", # for purpose of the vignette, hide last digits of genc_id to protect privacy
-    row_num = paste0("...", substr(row_num, 6, 7)) # for purpose of the vignette, hide last digits of row_num to protect privacy
-  )
+data.table(
+    genc_id = c("fake_id 1", "fake_id 1", "fake_id 1"),
+    search_type = c("med_id_din", "med_id_brand_name_raw", "med_id_generic_name_raw"),
+    raw_input = c("00586714", "Novolin", "insulin regular 100 unit/mL"),
+    row_num = 1,
+    rxnorm_math = "insulin"
+)
 ```
 
 ```{r, echo=FALSE, out.width = "80%", fig.align = "center", fig.cap="" }
@@ -642,12 +643,12 @@ knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/f
 ```
 
 ```
-- For this order, the columns `med_id_generic_name_raw`, `med_id_brand_name_raw`, and `med_id_din` each contain drug information, all of which are matched to "insulin" by RxNorm. When `hierarchy=T`, only the row with "med_id_generic_name_raw = insulin regular 100 unit/mL vial (1,000 unit/10 mL)" is included in the result frequency table, while other rows are dropped, ensuring a one-to-one match. When `hierarchy=F` all rows will be included, therefore, the redundant information "med_id_din = 00586714" and "med_id_brand_name_raw = Novolin Toronto ; Humulin R" are returned and contribute to the frequency count.
+- For this order, the columns `med_id_generic_name_raw`, `med_id_brand_name_raw`, and `med_id_din` each contain drug information, all of which are matched to "insulin" by RxNorm. When `hierarchy=T`, only the row with "med_id_generic_name_raw = insulin regular 100 unit/mL" is included in the result frequency table, while other rows are dropped, ensuring a one-to-one match. When `hierarchy=F` all rows will be included, therefore, the redundant information "med_id_din = 00586714" and "med_id_brand_name_raw = Novolin" are returned and contribute to the frequency count.
 ```
 
 ### Unmatched results
 
-Recall that with **return_unmatched=TRUE** in the previous `rxnorm_res <- rxnorm_query(...)` function, the returned object contains 2 items - matched and unmatched results. When `rxnorm_res` contains unmatched result, **`prepare_pharm_for_validation` will automatically detect its presence, and process them along with the matched result to facilitate SME validation.**
+Recall that with **return_unmatched=TRUE** in the previous `rxnorm_res <- rxnorm_query(...)` function, the returned object contains 2 items - matched and unmatched results. When `rxnorm_res` contains unmatched results, **`prepare_pharm_for_validation` will automatically  process them along with the matched results to facilitate SME validation.**
 
 ```{r, eval=F}
 rxnorm_res_unmatch <- rxnorm_query(
@@ -680,7 +681,7 @@ knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/f
 - *historically_mapped_to_drug* and *historically_mapped_to_drug_group* are historical mapping information based on a search against the existing mappings in the master file. Distinct mappings from different projects are separated by '||'. See function documentation for details.
   <div style="padding-left: 40px; padding-top:8px; font-size:12px"> e.g. Drug information for the top 8 rows have not been previously mapped, except for "row_id=7", which was mapped to drug "dalteparin" and drug_group "low molecular weight heparin". </div>
 - Note that this secondary search is **a broad search against all mapped drugs, and it is NOT specific to the user's drug(s) of interest**. Users may use regex search to identify their drug(s) of interest.
-
+- We particularly recommend inspecting unmatched results when users suspect that the RxNorm search had low sensitivity/missed certain entries that could be relevant for the study (e.g., observed prescribing rates are lower than expected).
 <details style='padding-left:80px; margin-top:-10px; font-size:11px'>
 <summary><span style='color:grey; font-size:12px;'>Expand to see an example</span></summary>
 
@@ -721,9 +722,9 @@ It is not uncommon for research projects to be interested only in drugs administ
 ```{r eval=F}
 ## Run rxnorm as usual
 rxnorm_res <- rxnorm_query(
-  db_con = db_con,
-  drug_input = c("insulin"),
-  genc_ids = example_cohort
+  dbcon = db_con,
+  drug_name = c("insulin"),
+  cohort = example_cohort
 )
 
 ## Prepare frequency table for drug(s) of interest as usual
@@ -755,7 +756,8 @@ freqtab_route <- dbGetQuery(db_con, route_query) %>%
   arrange(-n) %>%
   mutate(
     row_id = 1:length(route),
-    SME_confirm = NA # to be filled out by SME
+    SME_confirm = NA, # to be filled out by SME
+    n = ifelse(n < 6, "suppressed (n < 6)", n) # apply cell suppression
   )
 
 # # A tibble: 22 × 4
@@ -787,12 +789,11 @@ pharm_query <- paste0(
   "SELECT *
     FROM pharmacy
     WHERE row_num IN (", paste(insulin_pharm_row_num, collapse = ", "),
-  ");"
+  ") AND route IN ('", paste(iv_route, collapse = "', '"), "');"
 )
 
 # filter pharmacy data to insulin that were administered via the routes of interest
-iv_insulin <- dbGetQuery(db_con, pharm_query) %>%
-  filter(tolower(route) %in% iv_route)
+iv_insulin <- dbGetQuery(db_con, pharm_query)
 ```
 
 - In scenarios where drug and route information may interact and need to be considered simultaneously, analysts should include all drug (`rxnorm_match` x `route`) combinations in this frequency table.
@@ -814,14 +815,13 @@ Once the SME-validated mappings are finalized, they should be integrated into GE
 1. Analyst should format the mapping file according to the following requirements:
     + The file must **have and only have** the following columns from the SME-validated frequency table: `search_type`, `raw_input`, `rxnorm_match`, `SME_confirm`, and `drug_group`.
     + *SME_confirm* must be logical values. **Only include rows with `SME_confirm=TRUE`**, non-True rows will cause mapping upload to stop.
-    + In some cases, `rxnorm_match` may contains multiple matches separated by a pipe (e.g. "cefuroxime | vancomycin"). If the SME confirms only one or some of the matches, the analyst **should edit `rxnorm_match` to retain only the confirmed entries**.
+    + In some cases, `rxnorm_match` may contain multiple matches separated by a pipe (e.g. "cefuroxime | vancomycin"). If the SME confirms only one or some of the matches, the analyst **should edit `rxnorm_match` to retain only the confirmed entries**.
     + The column *drug_group* should be included if the SME has filled it out. If not, this column can be left empty for now, however, analysts will eventually need to reach out to GEMINI's internal SME for filling out this column upon running (see [*Using add_validated_pharm_map*](#section-db-upload)).
     + If *unmatched rows* are examined and false negative entries are found, the analyst should extract and add these mappings to the final mapping file. To differentiate these manually identified entries from those mapped by RxNorm, a **prefix "manual_"** should be added to the mapped drugs. See 'False negatives' below for details.
     + Save the formatted final mapping as a **.csv (required format) file** to folder.
 
 2. **For HPC4Health users**:
-    + Notify GEMINI team when a new validated mapping is ready for upload and provide location of the formatted file.
-    + The GEMINI team will assist with integrating the mapping to the master pharmacy mapping database.
+    + Please submit your validated and formatted mapping file to support@gemini-hpc.ca. The GEMINI team will then integrate your mappings to the master pharmacy mapping database.
 
 2. **For GEMINI analysts**:
     + Document the mapping information on the [Solo mapping tracker](https://app.smartsheet.com/sheets/hgGCpcp9PhQ25RfW9pPpQjm5jJ9mxwmRmhQRQHP1?view=grid)
