@@ -40,7 +40,7 @@ The series of functions is designed to support an analyst's workflow in identify
 
 
 ## Design Overview
-```{r, echo=FALSE, out.width = "100%", fig.align = "left", fig.cap="<div style='color:grey; font-size:12px; margin: 0px 0px 0px 20px'>Input-Output Flow Diagram of Three Pharmacy Functions. Items in orange denote steps requiring analyst or SME engagement. Pharmacy Master Mapping and Staging Pharmacy Mapping are database tables</div>" }
+```{r, echo=FALSE, out.width = "100%", fig.align = "left", fig.cap="<div style='color:grey; font-size:12px; margin: 0px 0px 0px 20px'>Input-Output Flow Diagram of the Pharmacy Mapping Workflow. Items in orange denote steps requiring analyst or SME engagement. Pharmacy Master Mapping and Staging Pharmacy Mapping are database tables</div>" }
 knitr::include_graphics("figures/pharmacy_mapping/overall_design.png", dpi = 200)
 ```
 
@@ -50,6 +50,7 @@ knitr::include_graphics("figures/pharmacy_mapping/overall_design.png", dpi = 200
 ```{r, eval = F}
 library(GEMINIpkg)
 library(RPostgreSQL)
+library(DBI)
 library(dplyr)
 library(getPass)
 library(readxl)
@@ -69,13 +70,13 @@ db_con <- DBI::dbConnect(
 <br><details>
 <summary><span style='color:blue; font-size:13px; margin-top:10px;'>Note: Pharmacy master mapping tables are stored in a different database from the pharmacy data. Expand to see how to query them.</span></summary>
 
-The pharmacy mapping files (`pharmacy_master_mapping`, `staging.working_pharmacy_mapping`) are stored in the `pharmacy_mapping` database. While most processes are automated such that analysts don't interact with these mapping files directly, knowing how to query them to explore existing mappings can be handy:
+The `pharmacy_master_mapping` table is stored in a separate `pharmacy_mapping` database and can be access as follows:
 ```{r, eval=F}
 ## Connect to the DB that stores the Pharmacy Master Mapping file
 map_db_con <- DBI::dbConnect(
   DBI::dbDriver("PostgreSQL"),
   dbname = "pharmacy_mapping", # note this is a different DB
-  host = "prime.smh.gemini-hpc.ca",
+  host = "domain_name.ca", # same as for pharmacy table
   port = 1234, # placeholder for real port number
   user = getPass::getPass("Database Username:"),
   password = getPass::getPass("Database password: ")
@@ -114,21 +115,21 @@ The **`rxnorm_query`** function retrieves rows from the GEMINI pharmacy data mat
 
 The function returns output in a **long format** with columns: `genc_id`, `search_type` (which pharmacy column was found to have a match), `raw_input` (value from that search_type), `rxnorm_match` (which drug(s) of interest is it matched with).
 
-Users can clearly identify which column is found to be a match, and it only requires SME to validate one column at a time as opposed to upto 6 columns at a time with the previous function.
+Users can clearly identify which column is found to be a match and SMEs simply need to validate if the entry in that column matches the searched drug.
 
-For users with experience with the previous version of rxnorm_query, please note the following changes:
+For users with experience with the original version of this function (`gemini_rxnorm_query`), please note the following changes:
 1. The function has changed its output from before. Previously, it returned all pharmacy rows (format **wide**) of interest, and now they are in (format **long**)
-2. If user input both `drug_input` and `class_input`, a union of these two independent searches will be done instead of an intersection in the previous version.
+2. If users input both `drug_name` (previously `drug_input`) and `drug_class` (previously `class_input`), a union of these two independent searches will now be done instead of an intersection in the original version of the function.
 
 ## Key parameters
 
 There are 5 primary parameters in the function.  
 
-1. **`drug_input`**: This should be a vector with generic drug names. While text values will be normalized (to lowercase, singularized, etc.) by subsequent functions, drug names can sometimes be tricky to singularize. Therefore, make sure to use the singular form (e.g, input "insulin", not "insulins") as this needs to comply with what is already stored in the master file. We also **recommend** to check the master file for previously mapped drugs ('rxnorm_match' & 'drug_group') and follow the same naming convention for your input if a match exists.
-2. **`class_input`**: This should be a vector with ATC codes or names of drug classes. For example for insulin, user can input ATC class "A10AB" or class name "Insulins and analogues for injection, fast-acting".
+1. **`drug_name`**: This should be a vector with generic drug names. While text values will be normalized (to lowercase, singularized, etc.) by subsequent functions, drug names can sometimes be tricky to singularize. Therefore, make sure to use the singular form (e.g, input "insulin", not "insulins") as this needs to comply with what is already stored in the master file. We also **recommend** to check the master file for previously mapped drugs ('rxnorm_match' & 'drug_group') and follow the same naming convention for your input if a match exists.
+2. **`drug_class`**: This should be a vector with ATC codes or names of drug classes. For example for insulin, user can input ATC class "A10AB" or class name "Insulins and analogues for injection, fast-acting".
 3. **`return_unmatched`**: Default is FALSE and the function only returns rows matching the drug(s) of interest (in long format). If set to TRUE, the function will return a list that additionally contains `unmatched_rows` containing pharmacy rows that do not match the `drug_input` (in wide format).
-4. **`genc_ids`**: Optional vector of `genc_ids` to search against. If no input is provided, all `genc_ids` will be included. When `return_unmatched` is TRUE the function returns an error if no `genc_ids` input is provided because returning the `unmatched_rows` for all pharmacy entries will result in memory issues.
-5. **`return_drug_list`**: Optional parameter allowing users to obtain a list of drugs (rxcui, drug_name) when running `rxnorm_query` with `class_input`. Default is FALSE.
+4. **`cohort`**: Optional input allowing users to provide a table containing `genc_ids` to search against. If no input is provided, all rows in the pharmacy table will be searched. When `return_unmatched` is TRUE the function returns an error if no `cohort` input is provided because returning the `unmatched_rows` for all pharmacy entries will result in memory issues.
+5. **`return_drug_list`**: Optional parameter allowing users to obtain a list of drugs (rxcui, drug_name) when running `rxnorm_query` with `drug_class`. Default is FALSE.
 
 **`NOTE`**:
 
