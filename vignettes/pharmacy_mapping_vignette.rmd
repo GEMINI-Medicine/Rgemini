@@ -36,7 +36,7 @@ GEMINI receives raw pharmacy tables from participating sites. The GEMINI team de
 
 Our team also developed a function (`prepare_pharm_for_validation`) to subsequently process the matches identified by the RxNorm function, preparing them for validation by a Subject Matter Expert (SME), and a function (`add_validated_pharm_map`) to append the SME-validated matches into GEMINI's Pharmacy Master Mapping file.
 
-The series of functions is designed to support an analyst's workflow in identifying orders for specific drug(s) of interest from the GEMINI pharmacy data table. This vignette provides general guidelines for effectively using these functions. Analysts are encouraged to consult the function documentations for more detailed information.
+The series of functions is designed to support an analyst's workflow in identifying orders for specific drug(s) of interest from the GEMINI pharmacy data table. This vignette provides general guidelines for effectively using these functions. Analysts are encouraged to consult the function documentation for more detailed information.
 
 
 ## Design Overview
