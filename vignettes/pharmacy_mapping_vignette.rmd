@@ -1,5 +1,5 @@
 ---
-title: "GEMINI Rxnorm and Pharmacy Mapping"
+title: "Rxnorm and Pharmacy Mapping"
 output: 
   rmarkdown::html_vignette:
     number_sections: false
@@ -32,7 +32,7 @@ convert_to_sequence <- function(x) {
 
 # Introduction
 
-GEMINI receives raw pharmacy tables from participating sites. The GEMINI team developed the RxNorm function (`rxnorm_query`) to identify drugs of interest easier and faster, by using the RxNorm API from the National Library of Medicine. Please refer to our publication for details at [GEMINI-RxNorm](https://academic.oup.com/jamiaopen/article/6/3/ooad062/7239332).
+GEMINI receives raw pharmacy tables from participating sites. The GEMINI team developed the RxNorm function (`rxnorm_query`) to identify drugs of interest more easily and faster, by using the RxNorm API from the National Library of Medicine. Please refer to our publication for details at [GEMINI-RxNorm](https://academic.oup.com/jamiaopen/article/6/3/ooad062/7239332).
 
 Our team also developed a function (`prepare_pharm_for_validation`) to subsequently process the matches identified by the RxNorm function, preparing them for validation by a Subject Matter Expert (SME), and a function (`add_validated_pharm_map`) to append the SME-validated matches into GEMINI's Pharmacy Master Mapping file.
 
