@@ -101,8 +101,7 @@ example_cohort <- dbGetQuery(
   "SELECT genc_id
             FROM admdad
             WHERE discharge_date_time >= '2022-01-01' AND discharge_date_time <= '2022-03-31';"
-) %>%
-  pull(genc_id)
+)
 ```
 
 Note: For the purpose of this vignette, we assume that the study cohort has complete pharmacy data coverage. In practice, analysts should check whether the study cohort has pharmacy data coverage. See [*data_coverage vignette*](TO BE INSERTED WHEN AVAILABLE) for details.
@@ -193,9 +192,9 @@ Example 1:
 ```{r, eval = F}
 # Example 1 Trimethoprim and Sulfamethoxazole
 rxnorm_res_ex1 <- rxnorm_query(
-  db_con = db_con,
-  drug_input = c("trimethoprim", "sulfamethoxazole"),
-  genc_ids = example_cohort
+  dbcon = db_con,
+  drug_name = c("trimethoprim", "sulfamethoxazole"),
+  cohort = example_cohort
 )
 
 rxnorm_res_ex1[grepl("\\|", rxnorm_match)] %>%
@@ -312,7 +311,7 @@ We have already run RxNorm search for insulin in the above section by `rxnorm_re
 pharm_db <- DBI::dbConnect(
   DBI::dbDriver("PostgreSQL"),
   dbname = "pharmacy_mapping", # note this is a different DB from the pharmacy data table
-  host = "prime.smh.gemini-hpc.ca",
+  host = "domain_name.ca",
   port = 1234, # placeholder for real port number
   user = getPass::getPass("Database Username:"),
   password = getPass::getPass("Database password: ")
@@ -435,7 +434,7 @@ Upon receiving the validated mapping from the SME, analysts should at least perf
 
 After completing sanity checks, analyst should save the cleaned validated mapping to folder and proceed to address the study question.
 
-<br>Now that the SME has confirmed and reject some rxnorm matches, how do analysts go back and identify entries from the `pharmacy data table` corresponding to the confirmed matches? How can one link entries between `$sme`, `$analyst` and the `pharmacy data table`?
+<br>Now that the SME has confirmed and rejected some RxNorm matches, how do analysts go back and identify entries from the `pharmacy data table` corresponding to the confirmed matches? How can one link entries between `$sme`, `$analyst` and the `pharmacy data table`?
 
 <div style="background-color: #d9e7e5; padding: 10px 15px; margin: 10px 0;">
 Linkages between these tables are:
@@ -894,7 +893,7 @@ Analyst should perform additional preprocessing to append this entry to the fina
 - set `SME_confirm` to TRUE.
 ```
 
-The expected *final* formatted file for database upload (containing both the true positives and the false negative entry):
+The expected *final* formatted file for database upload (containing both the true positives and the false negative entries):
 ```{r, echo=FALSE, out.width = "80%", fig.align = "center", fig.cap="" }
 knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/fig14_masterfile_collection_falseneg_clean.png", dpi = 200)
 ```
@@ -927,7 +926,7 @@ However, high-level drug classification can often be beneficial for various rese
 ```
 </details>
 
-For new pharmacy mapping records that have passed the checks, the function will **appends them to the Staging Pharmacy Mapping table (`staging.working_pharmacy_mapping` in the database)**, along with the user's database `user_name`, `project_id`, and a timestamp (`last_updated`). The added user information allows tracking of records in case a reversion is necessary.
+For new pharmacy mapping records that have passed the checks, the function will **append them to the Staging Pharmacy Mapping table (`staging.working_pharmacy_mapping` in the database)**, along with the user's database `user_name`, `project_id`, and a timestamp (`last_updated`). The added user information allows tracking of records in case a revision is necessary.
 
 Overall, the function prevents analysts from appending incorrect, incomplete, or duplicate mappings to the Pharmacy Mapping Master table. In conjunction with the feature to output unmapped `drug_group` for SME validation, the automated checking and appending process of `add_validated_pharm_map` provides analysts with both a more efficient and accurate way to grow the existing collection of pharmacy mappings.
 
@@ -947,9 +946,9 @@ There is only one parameter in the function:
 <div style="margin: 0px 0px 0px 40px; font-size:13px">
 1. **`Username`**: the username of the analyst for their database connection.
 2. **`Password`**: the password of the analyst for their database connection.
-3. **`Project Title`**: the Abbreviated Title per GEMINI Project Tracker of the research project. If the mapping is not associated with a project on the tracker, the user should provide a brief name that describes the mapping activity, e.g. 'reports_sedhypno_indicator'.
+3. **`Project Title`**: the Abbreviated Title of the research project as per the GEMINI Project Tracker. If the mapping is not associated with a project on the tracker, the user should provide a brief name that describes the mapping activity, e.g. 'reports_sedhypno_indicator'.
 4. **`CSV Output Prompt`**: if the value entered is `yes`, unmapped records without `drug_group`, will be exported to a csv file. If the value entered is anything else, the unmapped records will not be appended and instead returned to the user's R environment object.
-5. **`CSV Output Path`**: if the user chooses to export unmapped records without `drug_group`, they must then enter path for the csv file which these records will export to.
+5. **`CSV Output Path`**: if the user chooses to export records without `drug_group`, they must then enter a path the csv file will be exported to.
 6. **`Final Confirmation`**: a final confirmation that the user needs to provide. If **'confirm'** is entered, the function will append the new validated pharmacy mapping records to the Staging Pharmacy Mapping file in the database. If anything else is entered, nothing will be appended, and the function will exit.
 </div>
 
