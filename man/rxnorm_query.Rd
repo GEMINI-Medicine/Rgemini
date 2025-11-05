@@ -39,8 +39,8 @@ If TRUE, the function will additionally return all unmatched rows,
 allowing users to inspect pharmacy entries that Rxnorm did not match to the searched drug(s) of interest.
 The function will return a list with 2 items:
 \enumerate{
-\item \code{matched_rows}: All the matched entries (same output as if the argument return_unmatched is FALSE).
-\item \code{unmatched_rows}: All unmatched pharmacy rows for a cohort of interest.
+\item \code{matched_rows}: All the matched entries in long format (same output as if the argument return_unmatched is FALSE).
+\item \code{unmatched_rows}: All unmatched pharmacy rows for a cohort of interest (in wide format).
 }}
 
 \item{detailed_search}{(\code{logical})
@@ -68,7 +68,7 @@ Entries are returned in long format for each \code{genc_id}, together with the f
 }
 
 When \code{return_unmatched} is TRUE, the 2nd list item of the output will
-be a \code{data.table} with the unmatched rows,
+be a \code{data.table} with the unmatched rows in wide format,
 containing all columns from the pharmacy table included in the Rxnorm search.
 }
 \description{

@@ -42,8 +42,8 @@
 #' If TRUE, the function will additionally return all unmatched rows,
 #' allowing users to inspect pharmacy entries that Rxnorm did not match to the searched drug(s) of interest.
 #' The function will return a list with 2 items:
-#' 1) `matched_rows`: All the matched entries (same output as if the argument return_unmatched is FALSE).
-#' 2) `unmatched_rows`: All unmatched pharmacy rows for a cohort of interest.
+#' 1) `matched_rows`: All the matched entries in long format (same output as if the argument return_unmatched is FALSE).
+#' 2) `unmatched_rows`: All unmatched pharmacy rows for a cohort of interest (in wide format).
 # `return_unmatched = TRUE` is only supported when users specify a `cohort` input to avoid memory issues.
 #' @param cohort (`data.table` or `data.frame`)
 #' Optional input allowing users to specify a cohort of interest.
@@ -62,7 +62,7 @@
 #' - `rxnorm_match`: Rxnorm output specifying which of the searched drug(s) the pharmacy entry was matched to.
 #'
 #' When `return_unmatched` is TRUE, the 2nd list item of the output will
-#' be a `data.table` with the unmatched rows,
+#' be a `data.table` with the unmatched rows in wide format,
 #' containing all columns from the pharmacy table included in the Rxnorm search.
 #' @examples
 #' \dontrun{
