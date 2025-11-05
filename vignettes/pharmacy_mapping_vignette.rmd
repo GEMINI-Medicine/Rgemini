@@ -134,23 +134,23 @@ There are 5 primary parameters in the function.
 **`NOTE`**:
 
 - There are 3 different ways to input your drug identifiers into this function:
-    1.  Input a vector of `drug_input`: This is the **recommended way** as it does not introduce complexity. We recommand using `drug_input` solely, instead of `class_input` or a combination of both `drug_input` and `class_input`.
-    2.  Input a vector of `class_input`: The function will prompt user to confirm a list of ATC classes and the drugs associated with the ATC classes. Users are indirectly querying based on drug names and heavily rely on the drug name to ATC relationship from rxnorm.
-        +  If `class_input` is used, it is best to provide ATC codes at the level between 2 to 4 according to the Anatomical Therapeutic Chemical Classification system by the World Health Organization. See [WHO ATC](https://www.who.int/tools/atc-ddd-toolkit/atc-classification) for details. ATC codes at level 1 (e.g. "J: Antiinfective for systemic use") lacks specificity. ATC codes at level 5 (e.g. "J01CA04: amoxicillin") are too detailed that they cannot be searched as a drug class in `class_input`
-        +  When `class_input` is used, the function internally converts the drug classes into a list of drug names and then queries based on the drug names. We recommand users to turn on `return_drug_list` when using `class_input`. This will output a list of drug names associating with the `class_input`, allowing users to confirm the list with an SME. 
-    3.  Input both `drug_input` and `class_input`: Previously an **intersection** of these two independent searches (one based on `drug_input` and one based on `class_input`) will be used. In this version, a **union** of these two searches are used instead.
+    1.  Input a vector of `drug_name`: This is the **recommended way** as it does not introduce complexity. We recommend using `drug_name` solely, instead of `drug_class` or a combination of both `drug_name` and `drug_class`.
+    2.  Input a vector of `drug_class`: The function will prompt user to confirm a list of ATC classes and the drugs associated with the ATC classes. Users are indirectly querying based on drug names and heavily rely on the drug name to ATC relationship from rxnorm.
+        +  If `durg_class` is used, it is best to provide ATC codes at the level between 2 to 4 according to the Anatomical Therapeutic Chemical Classification system by the World Health Organization. See [WHO ATC](https://www.who.int/tools/atc-ddd-toolkit/atc-classification) for details. ATC codes at level 1 (e.g. "J: Antiinfective for systemic use") lacks specificity. ATC codes at level 5 (e.g. "J01CA04: amoxicillin") are too detailed that they cannot be searched as a drug class in `drug_class`
+        +  When `drug_class` is used, the function internally converts the drug classes into a list of drug names and then queries based on the drug names. We recommend users to turn on `return_drug_list` when using `drug_class`. This will output a list of drug names associated with the `drug_class`, allowing users to confirm the list with an SME. 
+    3.  Input both `drug_name` and `drug_class`: This will return a **union** of the two searches.
 
 ## Insulin example
 
 ```{r, eval = F}
 rxnorm_res <- rxnorm_query(
-  db_con = db_con, # DB contains the Pharmacy Data
-  drug_input = c("insulin"),
-  genc_ids = example_cohort
+  dbcon = db_con, # DB containing the Pharmacy Data
+  drug_name = c("insulin"),
+  cohort = example_cohort
 )
 
 head(rxnorm_res %>%
-  arrange(genc_id, row_num)) # some digits of encounter-level identifiers are hidden to protect privacy.
+  arrange(genc_id, row_num))
 ```
 
 ```{r, eval=F, echo=F}
@@ -161,7 +161,7 @@ rxnorm_res %>%
   mutate(genc_id = convert_to_sequence(genc_id), row_num = paste0("...", substr(row_num, 6, 7)))
 ```
 
-```{r, echo=FALSE, out.width = "80%", fig.align = "center"}
+```{r, echo=FALSE, out.width = "80%", fig.align = "center", fig.cap="Dummy output of `rxnorm_query()`."}
 knitr::include_graphics("figures/pharmacy_mapping/rxnorm_query/fig1_insulin_simple_example.png", dpi = 100)
 ```
 
@@ -169,7 +169,7 @@ knitr::include_graphics("figures/pharmacy_mapping/rxnorm_query/fig1_insulin_simp
 
 The search for drugs commonly used in combination or drugs with mulitple active components is a bit more complex. There are 2 **complementary** strategies to search for combined drugs.
 
-1. Search by the individual drug name or the individual active component name. Example 1.
+1. Search by the individual drug names or the individual active component names. Example 1.
 2. Search by the brand name / generic name of the combined drug (if available). Example 2.
 
 Depending on the drug(s) of interest, RxNorm's sensitivity in identifying hits can be very different for the 2 methods. Users should explore both strategies to determine what works best for their needs.
@@ -182,7 +182,7 @@ Example 1:
 
 -  Drugs of interest: drugs using 'Trimethoprim' and 'Sulfamethoxazole' in combination.
 
--  User should input c("trimethoprim", "sulfamethoxazole") into `drug_input`, instead of combining the two drugs into one customized entry like "trimethoprim-sulfamethoxazole" or "trimethoprim/sulfamethoxazole".
+-  User should input c("trimethoprim", "sulfamethoxazole") into `drug_name`, instead of combining the two drugs into one customized entry like "trimethoprim-sulfamethoxazole" or "trimethoprim/sulfamethoxazole".
 
 -  The search will return pharmacy orders matching **one or more** of the two drugs.
 
@@ -200,7 +200,7 @@ rxnorm_res_ex1 <- rxnorm_query(
 
 rxnorm_res_ex1[grepl("\\|", rxnorm_match)] %>%
   arrange(genc_id, row_num) %>%
-  head() # Last digits of encounter-level identifiers are hidden to protect privacy.
+  head()
 ```
 
 ```{r, eval=F, echo=F}
@@ -211,7 +211,7 @@ rxnorm_res_ex1[grepl("\\|", rxnorm_match)] %>%
   mutate(genc_id = convert_to_sequence(genc_id), row_num = paste0("...", substr(row_num, 6, 7)))
 ```
 
-```{r, echo=FALSE, out.width = "80%", fig.align = "center"}
+```{r, echo=FALSE, out.width = "80%", fig.align = "center", fig.cap="Dummy output of `rxnorm_query()`."}
 knitr::include_graphics("figures/pharmacy_mapping/rxnorm_query/fig2_trim_sulf.png", dpi = 200)
 ```
 
@@ -225,19 +225,19 @@ Example 2:
 
 -  This combination of the three active components is only available under the brand name 'Complera'.
 
--  User should input c("complera") in `drug_input`.
+-  User should input c("complera") in `drug_name`.
 
--  User can perform a second search on the individual ingrediants (see Example 1) to potentially find additional hits. For drugs like this one, which are available under one specific brand name, searching by individual components can be less sensitive than directly searching the brand name.
+-  User can perform a second search on the individual ingredients (see Example 1) to potentially find additional hits. For drugs like this one, which are available under one specific brand name, searching by individual components can be less sensitive than directly searching the brand name.
 
 ```{r, eval = F}
 # Example 2 Complera
 rxnorm_res_ex2 <- rxnorm_query(
-  db_con = db_con,
-  drug_input = c("complera"),
-  genc_ids = example_cohort
+  dbcon = db_con,
+  drug_name = c("complera"),
+  cohort = example_cohort
 )
 
-tail(rxnorm_res_ex2) # Last digits of encounter-level identifiers are hidden to protect privacy.
+tail(rxnorm_res_ex2)
 ```
 
 ```{r, eval=F, echo=F}
@@ -247,15 +247,15 @@ rxnorm_res_ex2 %>%
   mutate(genc_id = convert_to_sequence(genc_id), row_num = paste0("...", substr(row_num, 6, 7)))
 ```
 
-```{r, echo=FALSE, out.width = "80%", fig.align = "center"}
+```{r, echo=FALSE, out.width = "80%", fig.align = "center", fig.cap="Dummy output of `rxnorm_query()`."}
 knitr::include_graphics("figures/pharmacy_mapping/rxnorm_query/fig3_complera.png", dpi = 200)
 ```
 
 
 ## Important notes
-1. If a user input more than one drugs in `drug_input` or enter a class `class_input`, under `rxnorm_match` a pipe "|" may appear to separate more than one drugs which indicates that each entry (cell) from the pharmacy table is found to link to these drugs. 
+1. If a user inputs more than one search term in `drug_name` or `drug_class`, `rxnorm_match` may contain a pipe "|". This indicates that a given entry (cell) from the pharmacy table was matched to multiple search terms, separated by the pipe. 
 
-2. Only drugs entered into `drug_input` or drugs under `class_input` selected by users will appear under `rxnorm_match` output (even if the pharmacy entry may contain an additional drug, it will not appear as it wasn't searched for by the user).
+2. Only drugs entered into `drug_name` or drugs under `drug_class` selected by users will appear under `rxnorm_match` output (even if the pharmacy entry may contain an additional drug, it will not appear as it wasn't searched for by the user).
 
 3. Rxnorm is a US-based tool. Although this is highly uncommon, drugs that are only prescribed in Canada (and not in the US) cannot be found by RxNorm. In addition, the current `rxnorm_query` tool does not support searches based on Canadian brand names. Please use the equivalent American brand name or generic name instead.
 
@@ -269,13 +269,13 @@ knitr::include_graphics("figures/pharmacy_mapping/rxnorm_query/fig3_complera.png
 
 # Using `prepare_pharm_for_validation`
 
-**RxNorm is not a perfect tool and may generate false-positive matches. A typical workflow we recommend is consulting a SME to validate the results.** This could be physician, pharmacist, or anybody with knowledge of medication. They can ensure that the pharmacy records identified by RxNorm are indeed accurate.
+**RxNorm is not a perfect tool and may generate false-positive matches. A typical workflow we recommend is consulting a SME to validate the results.** This could be a physician, pharmacist, or anybody with knowledge of medication. They can ensure that the pharmacy records identified by RxNorm are indeed accurate.
 
 **`prepare_pharm_for_validation`** was developed to streamline this validation process. It helps analysts to process the RxNorm results into standardized frequency tables for validation and to conduct subsequent analyses.
 
 3 key advantages of using this function:
 
-- It compares the RxNorm results against previously validated mappings in the Pharmacy Master Mapping file, flagging matches that had already been validated before by other projects. This allows SMEs to focus primarily on new matches, streamlining the validation process.
+- It compares the RxNorm results against previously validated mappings in the Pharmacy Master Mapping table, flagging matches that had already been validated before by other projects. This allows SMEs to focus primarily on new matches, streamlining the validation process.
 
 - Pharmacy data includes multiple fields containing drug information, which can contain redundant or inconsistent drug information for the same pharmacy order. The function provides a standardized way to handle these issues by applying hierarchical rules to prioritize matches from certain fields over others. The hierarchical rules are predefined by GEMINI SMEs.
 
@@ -285,8 +285,8 @@ knitr::include_graphics("figures/pharmacy_mapping/rxnorm_query/fig3_complera.png
 
 1. **`pharm_dbcon`**: Database connection to the master pharmacy mapping file.
 2. **`rxnorm_res`**: Object returned by `rxnorm_query`.
-3. **`hierarchy`**: Flag whether to apply the predefined hierarchy filters to retain only highest-priority drug information per pharmacy row.
-4. **`cell_suppression`**: Flag whether to apply small cell suppression to the outputs.
+3. **`hierarchy`**: Flag indicating whether to apply the predefined hierarchy filters to retain only highest-priority drug information per pharmacy row.
+4. **`cell_suppression`**: Flag indicating whether to apply small cell suppression to the outputs.
 5. **`outpath`**: Optionally provide a file path where the results will be saved. File export is only permitted when `cell_suppression=TRUE`.
 
 **`NOTE`**: 
@@ -343,12 +343,12 @@ knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/f
 <summary><span style='color:blue; font-size:13px; margin-left: 20px;'>Expand to understand the table</span></summary>
 
 - **`row_id`**: a unique identifier for each row of the table. It helps analysts to track entries in case of accidental row deletions during the validation process.
-- **`count`**: number of unique genc_ids associating with each row. With cell_suppression = T, small counts less than 6 encounters are suppressed to "<6".
+- **`count`**: number of unique genc_ids associated with each row. With cell_suppression = T, small counts less than 6 encounters are suppressed to "<6".
 - **`search_type`, `raw_input`, `rxnorm_match`**: distinct rxnorm results.
-- **`drug_group`**: general classification of the drug in `rxnorm_match` found in the Pharmacy Master Mapping file. `drug_group = NA` for drugs that have not been previously mapped.
+- **`drug_group`**: general classification of the drug in `rxnorm_match` found in the Pharmacy Master Mapping table. `drug_group = NA` for drugs that have not been previously mapped.
 - **`times_validated`**: number of times each `raw_input ~ rxnorm_match` match has previously been validated (0: never been validated, 1: validated by one project, 2+: validated by two or more projects).
 - **`SME_confirm`, `SME_comment`**: fields for SME to fill out during validation.
-- Note that text values in `search_type`, `raw_input`, `rxnorm_match` and `drug_group` have been **standardized**. The function converts them to lowercase, singularizes certain fiels (`rxnorm_match` and `drug_group` only), and handles special charaters & leading/trailing whitespaces. See in-package function `normalize_text` for details.
+- Note that text values in `raw_input`, `rxnorm_match` and `drug_group` have been **standardized**. The function converts them to lowercase, singularizes `rxnorm_match` and `drug_group`, and handles special characters & leading/trailing whitespaces. See in-package function `normalize_text` for details.
 
 </details>
 <br></br>
