@@ -3,6 +3,9 @@
 * **New vignette:**
   * Migrated Rxnorm-Pharmacy-Mapping Vignette from GEMINIpkg, and added usage guidelines for HPC4Health users on `rxnorm_query()` and `prepare_pharm_for_validation()`.
 
+* **New vignette:**
+  * Migrated Rxnorm-Pharmacy-Mapping Vignette from GEMINIpkg, and added usage guidelines for HPC4Health users on `rxnorm_query()` and `prepare_pharm_for_validation()`.
+
 * **New functions:**
   * `prepare_pharm_for_validation()` function migrated from GEMINIpkg to standardize workflow for pharmacy mapping validation following rxnorm_query.
     * To support broader use cases, the migrated function now takes the database connection as the first argument (`pharm_dbcon`), while the `GEMINIpkg::prepare_pharm_for_validation() connects to the pharmacy mapping database automatically.
