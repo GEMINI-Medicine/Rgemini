@@ -1,7 +1,10 @@
 # Rgemini `develop`
+<<<<<<< HEAD
 
 * **New vignette:**
   * Migrated Rxnorm-Pharmacy-Mapping Vignette from GEMINIpkg, and added usage guidelines for HPC4Health users on `rxnorm_query()` and `prepare_pharm_for_validation()`.
+=======
+>>>>>>> 72b5227 (remove dummy function updates moved to develop_dummy)
 
 * **New vignette:**
   * Migrated Rxnorm-Pharmacy-Mapping Vignette from GEMINIpkg, and added usage guidelines for HPC4Health users on `rxnorm_query()` and `prepare_pharm_for_validation()`.
