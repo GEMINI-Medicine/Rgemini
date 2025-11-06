@@ -71,7 +71,6 @@ db_con <- DBI::dbConnect(
 
 # H4H users additionally need to set their data cut schema as follows:
 # dbSendQuery(db_con, "Set schema '<datacut_name>';")
-
 ```
 
 <br><details>
@@ -634,11 +633,11 @@ knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/f
 ```{r, eval=F, echo=F}
 # code to generate result figure below
 data.table(
-    genc_id = c("fake_id 1", "fake_id 1", "fake_id 1"),
-    search_type = c("med_id_din", "med_id_brand_name_raw", "med_id_generic_name_raw"),
-    raw_input = c("00586714", "Novolin", "insulin regular 100 unit/mL"),
-    row_num = 1,
-    rxnorm_math = "insulin"
+  genc_id = c("fake_id 1", "fake_id 1", "fake_id 1"),
+  search_type = c("med_id_din", "med_id_brand_name_raw", "med_id_generic_name_raw"),
+  raw_input = c("00586714", "Novolin", "insulin regular 100 unit/mL"),
+  row_num = 1,
+  rxnorm_math = "insulin"
 )
 ```
 
@@ -696,12 +695,12 @@ insulin_hist <- prep_res_unmatch$unmatched_rows %>%
 head(insulin_hist)
 
 ## Alternative for Step 1, analysts may also use regex on all columns in the unmatched output to check if RxNorm/historical mappings have missed any entries that might correspond to the drug of interest
-#insulin_unmatched <- prep_res_unmatch$unmatched_rows[
+# insulin_unmatched <- prep_res_unmatch$unmatched_rows[
 #  prep_res_unmatch$unmatched_rows[
 #   , Reduce(`|`, lapply(.SD, grepl, pattern = "insulin|00586714|humulin", ignore.case = TRUE)),
 #    .SDcols = colnames(prep_res_unmatch$unmatched_rows) # search all columns
 #  ]
-#]
+# ]
 
 ## Step 2. analysts can then extract the original pharmacy data based on info in the frequency table to obtain the relevant pharmacy row_num values
 # Recall that prepare_pharm_for_validation() standardizes text values in rxnorm_res, so we need to do the same here before searching for matches
@@ -843,7 +842,7 @@ Once the SME-validated mappings are finalized, they should be integrated into GE
 Prepare the SME validated pharmacy mapping file to the format required for database integration:
 ```{r, eval=F, echo=T}
 # read the SME validated mapping file from the user folder
-pharmacy_mapping <-  read_excel(file.path(getwd(), "your_path_to/pharmacy_mapping_for_SME_validated.xlsx"))
+pharmacy_mapping <- read_excel(file.path(getwd(), "your_path_to/pharmacy_mapping_for_SME_validated.xlsx"))
 
 # #   row_id count             search_type                     raw_input rxnorm_match drug_group times_validated SME_confirm         SME_comment
 # # 1      1  1271 med_id_generic_name_raw               insulin regular      insulin    insulin              2+        TRUE
