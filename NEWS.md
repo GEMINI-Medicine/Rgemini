@@ -1,7 +1,4 @@
 # Rgemini `develop`
-* Updated the `dummy_ipadmdad()` function to generate more realistic `admission_date_time` and `discharge_date_time` values by accounting for typical lengths of stay and time-of-day patterns.
-* Updated the `dummy_diag()` function to include a new parameter, `cohort`, to allow users to simulate diagnosis data for a given set of encounters, enabling the creation of linked data tables.
-* Added six utility functions to `utils.R` for special distribution sampling and for robust hospital-encounter simulation.
 
 * **New vignette:**
   * Migrated Rxnorm-Pharmacy-Mapping Vignette from GEMINIpkg, and added usage guidelines for HPC4Health users on `rxnorm_query()` and `prepare_pharm_for_validation()`.

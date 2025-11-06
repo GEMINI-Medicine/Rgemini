@@ -4,35 +4,20 @@
 \alias{dummy_diag}
 \title{Generate Simulated Diagnosis Data Table}
 \usage{
-dummy_diag(
-  nid = 1000,
-  n_hospitals = 10,
-  cohort = NULL,
-  ipdiagnosis = TRUE,
-  diagnosis_type = NULL,
-  seed = NULL,
-  ...
-)
+dummy_diag(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = NULL, ...)
 }
 \arguments{
 \item{nid}{(\code{integer})\cr Number of unique encounter IDs (\code{genc_id}) to simulate. Value must be greater than 0.}
 
-\item{n_hospitals}{(\code{integer})\cr Number of hospitals to simulate in the resulting data table}
-
-\item{cohort}{(\code{data.frame})\cr Optional, the administrative data frame containing \code{genc_id}
-and \code{hospital_num} information to be used in the output. \code{cohort} takes precedence over parameters \code{nid} and
-\code{n_hospitals}: when \code{cohort} is not NULL, \code{nid} and \code{n_hospitals} are ignored.}
+\item{nrow}{(\code{integer})\cr Total number of rows of the simulated long format diagnosis table. Value must be greater than or equal to that in \code{nid}.}
 
 \item{ipdiagnosis}{(\code{logical})\cr Default to "TRUE" and returns simulated "ipdiagnosis" table.
 If FALSE, returns simulated "erdiagnosis" table.
 See tables in \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.}
 
 \item{diagnosis_type}{(\verb{character vector})\cr The type(s) of diagnosis to return.
-Possible diagnosis types are
-("M", 1", "2", "3", "4", "5", "6", "9", "W", "X", and "Y"). Regardless of \code{diagnosis_type} input,
-the \code{ipdiagnosis} table is defaulted to always return type "M" for the first row of each encounter.}
-
-\item{seed}{(\code{integer})\cr Optional, a number to assign the seed to.}
+Possible diagnosis types are ("M", 1", "2", "3", "4", "5", "6", "9", "W", "X", and "Y").
+Regardless of \code{diagnosis_type} input, the \code{ipdiagnosis} table is defaulted to always return type "M" for the first row of each encounter.}
 
 \item{...}{Additional arguments for ICD code sampling scheme. See \code{sample_icd()} for details.}
 }
@@ -42,74 +27,52 @@ the \code{ipdiagnosis} table is defaulted to always return type "M" for the firs
 and other fields found in the respective diagnosis table.
 }
 \description{
-This function generates simulated data table resembling \code{ipdiagnosis}
-or \code{erdiagnosis} tables that can be used for testing or demonstration purposes.
+This function generates simulated data table resembling \code{ipdiagnosis} or \code{erdiagnosis} tables
+that can be used for testing or demonstration purposes.
 It internally calls \code{sample_icd()} function to sample ICD-10 codes and
 accepts arguments passed to \code{sample_icd()} for customizing the sampling scheme.
 }
 \details{
 To ensure simulated table resembles "ip(er)diagnosis" table, the following characteristics are applied to fields:
 \itemize{
-\item \code{genc_id}: Numerical identification of encounters starting from 1.
-The number of unique encounters is defined by \code{n}. The total number of rows is defined by \code{nrow},
+\item \code{genc_id}: Numerical identification of encounters starting from 1. The number of unique encounters is defined by \code{nid}. The total number of rows is defined by \code{nrow},
 where the number of rows for each encounter is random, but each encounter has at least one row.
-\item \code{hospital_num}: Numerical identification of hospitals from 1 to 5.
-All rows of an encounter are linked to a single hospital
-\item \code{diagnosis_code}: "ipdiagnosis" table only. Simulated ICD-10 diagnosis codes.
-Each encounter can be associated with multiple diagnosis codes in long format.
-\item \code{diagnosis_type}: "ipdiagnosis" table only.
-The first row of each encounter is consistently assigned to the diagnosis type "M".
-For the remaining rows, if \code{diagnosis_type} is specified by users,
-diagnosis types are sampled randomly from values provided;
-if \code{diagnosis_type} is NULL, diagnosis types are sampled from
-("1", "2", "3", "4", "5", "6", "9", "W", "X", and "Y"),
-with sampling probability proportionate to their prevalence in the "ipdiagnosis" table.
-\item \code{diagnosis_cluster}: "ipdiagnosis" table only.
-Proportionally sampled from values that have a prevalence of more than 1\%
-in the "diagnosis_cluster" field of the "ipdiagnosis" table, which are ("", "A", "B").
-\item \code{diagnosis_prefix}: "ipdiagnosis" table only.
-Proportionally sampled from values that have a prevalence of more than 1\%
-in the "diagnosis_prefix" field of the "ipdiagnosis" table, which are ("", "N", "Q", "6").
-\item \code{er_diagnosis_code}: "erdiagnosis" table only.
-Simulated ICD-10 diagnosis codes.
-Each encounter can be associated with multiple diagnosis codes in long format.
-\item \code{er_diagnosis_type}: "erdiagnosis" table only.
-Proportionally sampled from values that have a prevalence of more than 1\%
-in the "er_diagnosis_type" field of the "erdiagnosis" table, which are ("", "M", "9", "3", "O").
+\item \code{hospital_num}: Numerical identification of hospitals from 1 to 5. All rows of an encounter are linked to a single hospital
+\item \code{diagnosis_code}: "ipdiagnosis" table only. Simulated ICD-10 diagnosis codes. Each encounter can be associated with multiple diagnosis codes in long format.
+\item \code{diagnosis_type}: "ipdiagnosis" table only. The first row of each encounter is consistently assigned to the diagnosis type "M".
+For the remaining rows, if \code{diagnosis_type} is specified by users, diagnosis types are sampled randomly from values provided;
+if \code{diagnosis_type} is NULL, diagnosis types are sampled from ("1", "2", "3", "4", "5", "6", "9", "W", "X", and "Y"), with sampling probability proportionate to their prevalence in the "ipdiagnosis" table.
+\item \code{diagnosis_cluster}: "ipdiagnosis" table only. Proportionally sampled from values that have a prevalence of more than 1\% in the "diagnosis_cluster" field of the "ipdiagnosis" table, which are ("", "A", "B").
+\item \code{diagnosis_prefix}: "ipdiagnosis" table only. Proportionally sampled from values that have a prevalence of more than 1\% in the "diagnosis_prefix" field of the "ipdiagnosis" table, which are ("", "N", "Q", "6").
+\item \code{er_diagnosis_code}: "erdiagnosis" table only. Simulated ICD-10 diagnosis codes. Each encounter can be associated with multiple diagnosis codes in long format.
+\item \code{er_diagnosis_type}: "erdiagnosis" table only. Proportionally sampled from values that have a prevalence of more than 1\% in the "er_diagnosis_type" field of the "erdiagnosis" table, which are ("", "M", "9", "3", "O").
 }
 }
 \note{
-The following fields \verb{(er)diagnosis_code}, \verb{(er)diagnosis_type}, \code{diagnosis_cluster}, \code{diagnosis_prefix}
-are simulated independently.
+The following fields \verb{(er)diagnosis_code}, \verb{(er)diagnosis_type}, \code{diagnosis_cluster}, \code{diagnosis_prefix} are simulated independently.
 Therefore, the simulated combinations may not reflect the interrelationships of these fields in actual data.
-For example, specific diagnosis codes may be associated with specific diagnosis types,
-diagnosis clusters, or diagnosis prefix in reality.
+For example, specific diagnosis codes may be associated with specific diagnosis types, diagnosis clusters, or diagnosis prefix in reality.
 However, these relationships are not maintained for the purpose of generating dummy data.
-Users require specific linkages between these fields should consider customizing
-the output data or manually generating the desired combinations.
+Users require specific linkages between these fields should consider customizing the output data or manually generating the desired combinations.
 }
 \examples{
 
-### Simulate an erdiagnosis table for 5 unique subjects with total 20 records:
+### Simulate a erdiagnosis table for 5 unique subjects with total 20 records:
 \dontrun{
 set.seed(1)
-erdiag <- dummy_diag(nid = 50, n_hospitals = 2, ipdiagnosis = F)
+erdiag <- dummy_diag(nid = 5, nrow = 20, ipdiagnosis = F)
 }
 
-### Simulate an erdiagnosis table including data from `cohort`
-cohort <- dummy_ipadmdad()
-erdiag <- dummy_diag(cohort = cohort)
-
-### Simulate an ipdiagnosis table with diagnosis codes starting with "E11":
+### Simulate a ipdiagnosis table with diagnosis codes starting with "E11":
 \dontrun{
 set.seed(1)
-ipdiag <- dummy_diag(nid = 50, n_hospitals = 20, ipdiagnosis = T, pattern = "^E11")
+ipdiag <- dummy_diag(nid = 5, nrow = 20, ipdiagnosis = T, pattern = "^E11")
 }
 
 ### Simulate a ipdiagnosis table with random diagnosis codes in diagnosis type 3 or 6 only:
 \dontrun{
 set.seed(1)
-ipdiag <- dummy_diag(nid = 50, n_hospitals = 10, diagnosis_type = (c("3", "6"))) \%>\%
+ipdiag <- dummy_diag(nid = 5, nrow = 20, diagnosis_type = (c("3", "6"))) \%>\%
   filter(diagnosis_type != "M") # remove default rows with diagnosis_type="M" from each ID
 }
 
@@ -125,7 +88,7 @@ dbcon <- DBI::dbConnect(drv,
 )
 
 set.seed(1)
-ipdiag <- dummy_diag(nid = 5, n_hospitals = 2, ipdiagnosis = T, dbcon = dbcon, source = "icd_lookup")
+ipdiag <- dummy_diag(nid = 5, nrow = 20, ipdiagnosis = T, dbcon = dbcon, source = "icd_lookup")
 }
 
 }
