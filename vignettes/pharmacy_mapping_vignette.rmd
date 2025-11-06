@@ -47,8 +47,10 @@ knitr::include_graphics("figures/pharmacy_mapping/overall_design.png", dpi = 200
 ## Setup
 
 Please note that this workflow is only supported for the following database versions:
-- GEMINI staff: `drm_cleandb_v3_1_0` or newer 
-- H4H users: `gemini_h4h_template_v5_0_0` or newer
+
+  -  GEMINI staff: `drm_cleandb_v3_1_0` or newer
+
+  -  H4H users: `gemini_h4h_template_v5_0_0` or newer
 
 ### Libraries and Database
 ```{r, eval = F}
@@ -302,8 +304,6 @@ knitr::include_graphics("figures/pharmacy_mapping/rxnorm_query/fig3_complera.png
 - For each pharmacy row (identified by `row_num` of the pharmacy table), only the highest-priority column that was matched to the drug(s) of interest is retained as the "raw_input" for that row. **The default `hierarchy=TRUE` is highly recommended**. Only set to `FALSE` if user expects to apply non-standard hierarchy rules and conduct further detailed investigations.
 
 - With the hierarchy rule in place, it would be rare for drug information from the lowest priority column to show up in the results (i.e. iv_component_type). When that happens, it means that no drug match was found for the other 5 higher priority columns. However, it is possible that the higher priority columns suggests the pharmacy order is for a diffferent drug (not the drug of your interest): e.g., med_id_generic_name_raw = 'trimethoprim', iv_component_type = 'insulin'. Therefore, when there are iv_component_type entries in the returned results, analyst should inspect the original pharmacy order corresponding to those entries, to ensure the drug info at higher priority columns are NOT pointing to a different drug.
-
-- Note for GEMINI analysts: `Rgemini::prepare_pharm_for_validation()` works the same as `GEMINIpkg::prepare_pharm_for_validation()` except for database connection. The internal GEMINIpkg version auto-connects to the default mapping database, while the Rgemini version requires you to pass a database connection as the first argument. This modification is to support broader use cases in HPC4Health. If you are migrating from the GEMINIpkg function to Rgemini, please update your code to specify database connection to the `pharmacy_master_mapping` database (not `staging.working_pharmacy_mapping`).
 
 
 ## Insulin example
@@ -685,6 +685,7 @@ knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/f
   <div style="padding-left: 40px; padding-top:8px; font-size:12px"> e.g. Drug information for the top 8 rows have not been previously mapped, except for "row_id=7", which was mapped to drug "dalteparin" and drug_group "low molecular weight heparin". </div>
 - Note that this secondary search is **a broad search against all mapped drugs, and it is NOT specific to the user's drug(s) of interest**. Users may use regex search to identify their drug(s) of interest.
 - We particularly recommend inspecting unmatched results when users suspect that the RxNorm search had low sensitivity/missed certain entries that could be relevant for the study (e.g., observed prescribing rates are lower than expected).
+
 <details style='padding-left:80px; margin-top:-10px; font-size:11px'>
 <summary><span style='color:grey; font-size:12px;'>Expand to see an example</span></summary>
 
@@ -694,8 +695,9 @@ insulin_hist <- prep_res_unmatch$unmatched_rows %>%
   filter(grepl("insulin", historically_mapped_to_drug) | grepl("insulin", historically_mapped_to_drug_group))
 head(insulin_hist)
 
-## Alternative for Step 1, analysts may also use regex on all columns in the unmatched output to check if RxNorm/historical mappings have missed any entries that might correspond to the drug of interest
-# insulin_unmatched <- prep_res_unmatch$unmatched_rows[
+## Alternative for Step 1, analysts may also use regex on all columns in the unmatched output
+## to check if RxNorm/historical mappings have missed any entries that might correspond to the drug of interest
+#insulin_unmatched <- prep_res_unmatch$unmatched_rows[
 #  prep_res_unmatch$unmatched_rows[
 #   , Reduce(`|`, lapply(.SD, grepl, pattern = "insulin|00586714|humulin", ignore.case = TRUE)),
 #    .SDcols = colnames(prep_res_unmatch$unmatched_rows) # search all columns
@@ -706,7 +708,8 @@ head(insulin_hist)
 # Recall that prepare_pharm_for_validation() standardizes text values in rxnorm_res, so we need to do the same here before searching for matches
 # this can be achieved by applying the utils function `normalize_text()` in the package
 rxnorm_res_unmatch$unmatched_rows[, (names(rxnorm_res_unmatch$unmatched_rows)) := lapply(.SD, normalize_text)]
-# then merge any relevant entries identified in the unmatched results with the unmatched RxNorm output to identify original pharmacy rows and their corresponding row_num
+# then merge any relevant entries identified in the unmatched results with the unmatched RxNorm output 
+# to identify original pharmacy rows and their corresponding row_num
 insulin_hist_pharm <- merge(rxnorm_res_unmatch$unmatched_rows, insulin_hist, all.x = FALSE)
 ```
 
@@ -827,7 +830,7 @@ Once the SME-validated mappings are finalized, they should be integrated into GE
     + The column *drug_group* should be included if the SME has filled it out. If not, this column can be left empty for now, however, analysts will eventually need to reach out to GEMINI's internal SME for filling out this column upon running (see [*Using add_validated_pharm_map*](#section-db-upload)).
     + If *unmatched rows* are examined and false negative entries are found, the analyst should extract and add these mappings to the final mapping file. To differentiate these manually identified entries from those mapped by RxNorm, a **prefix "manual_"** should be added to the mapped drugs. See 'False negatives' below for details.
     + Save the formatted final mapping as a **.csv (required format) file** to folder.
-    
+
 
 2. **For HPC4Health users**:
     + Please submit your validated and formatted mapping file to support@gemini-hpc.ca. The GEMINI team will then integrate your mappings to the master pharmacy mapping database.
