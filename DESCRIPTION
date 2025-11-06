@@ -23,7 +23,6 @@ Imports:
     lubridate,
     openxlsx,
     MCMCpack,
-    mgcv,
     purrr,
     reactable,
     reshape2,
@@ -38,8 +37,7 @@ Imports:
     tidyr, 
     timeDate,
     fuzzyjoin,
-    sn,
-    SuppDists
+    sn
 Suggests: 
     colorBlindness,
     ggsci,
