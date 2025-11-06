@@ -1064,6 +1064,7 @@ normalize_text <- function(x, lemma = FALSE) {
   }
   return(x)
 }
+<<<<<<< HEAD
 
 #' @title
 #' Sample a truncated log normal distribution
@@ -1425,3 +1426,5 @@ check_date_format <- function(x) {
     grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", x_trim) | grepl("^[0-9]{4}$", x_trim)
   )
 }
+=======
+>>>>>>> e2bbe52 (Run styler & update documentation)
