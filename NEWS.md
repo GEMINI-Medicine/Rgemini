@@ -3,8 +3,12 @@
 * Updated the `dummy_diag()` function to include a new parameter, `cohort`, to allow users to simulate diagnosis data for a given set of encounters, enabling the creation of linked data tables.
 * Added six utility functions to `utils.R` for special distribution sampling and for robust hospital-encounter simulation.
 
+* **New vignette:**
+  * Migrated Rxnorm-Pharmacy-Mapping Vignette from GEMINIpkg, and added usage guidelines for HPC4Health users on `rxnorm_query()` and `prepare_pharm_for_validation()`.
+
 * **New functions:**
-  * `prepare_pharm_for_validation()` function migrated from GEMINIpkg to standardize workflow for pharmacy mapping validation following rxnorm_query
+  * `prepare_pharm_for_validation()` function migrated from GEMINIpkg to standardize workflow for pharmacy mapping validation following rxnorm_query.
+    * To support broader use cases, the migrated function now takes the database connection as the first argument (`pharm_dbcon`), while the `GEMINIpkg::prepare_pharm_for_validation() connects to the pharmacy mapping database automatically.
 
 **Rxnorm migration**
 * added `GEMINIpkg::gemini_rxnorm_query()` as `rxnorm_query()`, with the following changes
@@ -27,7 +31,6 @@
 
 * **Miscellanous:**
   * Added hex sticker
-
 
 # Rgemini `1.1.0`
 
