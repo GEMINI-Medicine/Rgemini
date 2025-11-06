@@ -118,15 +118,16 @@ max_pairwise_smd <- function(x, name, round_to = 3, ...) {
 #' @export
 #'
 render_cell_suppression.default <- function(
-    x,
-    name,
-    missing = any(is.na(x)),
-    transpose = FALSE,
-    render.empty = "NA",
-    render.continuous = render_cell_suppression.continuous,
-    render.categorical = render_cell_suppression.categorical,
-    render.missing = render_cell_suppression.missing,
-    ...) {
+  x,
+  name,
+  missing = any(is.na(x)),
+  transpose = FALSE,
+  render.empty = "NA",
+  render.continuous = render_cell_suppression.continuous,
+  render.categorical = render_cell_suppression.categorical,
+  render.missing = render_cell_suppression.missing,
+  ...
+) {
   args <- list(...)
 
   if (length(x) == 0) {
@@ -489,32 +490,48 @@ render_cell_suppression.continuous <- function(x, ...) {
 #' Render Cell Suppression (Strata)
 #'
 #' @description
-#' This is a custom render for `table1` stratification variables which performs GEMINI
-#' "cell suppression" for any levels which contain fewer than 6 observations.
+#' This is a custom render for `table1` stratification variables which performs
+#' GEMINI "cell suppression" for any levels which contain fewer than 6
+#' observations.
 #'
-#' Note that even with strata variable cell suppression, it is possible to reverse-calculate
-#' the total given the overall column. Therefore it is recommended to also hide the "Overall"
-#' column in the call to [table1::table1()].
+#' Note that even with strata variable cell suppression, it is possible to
+#' reverse-calculate the total given the overall column. Therefore it is
+#' recommended to also hide the "Overall" column in the call to
+#' [table1::table1()].
 #'
 #' @param label (`character`)\cr
-#' A character vector containing the labels.
-#'
-#' @param n (`numeric` or `character`)\cr
-#' A numeric vector containing the sizes.
+#' For table1 versions up to 1.4.3: A character vector containing the labels.
+#' For table1 versions >= 1.5.0: A list item with data for each strata.
 #'
 #' @param transpose (`logical`)\cr
 #' Used internally by [table1::table1()].
+#'
+#' @param ... \cr
+#' Optional additional arguments. Note that the current version expects this to
+#' be `n` for each strata, mimicing the behavior of table1 version <= 1.4.3,
+#' where `n` was explicitly passed to this function.
 #'
 #' @return named (`character`)\cr
 #' Concatenated with `""` to shift values down one row for proper alignment.
 #'
 #' @note
-#' Arguments from this function should not be passed directly and are defined here
-#' to work internally with [table1::table1()].
+#' Arguments from this function should not be passed directly and are defined
+#' here to work internally with [table1::table1()].
 #'
 #' @export
 #'
-render_cell_suppression.strat <- function(label, n, transpose = FALSE) {
+render_cell_suppression.strat <- function(label, ..., transpose = FALSE) {
+  # Since table1 version 1.5.0:
+  # `label` is a list so we need to extract relevant info here
+  if (is.list(label)) {
+    n <- sapply(label, nrow)
+    label <- names(n)
+  } else {
+    # For previous table1 versions (<= 1.4.3): n was explicitly passed; here
+    # we check for implicit arguments to accommodate all versions of table1
+    n <- list(...)[[1]]
+  }
+
   sprintf(
     ifelse(
       is.na(n),
@@ -527,7 +544,6 @@ render_cell_suppression.strat <- function(label, n, transpose = FALSE) {
     ), label, n
   )
 }
-
 
 #' @title
 #' Render Default (Discrete)

@@ -1,4 +1,26 @@
 # Rgemini `develop`
+* Updated the `dummy_ipadmdad()` function to generate more realistic `admission_date_time` and `discharge_date_time` values by accounting for typical lengths of stay and time-of-day patterns.
+* Updated the `dummy_diag()` function to include a new parameter, `cohort`, to allow users to simulate diagnosis data for a given set of encounters, enabling the creation of linked data tables.
+* Added six utility functions to `utils.R` for special distribution sampling and for robust hospital-encounter simulation.
+
+* **New functions:**
+  * `prepare_pharm_for_validation()` function migrated from GEMINIpkg to standardize workflow for pharmacy mapping validation following rxnorm_query
+
+**Rxnorm migration**
+* added `GEMINIpkg::gemini_rxnorm_query()` as `rxnorm_query()`, with the following changes
+  * improved documentation
+  * changed the `db_con` parameter to `dbcon`
+  * changed `drug_input` argument name to `drug_name` and `class_input` to `drug_class`
+  * changed the `genc_ids` parameter to `cohort`
+  * removed the `sites` parameter
+  * added `detailed_search` and `return_drug_list` as explicit parameters
+  * applied `find_db_tablename` to query `pharmacy_subset` on H4H
+* Added `normalize_text()` utility function
+ 
+**Other changes**
+* Fixed `render_cell_suppression.strat()` to be compatible with table1 version 1.5.0
+* Removed age exclusion in `episodes_of_care()` to accommodate paeds cohort
+* Small bug fix in `daily_census` to return all hospital ID variables provided in `cohort` input
 
 * **Testing improvements:**
   * Unit tests are now also run in Python via rpy2 to ensure cross-language compatibility

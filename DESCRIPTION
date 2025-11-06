@@ -16,22 +16,30 @@ Imports:
 	ggplot2,
 	ggpubr,
 	ggthemes,
+    httr,
     janitor,
+    jsonlite,
 	lemon,
-    lubridate, 
+    lubridate,
+    openxlsx,
+    MCMCpack,
+    mgcv,
     purrr,
+    reactable,
     reshape2,
+    RCurl,
     RPostgreSQL,
 	scales,
     stddiff, 
     stringi, 
     stringr, 
-    table1, 
+    table1,
+    textstem, 
     tidyr, 
     timeDate,
     fuzzyjoin,
-    MCMCpack,
-    sn
+    sn,
+    SuppDists
 Suggests: 
     colorBlindness,
     ggsci,
@@ -43,7 +51,7 @@ Suggests:
     testthat (>= 3.0.0),
     viridis
 Config/testthat/edition: 3
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr
 Depends: 
