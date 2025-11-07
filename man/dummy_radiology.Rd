@@ -55,7 +55,7 @@ Ultrasound. It does not cover all modalities seen in the actual "radiology" data
 }
 \examples{
 cohort <- dummy_ipadmdad()
+dummy_radiology(cohort = cohort)
 dummy_radiology(n = 1000, n_hospitals = 10, time_period = c(2020, 2023))
-dummy_radiology(cohort = cohort))
 
 }
