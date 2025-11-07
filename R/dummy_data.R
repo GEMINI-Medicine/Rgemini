@@ -997,8 +997,11 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
   } else { # when `cohort` is not provided
     check_input(list(nid, n_hospitals), "integer")
 
-    if (!all(check_date_format(time_period[1]), check_date_format(time_period[2]))) {
-      stop("An invalid date input was provided.")
+    # check if time_period is provided/has both start and end dates
+    if (is.null(time_period) | is.na(time_period) || length(time_period) != 2) {
+      stop("Please provide time_period") # check for date formatting
+    } else if (!check_date_format(time_period[1]) || !check_date_format(time_period[2])) {
+      stop("Time period is in the incorrect date format, please fix")
     }
 
     if (as.Date(time_period[1]) > as.Date(time_period[2])) {
