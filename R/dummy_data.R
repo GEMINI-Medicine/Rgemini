@@ -709,7 +709,7 @@ dummy_radiology <- function(
     }
   } else { # when `cohort` is not provided
     check_input(list(nid, n_hospitals), "integer")
-    
+
     #  check if time_period is provided/has both start and end dates
     if (is.null(time_period) | is.na(time_period) || length(time_period) != 2) {
       stop("Please provide time_period") # check for date formatting
