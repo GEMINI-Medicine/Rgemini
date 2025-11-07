@@ -1054,9 +1054,8 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 
     ####### sample SCU admit and discharge date times #######
     df1 <- sample_scu_date_time(scu_cohort = df1, use_ip_dates = TRUE, seed = seed)
-
   } else {
-    if(!all(check_date_format(time_period[1]), check_date_format(time_period[2]))) {
+    if (!all(check_date_format(time_period[1]), check_date_format(time_period[2]))) {
       stop("An invalid date input was provided.")
     }
 
