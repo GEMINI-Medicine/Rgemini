@@ -649,3 +649,283 @@ dummy_admdad <- function(id, admtime) {
   )
   return(res)
 }
+
+#' @title
+#' Generate simulated radiology data
+#'
+#' @description
+#' This function creates a dummy dataset with a subset of variables that
+#' are contained in the GEMINI "radiology" table, as seen in
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
+#'
+#' This function only simulates modalities used in Our Practice Report (OPR) - CT, MRI,
+#' Ultrasound. It does not cover all modalities seen in the actual "radiology" data table.
+#'
+#' @param nid (`integer`)\cr Number of unique encounter IDs to simulate.
+#' Encounter IDs may repeat to simulate multiple radiology tests,
+#' resulting in a data table with more rows than `nid`.
+#'
+#' @param n_hospitals(`integer`)\cr The number of hospitals to simulate.
+#' It is optional if `cohort` is provided.
+#'
+#' @param time_period (`vector`)\cr A numeric or character vector containing the data range of the data
+#' by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy)
+#' The start date and end date will be (yyyy-01-01 and yyyy-12-31) if (yyyy, yyyy)
+#' is the date range format provided. Optional when `cohort` is provided.
+#'
+#' @param cohort  (`data.frame | data.table`)\cr Optional, data frame with the following columns:
+#' - `genc_id` (`integer`): GEMINI encounter ID
+#' - `hospital_num` (`integer`): Hospital ID
+#' - `admission_date_time` (`character`): Date and time of IP admission in YYYY-MM-DD HH:MM format
+#' - `discharge_date_time` (`character`): Date and time of IP discharge in YYYY-MM-DD HH:MM format.
+#' When `cohort` is not NULL, `nid`, `n_hospitals`, and `time_period` are ignored.
+#'
+#' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
+#'
+#' @return (`data.table`)\cr A `data.table` object similar that contains the following fields:
+#' - `genc_id` (`integer`): GEMINI encounter ID
+#' - `modality_mapped` (`character`): Imaging modality: either MRI, CT, or Ultrasound.
+#' - `ordered_date_time` (`character`): The date and time the radiology test was ordered
+#' - `performed_date_time` (`character`): The date and time the radiology test was performed
+#' @examples
+#' cohort <- dummy_ipadmdad()
+#' dummy_radiology(n = 1000, n_hospitals = 10, time_period = c(2020, 2023))
+#' dummy_radiology(cohort = cohort))
+#'
+#' @export
+
+dummy_radiology <- function(
+  nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), cohort = NULL, seed = NULL
+  ) {
+    ####### checks for valid inputs #######
+    if (!is.null(cohort)) { # if `cohort` is provided
+    check_input(cohort,
+      c("data.frame", "data.table"),
+      colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
+      coltypes = c("integer", "integer", "", "")
+    )
+    if (!all(check_date_format(c(cohort$admission_date_time, cohort$discharge_date_time)))) {
+      stop("An invalid date input was provided in cohort.")
+    }
+  } else { # when `cohort` is not provided
+    check_input(list(nid, n_hospitals), "integer")
+
+    if (!all(check_date_format(time_period[1]), check_date_format(time_period[2]))) {
+      stop("An invalid date input was provided.")
+    }
+
+    if (as.Date(time_period[1]) > as.Date(time_period[2])) {
+      print("Time period needs to end later than it starts")
+      stop()
+    }
+
+    if (nid < n_hospitals) {
+      print("Number of encounters must be greater than or equal to the number of hospitals")
+      stop()
+    }
+  }
+
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
+
+  if (!is.null(cohort)) {
+    ####### if `cohort` is provided, create `df1` based on it #######
+    cohort <- as.data.table(cohort)
+    cohort$admission_date_time <- as.POSIXct(cohort$admission_date_time,
+      format = "%Y-%m-%d %H:%M",
+      tz = "UTC"
+    )
+
+    cohort$discharge_date_time <- as.POSIXct(cohort$discharge_date_time,
+      format = "%Y-%m-%d %H:%M",
+      tz = "UTC"
+    )
+
+    cohort$los <- as.numeric(difftime(
+      cohort$discharge_date_time,
+      cohort$admission_date_time,
+      units = "hours"
+    ))
+
+    # generate df1 based on cohort
+    df1 <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 4.5, seed = seed)
+
+    nid <- uniqueN(df1$genc_id)
+    n_hospitals <- uniqueN(df1$hospital_num)
+
+    ####### sample the gap between IP admission and ordered date time #######
+    # in days
+    admit_order_gap <- round(rlnorm(nrow(df1), meanlog = 0.817, sdlog = 1.215) - 0.8)
+
+    ####### Set the ordered date time #######
+    # get ordered date
+    df1[, ordered_date := as.Date(admission_date_time) + ddays(admit_order_gap)]
+
+    # sample ordered time
+    df1[, ordered_time := sample_time_shifted(.N, xi = 7.9, omega = 8.8, alpha = 4.5, min = 4, max = 30, seed = seed)]
+
+    ####### get ordered date time by combining ordered date and time #######
+    df1[, ordered_date_time := ordered_date + dhours(ordered_time)]
+
+    # ensure that `ordered_date_time` is not after `discharge_date_time`
+    # re-sample bad values
+    while (nrow(df1[ordered_date_time >= discharge_date_time, ]) > 0) {
+      df1[
+        ordered_date_time >= discharge_date_time,
+        ordered_date_time := as.Date(admission_date_time) +
+        dhours(sample_time_shifted(.N, xi = 7.9, omega = 8.8, alpha = 4.5, min = 4, max = 30))
+      ]
+    }
+
+    # sample gap between ordered and performed date time, in hours
+    # maximum perform gap is the difference between IP discharge and `ordered_date_time`
+    # this prevents `perform_date_time` from being after `discharge_date_time`
+    df1[, max_perform_gap := as.numeric(
+      difftime(discharge_date_time, ordered_date_time, units = "hours")
+    )]
+
+    df1[, perform_gap := rlnorm_trunc(
+      .N,
+      meanlog = 1.3, sdlog = 1.9, min_n = 0, max_n = max_perform_gap
+    )]
+
+    df1[sample(nrow(df1), round(0.06 * nrow(df1))), perform_gap := 0] # set some values to 0
+
+    ####### Get performed date time by adding `perform_gap` to `ordered_date_time` #######
+    df1[, performed_date_time := ordered_date_time + dhours(perform_gap)]
+
+    # performed date time should not be after discharge
+    # re-sample it
+    df1[performed_date_time > discharge_date_time, performed_date_time := ordered_date_time +
+      dhours(
+        rlnorm_trunc(
+          .N,
+          meanlog = 1.3, sdlog = 1.9, min_n = 0, max_n = as.numeric(
+            difftime(discharge_date_time, ordered_date_time, units = "hours"))
+        )
+      )]
+
+    df1[performed_date_time > discharge_date_time, performed_date_time := discharge_date_time]
+
+    df1[, ordered_date_time := substr(as.character(ordered_date_time), 1, 16)]
+    df1[, performed_date_time := substr(as.character(performed_date_time), 1, 16)]
+
+  } else {
+    ####### if `cohort` is not provided, use parameters to get `df1` #######
+    # check that `time_period` is valid
+    time_period <- as.character(time_period)
+
+    # get the start and end date
+     if (grepl("^\\d{4}$", time_period[1])) {
+      start_date <- as.Date(paste0(time_period[1], "-01-01"))
+    } else {
+      start_date <- as.Date(time_period[1])
+    }
+
+    if (grepl("^\\d{4}$", time_period[1])) {
+      end_date <- as.Date(paste0(time_period[2], "-01-01"))
+    } else {
+      end_date <- as.Date(time_period[2])
+    }
+
+    # get a data table with hospital ID and encounter ID
+    df1 <- generate_id_hospital(nid, n_hospitals, avg_repeats = 4.5, seed = seed)
+    df1[, num_id_repeat := .N, by = genc_id]
+
+    ####### sample `ordered_date_time` #######
+    # get ordered time
+    df1[, ordered_time := sample_time_shifted(
+      nrow = nrow(df1), xi = 7.9, omega = 8.8, alpha = 4.5, min = 4, max = 30, seed = seed
+    )]
+
+    # for each `genc_id`, sample a minimum and maximum ordered date
+    # this is the time range where they will have radiology scans
+    df1[, min_ordered_date := as.Date(round(runif(1,
+      min = as.numeric(start_date),
+      max = as.numeric(end_date)
+    ))), by = genc_id]
+
+    # set time range for ordered date times
+    # ensure it is not greater than `end_date`
+    df1[, max_ordered_date := as.Date(min_ordered_date) +
+      ddays(ceiling(rlnorm(1, meanlog = 1.33, sdlog = 1.66))),
+    by = genc_id
+    ]
+
+    # Get a longer range of values for genc_id with more repeats
+    df1[num_id_repeat >= 4, max_ordered_date := as.Date(min_ordered_date) +
+      ddays(ceiling(rlnorm(1, meanlog = 2.27, sdlog = 1.36))),
+    by = genc_id
+    ]
+
+    # ensure `max_ordered_date` it does not exceed `end_date`
+    df1[max_ordered_date > end_date, max_ordered_date := end_date]
+    # protect from `min_ordered_date` being after `max_ordered_date`
+    # set it to either the median date range or start date in the range
+    df1[min_ordered_date > max_ordered_date, min_ordered_date := max(start_date, min_ordered_date + 4)]
+
+    # uniformly sample an ordered date during the range
+    df1[, ordered_date := as.Date(round(
+      runif(.N, min = as.numeric(min_ordered_date), max = as.numeric(max_ordered_date))
+    ))]
+
+    # get `ordered_date_time` by comibining the date and time
+    df1[, ordered_date_time := ymd(df1$ordered_date) + dhours(ordered_time)]
+
+    ####### Sample `performed_date_time` #######
+    # based on ordered date time
+    # sample delay time (hours) between ordered and performed
+    # add delay time to ordered date time
+    df1[, perform_gap := ifelse(rbinom(.N, 1, 0.06),
+      0,
+      rlnorm(.N, meanlog = 1.3, sdlog = 1.9)
+    )]
+
+    df1[, performed_date_time := ordered_date_time + dhours(perform_gap)]
+
+    # remove seconds from date times and turn it into a string
+    df1[, ordered_date_time := substr(as.character(ordered_date_time), 1, 16)]
+    df1[, performed_date_time := substr(as.character(performed_date_time), 1, 16)]
+
+  }
+
+  # only include the relevant columns from `df1`
+  df1 <- df1[, c("genc_id", "hospital_num", "ordered_date_time", "performed_date_time")]
+
+  ####### Get `modality_mapped` #######
+  # probabilities of included modalities
+  prob <- data.table(
+    "modality_mapped" = c("CT", "MRI", "Ultrasound"),
+    "p" = c(0.6, 0.1, 0.3)
+  )
+  # Introduce random hospital-level variability in modality proportions
+  # 0.005 = level of variability
+  df1[, p := list(list(as.numeric(t(rdirichlet(1, alpha = prob$p / 0.005))))), by = hospital_num]
+
+  df1[, modality_mapped := sapply(p, function(v) {
+    base::sample(prob$modality_mapped, 1, replace = TRUE, prob = v / (sum(v)))
+  })]
+  # make sure probs add to 1
+
+  # hospitals without MRI
+  # In real data, not all hospitals have an MRI machine on site.
+  # Randomly select hospitals without MRI (~10%) and replace modality with CT and Ultrasound
+  hosp_no_mri <- sample(unique(df1$hospital_num), round(n_hospitals * 0.1), replace = FALSE)
+
+  df1[hospital_num %in% hosp_no_mri, p_no_mri := as.numeric(runif(1, 0.55, 0.75)), by = hospital_num]
+  df1[hospital_num %in% hosp_no_mri, modality_mapped := sample(
+    c("CT", "Ultrasound"),
+    .N,
+    prob = c(.SD[1, p_no_mri], 1 - .SD[1, p_no_mri]),
+    replace = TRUE
+  ),
+  by = hospital_num
+  ]
+
+  # return final data table without the extra columns
+  df1 <- df1[, -c("p", "p_no_mri")]
+
+  return(df1[order(df1$genc_id)])
+
+}
