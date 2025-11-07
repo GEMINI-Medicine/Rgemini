@@ -392,7 +392,7 @@ dummy_ipadmdad <- function(nid = 1000,
   hospital_num <- seq(1, n_hospitals, 1)
   year <- seq(time_period[1], time_period[2], 1)
 
-  data <- expand.grid(hospital_num = hospital_num, year = year) %>% data.table()
+  data <- expand.grid(hospital_num = as.integer(hospital_num), year = year) %>% data.table()
 
   # randomly draw number of encounters per hospital*year combo
   data[, n := rmultinom(1, nid, rep.int(1 / nrow(data), nrow(data)))]
@@ -421,7 +421,7 @@ dummy_ipadmdad <- function(nid = 1000,
 
   # add genc_id from 1-n
   data <- data[order(admission_date_time), ]
-  data[, genc_id := seq(1, nrow(data), 1)]
+  data[, genc_id := as.integer(seq(1, nrow(data), 1))]
 
 
   ############### DEFINE VARIABLE DISTRIBUTIONS ###############
