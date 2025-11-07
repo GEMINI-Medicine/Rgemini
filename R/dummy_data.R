@@ -709,9 +709,12 @@ dummy_radiology <- function(
     }
   } else { # when `cohort` is not provided
     check_input(list(nid, n_hospitals), "integer")
-
-    if (!all(check_date_format(time_period[1]), check_date_format(time_period[2]))) {
-      stop("An invalid date input was provided.")
+    
+    #  check if time_period is provided/has both start and end dates
+    if (is.null(time_period) | is.na(time_period) || length(time_period) != 2) {
+      stop("Please provide time_period") # check for date formatting
+    } else if (!check_date_format(time_period[1]) || !check_date_format(time_period[2])) {
+      stop("Time period is in the incorrect date format, please fix")
     }
 
     if (as.Date(time_period[1]) > as.Date(time_period[2])) {
@@ -905,7 +908,6 @@ dummy_radiology <- function(
   df1[, modality_mapped := sapply(p, function(v) {
     base::sample(prob$modality_mapped, 1, replace = TRUE, prob = v / (sum(v)))
   })]
-  # make sure probs add to 1
 
   # hospitals without MRI
   # In real data, not all hospitals have an MRI machine on site.
