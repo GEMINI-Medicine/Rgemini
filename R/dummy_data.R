@@ -668,7 +668,7 @@ dummy_admdad <- function(id, admtime) {
 #'
 #' @param nid (`integer`)\cr Number of unique encounter IDs to simulate. In this data table, each ID occurs once.
 #' It is optional when `cohort` is provided.
-#' 
+#'
 #' @param n_hospitals (`integer`)\cr Number of hospitals in simulated dataset.
 #' IT is optional when `cohort` is provided.
 #'
@@ -796,7 +796,7 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
 #'
 #' @param nid (`integer`)\cr Number of unique encounter IDs to simulate.
 #' Optional if `cohort` is provided.
-#' 
+#'
 #' @param n_hospitals (`integer`)\cr Number of hospitals in simulated dataset.
 #' Optional if `cohort` is provided.
 #'
@@ -807,7 +807,7 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
 #' - `genc_id` (`integer`): GEMINI encounter ID
 #' - `hospital_num` (`integer`): Hospital ID
 #' If `cohort` is provided, `nid` and `n_hospital` inputs are not used.
-#' 
+#'
 #' @return (`data.table`)\cr A data.table object similar to the "physicians" table that contains the
 #' following fields (if `cohort` is included, these are in addition to any columns in `cohort`):
 #' - `genc_id` (`integer`): GEMINI encounter ID
