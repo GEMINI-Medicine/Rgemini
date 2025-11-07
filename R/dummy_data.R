@@ -731,11 +731,6 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
       print("Time period needs to end later than it starts")
       stop()
     }
-
-    if (nid < n_hospitals) {
-      print("Number of encounters must be greater than or equal to the number of hospitals")
-      stop()
-    }
   }
 
   ####### Loop through the first, second, third, ... encounters of each genc_id #######
