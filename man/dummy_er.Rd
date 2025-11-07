@@ -13,15 +13,24 @@ dummy_er(
 )
 }
 \arguments{
-\item{nid}{(\code{integer}) Number of unique encounter IDs to simulate. In this data table, each ID occurs once.}
+\item{nid}{(\code{integer}) Number of unique encounter IDs to simulate. In this data table, each ID occurs once.
+Optional when \code{cohort} is provided.}
 
-\item{n_hospitals}{(\code{integer}) Number of hospitals in simulated dataset}
+\item{n_hospitals}{(\code{integer}) Number of hospitals in the simulated dataset. Optional when \code{cohort} is provided.}
 
-\item{time_period}{(\code{numeric}): Date range of data, by years or specific dates in either format:
-("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy)}
+\item{time_period}{(\code{vector})\cr A numeric or character vector containing the data range of the data
+by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy)
+The start date and end date will be (yyyy-01-01 and yyyy-12-31) if (yyyy, yyyy)
+is the date range format provided. Optional when \code{cohort} is provided.}
 
-\item{cohort}{(\code{data.frame}): Optional, data frame containing inpatient information
-(encounter ID, hospital numbers, admission and discharge dates and times), resembling the GEMINI "admdad" table.}
+\item{cohort}{(\code{data.frame | data.table}): Optional, a data frame with the following columns:
+\itemize{
+\item \code{genc_id} (\code{integer}): GEMINI encounter ID
+\item \code{hospital_num} (\code{integer}): hospital number
+\item \code{admission_date_time} (\code{character}): The date and time of admission to the hospital with format "\%Y-\%m-\%d \%H:\%M"
+\item \code{discharge_date_time} (\code{character}): The date and time of discharge from the hospital with format "\%Y-\%m-\%d \%H:\%M"
+When \code{cohort} is not NULL, \code{nid}, \code{n_hospitals}, and \code{time_period} are ignored.
+}}
 
 \item{seed}{(\code{integer}) Optional, a number for setting the seed to get reproducible results.}
 }
@@ -30,7 +39,7 @@ dummy_er(
 \itemize{
 \item \code{genc_id} (\code{integer}): GEMINI encounter ID
 \item \code{hospital_num} (\code{integer}): Hospital ID
-\item \code{triage_date_time} (\code{character}): The date and time of triage
+\item \code{triage_date_time} (\code{character}): The date and time of triage with format "\%Y-\%m-\%d \%H:\%M"
 }
 }
 \description{

@@ -14,15 +14,24 @@ dummy_ipscu(
 }
 \arguments{
 \item{nid}{(\code{integer})\cr Number of unique encounter IDs to simulate.
-Encounter IDs may repeat, resulting in a data table with more rows than \code{nid}.}
+Encounter IDs may repeat due to repeat visits being simulated,
+resulting in a data table with more rows than \code{nid}.}
 
 \item{n_hospitals}{(\code{integer})\cr Number of hospitals in simulated dataset}
 
-\item{time_period}{(\code{numeric})\cr Date range of data, by years or specific dates in either format:
-("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy)}
+\item{time_period}{(\code{vector})\cr A numeric or character vector containing the data range of the data
+by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy).
+The start date and end date will be (yyyy-01-01 and yyyy-12-31) if (yyyy, yyyy)
+is the date range format provided. Optional when \code{cohort} is provided.}
 
-\item{cohort}{(\code{data.frame})\cr Optional, data table containing inpatient information
-(encounter ID, hospital numbers, admission and discharge dates and times), resembling the GEMINI "admdad" table.}
+\item{cohort}{(\code{data.frame | data.table})\cr Optional, data frame with the following columns:
+\itemize{
+\item \code{genc_id} (\code{integer}): GEMINI encounter ID
+\item \code{hospital_num} (\code{integer}): Hospital ID
+\item \code{admission_date_time} (\code{character}): Date and time of IP admission in YYYY-MM-DD HH:MM format
+\item \code{discharge_date_time} (\code{character}): Date and time of IP discharge in YYYY-MM-DD HH:MM format.
+When \code{cohort} is not NULL, \code{nid}, \code{n_hospitals}, and \code{time_period} are ignored.
+}}
 
 \item{seed}{(\code{integer})\cr Optional, a number to be used to set the seed for reproducible results}
 }

@@ -135,12 +135,16 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #' the output data or manually generating the desired combinations.
 #'
 #' @param nid (`integer`)\cr Number of unique encounter IDs (`genc_id`) to simulate. Value must be greater than 0.
+#' Optional when `cohort` is provided.
 #'
-#' @param n_hospitals (`integer`)\cr Number of hospitals to simulate in the resulting data table
+#' @param n_hospitals (`integer`)\cr Number of hospitals to simulate in the resulting data table.
+#' Optional when `cohort` is provided.
 #'
-#' @param cohort (`data.frame`)\cr Optional, the administrative data frame containing `genc_id`
-#' and `hospital_num` information to be used in the output. `cohort` takes precedence over parameters `nid` and
-#' `n_hospitals`: when `cohort` is not NULL, `nid` and `n_hospitals` are ignored.
+#' @param cohort (`data.frame | data.table`)\cr Optional, the administrative data frame with the columns:
+#' - `genc_id` (`integer`): GEMINI encounter ID
+#' - `hospital_num` (`integer`): hospital ID
+#' `cohort` takes precedence over parameters `nid` and`n_hospitals`.
+#' When `cohort` is not NULL, `nid` and `n_hospitals` are ignored.
 #'
 #' @param ipdiagnosis (`logical`)\cr Default to "TRUE" and returns simulated "ipdiagnosis" table.
 #' If FALSE, returns simulated "erdiagnosis" table.
@@ -316,7 +320,7 @@ dummy_diag <- function(
 #' up pseudo-randomly between hospitals to ensure roughly equal sample size at
 #' each hospital.
 #'
-#' @param time_period (`numeric`)\cr
+#' @param time_period (`vector`)\cr
 #' A numeric vector containing the time period, specified as fiscal years
 #' (starting in April each year). For example, `c(2015, 2019)` generates data
 #' from 2015-04-01 to 2020-03-31.
@@ -379,6 +383,11 @@ dummy_ipadmdad <- function(nid = 1000,
                            n_hospitals = 10,
                            time_period = c(2015, 2023),
                            seed = NULL) {
+  # Check that inputs are valid
+  check_input(list(nid, n_hospitals), "integer")
+  if (!all(check_date_format(time_period[1]), check_date_format(time_period[2]))) {
+    stop("An invalid date input was provided.")
+  }
   ############### CHECKS: Make sure `nid` is at least n_hospitals * length(time_period)
   if (nid < n_hospitals * length(time_period)) {
     stop("Invalid user input.
@@ -395,7 +404,7 @@ dummy_ipadmdad <- function(nid = 1000,
   hospital_num <- seq(1, n_hospitals, 1)
   year <- seq(time_period[1], time_period[2], 1)
 
-  data <- expand.grid(hospital_num = hospital_num, year = year) %>% data.table()
+  data <- expand.grid(hospital_num = as.integer(hospital_num), year = year) %>% data.table()
 
   # randomly draw number of encounters per hospital*year combo
   data[, n := rmultinom(1, nid, rep.int(1 / nrow(data), nrow(data)))]
@@ -424,7 +433,7 @@ dummy_ipadmdad <- function(nid = 1000,
 
   # add genc_id from 1-n
   data <- data[order(admission_date_time), ]
-  data[, genc_id := seq(1, nrow(data), 1)]
+  data[, genc_id := as.integer(seq(1, nrow(data), 1))]
 
 
   ############### DEFINE VARIABLE DISTRIBUTIONS ###############
@@ -658,16 +667,22 @@ dummy_admdad <- function(id, admtime) {
 #'
 #' @description
 #' The "ipscu" data table is a long format data table with multiple repeats for each genc_id.
-#' They must be sampled such that SCU stays occur between inpatient admission and discharge dates and times,
-#' and that if a patient has multiple SCU stays, they do not overlap.
-#' It is a helper function for `dummy_ipscu`.
+#' SCU admission and discharge date times must be sampled in such a way that SCU stays occur between
+#' inpatient admission and discharge dates and times, and that if a patient has multiple SCU stays,
+#' they do not overlap. This is a helper function for `dummy_ipscu`.
 #'
 #' @param scu_cohort (`data.table`) The dummy data table requiring the addition of SCU admission and discharge
-#' date time columns.
+#' date time columns. It requires the following columns:
+#' - `genc_occurrence` (`integer`): for each `genc_id`, its numbered appearance in the data table, i.e. 1, 2, 3, ...
+#' - `genc_id` (`integer`): GEMINI encounter ID
+#' - `hospital_num` (`integer`): hospital ID
+#' If `use_ip_dates` is TRUE, it will also require the following columns:
+#' - `admission_date_time` (`POSIXct`): the date and time of IP admission in YYYY-MM-DD HH:MM format
+#' - `discharge_date_time` (`POSIXct`): the date and time of IP discharge in YYYY-MM-DD HH:MM format
 #'
-#' @param use_ip_dates (`logical`) Optional, whether the table `df1` contains information about inpatient admission and
-#' discharge date times. If TRUE, the function will sample SCU data based on these date times and if not,
-#' it will sample at random.
+#' @param use_ip_dates (`logical`) Optional, whether the table `scu_cohort` contains information about inpatient
+#' admission and discharge date times. If TRUE, the function will sample SCU data based on these date times and
+#' if not, it will sample at random.
 #'
 #' @param start_date (`Date`) Optional, the earliest date in the range for the SCU admissions in the dummy data table.
 #' It is not used if `use_ip_dates` is TRUE.
@@ -689,6 +704,36 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
   if (!is.null(seed)) {
     set.seed(seed)
   }
+
+  ## Check inputs ##
+  if (use_ip_dates) {
+    # if `scu_cohort` contains IP admission and discharge date times
+    check_input(scu_cohort,
+      c("data.table"),
+      colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
+      coltypes = c("integer", "integer", "POSIXct", "POSIXct")
+    )
+  } else {
+    # if `scu_cohort` does not have IP admission and discharge date times
+    check_input(scu_cohort,
+      c("data.table"),
+      colnames = c("genc_id", "hospital_num"),
+      coltypes = c("integer", "integer")
+    )
+    check_input(start_date, c("Date", "POSIXct", "POSIXt"))
+    check_input(end_date, c("Date", "POSIXct", "POSIXt"))
+
+    if (start_date > end_date) {
+      print("Time period needs to end later than it starts")
+      stop()
+    }
+
+    if (nid < n_hospitals) {
+      print("Number of encounters must be greater than or equal to the number of hospitals")
+      stop()
+    }
+  }
+
   ####### Loop through the first, second, third, ... encounters of each genc_id #######
   for (i in 1:max(scu_cohort$genc_occurrence)) {
     if (i == 1) {
@@ -700,7 +745,7 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
       days_after_admit <- round(rlnorm(n = n, meanlog = 1.12, sdlog = 1.21))
       days_after_admit[sample(1:n, round(0.55 * n))] <- 0
       if (use_ip_dates) {
-        # if cohort is provided, SCU admission is based on IP admission
+        # if cohort contains admission and discharge date times, SCU admission is based on IP admission
         scu_admission_dates <- as.Date(scu_cohort[which(genc_occurrence == i), admission_date_time]) +
           lubridate::days(days_after_admit)
       } else {
@@ -886,17 +931,25 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 #'
 #'
 #' @param nid (`integer`)\cr Number of unique encounter IDs to simulate.
-#' Encounter IDs may repeat, resulting in a data table with more rows than `nid`.
+#' Encounter IDs may repeat due to repeat visits being simulated,
+#' resulting in a data table with more rows than `nid`.
 #'
-#' @param time_period (`numeric`)\cr Date range of data, by years or specific dates in either format:
-#' ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy)
+#' @param time_period (`vector`)\cr A numeric or character vector containing the data range of the data
+#' by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy).
+#' The start date and end date will be (yyyy-01-01 and yyyy-12-31) if (yyyy, yyyy)
+#' is the date range format provided. Optional when `cohort` is provided.
+#'
 #'
 #' @param n_hospitals (`integer`)\cr Number of hospitals in simulated dataset
 #'
 #' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results
 #'
-#' @param cohort (`data.frame`)\cr Optional, data table containing inpatient information
-#' (encounter ID, hospital numbers, admission and discharge dates and times), resembling the GEMINI "admdad" table.
+#' @param cohort (`data.frame | data.table`)\cr Optional, data frame with the following columns:
+#' - `genc_id` (`integer`): GEMINI encounter ID
+#' - `hospital_num` (`integer`): Hospital ID
+#' - `admission_date_time` (`character`): Date and time of IP admission in YYYY-MM-DD HH:MM format
+#' - `discharge_date_time` (`character`): Date and time of IP discharge in YYYY-MM-DD HH:MM format.
+#' When `cohort` is not NULL, `nid`, `n_hospitals`, and `time_period` are ignored.
 #'
 #' @return (`data.table`)\cr A data.table object similar to the "ipscu" table that contains the following fields:
 #' - `genc_id` (`integer`): GEMINI encounter ID
@@ -930,6 +983,34 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), cohort = NULL, seed = NULL) {
   if (is.numeric(seed)) {
     set.seed(seed)
+  }
+
+  ## Check inputs ##
+  if (!is.null(cohort)) { # if `cohort` is provided
+    check_input(cohort,
+      c("data.frame", "data.table"),
+      colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
+      coltypes = c("integer", "integer", "", "")
+    )
+    if (!all(check_date_format(c(cohort$admission_date_time, cohort$discharge_date_time)))) {
+      stop("An invalid date input was provided in cohort.")
+    }
+  } else { # when `cohort` is not provided
+    check_input(list(nid, n_hospitals), "integer")
+
+    if (!all(check_date_format(time_period[1]), check_date_format(time_period[2]))) {
+      stop("An invalid date input was provided.")
+    }
+
+    if (as.Date(time_period[1]) > as.Date(time_period[2])) {
+      print("Time period needs to end later than it starts")
+      stop()
+    }
+
+    if (nid < n_hospitals) {
+      print("Number of encounters must be greater than or equal to the number of hospitals")
+      stop()
+    }
   }
 
   if (!is.null(cohort)) {
@@ -970,34 +1051,35 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
     ####### sample SCU admit and discharge date times #######
     df1 <- sample_scu_date_time(scu_cohort = df1, use_ip_dates = TRUE, seed = seed)
 
-    # only include the relevant columns
-    # exclude all other `cohort` columns
-    df1 <- df1[, c("genc_id", "hospital_num", "scu_admit_date_time", "scu_discharge_date_time")]
   } else {
-    ####### if `cohort` is not provided, create `df1` based on `n` and `n_hospitals` #######
+    if(!all(check_date_format(time_period[1]), check_date_format(time_period[2]))) {
+      stop("An invalid date input was provided.")
+    }
+
+    ####### if `cohort` is not provided, create `df1` based on `nid` and `n_hospitals` #######
     # Check that the given time period makes sense
     if (as.Date(time_period[1]) > as.Date(time_period[2])) {
-      print("Time period needs to end later than it starts")
-      stop()
+      stop("Time period needs to end later than it starts")
     }
     if (nid < n_hospitals) {
-      print("Number of encounters must be greater than or equal to the number of hospitals")
-      stop()
+      stop("Number of encounters must be greater than or equal to the number of hospitals")
     }
 
     time_period <- as.character(time_period)
     # User can enter a year range or specific dates
     # Can be of type integer or character
     # convert time_period into Date types
-    start_date <- ifelse(grepl("^\\d{4}$", time_period[1]),
-      as.Date(paste0(time_period[1], "-01-01")),
-      as.Date(time_period[1])
-    )
+    if (grepl("^\\d{4}$", time_period[1])) {
+      start_date <- as.Date(paste0(time_period[1], "-01-01"))
+    } else {
+      start_date <- as.Date(time_period[1])
+    }
 
-    end_date <- ifelse(grepl("^\\d{4}$", time_period[2]),
-      as.Date(paste0(time_period[2], "-12-31")),
-      as.Date(time_period[2])
-    )
+    if (grepl("^\\d{4}$", time_period[1])) {
+      end_date <- as.Date(paste0(time_period[2], "-01-01"))
+    } else {
+      end_date <- as.Date(time_period[2])
+    }
 
     ####### Generate the data table #######
     df1 <- generate_id_hospital(nid, n_hospitals, avg_repeats = 1.2, seed = seed)
@@ -1012,9 +1094,10 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
       scu_cohort = df1, use_ip_dates = FALSE,
       start_date = start_date, end_date = end_date, seed = seed
     )
-
-    df1 <- df1[, -c("genc_occurrence")]
   }
+
+  # keep only relevant columns
+  df1 <- df1[, c("genc_id", "hospital_num", "scu_admit_date_time", "scu_discharge_date_time")]
 
   # set remaining columns of the data.table
   # it will be the same regardless of whether cohort exists or not
@@ -1042,6 +1125,7 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
   )]
 
   # set the range for FALSE proportion in icu_flag
+  # when icu_flag = FALSE, the patient is in the step down unit
   # classifications: all true, low, or high proportion of FALSE
   # low: FALSE proportion ranges from 0.0001-0.01
   # high: FALSE proportion ranges from 0.02 to 0.6
@@ -1084,21 +1168,28 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 #' This function will return one triage date time for each encounter ID.
 #'
 #' @param nid (`integer`) Number of unique encounter IDs to simulate. In this data table, each ID occurs once.
+#' Optional when `cohort` is provided.
 #'
-#' @param n_hospitals (`integer`) Number of hospitals in simulated dataset
+#' @param n_hospitals (`integer`) Number of hospitals in the simulated dataset. Optional when `cohort` is provided.
 #'
-#' @param time_period (`numeric`): Date range of data, by years or specific dates in either format:
-#' ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy)
+#' @param time_period (`vector`)\cr A numeric or character vector containing the data range of the data
+#' by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy)
+#' The start date and end date will be (yyyy-01-01 and yyyy-12-31) if (yyyy, yyyy)
+#' is the date range format provided. Optional when `cohort` is provided.
 #'
-#' @param cohort (`data.frame`): Optional, data frame containing inpatient information
-#' (encounter ID, hospital numbers, admission and discharge dates and times), resembling the GEMINI "admdad" table.
+#' @param cohort (`data.frame | data.table`): Optional, a data frame with the following columns:
+#' - `genc_id` (`integer`): GEMINI encounter ID
+#' - `hospital_num` (`integer`): hospital number
+#' - `admission_date_time` (`character`): The date and time of admission to the hospital with format "%Y-%m-%d %H:%M"
+#' - `discharge_date_time` (`character`): The date and time of discharge from the hospital with format "%Y-%m-%d %H:%M"
+#' When `cohort` is not NULL, `nid`, `n_hospitals`, and `time_period` are ignored.
 #'
 #' @param seed (`integer`) Optional, a number for setting the seed to get reproducible results.
 #'
 #' @return (`data.table`) A data.table object similar to the "er" table that contains the following fields:
 #' - `genc_id` (`integer`): GEMINI encounter ID
 #' - `hospital_num` (`integer`): Hospital ID
-#' - `triage_date_time` (`character`): The date and time of triage
+#' - `triage_date_time` (`character`): The date and time of triage with format "%Y-%m-%d %H:%M"
 #'
 #' @import lubridate
 #' @export
@@ -1112,14 +1203,33 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
     set.seed(seed)
   }
 
-  # check for input variables
-  if (as.Date(time_period[1]) > as.Date(time_period[2])) {
-    print("Time period needs to end later than it starts")
-    stop()
-  }
-  if (nid < n_hospitals) {
-    print("Number of encounters must be greater than or equal to the number of hospitals")
-    stop()
+  ## Check inputs ##
+  if (!is.null(cohort)) { # if `cohort` is provided
+    check_input(cohort,
+      c("data.frame", "data.table"),
+      colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
+      coltypes = c("integer", "integer", "", "")
+    )
+    if (!all(check_date_format(c(cohort$admission_date_time, cohort$discharge_date_time)))) {
+      stop("An invalid date input was provided in cohort.")
+    }
+  } else { # when `cohort` is not provided
+    check_input(list(nid, n_hospitals), "integer")
+
+    # check for correct date formatting
+    if (!all(check_date_format(time_period[1]), check_date_format(time_period[2]))) {
+      stop("An invalid date input was provided.")
+    }
+
+    if (as.Date(time_period[1]) > as.Date(time_period[2])) {
+      print("Time period needs to end later than it starts")
+      stop()
+    }
+
+    if (nid < n_hospitals) {
+      print("Number of encounters must be greater than or equal to the number of hospitals")
+      stop()
+    }
   }
 
   if (!is.null(cohort)) {
@@ -1185,16 +1295,18 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
     time_period <- as.character(time_period)
     # User can enter a year range or specific dates
     # Can be of type integer or character
-    # convert time_period into Date types
-    start_date <- ifelse(grepl("^\\d{4}$", time_period[1]),
-      as.Date(paste0(time_period[1], "-01-01")),
-      as.Date(time_period[1])
-    )
+    # Convert time_period into Date types
+    if (grepl("^\\d{4}$", time_period[1])) {
+      start_date <- as.Date(paste0(time_period[1], "-01-01"))
+    } else {
+      start_date <- as.Date(time_period[1])
+    }
 
-    end_date <- ifelse(grepl("^\\d{4}$", time_period[2]),
-      as.Date(paste0(time_period[2], "-12-31")),
-      as.Date(time_period[2])
-    )
+    if (grepl("^\\d{4}$", time_period[1])) {
+      end_date <- as.Date(paste0(time_period[2], "-01-01"))
+    } else {
+      end_date <- as.Date(time_period[2])
+    }
 
     ##### get genc_id and hospital_num if `cohort` is not provided #####
     # one repeat per genc_id

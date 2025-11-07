@@ -14,11 +14,19 @@ sample_scu_date_time(
 }
 \arguments{
 \item{scu_cohort}{(\code{data.table}) The dummy data table requiring the addition of SCU admission and discharge
-date time columns.}
+date time columns. It requires the following columns:
+\itemize{
+\item \code{genc_occurrence} (\code{integer}): for each \code{genc_id}, its numbered appearance in the data table, i.e. 1, 2, 3, ...
+\item \code{genc_id} (\code{integer}): GEMINI encounter ID
+\item \code{hospital_num} (\code{integer}): hospital ID
+If \code{use_ip_dates} is TRUE, it will also require the following columns:
+\item \code{admission_date_time} (\code{POSIXct}): the date and time of IP admission in YYYY-MM-DD HH:MM format
+\item \code{discharge_date_time} (\code{POSIXct}): the date and time of IP discharge in YYYY-MM-DD HH:MM format
+}}
 
-\item{use_ip_dates}{(\code{logical}) Optional, whether the table \code{df1} contains information about inpatient admission and
-discharge date times. If TRUE, the function will sample SCU data based on these date times and if not,
-it will sample at random.}
+\item{use_ip_dates}{(\code{logical}) Optional, whether the table \code{scu_cohort} contains information about inpatient
+admission and discharge date times. If TRUE, the function will sample SCU data based on these date times and
+if not, it will sample at random.}
 
 \item{start_date}{(\code{Date}) Optional, the earliest date in the range for the SCU admissions in the dummy data table.
 It is not used if \code{use_ip_dates} is TRUE.}
@@ -38,7 +46,7 @@ It will contain the same fields, with the addition of:
 }
 \description{
 The "ipscu" data table is a long format data table with multiple repeats for each genc_id.
-They must be sampled such that SCU stays occur between inpatient admission and discharge dates and times,
-and that if a patient has multiple SCU stays, they do not overlap.
-It is a helper function for \code{dummy_ipscu}.
+SCU admission and discharge date times must be sampled in such a way that SCU stays occur between
+inpatient admission and discharge dates and times, and that if a patient has multiple SCU stays,
+they do not overlap. This is a helper function for \code{dummy_ipscu}.
 }

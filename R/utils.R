@@ -1413,5 +1413,15 @@ generate_id_hospital <- function(
     }
   }
 
+  res[, genc_id := as.integer(genc_id)]
+  res[, hospital_num := as.integer(hospital_num)]
   return(res)
+}
+
+check_date_format <- function(x) {
+  x <- as.character(x)
+  x_trim <- trimws(x)
+  return(
+    grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}", x_trim) | grepl("^[0-9]{4}", x_trim)
+  )
 }
