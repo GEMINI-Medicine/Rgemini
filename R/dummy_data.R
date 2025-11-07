@@ -696,9 +696,9 @@ dummy_admdad <- function(id, admtime) {
 
 dummy_radiology <- function(
   nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), cohort = NULL, seed = NULL
-  ) {
-    ####### checks for valid inputs #######
-    if (!is.null(cohort)) { # if `cohort` is provided
+) {
+  ####### checks for valid inputs #######
+  if (!is.null(cohort)) { # if `cohort` is provided
     check_input(cohort,
       c("data.frame", "data.table"),
       colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
@@ -774,7 +774,7 @@ dummy_radiology <- function(
       df1[
         ordered_date_time >= discharge_date_time,
         ordered_date_time := as.Date(admission_date_time) +
-        dhours(sample_time_shifted(.N, xi = 7.9, omega = 8.8, alpha = 4.5, min = 4, max = 30))
+          dhours(sample_time_shifted(.N, xi = 7.9, omega = 8.8, alpha = 4.5, min = 4, max = 30))
       ]
     }
 
@@ -802,7 +802,8 @@ dummy_radiology <- function(
         rlnorm_trunc(
           .N,
           meanlog = 1.3, sdlog = 1.9, min = 0, max = as.numeric(
-            difftime(discharge_date_time, ordered_date_time, units = "hours"))
+            difftime(discharge_date_time, ordered_date_time, units = "hours")
+          )
         )
       )]
 
@@ -810,14 +811,13 @@ dummy_radiology <- function(
 
     df1[, ordered_date_time := substr(as.character(ordered_date_time), 1, 16)]
     df1[, performed_date_time := substr(as.character(performed_date_time), 1, 16)]
-
   } else {
     ####### if `cohort` is not provided, use parameters to get `df1` #######
     # check that `time_period` is valid
     time_period <- as.character(time_period)
 
     # get the start and end date
-     if (grepl("^\\d{4}$", time_period[1])) {
+    if (grepl("^\\d{4}$", time_period[1])) {
       start_date <- as.Date(paste0(time_period[1], "-01-01"))
     } else {
       start_date <- as.Date(time_period[1])
@@ -887,7 +887,6 @@ dummy_radiology <- function(
     # remove seconds from date times and turn it into a string
     df1[, ordered_date_time := substr(as.character(ordered_date_time), 1, 16)]
     df1[, performed_date_time := substr(as.character(performed_date_time), 1, 16)]
-
   }
 
   # only include the relevant columns from `df1`
@@ -927,5 +926,4 @@ dummy_radiology <- function(
   df1 <- df1[, -c("p", "p_no_mri")]
 
   return(df1[order(df1$genc_id)])
-
 }
