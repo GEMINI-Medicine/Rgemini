@@ -666,17 +666,22 @@ dummy_admdad <- function(id, admtime) {
 #'  A connection to the GEMINI database, used to access the 2021 Canadian census dissemination codes.
 #' It is required when `da21uid` is missing.
 #'
-#' @param n (`integer`)\cr Number of unique encounter IDs to simulate. In this data table, each ID occurs once.
-#'
+#' @param nid (`integer`)\cr Number of unique encounter IDs to simulate. In this data table, each ID occurs once.
+#' It is optional when `cohort` is provided.
+#' 
 #' @param n_hospitals (`integer`)\cr Number of hospitals in simulated dataset.
+#' IT is optional when `cohort` is provided.
 #'
-#' @param da21uid (`integer`)\cr Allows the user to customize which location ID to include in the output.
+#' @param da21uid (`integer` | `vector`)\cr Allows the user to customize which location ID to include in the output.
 #' It is required when `dbcon` is missing. It can be an integer or an integer vector.
 #'
 #' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
 #'
-#' @param cohort (`data.frame`) Optional, an existing data table similar to `admdad` in GEMINI
-#' containing administrative information, at least the GEMINI encounter ID and hospital number.
+#' @param cohort (`data.frame | data.table`) Optional, an existing data table similar to `admdad` in GEMINI
+#' with at least the following columns:
+#' - `genc_id` (`integer`): GEMINI encounter ID
+#' - `hospital_num` (`integer`): Hospital ID
+#' If `cohort` is provided, `nid` and `n_hospital` inputs are not used.
 #'
 #' @return (`data.table`)\cr
 #' A data.table object similar to the "locality_variables" table that contains the following fields
@@ -687,13 +692,27 @@ dummy_admdad <- function(id, admtime) {
 #' @export
 
 dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = NULL, da21uid = NULL, seed = NULL) {
+  ### check inputs
   if (is.null(dbcon) && is.null(da21uid)) {
-    print("A DB connection or list of dissemination codes is required.")
-    stop()
+    stop("A DB connection or list of dissemination codes is required.")
+  } else if (!is.null(da21uid)) {
+    check_input(da21uid, "integer")
+  } else {
+    check_input(dbcon, c("DBI", "dbcon", "PostgreSQL"))
   }
 
-  if (!is.null(seed)) {
+  if (is.numeric(seed)) {
     set.seed(seed)
+  }
+
+  if (!is.null(cohort)) {
+    check_input(cohort,
+      c("data.frame", "data.table"),
+      colnames = c("genc_id", "hospital_num"),
+      coltypes = c("integer", "integer")
+    )
+  } else {
+    check_input(list(nid, n_hospitals))
   }
 
   # get dissemination code lookup table
@@ -712,14 +731,14 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
     # set up df1 if `cohort` is included
     cohort <- as.data.table(cohort)
     df1 <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 1, seed = seed)
-    n <- length(unique(df1$genc_id))
+    nid <- uniqueN(df1$genc_id)
     n_hospitals <- length(unique(df1$hospital_num))
 
     # only include the genc_id and hospital_num columns from `cohort`
     df1 <- df1[, c("genc_id", "hospital_num")]
   } else {
-    # generate from n and n_hospitals
-    df1 <- generate_id_hospital(n, n_hospitals, avg_repeats = 1, seed = seed)
+    # generate a cohort from nid and n_hospitals
+    df1 <- generate_id_hospital(nid, n_hospitals, avg_repeats = 1, seed = seed)
   }
 
   if (!is.null(da21uid)) {
@@ -767,7 +786,7 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
 }
 
 #' @title
-#' Generate simulated physician data
+#' Generate simulated physicians data
 #'
 #' @description
 #' This function creates a dummy dataset with a subset of variables that
@@ -775,15 +794,20 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
 #' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #'
 #'
-#' @param n (`integer`)\cr Number of unique encounter IDs to simulate.
-#'
+#' @param nid (`integer`)\cr Number of unique encounter IDs to simulate.
+#' Optional if `cohort` is provided.
+#' 
 #' @param n_hospitals (`integer`)\cr Number of hospitals in simulated dataset.
+#' Optional if `cohort` is provided.
 #'
 #' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
 #'
-#' @param cohort (`data.frame`) Optional, an existing data table similar to `admdad` in GEMINI
-#' containing administrative information, at least the GEMINI encounter ID and hospital number.
-#'
+#' @param cohort (`data.frame | data.table`) Optional, an existing data table similar to `admdad` in GEMINI
+#' with at least the following columns:
+#' - `genc_id` (`integer`): GEMINI encounter ID
+#' - `hospital_num` (`integer`): Hospital ID
+#' If `cohort` is provided, `nid` and `n_hospital` inputs are not used.
+#' 
 #' @return (`data.table`)\cr A data.table object similar to the "physicians" table that contains the
 #' following fields (if `cohort` is included, these are in addition to any columns in `cohort`):
 #' - `genc_id` (`integer`): GEMINI encounter ID
@@ -802,6 +826,21 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
 dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed = NULL) {
   if (!is.null(seed)) {
     set.seed(seed)
+  }
+
+  ####### checks for valid inputs #######
+  if (!is.null(cohort)) { # if `cohort` is provided
+    check_input(cohort,
+      c("data.frame", "data.table"),
+      colnames = c("genc_id", "hospital_num"),
+      coltypes = c("integer", "integer")
+    )
+  } else { # when `cohort` is not provided
+    check_input(list(nid, n_hospitals), "integer")
+
+    if (nid < n_hospitals) {
+      stop("Number of encounters must be greater than or equal to the number of hospitals")
+    }
   }
 
   if (!is.null(cohort)) {
