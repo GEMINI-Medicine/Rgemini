@@ -383,15 +383,19 @@ dummy_ipadmdad <- function(nid = 1000,
                            n_hospitals = 10,
                            time_period = c(2015, 2023),
                            seed = NULL) {
-  # Check that inputs are valid
+  ############## CHECKS: for valid inputs: `n_id`, `n_hospitals`, `time_period`
   check_input(list(nid, n_hospitals), "integer")
+  check_input(time_period, "integer", argtype = "integer", length = 2)
   if (!all(check_date_format(time_period[1]), check_date_format(time_period[2]))) {
     stop("An invalid date input was provided.")
   }
-  ############### CHECKS: Make sure `nid` is at least n_hospitals * length(time_period)
+  # Make sure `nid` is at least n_hospitals * length(time_period)
   if (nid < n_hospitals * length(time_period)) {
     stop("Invalid user input.
     Number of encounters `nid` should at least be equal to `n_hospitals` * `length(time_period)`")
+  }
+  if (time_period[1] > time_period[2]) {
+    stop("The start date is after the end date. Stopping")
   }
 
   # set the seed if the input provided is not NULL
