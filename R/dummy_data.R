@@ -675,6 +675,7 @@ dummy_admdad <- function(id, admtime) {
 #'
 #' @param n_hospitals (`integer`)\cr Number of hospitals in simulated dataset.
 #' IT is optional when `cohort` is provided.
+#' IT is optional when `cohort` is provided.
 #'
 #' @param da21uid (`integer` | `vector`)\cr Allows the user to customize which location ID to include in the output.
 #' It is required when `dbcon` is missing. It can be an integer or an integer vector.
@@ -688,8 +689,7 @@ dummy_admdad <- function(id, admtime) {
 #' If `cohort` is provided, `nid` and `n_hospital` inputs are not used.
 #'
 #' @return (`data.table`)\cr
-#' A data.table object similar to the "locality_variables" table that contains the following fields
-#' (if `cohort` is included, these are in addition to any columns in `cohort`):
+#' A data.table object similar to the "locality_variables" table that contains the following fields:
 #' - `genc_id` (`integer`): GEMINI encounter ID
 #' - `da21uid` (`integer`): Dissemination area ID based on 2021 Canadian census data using PCCF Version 8A
 #'
@@ -819,7 +819,7 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
 #' If `cohort` is provided, `nid` and `n_hospital` inputs are not used.
 #'
 #' @return (`data.table`)\cr A data.table object similar to the "physicians" table that contains the
-#' following fields (if `cohort` is included, these are in addition to any columns in `cohort`):
+#' following fields:
 #' - `genc_id` (`integer`): GEMINI encounter ID
 #' - `hospital_num` (`integer`): Hospital ID number
 #' - `admitting_physician_gim` (`logical`): Whether the admitting physician attends a general medicine ward
