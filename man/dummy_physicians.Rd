@@ -2,19 +2,26 @@
 % Please edit documentation in R/dummy_data.R
 \name{dummy_physicians}
 \alias{dummy_physicians}
-\title{Generate simulated physician data}
+\title{Generate simulated physicians data}
 \usage{
 dummy_physicians(nid = 1000, n_hospitals = 10, cohort = NULL, seed = NULL)
 }
 \arguments{
-\item{n_hospitals}{(\code{integer})\cr Number of hospitals in simulated dataset.}
+\item{nid}{(\code{integer})\cr Number of unique encounter IDs to simulate.
+Optional if \code{cohort} is provided.}
 
-\item{cohort}{(\code{data.frame}) Optional, an existing data table similar to \code{admdad} in GEMINI
-containing administrative information, at least the GEMINI encounter ID and hospital number.}
+\item{n_hospitals}{(\code{integer})\cr Number of hospitals in simulated dataset.
+Optional if \code{cohort} is provided.}
+
+\item{cohort}{(\code{data.frame | data.table}) Optional, an existing data table similar to \code{admdad} in GEMINI
+with at least the following columns:
+\itemize{
+\item \code{genc_id} (\code{integer}): GEMINI encounter ID
+\item \code{hospital_num} (\code{integer}): Hospital ID
+If \code{cohort} is provided, \code{nid} and \code{n_hospital} inputs are not used.
+}}
 
 \item{seed}{(\code{integer})\cr Optional, a number to be used to set the seed for reproducible results.}
-
-\item{n}{(\code{integer})\cr Number of unique encounter IDs to simulate.}
 }
 \value{
 (\code{data.table})\cr A data.table object similar to the "physicians" table that contains the

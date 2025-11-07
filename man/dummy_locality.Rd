@@ -18,17 +18,24 @@ dummy_locality(
 A connection to the GEMINI database, used to access the 2021 Canadian census dissemination codes.
 It is required when \code{da21uid} is missing.}
 
-\item{n_hospitals}{(\code{integer})\cr Number of hospitals in simulated dataset.}
+\item{nid}{(\code{integer})\cr Number of unique encounter IDs to simulate. In this data table, each ID occurs once.
+It is optional when \code{cohort} is provided.}
 
-\item{cohort}{(\code{data.frame}) Optional, an existing data table similar to \code{admdad} in GEMINI
-containing administrative information, at least the GEMINI encounter ID and hospital number.}
+\item{n_hospitals}{(\code{integer})\cr Number of hospitals in simulated dataset.
+IT is optional when \code{cohort} is provided.}
 
-\item{da21uid}{(\code{integer})\cr Allows the user to customize which location ID to include in the output.
+\item{cohort}{(\code{data.frame | data.table}) Optional, an existing data table similar to \code{admdad} in GEMINI
+with at least the following columns:
+\itemize{
+\item \code{genc_id} (\code{integer}): GEMINI encounter ID
+\item \code{hospital_num} (\code{integer}): Hospital ID
+If \code{cohort} is provided, \code{nid} and \code{n_hospital} inputs are not used.
+}}
+
+\item{da21uid}{(\code{integer} | \code{vector})\cr Allows the user to customize which location ID to include in the output.
 It is required when \code{dbcon} is missing. It can be an integer or an integer vector.}
 
 \item{seed}{(\code{integer})\cr Optional, a number to be used to set the seed for reproducible results.}
-
-\item{n}{(\code{integer})\cr Number of unique encounter IDs to simulate. In this data table, each ID occurs once.}
 }
 \value{
 (\code{data.table})\cr

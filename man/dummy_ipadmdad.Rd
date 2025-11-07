@@ -4,10 +4,15 @@
 \alias{dummy_ipadmdad}
 \title{Simulate ipadmdad data}
 \usage{
-dummy_ipadmdad(n = 1000, n_hospitals = 10, time_period = c(2015, 2023))
+dummy_ipadmdad(
+  nid = 1000,
+  n_hospitals = 10,
+  time_period = c(2015, 2023),
+  seed = NULL
+)
 }
 \arguments{
-\item{n}{(\code{integer})\cr Total number of encounters (\code{genc_ids}) to be
+\item{nid}{(\code{integer})\cr Total number of encounters (\code{genc_ids}) to be
 simulated.}
 
 \item{n_hospitals}{(\code{integer})\cr
@@ -98,6 +103,6 @@ real GEMINI dataset.
 }
 \examples{
 # Simulate 10,000 encounters from 10 hospitals for fiscal years 2018-2020.
-ipadmdad <- dummy_ipadmdad(n = 10000, n_hospitals = 10, time_period = c(2018, 2020))
+ipadmdad <- dummy_ipadmdad(nid = 10000, n_hospitals = 10, time_period = c(2018, 2020))
 
 }
