@@ -689,8 +689,8 @@ dummy_admdad <- function(id, admtime) {
 #' - `performed_date_time` (`character`): The date and time the radiology test was performed
 #' @examples
 #' cohort <- dummy_ipadmdad()
+#' dummy_radiology(cohort = cohort)
 #' dummy_radiology(n = 1000, n_hospitals = 10, time_period = c(2020, 2023))
-#' dummy_radiology(cohort = cohort))
 #'
 #' @export
 
@@ -787,7 +787,7 @@ dummy_radiology <- function(
 
     df1[, perform_gap := rlnorm_trunc(
       .N,
-      meanlog = 1.3, sdlog = 1.9, min_n = 0, max_n = max_perform_gap
+      meanlog = 1.3, sdlog = 1.9, min = 0, max = max_perform_gap
     )]
 
     df1[sample(nrow(df1), round(0.06 * nrow(df1))), perform_gap := 0] # set some values to 0
@@ -801,7 +801,7 @@ dummy_radiology <- function(
       dhours(
         rlnorm_trunc(
           .N,
-          meanlog = 1.3, sdlog = 1.9, min_n = 0, max_n = as.numeric(
+          meanlog = 1.3, sdlog = 1.9, min = 0, max = as.numeric(
             difftime(discharge_date_time, ordered_date_time, units = "hours"))
         )
       )]
