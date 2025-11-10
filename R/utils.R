@@ -1329,7 +1329,9 @@ sample_time_shifted_lnorm <- function(nrow, meanlog, sdlog, min = 0, max = 48, s
 #' @param include_prop (`numeric`)\cr A number between 0 and 1,
 #' for the proportion of unique rows in `cohort` to include in the final data table
 #'
-#' @param cohort (`data.table`)\cr Optional, resembling the GEMINI "admdad" table to build the returned data table from
+#' @param cohort (`data.table`)\cr Optional, resembling the GEMINI "admdad" table with the columns:
+#' - `genc_id` (`integer`): GEMINI encounter ID
+#' - `hospital_num` (`integer`): Hospital ID
 #'
 #' @param by_los (`logical`)\cr Optional, whether to assign more repeats to longer hospital stays or not.
 #' Default to FALSE. When TRUE, two additional columns are required in the input `cohort` dataset -

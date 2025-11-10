@@ -26,7 +26,11 @@ generate_id_hospital(
 \item{include_prop}{(\code{numeric})\cr A number between 0 and 1,
 for the proportion of unique rows in \code{cohort} to include in the final data table}
 
-\item{cohort}{(\code{data.table})\cr Optional, resembling the GEMINI "admdad" table to build the returned data table from}
+\item{cohort}{(\code{data.table})\cr Optional, resembling the GEMINI "admdad" table with the columns:
+\itemize{
+\item \code{genc_id} (\code{integer}): GEMINI encounter ID
+\item \code{hospital_num} (\code{integer}): Hospital ID
+}}
 
 \item{by_los}{(\code{logical})\cr Optional, whether to assign more repeats to longer hospital stays or not.
 Default to FALSE. When TRUE, two additional columns are required in the input \code{cohort} dataset -
