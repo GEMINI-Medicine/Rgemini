@@ -326,8 +326,6 @@ dummy_diag <- function(
 #'
 #' @param seed (`integer`)\cr Optional, a number to assign the seed to.
 #'
-#' @param seed (`integer`)\cr Optional, a number to assign the seed to.
-#'
 #' @return (`data.frame|data.table`)\cr A data frame or data table object similar to the "ipadmdad" table
 #' containing the following fields:
 #' - `genc_id` (`integer`): GEMINI encounter ID
