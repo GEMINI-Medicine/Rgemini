@@ -826,7 +826,8 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
 #'
 #' @examples
 #' dummy_physicians(nid = 1000, n_hospitals = 10, seed = 1)
-#'
+#' dummy_physicians(cohort = dummy_ipadmdad(), seed = 2)
+#' 
 #' @export
 
 dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed = NULL) {
@@ -957,12 +958,9 @@ dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed =
     sapply(setdiff(phy_set, c(mrp_cpso_mapped)), sample_from_col)
   )]
 
-  # return df1 without the columns with proportions
-  df1 <- df1[, -c(
-    "admitting_phy_gim_NA", "discharging_phy_gim_NA", "adm_phy_cpso_mapped_NA",
-    "dis_phy_cpso_mapped_NA", "mrp_cpso_mapped_NA", "admitting_phy_gim_Y", "discharging_phy_gim_Y",
-    "n_physicians", "phy_set"
-  )]
-
-  return(df1[order(df1$genc_id)])
+  return(df1[
+    order(df1$genc_id), # return only with required columns
+    c("genc_id", "hospital_num", "admitting_physician_gim", "discharging_physician_gim", "adm_phy_cpso_mapped",
+    "mrp_cpso_mapped")
+  ])
 }
