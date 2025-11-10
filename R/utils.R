@@ -1425,3 +1425,12 @@ check_date_format <- function(x) {
     grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", x_trim) | grepl("^[0-9]{4}$", x_trim)
   )
 }
+
+check_date_time_format <- function(x) {
+  x <- as.character(x)
+  x_trim <- trimws(x)
+  x_trim <- sub("^(.{16}).*", "\\1", x_trim) # remove seconds from date time
+  return(
+    grepl("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}$", x_trim)
+  )
+}
