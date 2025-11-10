@@ -1211,8 +1211,8 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
       colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
       coltypes = c("integer", "integer", "", "")
     )
-    if (!all(check_date_format(c(cohort$admission_date_time, cohort$discharge_date_time)))) {
-      stop("An invalid date input was provided in cohort.")
+    if (!all(check_date_time_format(c(cohort$admission_date_time, cohort$discharge_date_time)))) {
+      stop("An invalid admission and/or discharge date time was provided in cohort.")
     }
   } else { # when `cohort` is not provided
     check_input(list(nid, n_hospitals), "integer")
