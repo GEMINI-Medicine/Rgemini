@@ -728,8 +728,7 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
     check_input(end_date, c("Date", "POSIXct", "POSIXt"))
 
     if (start_date > end_date) {
-      print("Time period needs to end later than it starts")
-      stop()
+      stop("Time period needs to end later than it starts")
     }
   }
 
@@ -995,23 +994,24 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
       stop("An invalid admission and/or discharge date time was provided in cohort.")
     }
   } else { # when `cohort` is not provided
+
+    # `nid` and `n_hospitals` are integers
     check_input(list(nid, n_hospitals), "integer")
 
-    # check if time_period is provided/has both start and end dates
+    if (nid < n_hospitals) {
+      stop("Number of encounters must be greater than or equal to the number of hospitals")
+    }
+
+    # checks for time period:
+    # not NULL, not NA, and has a length of 2
     if (any(is.null(time_period)) || any(is.na(time_period)) || length(time_period) != 2) {
-      stop("Please provide time_period") # check for date formatting
+      stop("Please provide time_period as a vector of length 2") # check for date formatting
     } else if (!check_date_format(time_period[1]) || !check_date_format(time_period[2])) {
       stop("Time period is in the incorrect date format, please fix")
     }
 
     if (as.Date(time_period[1]) > as.Date(time_period[2])) {
-      print("Time period needs to end later than it starts")
-      stop()
-    }
-
-    if (nid < n_hospitals) {
-      print("Number of encounters must be greater than or equal to the number of hospitals")
-      stop()
+      stop("Time period needs to end later than it starts")
     }
   }
 
@@ -1215,22 +1215,26 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
       stop("An invalid admission and/or discharge date time was provided in cohort.")
     }
   } else { # when `cohort` is not provided
+
+    # `nid` and `n_hospitals` are integers
     check_input(list(nid, n_hospitals), "integer")
 
-    # check for correct date formatting
-    if (!all(check_date_format(time_period[1]), check_date_format(time_period[2]))) {
-      stop("An invalid date input was provided.")
+    if (nid < n_hospitals) {
+      stop("Number of encounters must be greater than or equal to the number of hospitals")
+    }
+
+    # checks for time period:
+    # not NULL, not NA, and has a length of 2
+    if (any(is.null(time_period)) || any(is.na(time_period)) || length(time_period) != 2) {
+      stop("Please provide time_period as a vector of length 2") # check for date formatting
+    } else if (!check_date_format(time_period[1]) || !check_date_format(time_period[2])) {
+      stop("Time period is in the incorrect date format, please fix")
     }
 
     if (as.Date(time_period[1]) > as.Date(time_period[2])) {
-      print("Time period needs to end later than it starts")
-      stop()
+      stop("Time period needs to end later than it starts")
     }
 
-    if (nid < n_hospitals) {
-      print("Number of encounters must be greater than or equal to the number of hospitals")
-      stop()
-    }
   }
 
   if (!is.null(cohort)) {
