@@ -827,7 +827,7 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
 #' @examples
 #' dummy_physicians(nid = 1000, n_hospitals = 10, seed = 1)
 #' dummy_physicians(cohort = dummy_ipadmdad(), seed = 2)
-#' 
+#'
 #' @export
 
 dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed = NULL) {
