@@ -696,24 +696,22 @@ dummy_admdad <- function(id, admtime) {
 #' dummy_transfusion(n = 100, n_hospitals = 1, blood_product_list = c("0", "35605159", "35615187"))
 #'
 #' @export
-#' 
+#'
 dummy_transfusion <- function(
   nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), cohort = NULL, blood_product_list = NULL, seed = NULL
-  ) {
-
-    ### input checks for varaible types and validity ###
-    if (!is.null(cohort)) { # if `cohort` is provided
+) {
+  ### input checks for varaible types and validity ###
+  if (!is.null(cohort)) { # if `cohort` is provided
     check_input(cohort,
-        c("data.frame", "data.table"),
-        colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
-        coltypes = c("integer", "integer", "", "")
+      c("data.frame", "data.table"),
+      colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
+      coltypes = c("integer", "integer", "", "")
     )
 
     if (!all(check_date_time_format(c(cohort$admission_date_time, cohort$discharge_date_time)))) {
-        stop("An invalid IP admission and/or discharge date time input was provided in cohort.")
+      stop("An invalid IP admission and/or discharge date time input was provided in cohort.")
     }
-
-    } else { # when `cohort` is not provided
+  } else { # when `cohort` is not provided
     check_input(list(nid, n_hospitals), "integer")
 
     #  check if time_period is provided/has both start and end dates
@@ -732,276 +730,278 @@ dummy_transfusion <- function(
     }
   }
 
-    if (!is.null(seed)) {
-        set.seed(seed)
-    }
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
 
-    if (!is.null(cohort)) {
-        # if cohort is provided, sample ordered and performed date time based on IP admission and discharge times
-        cohort <- as.data.table(cohort)
+  if (!is.null(cohort)) {
+    # if cohort is provided, sample ordered and performed date time based on IP admission and discharge times
+    cohort <- as.data.table(cohort)
 
-        cohort$admission_date_time <- as.POSIXct(cohort$admission_date_time,
-            format = "%Y-%m-%d %H:%M",
-            tz = "UTC"
-        )
-
-        cohort$discharge_date_time <- as.POSIXct(cohort$discharge_date_time,
-            format = "%Y-%m-%d %H:%M",
-            tz = "UTC"
-        )
-
-        # a proportion of 0.1 of IP admissions have transfusions
-        # on average, they have 4.9 transfusions
-        df1 <- generate_id_hospital(cohort = cohort, 1, avg_repeats = 4.9, seed = seed)
-        n <- length(unique(df1$genc_id))
-        n_hospitals <- length(unique(df1$hospital_num))
-
-        ##### Sample `issue_date_time` #####
-        # uniformly sample a date between IP admission and discharge
-        # add a time based on the skewed normal distribution
-        df1[, issue_date_time := as.Date(round(runif(.N,
-            min = as.Date(admission_date_time),
-            max = as.Date(discharge_date_time)
-        ))) +
-            dhours(sample_time_shifted(.N, 8.7, 9.1, 2.7, max = 30, seed = seed))]
-
-        # if `issue_date_time` < `admission_date_time`, re-sample
-        while (nrow(df1[issue_date_time < admission_date_time, ] > 0)) {
-            df1[issue_date_time < admission_date_time, issue_date_time := admission_date_time +
-                dhours(rlnorm_trunc(.N, meanlog = 4.52, sdlog = 1.91, min = 0, max = 38500, seed = seed))]
-            # add time to `admission_date_time`
-        }
-
-        # if `issue_date_time` > `discharge_date_time`, re-sample
-        df1[issue_date_time > discharge_date_time, issue_date_time := as.Date(admission_date_time) +
-            dhours(sample_time_shifted(.N, 8.7, 9.1, 2.7, max = 30, seed = seed))]
-
-        # then set to discharge_date_time if re-sampling does not fix it
-        df1[issue_date_time > discharge_date_time, issue_date_time := discharge_date_time]
-    } else {
-        # set up all required variables based on input if no cohort is provided
-        # get the start and end dates
-        time_period <- as.character(time_period)
-
-        if (grepl("^\\d{4}$", time_period[1])) {
-            start_date <- as.Date(paste0(time_period[1], "-01-01"))
-        } else {
-            start_date <- as.Date(time_period[1])
-        }
-
-        if (grepl("^\\d{4}$", time_period[1])) {
-            end_date <- as.Date(paste0(time_period[2], "-01-01"))
-        } else {
-            end_date <- as.Date(time_period[2])
-        }
-
-        # create data.table with genc_id and hospital_num
-        # average 4.9 repeats per genc_id
-        df1 <- generate_id_hospital(nid = nid, n_hospitals = n_hospitals, avg_repeats = 4.9, seed = seed)
-
-        ##### sample `issue_date_time` #####
-        df1[, min_issue_date := as.Date(round(runif(
-          1,
-          min = as.numeric(start_date),
-          max = as.numeric(end_date)
-        ))), by = genc_id]
-
-        # set range of time for repeated transfusions
-        # for each hospital stay, transfusions should not be too spaced out
-        df1[, max_issue_date := min_issue_date +
-            lubridate::days(ceiling(rlnorm(1, meanlog = 0.59, sdlog = 1.99))), by = genc_id]
-
-        # ensure that transfusions do not go beyond the end date
-        df1[as.numeric(max_issue_date) > as.numeric(end_date), max_issue_date := end_date]
-
-        # get all issued date times
-        df1[, issue_date_time := as.Date(round(runif(.N,
-            min = as.numeric(min_issue_date),
-            as.numeric(max_issue_date)
-        ))) +
-            dhours(sample_time_shifted(.N, 8.7, 9.1, 2.7, max = 30, seed = seed))]
-    }
-
-    # remove seconds and turn into character
-    df1[, issue_date_time := substr(as.character(issue_date_time), 1, 16)]
-
-    ##### get `blood_product_mapped_omop` #####
-    # mapping the most common raw names of blood products to OMOP code
-    # also get their average relative proportions
-    blood_product_lookup <- data.table(
-        "blood_product_mapped_omop" = c(
-            "35605159", "35615187", "4022171", "4022173", "4023915", "4023918", "4023919", "4024248", "4024639",
-            "40492966", "4125930", "4130829", "4137859", "4139680", "4144461", "4145204", "4168087", "4215476",
-            "4253788", "42538248", "4300185", "43561947", "608105"),
-        "blood_product_raw" = c(
-            "C1-ESTERASE", "Intravenous Immune Globulin", "Plasma", "Red Blood Cells", "Albumin",
-            "Pooled Cryoprecipitate", "F9", "CST", "Apheresis Platelets", "AUTO: HPC Apheresis Thaw",
-            "Plasma Expanders", "Pooled Platelets", "SAGM Red blood cells, LR", "Anti-thrombin 3",
-            "E6848 WASHED RBC LR", "E3678 Granulocytes Apheresis, Irradiated (HQ)", "VWF8",
-            "Coag Inhibitor", "Factors", "Surgiflo Thrombin", "SUB", "OCTA", "FFP"),
-        prob = c(
-            1.74e-4, 2.17e-2, 7.61e-2, 4.3e-1, 2.33e-1, 4.76e-3, 8.82e-3, 3.6e-3, 1.06e-2, 3.11e-4, 6.51e-5,
-            8.55e-2, 1.05e-1, 4.83e-5, 2.15e-4, 3.15e-6, 1.68e-5, 1.9e-4, 1.31e-2, 6.83e-5, 6.45e-3, 1.13e-4,
-            1.61e-4)
+    cohort$admission_date_time <- as.POSIXct(cohort$admission_date_time,
+      format = "%Y-%m-%d %H:%M",
+      tz = "UTC"
     )
 
-    if (is.null(blood_product_list)) {
-        all_blood_product <- blood_product_lookup$blood_product_mapped_omop
+    cohort$discharge_date_time <- as.POSIXct(cohort$discharge_date_time,
+      format = "%Y-%m-%d %H:%M",
+      tz = "UTC"
+    )
 
-        # each hospital does 1-16 types of unique blood products
-        # used truncated skewed normal to get this number
-        df1[, n_products := floor(rsn_trunc(1, 12.5, 4.7, -1.9, 1, 16)), by = hospital_num]
+    # a proportion of 0.1 of IP admissions have transfusions
+    # on average, they have 4.9 transfusions
+    df1 <- generate_id_hospital(cohort = cohort, 1, avg_repeats = 4.9, seed = seed)
+    n <- length(unique(df1$genc_id))
+    n_hospitals <- length(unique(df1$hospital_num))
 
-        # hospital-level variation: set the top 1-2 types of transfusions per hospital
-        # for other transfusions, sample randomly from the assigned set
-        df1[, first_code := sample(c("4022173", "4023915", "4137859"),
-            1,
-            replace = TRUE, prob = c(0.7, 0.05, 0.25)
-        ), by = hospital_num]
+    ##### Sample `issue_date_time` #####
+    # uniformly sample a date between IP admission and discharge
+    # add a time based on the skewed normal distribution
+    df1[, issue_date_time := as.Date(round(runif(.N,
+      min = as.Date(admission_date_time),
+      max = as.Date(discharge_date_time)
+    ))) +
+      dhours(sample_time_shifted(.N, 8.7, 9.1, 2.7, max = 30, seed = seed))]
 
-        # proportion of the most common code within a hospital
-        df1[, prop_first := runif(1, 0.55, 1), by = hospital_num]
-
-        df1[n_products == 1, prop_first := 1]
-
-        # proportion of the second most common code
-        df1[, sum_first_second := ifelse(prop_first[1] == 1,
-            1,
-            rsn_trunc(1, 0.94, 0.13, -2.1, prop_first[1], 1)
-        ), by = hospital_num]
-
-        second_codes <- data.table(
-            codes = c("4137859", "35615187", "4022171", "4023915", "4130829", "4130829"),
-            probs = c(0.1, 0.03, 0.1, 0.6, 0.1, 0.07)
-        )
-
-        df1[, second_code := {
-            available <- setdiff(second_codes$codes, first_code)
-            prob <- second_codes$probs[match(available, second_codes$codes)]
-            sample(available, 1, prob = prob, replace = TRUE)
-        }, by = hospital_num]
-
-        # for hospitals with only one blood product type or more
-        df1[, prop_second := ifelse(n_products >= 2, max(sum_first_second - prop_first, 0), 0), by = hospital_num]
-
-        df1[n_products == 2, prop_second := 1 - prop_first]
-
-        # get all other blood products by hospital
-        # based on probabilities from the actual data table
-        df1[, other_product := lapply(
-            n_products,
-            function(x) {
-                list(sample(
-                    setdiff(all_blood_product, c(
-                        first_code,
-                        second_code
-                    )),
-                    max(0, x - 2),
-                    prob = blood_product_lookup[blood_product_mapped_omop %in% (
-                      setdiff(all_blood_product, c(first_code, second_code)))]$prob,
-                    replace = FALSE
-                ))
-            }
-        ), by = hospital_num]
-
-        # sample a large proportion of the most common
-        # then for some of the rest, get second most common
-        # other codes are filled with the top 90% + of codes
-        # most genc_id only get one type of transfusion
-        df1[, blood_product_mapped_omop := ifelse(rbinom(1, 1, prop_first),
-            first_code,
-            ifelse(rbinom(1, 1, prop_second),
-                second_code,
-                sample(c(second_code, "4022173"), 1)
-                )
-            ), by = genc_id]
-
-        # fill remaining codes
-        # ~0.04 have the remaining codes
-        df1[genc_id %in% sample(unique(genc_id), round(0.05 * n)), blood_product_mapped_omop := lapply(
-            other_product,
-            function(x) {
-              ifelse(identical(x, character(0)), first_code,
-              sample(
-                x,
-                1, # use accurate proportions but normalize to sum to 1
-                prob = blood_product_lookup[blood_product_mapped_omop %in% x]$prob /
-                sum(blood_product_lookup[blood_product_mapped_omop %in% x]$prob))
-            )
-          }
-        ), by = genc_id]
-
-        df1[, genc_occurrence := seq_len(.N), by = genc_id]
-
-        # a proportion of 0.05 of genc_id have multiple types of transfusions
-        # account for this by another round of random sampling by `genc_id`
-        df1[genc_id %in% sample(
-          unique(genc_id), round(0.05 * n)
-        ) & genc_occurrence > 1, blood_product_mapped_omop := sample(
-          setdiff(all_blood_product, blood_product_mapped_omop), .N,
-          replace = TRUE
-        )]
-
-        # assign some 0 and NA
-        df1[hospital_num %in% sample(
-          unique(hospital_num), round(n_hospitals / 30)
-        ), blood_product_mapped_omop := ifelse(rbinom(.N, 1, 0.05), "0", blood_product_mapped_omop)]
-
-        # NA for 1/30 hospitals
-        df1[hospital_num %in% sample(
-          unique(hospital_num), round(n_hospitals / 30)
-        ), blood_product_mapped_omop := ifelse(rbinom(.N, 1, 0.01), NA, blood_product_mapped_omop)]
-
-        # a few hospitals have one unique code
-        df1[hospital_num %in% sample(
-          unique(hospital_num), round(n_hospitals / 15)
-        ), blood_product_mapped_omop := "4137859"]
-
-        df1[hospital_num %in% sample(
-          unique(hospital_num), round(n_hospitals / 30)
-        ), blood_product_mapped_omop := "4022173"]
-
-    } else {
-        # if given a string for blood_product_list, turn it into a vector for sampling
-        if (length(blood_product_list) == 1 && !(is.na(blood_product_list))) {
-            blood_product_list <- c(blood_product_list)
-        }
-
-        # verify the validity of user-entered blood products
-        invalid <- setdiff(blood_product_list, blood_product_lookup$blood_product_mapped_omop)
-
-        if (length(invalid) > 0) {
-            warning(paste(
-              "User input contains at least one invalid blood product OMOP code:",
-              paste(invalid, collapse = ", ")
-            ))
-        }
-
-        # if the blood_product_mapped_omop is given by the user, sample from that list
-        df1[, blood_product_mapped_omop := sample(blood_product_list, .N, replace = TRUE)]
-
-        # create a new lookup table based on user-provided values
-        given_product_table <- data.table("blood_product_mapped_omop" = blood_product_list)
-
-        # get `blood_product_raw` by joining with input `blood_product_mapped_omop`
-        blood_product_lookup <- left_join(
-          given_product_table, blood_product_lookup,
-          by = join_by(blood_product_mapped_omop)
-        )
-
-        # if the given blood_product_mapped_omop is not in the original lookup table, fill it with this message:
-        blood_product_lookup[is.na(blood_product_raw), blood_product_raw := "Invalid blood product OMOP provided"]
-
+    # if `issue_date_time` < `admission_date_time`, re-sample
+    while (nrow(df1[issue_date_time < admission_date_time, ] > 0)) {
+      df1[issue_date_time < admission_date_time, issue_date_time := admission_date_time +
+        dhours(rlnorm_trunc(.N, meanlog = 4.52, sdlog = 1.91, min = 0, max = 38500, seed = seed))]
+      # add time to `admission_date_time`
     }
 
-    ##### get `blood_product_mapped_raw` #####
-    # set blood_product_raw by joining `df1` with the lookup table
-    df1 <- left_join(df1, blood_product_lookup, by = join_by(blood_product_mapped_omop))
-    df1[blood_product_mapped_omop == "0", blood_product_raw := "FAR"]
-    df1[is.na(blood_product_mapped_omop), blood_product_raw := NA]
+    # if `issue_date_time` > `discharge_date_time`, re-sample
+    df1[issue_date_time > discharge_date_time, issue_date_time := as.Date(admission_date_time) +
+      dhours(sample_time_shifted(.N, 8.7, 9.1, 2.7, max = 30, seed = seed))]
 
-    return(df1[
-      order(df1$genc_id),
-      c("genc_id", "hospital_num", "issue_date_time", "blood_product_mapped_omop", "blood_product_raw")
-    ]) # only include relevant columns in the final output
+    # then set to discharge_date_time if re-sampling does not fix it
+    df1[issue_date_time > discharge_date_time, issue_date_time := discharge_date_time]
+  } else {
+    # set up all required variables based on input if no cohort is provided
+    # get the start and end dates
+    time_period <- as.character(time_period)
+
+    if (grepl("^\\d{4}$", time_period[1])) {
+      start_date <- as.Date(paste0(time_period[1], "-01-01"))
+    } else {
+      start_date <- as.Date(time_period[1])
+    }
+
+    if (grepl("^\\d{4}$", time_period[1])) {
+      end_date <- as.Date(paste0(time_period[2], "-01-01"))
+    } else {
+      end_date <- as.Date(time_period[2])
+    }
+
+    # create data.table with genc_id and hospital_num
+    # average 4.9 repeats per genc_id
+    df1 <- generate_id_hospital(nid = nid, n_hospitals = n_hospitals, avg_repeats = 4.9, seed = seed)
+
+    ##### sample `issue_date_time` #####
+    df1[, min_issue_date := as.Date(round(runif(
+      1,
+      min = as.numeric(start_date),
+      max = as.numeric(end_date)
+    ))), by = genc_id]
+
+    # set range of time for repeated transfusions
+    # for each hospital stay, transfusions should not be too spaced out
+    df1[, max_issue_date := min_issue_date +
+      lubridate::days(ceiling(rlnorm(1, meanlog = 0.59, sdlog = 1.99))), by = genc_id]
+
+    # ensure that transfusions do not go beyond the end date
+    df1[as.numeric(max_issue_date) > as.numeric(end_date), max_issue_date := end_date]
+
+    # get all issued date times
+    df1[, issue_date_time := as.Date(round(runif(.N,
+      min = as.numeric(min_issue_date),
+      as.numeric(max_issue_date)
+    ))) +
+      dhours(sample_time_shifted(.N, 8.7, 9.1, 2.7, max = 30, seed = seed))]
+  }
+
+  # remove seconds and turn into character
+  df1[, issue_date_time := substr(as.character(issue_date_time), 1, 16)]
+
+  ##### get `blood_product_mapped_omop` #####
+  # mapping the most common raw names of blood products to OMOP code
+  # also get their average relative proportions
+  blood_product_lookup <- data.table(
+    "blood_product_mapped_omop" = c(
+      "35605159", "35615187", "4022171", "4022173", "4023915", "4023918", "4023919", "4024248", "4024639",
+      "40492966", "4125930", "4130829", "4137859", "4139680", "4144461", "4145204", "4168087", "4215476",
+      "4253788", "42538248", "4300185", "43561947", "608105"
+    ),
+    "blood_product_raw" = c(
+      "C1-ESTERASE", "Intravenous Immune Globulin", "Plasma", "Red Blood Cells", "Albumin",
+      "Pooled Cryoprecipitate", "F9", "CST", "Apheresis Platelets", "AUTO: HPC Apheresis Thaw",
+      "Plasma Expanders", "Pooled Platelets", "SAGM Red blood cells, LR", "Anti-thrombin 3",
+      "E6848 WASHED RBC LR", "E3678 Granulocytes Apheresis, Irradiated (HQ)", "VWF8",
+      "Coag Inhibitor", "Factors", "Surgiflo Thrombin", "SUB", "OCTA", "FFP"
+    ),
+    prob = c(
+      1.74e-4, 2.17e-2, 7.61e-2, 4.3e-1, 2.33e-1, 4.76e-3, 8.82e-3, 3.6e-3, 1.06e-2, 3.11e-4, 6.51e-5,
+      8.55e-2, 1.05e-1, 4.83e-5, 2.15e-4, 3.15e-6, 1.68e-5, 1.9e-4, 1.31e-2, 6.83e-5, 6.45e-3, 1.13e-4,
+      1.61e-4
+    )
+  )
+
+  if (is.null(blood_product_list)) {
+    all_blood_product <- blood_product_lookup$blood_product_mapped_omop
+
+    # each hospital does 1-16 types of unique blood products
+    # used truncated skewed normal to get this number
+    df1[, n_products := floor(rsn_trunc(1, 12.5, 4.7, -1.9, 1, 16)), by = hospital_num]
+
+    # hospital-level variation: set the top 1-2 types of transfusions per hospital
+    # for other transfusions, sample randomly from the assigned set
+    df1[, first_code := sample(c("4022173", "4023915", "4137859"),
+      1,
+      replace = TRUE, prob = c(0.7, 0.05, 0.25)
+    ), by = hospital_num]
+
+    # proportion of the most common code within a hospital
+    df1[, prop_first := runif(1, 0.55, 1), by = hospital_num]
+
+    df1[n_products == 1, prop_first := 1]
+
+    # proportion of the second most common code
+    df1[, sum_first_second := ifelse(prop_first[1] == 1,
+      1,
+      rsn_trunc(1, 0.94, 0.13, -2.1, prop_first[1], 1)
+    ), by = hospital_num]
+
+    second_codes <- data.table(
+      codes = c("4137859", "35615187", "4022171", "4023915", "4130829", "4130829"),
+      probs = c(0.1, 0.03, 0.1, 0.6, 0.1, 0.07)
+    )
+
+    df1[, second_code := {
+      available <- setdiff(second_codes$codes, first_code)
+      prob <- second_codes$probs[match(available, second_codes$codes)]
+      sample(available, 1, prob = prob, replace = TRUE)
+    }, by = hospital_num]
+
+    # for hospitals with only one blood product type or more
+    df1[, prop_second := ifelse(n_products >= 2, max(sum_first_second - prop_first, 0), 0), by = hospital_num]
+
+    df1[n_products == 2, prop_second := 1 - prop_first]
+
+    # get all other blood products by hospital
+    # based on probabilities from the actual data table
+    df1[, other_product := lapply(
+      n_products,
+      function(x) {
+        list(sample(
+          setdiff(all_blood_product, c(
+            first_code,
+            second_code
+          )),
+          max(0, x - 2),
+          prob = blood_product_lookup[blood_product_mapped_omop %in% (
+            setdiff(all_blood_product, c(first_code, second_code)))]$prob,
+          replace = FALSE
+        ))
+      }
+    ), by = hospital_num]
+
+    # sample a large proportion of the most common
+    # then for some of the rest, get second most common
+    # other codes are filled with the top 90% + of codes
+    # most genc_id only get one type of transfusion
+    df1[, blood_product_mapped_omop := ifelse(rbinom(1, 1, prop_first),
+      first_code,
+      ifelse(rbinom(1, 1, prop_second),
+        second_code,
+        sample(c(second_code, "4022173"), 1)
+      )
+    ), by = genc_id]
+
+    # fill remaining codes
+    # ~0.04 have the remaining codes
+    df1[genc_id %in% sample(unique(genc_id), round(0.05 * n)), blood_product_mapped_omop := lapply(
+      other_product,
+      function(x) {
+        ifelse(identical(x, character(0)), first_code,
+          sample(
+            x,
+            1, # use accurate proportions but normalize to sum to 1
+            prob = blood_product_lookup[blood_product_mapped_omop %in% x]$prob /
+              sum(blood_product_lookup[blood_product_mapped_omop %in% x]$prob)
+          )
+        )
+      }
+    ), by = genc_id]
+
+    df1[, genc_occurrence := seq_len(.N), by = genc_id]
+
+    # a proportion of 0.05 of genc_id have multiple types of transfusions
+    # account for this by another round of random sampling by `genc_id`
+    df1[genc_id %in% sample(
+      unique(genc_id), round(0.05 * n)
+    ) & genc_occurrence > 1, blood_product_mapped_omop := sample(
+      setdiff(all_blood_product, blood_product_mapped_omop), .N,
+      replace = TRUE
+    )]
+
+    # assign some 0 and NA
+    df1[hospital_num %in% sample(
+      unique(hospital_num), round(n_hospitals / 30)
+    ), blood_product_mapped_omop := ifelse(rbinom(.N, 1, 0.05), "0", blood_product_mapped_omop)]
+
+    # NA for 1/30 hospitals
+    df1[hospital_num %in% sample(
+      unique(hospital_num), round(n_hospitals / 30)
+    ), blood_product_mapped_omop := ifelse(rbinom(.N, 1, 0.01), NA, blood_product_mapped_omop)]
+
+    # a few hospitals have one unique code
+    df1[hospital_num %in% sample(
+      unique(hospital_num), round(n_hospitals / 15)
+    ), blood_product_mapped_omop := "4137859"]
+
+    df1[hospital_num %in% sample(
+      unique(hospital_num), round(n_hospitals / 30)
+    ), blood_product_mapped_omop := "4022173"]
+  } else {
+    # if given a string for blood_product_list, turn it into a vector for sampling
+    if (length(blood_product_list) == 1 && !(is.na(blood_product_list))) {
+      blood_product_list <- c(blood_product_list)
+    }
+
+    # verify the validity of user-entered blood products
+    invalid <- setdiff(blood_product_list, blood_product_lookup$blood_product_mapped_omop)
+
+    if (length(invalid) > 0) {
+      warning(paste(
+        "User input contains at least one invalid blood product OMOP code:",
+        paste(invalid, collapse = ", ")
+      ))
+    }
+
+    # if the blood_product_mapped_omop is given by the user, sample from that list
+    df1[, blood_product_mapped_omop := sample(blood_product_list, .N, replace = TRUE)]
+
+    # create a new lookup table based on user-provided values
+    given_product_table <- data.table("blood_product_mapped_omop" = blood_product_list)
+
+    # get `blood_product_raw` by joining with input `blood_product_mapped_omop`
+    blood_product_lookup <- left_join(
+      given_product_table, blood_product_lookup,
+      by = join_by(blood_product_mapped_omop)
+    )
+
+    # if the given blood_product_mapped_omop is not in the original lookup table, fill it with this message:
+    blood_product_lookup[is.na(blood_product_raw), blood_product_raw := "Invalid blood product OMOP provided"]
+  }
+
+  ##### get `blood_product_mapped_raw` #####
+  # set blood_product_raw by joining `df1` with the lookup table
+  df1 <- left_join(df1, blood_product_lookup, by = join_by(blood_product_mapped_omop))
+  df1[blood_product_mapped_omop == "0", blood_product_raw := "FAR"]
+  df1[is.na(blood_product_mapped_omop), blood_product_raw := NA]
+
+  return(df1[
+    order(df1$genc_id),
+    c("genc_id", "hospital_num", "issue_date_time", "blood_product_mapped_omop", "blood_product_raw")
+  ]) # only include relevant columns in the final output
 }
