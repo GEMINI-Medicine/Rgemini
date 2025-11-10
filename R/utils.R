@@ -1092,7 +1092,7 @@ rlnorm_trunc <- function(n, meanlog, sdlog, min, max, seed = NULL) {
   if (!is.null(seed)) {
     set.seed(seed)
   }
-  if (min > max) {
+  if (any(min > max)) {
     stop("The min is greater than the max. Invalid sampling range provided - stopping.")
   }
   res <- rlnorm(n, meanlog, sdlog)
@@ -1132,7 +1132,7 @@ rnorm_trunc <- function(n, mean, sd, min, max, seed = NULL) {
   if (!is.null(seed)) {
     set.seed(seed)
   }
-  if (min > max) {
+  if (any(min > max)) {
     stop("The min is greater than the max. Invalid sampling range provided - stopping.")
   }
   res <- rnorm(n, mean, sd)
@@ -1169,11 +1169,12 @@ rnorm_trunc <- function(n, mean, sd, min, max, seed = NULL) {
 #'
 #' @return A numeric vector following the skewed normal distribution, truncated to the specified range.
 #'
+#' @importFrom sn rsn
 #' @export
 #'
 rsn_trunc <- function(n, xi, omega, alpha, min, max, seed = NULL) {
   # checks for input validity
-  if (min > max) {
+  if (any(min > max)) {
     stop("The min is greater than the max. Invalid sampling range provided - stopping.")
   }
   if (!is.null(seed)) {
@@ -1329,9 +1330,7 @@ sample_time_shifted_lnorm <- function(nrow, meanlog, sdlog, min = 0, max = 48, s
 #' @param include_prop (`numeric`)\cr A number between 0 and 1,
 #' for the proportion of unique rows in `cohort` to include in the final data table
 #'
-#' @param cohort (`data.table`)\cr Optional, resembling the GEMINI "admdad" table with the columns:
-#' - `genc_id` (`integer`): GEMINI encounter ID
-#' - `hospital_num` (`integer`): Hospital ID
+#' @param cohort (`data.table`)\cr Optional, resembling the GEMINI "admdad" table to build the returned data table from
 #'
 #' @param by_los (`logical`)\cr Optional, whether to assign more repeats to longer hospital stays or not.
 #' Default to FALSE. When TRUE, two additional columns are required in the input `cohort` dataset -
@@ -1352,7 +1351,9 @@ sample_time_shifted_lnorm <- function(nrow, meanlog, sdlog, min = 0, max = 48, s
 #' generate_id_hospital(cohort = sample_cohort, include_prop = 0.8, avg_repeats = 1.5, by_los = TRUE, seed = 1)
 #' generate_id_hospital(nid = 1000, n_hospitals = 10, avg_repeats = 1)
 #'
-generate_id_hospital <- function(nid = 1000, n_hospitals = 10, avg_repeats = 1.5, include_prop = 1, cohort = NULL, by_los = FALSE, seed = NULL) {
+generate_id_hospital <- function(
+  nid = 1000, n_hospitals = 10, avg_repeats = 1.5, include_prop = 1, cohort = NULL, by_los = FALSE, seed = NULL
+) {
   if (!is.null(seed)) {
     set.seed(seed)
   }
@@ -1412,5 +1413,24 @@ generate_id_hospital <- function(nid = 1000, n_hospitals = 10, avg_repeats = 1.5
     }
   }
 
+  res[, genc_id := as.integer(genc_id)]
+  res[, hospital_num := as.integer(hospital_num)]
   return(res)
+}
+
+check_date_format <- function(x) {
+  x <- as.character(x)
+  x_trim <- trimws(x)
+  return(
+    grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", x_trim) | grepl("^[0-9]{4}$", x_trim)
+  )
+}
+
+check_date_time_format <- function(x) {
+  x <- as.character(x)
+  x_trim <- trimws(x)
+  x_trim <- sub("^(.{16}).*", "\\1", x_trim) # remove seconds from date time
+  return(
+    grepl("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}$", x_trim)
+  )
 }
