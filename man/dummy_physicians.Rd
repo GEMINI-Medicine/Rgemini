@@ -13,7 +13,7 @@ Optional if \code{cohort} is provided.}
 \item{n_hospitals}{(\code{integer})\cr Number of hospitals in simulated dataset.
 Optional if \code{cohort} is provided.}
 
-\item{cohort}{(\code{data.frame | data.table}) Optional, an existing data table similar to \code{admdad} in GEMINI
+\item{cohort}{(\code{data.frame|data.table}) Optional, an existing data table similar to \code{admdad} in GEMINI
 with at least the following columns:
 \itemize{
 \item \code{genc_id} (\code{integer}): GEMINI encounter ID

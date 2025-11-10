@@ -28,7 +28,7 @@ from 2015-04-01 to 2020-03-31.}
 \item{seed}{(\code{integer})\cr Optional, a number to assign the seed to.}
 }
 \value{
-(\code{data.frame})\cr A data.frame object similar to the "ipadmdad" table
+(\code{data.frame|data.table})\cr A data frame or data table object similar to the "ipadmdad" table
 containing the following fields:
 \itemize{
 \item \code{genc_id} (\code{integer}): GEMINI encounter ID
