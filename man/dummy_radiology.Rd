@@ -15,7 +15,8 @@ dummy_radiology(
 \arguments{
 \item{nid}{(\code{integer})\cr Number of unique encounter IDs to simulate.
 Encounter IDs may repeat to simulate multiple radiology tests,
-resulting in a data table with more rows than \code{nid}.}
+resulting in a data table with more rows than \code{nid}.
+This input is optional if \code{cohort} is provided.}
 
 \item{time_period}{(\code{vector})\cr A numeric or character vector containing the data range of the data
 by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy)
@@ -34,7 +35,7 @@ When \code{cohort} is not NULL, \code{nid}, \code{n_hospitals}, and \code{time_p
 \item{seed}{(\code{integer})\cr Optional, a number to be used to set the seed for reproducible results.}
 
 \item{n_hospitals(`integer`)\cr}{The number of hospitals to simulate.
-It is optional if \code{cohort} is provided.}
+This optional is optional if \code{cohort} is provided.}
 }
 \value{
 (\code{data.table})\cr A \code{data.table} object similar that contains the following fields:
