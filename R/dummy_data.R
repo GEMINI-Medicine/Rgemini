@@ -1234,7 +1234,6 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
     if (as.Date(time_period[1]) > as.Date(time_period[2])) {
       stop("Time period needs to end later than it starts")
     }
-
   }
 
   if (!is.null(cohort)) {
