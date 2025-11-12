@@ -740,7 +740,7 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
     cohort <- as.data.table(cohort)
     df1 <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 1, seed = seed)
     nid <- uniqueN(df1$genc_id)
-    n_hospitals <- length(unique(df1$hospital_num))
+    n_hospitals <- uniqueN(df1$hospital_num)
 
     # only include the genc_id and hospital_num columns from `cohort`
     df1 <- df1[, c("genc_id", "hospital_num")]
