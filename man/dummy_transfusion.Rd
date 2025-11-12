@@ -42,8 +42,7 @@ to sample for the variable \code{blood_product_mapped_omop}.}
 of user-specified intervention codes to include in the returned data table.}
 }
 \value{
-(\code{data.table})\cr A data.table object similar to the "transfusion" table with the following fields
-(in addition to the columns in \code{cohort} if provided):
+(\code{data.table})\cr A data.table object similar to the "transfusion" table with the following fields:
 \itemize{
 \item \code{genc_id} (\code{integer}): GEMINI encounter ID
 \item \code{hospital_num} (\code{integer}): Hospital ID number
