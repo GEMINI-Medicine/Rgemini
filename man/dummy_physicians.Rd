@@ -13,19 +13,19 @@ Optional if \code{cohort} is provided.}
 \item{n_hospitals}{(\code{integer})\cr Number of hospitals in simulated dataset.
 Optional if \code{cohort} is provided.}
 
-\item{cohort}{(\code{data.frame|data.table}) Optional, an existing data table similar to \code{admdad} in GEMINI
-with at least the following columns:
+\item{cohort}{(\code{data.frame|data.table}) Optional, an existing data table or data frame
+similar to \code{admdad} in GEMINI with at least the following columns:
 \itemize{
 \item \code{genc_id} (\code{integer}): GEMINI encounter ID
 \item \code{hospital_num} (\code{integer}): Hospital ID
-If \code{cohort} is provided, \code{nid} and \code{n_hospital} inputs are not used.
+If \code{cohort} is provided, \code{nid} and \code{n_hospitals} inputs are not used.
 }}
 
 \item{seed}{(\code{integer})\cr Optional, a number to be used to set the seed for reproducible results.}
 }
 \value{
 (\code{data.table})\cr A data.table object similar to the "physicians" table that contains the
-following fields (if \code{cohort} is included, these are in addition to any columns in \code{cohort}):
+following fields:
 \itemize{
 \item \code{genc_id} (\code{integer}): GEMINI encounter ID
 \item \code{hospital_num} (\code{integer}): Hospital ID number

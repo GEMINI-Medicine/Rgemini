@@ -22,15 +22,10 @@ It is required when \code{da21uid} is missing.}
 It is optional when \code{cohort} is provided.}
 
 \item{n_hospitals}{(\code{integer})\cr Number of hospitals in simulated dataset.
-IT is optional when \code{cohort} is provided.}
+It is optional when \code{cohort} is provided.}
 
-<<<<<<< HEAD
 \item{cohort}{(\code{data.frame|data.table}) Optional, an existing data frame or data table similar to \code{admdad} in
 GEMINI with at least the following columns:
-=======
-\item{cohort}{(\code{data.frame | data.table}) Optional, an existing data table similar to \code{admdad} in GEMINI
-with at least the following columns:
->>>>>>> 5ba38fc (235)
 \itemize{
 \item \code{genc_id} (\code{integer}): GEMINI encounter ID
 \item \code{hospital_num} (\code{integer}): Hospital ID
@@ -44,8 +39,7 @@ It is required when \code{dbcon} is missing. It can be an integer or an integer 
 }
 \value{
 (\code{data.table})\cr
-A data.table object similar to the "locality_variables" table that contains the following fields
-(if \code{cohort} is included, these are in addition to any columns in \code{cohort}):
+A data.table object similar to the "locality_variables" table that contains the following fields:
 \itemize{
 \item \code{genc_id} (\code{integer}): GEMINI encounter ID
 \item \code{da21uid} (\code{integer}): Dissemination area ID based on 2021 Canadian census data using PCCF Version 8A
