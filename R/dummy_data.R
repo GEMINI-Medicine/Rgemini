@@ -962,7 +962,9 @@ dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed =
 
   return(df1[
     order(df1$genc_id), # return only with required columns
-    c("genc_id", "hospital_num", "admitting_physician_gim", "discharging_physician_gim", "adm_phy_cpso_mapped",
-    "mrp_cpso_mapped")
+    c(
+      "genc_id", "hospital_num", "admitting_physician_gim", "discharging_physician_gim", "adm_phy_cpso_mapped",
+      "mrp_cpso_mapped"
+    )
   ])
 }
