@@ -405,10 +405,10 @@ dummy_ipadmdad <- function(nid = 1000,
 
   ############### PREPARE OUTPUT TABLE ###############
   ## create all combinations of hospitals and fiscal years
-  hospital_num <- seq(1, n_hospitals, 1)
+  hospital_num <- as.integer(seq(1, n_hospitals, 1))
   year <- seq(time_period[1], time_period[2], 1)
 
-  data <- expand.grid(hospital_num = as.integer(hospital_num), year = year) %>% data.table()
+  data <- expand.grid(hospital_num = hospital_num, year = year) %>% data.table()
 
   # randomly draw number of encounters per hospital*year combo
   data[, n := rmultinom(1, nid, rep.int(1 / nrow(data), nrow(data)))]
@@ -1044,8 +1044,8 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
     )
 
     # `nid` and `n_hospitals` will depend on `df1`
-    nid <- length(unique(df1$genc_id))
-    n_hospitals <- length(unique(df1$hospitals))
+    nid <- uniqueN(df1$genc_id)
+    n_hospitals <- uniqueN(df1$hospitals)
 
     # Number each SCU stay per genc_id
     df1[, genc_occurrence := seq_len(.N), by = genc_id]
