@@ -17,23 +17,11 @@ dummy_diag(
 \arguments{
 \item{nid}{(\code{integer})\cr Number of unique encounter IDs (\code{genc_id}) to simulate. Value must be greater than 0.}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 \item{n_hospitals}{(\code{integer})\cr Number of hospitals to simulate in the resulting data table}
 
 \item{cohort}{(\code{data.frame | data.table})\cr Optional, the administrative data frame containing \code{genc_id}
 and \code{hospital_num} information to be used in the output. \code{cohort} takes precedence over parameters \code{nid} and
 \code{n_hospitals}: when \code{cohort} is not NULL, \code{nid} and \code{n_hospitals} are ignored.}
-=======
-\item{nrow}{(\code{integer})\cr Total number of rows of the simulated long format diagnosis table. Value must be greater than or equal to that in \code{nid}.}
->>>>>>> 72b5227 (remove dummy function updates moved to develop_dummy)
-=======
-\item{n_hospitals}{(\code{integer})\cr Number of hospitals to simulate in the resulting data table}
-
-\item{cohort}{(\code{data.frame | data.table})\cr Optional, the administrative data frame containing \code{genc_id}
-and \code{hospital_num} information to be used in the output. \code{cohort} takes precedence over parameters \code{nid} and
-\code{n_hospitals}: when \code{cohort} is not NULL, \code{nid} and \code{n_hospitals} are ignored.}
->>>>>>> 5ba38fc (235)
 
 \item{ipdiagnosis}{(\code{logical})\cr Default to "TRUE" and returns simulated "ipdiagnosis" table.
 If FALSE, returns simulated "erdiagnosis" table.
