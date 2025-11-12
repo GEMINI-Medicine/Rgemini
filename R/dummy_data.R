@@ -394,7 +394,7 @@ dummy_ipadmdad <- function(nid = 1000,
 
   ############### PREPARE OUTPUT TABLE ###############
   ## create all combinations of hospitals and fiscal years
-  hospital_num <- seq(1, n_hospitals, 1)
+  hospital_num <- as.integer(seq(1, n_hospitals, 1))
   year <- seq(time_period[1], time_period[2], 1)
 
   data <- expand.grid(hospital_num = hospital_num, year = year) %>% data.table()
@@ -426,7 +426,7 @@ dummy_ipadmdad <- function(nid = 1000,
 
   # add genc_id from 1-n
   data <- data[order(admission_date_time), ]
-  data[, genc_id := seq(1, nrow(data), 1)]
+  data[, genc_id := as.integer(seq(1, nrow(data), 1))]
 
 
   ############### DEFINE VARIABLE DISTRIBUTIONS ###############
@@ -810,11 +810,11 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
 #'
 #' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
 #'
-#' @param cohort (`data.frame|data.table`) Optional, an existing data table similar to `admdad` in GEMINI
-#' with at least the following columns:
+#' @param cohort (`data.frame|data.table`) Optional, an existing data table or data frame
+#' similar to `admdad` in GEMINI with at least the following columns:
 #' - `genc_id` (`integer`): GEMINI encounter ID
 #' - `hospital_num` (`integer`): Hospital ID
-#' If `cohort` is provided, `nid` and `n_hospital` inputs are not used.
+#' If `cohort` is provided, `nid` and `n_hospitals` inputs are not used.
 #'
 #' @return (`data.table`)\cr A data.table object similar to the "physicians" table that contains the
 #' following fields:
