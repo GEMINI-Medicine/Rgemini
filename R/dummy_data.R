@@ -389,7 +389,7 @@ dummy_ipadmdad <- function(nid = 1000,
 
   ############### PREPARE OUTPUT TABLE ###############
   ## create all combinations of hospitals and fiscal years
-  hospital_num <- seq(1, n_hospitals, 1)
+  hospital_num <- as.integer(seq(1, n_hospitals, 1))
   year <- seq(time_period[1], time_period[2], 1)
 
   data <- expand.grid(hospital_num = hospital_num, year = year) %>% data.table()
@@ -421,7 +421,7 @@ dummy_ipadmdad <- function(nid = 1000,
 
   # add genc_id from 1-n
   data <- data[order(admission_date_time), ]
-  data[, genc_id := seq(1, nrow(data), 1)]
+  data[, genc_id := as.integer(seq(1, nrow(data)), 1)]
 
 
   ############### DEFINE VARIABLE DISTRIBUTIONS ###############
@@ -683,8 +683,7 @@ dummy_admdad <- function(id, admtime) {
 #'
 #' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results
 #'
-#' @return (`data.table`)\cr A data.table object similar to the "transfusion" table with the following fields
-#' (in addition to the columns in `cohort` if provided):
+#' @return (`data.table`)\cr A data.table object similar to the "transfusion" table with the following fields:
 #' - `genc_id` (`integer`): GEMINI encounter ID
 #' - `hospital_num` (`integer`): Hospital ID number
 #' - `issue_date_time` (`character`): The date and time the transfusion was issued, in the format ("yy-mm-dd hh:mm")
@@ -751,8 +750,8 @@ dummy_transfusion <- function(
     # a proportion of 0.1 of IP admissions have transfusions
     # on average, they have 4.9 transfusions
     df1 <- generate_id_hospital(cohort = cohort, 1, avg_repeats = 4.9, seed = seed)
-    n <- length(unique(df1$genc_id))
-    n_hospitals <- length(unique(df1$hospital_num))
+    nid <- uniqueN(df1$genc_id)
+    n_hospitals <- uniqueN(df1$hospital_num)
 
     ##### Sample `issue_date_time` #####
     # uniformly sample a date between IP admission and discharge
@@ -919,7 +918,7 @@ dummy_transfusion <- function(
 
     # fill remaining codes
     # ~0.04 have the remaining codes
-    df1[genc_id %in% sample(unique(genc_id), round(0.05 * n)), blood_product_mapped_omop := lapply(
+    df1[genc_id %in% sample(unique(genc_id), round(0.05 * nid)), blood_product_mapped_omop := lapply(
       other_product,
       function(x) {
         ifelse(identical(x, character(0)), first_code,
@@ -938,7 +937,7 @@ dummy_transfusion <- function(
     # a proportion of 0.05 of genc_id have multiple types of transfusions
     # account for this by another round of random sampling by `genc_id`
     df1[genc_id %in% sample(
-      unique(genc_id), round(0.05 * n)
+      unique(genc_id), round(0.05 * nid)
     ) & genc_occurrence > 1, blood_product_mapped_omop := sample(
       setdiff(all_blood_product, blood_product_mapped_omop), .N,
       replace = TRUE
