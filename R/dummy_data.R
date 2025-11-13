@@ -707,7 +707,7 @@ dummy_transfusion <- function(
       coltypes = c("integer", "integer", "", "")
     )
 
-    if (!all(check_date_time_format(c(cohort$admission_date_time, cohort$discharge_date_time)))) {
+    if (!all(check_date_time_format(c(cohort$admission_date_time, cohort$discharge_date_time), check_time = TRUE))) {
       stop("An invalid IP admission and/or discharge date time input was provided in cohort.")
     }
   } else { # when `cohort` is not provided
