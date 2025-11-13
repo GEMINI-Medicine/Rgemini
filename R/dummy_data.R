@@ -690,9 +690,9 @@ dummy_admdad <- function(id, admtime) {
 #' - `blood_product_mapped_omop(`character`): Blood product name mapped by GEMINI following international standard.
 #' - `blood_product_raw` (`character`): Type of blood product or component transfused as reported by hospital.
 #' @examples
-#' dummy_transfusion(n = 1000, n_hospitals = 30, seed = 1)
+#' dummy_transfusion(nid = 1000, n_hospitals = 30, seed = 1)
 #' dummy_transfusion(cohort = dummy_ipadmdad())
-#' dummy_transfusion(n = 100, n_hospitals = 1, blood_product_list = c("0", "35605159", "35615187"))
+#' dummy_transfusion(nid = 100, n_hospitals = 1, blood_product_list = c("0", "35605159", "35615187"))
 #'
 #' @export
 #'

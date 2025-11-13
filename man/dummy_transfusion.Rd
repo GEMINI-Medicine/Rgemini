@@ -57,8 +57,8 @@ are contained in the GEMINI "transfusion" table, as seen in
 \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
 }
 \examples{
-dummy_transfusion(n = 1000, n_hospitals = 30, seed = 1)
+dummy_transfusion(nid = 1000, n_hospitals = 30, seed = 1)
 dummy_transfusion(cohort = dummy_ipadmdad())
-dummy_transfusion(n = 100, n_hospitals = 1, blood_product_list = c("0", "35605159", "35615187"))
+dummy_transfusion(nid = 100, n_hospitals = 1, blood_product_list = c("0", "35605159", "35615187"))
 
 }
