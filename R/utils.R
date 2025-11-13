@@ -1418,6 +1418,31 @@ generate_id_hospital <- function(
   return(res)
 }
 
+
+#' @title
+#' Checks a character input to verify that it is as valid date or date time format:
+#' - Date: "YYYY-mm-dd" or "YYYY"
+#' - Date time: "YYYY-mm-dd hh:mm"
+#'
+#' @description
+#' This function 
+#'
+#' @param x (`character`)\cr A
+#'
+#' @param check_time (`logical`)\cr Optional, a flag indicating whether the function will check for
+#' a date or date time format. The default is `FALSE`, meaning it will check for a date only.
+#'
+#' @return (`logical`)\cr The function returns `TRUE` if the input was a valid date or date time format.
+#' Otherwise, it returns `FALSE`.
+#'
+#' @export
+#'
+#' @examples
+#' check_date_format("2020-01-01", check_time = FALSE)
+#' check_date_format("2021-01-01 12:01", check_time = TRUE)
+#' check_date_format(c("2015-12-31 01:01", "2016-01-01 01:01"), check_time = TRUE)
+#' check_date_format("November 13th, 2025")
+#' 
 check_date_format <- function(x, check_time = FALSE) {
   x <- as.character(x)
   x_trim <- trimws(x)
