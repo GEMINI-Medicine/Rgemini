@@ -1425,7 +1425,7 @@ generate_id_hospital <- function(
 #' - Date time: "YYYY-mm-dd hh:mm"
 #'
 #' @description
-#' This function 
+#' This function
 #'
 #' @param x (`character`)\cr A
 #'
@@ -1442,7 +1442,7 @@ generate_id_hospital <- function(
 #' check_date_format("2021-01-01 12:01", check_time = TRUE)
 #' check_date_format(c("2015-12-31 01:01", "2016-01-01 01:01"), check_time = TRUE)
 #' check_date_format("November 13th, 2025")
-#' 
+#'
 check_date_format <- function(x, check_time = FALSE) {
   x <- as.character(x)
   x_trim <- trimws(x)
