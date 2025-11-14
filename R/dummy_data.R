@@ -663,7 +663,7 @@ dummy_admdad <- function(id, admtime) {
 #' are contained in the GEMINI "locality-variables" table, as seen in
 #' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #'
-#' This data table will simulate dissemination area IDs based on Canadian census data.
+#' Specifically, the function simulates dissemination area IDs (da21uid) based on Canadian census data for a user-specified set of mock encounter and hospital IDs. To mimic GEMINI data characteristics, the majority of simulated area IDs are drawn from Ontario and are clustered by hospital.
 #'
 #' @param dbcon (`DBIConnection`)\cr
 #'  A connection to the GEMINI database, used to access the 2021 Canadian census dissemination codes.
