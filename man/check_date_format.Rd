@@ -2,16 +2,12 @@
 % Please edit documentation in R/utils.R
 \name{check_date_format}
 \alias{check_date_format}
-\title{Checks a character input to verify that it is as valid date or date time format:
-\itemize{
-\item Date: "YYYY-mm-dd" or "YYYY"
-\item Date time: "YYYY-mm-dd hh:mm"
-}}
+\title{Checks a character input to verify that it is as valid date or date time format}
 \usage{
 check_date_format(x, check_time = FALSE)
 }
 \arguments{
-\item{x}{(\code{character})\cr A}
+\item{x}{(\code{character})\cr The string to be checked for format.}
 
 \item{check_time}{(\code{logical})\cr Optional, a flag indicating whether the function will check for
 a date or date time format. The default is \code{FALSE}, meaning it will check for a date only.}
@@ -21,7 +17,12 @@ a date or date time format. The default is \code{FALSE}, meaning it will check f
 Otherwise, it returns \code{FALSE}.
 }
 \description{
-This function
+This function checks the format of a \code{character} object so that it can be converted to a Date or POSIXct type.
+The formats are:
+\itemize{
+\item Date: "YYYY-mm-dd" or "YYYY"
+\item Date time (to convert to POSIXct): "YYYY-mm-dd hh:mm"
+}
 }
 \examples{
 check_date_format("2020-01-01", check_time = FALSE)
