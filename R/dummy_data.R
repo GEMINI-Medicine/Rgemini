@@ -728,8 +728,7 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
     }
   }
 
-  # get dissemination code lookup table
-  # load it from the live database
+  # get dissemination code lookup table from database
   if (!is.null(dbcon)) {
     lookup_statcan_v2021 <- dbGetQuery(dbcon, "SELECT da21uid FROM lookup_statcan_v2021") %>% data.table()
 
