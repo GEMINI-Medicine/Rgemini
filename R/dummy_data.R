@@ -138,7 +138,7 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #'
 #' @param n_hospitals (`integer`)\cr Number of hospitals to simulate in the resulting data table
 #'
-#' @param cohort (`data.frame | data.table`)\cr Optional, the administrative data frame containing `genc_id`
+#' @param cohort (`data.frame` or `data.table`)\cr Optional, the administrative data frame containing `genc_id`
 #' and `hospital_num` information to be used in the output. `cohort` takes precedence over parameters `nid` and
 #' `n_hospitals`: when `cohort` is not NULL, `nid` and `n_hospitals` are ignored.
 #'
