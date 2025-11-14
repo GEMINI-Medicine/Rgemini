@@ -330,8 +330,8 @@ dummy_diag <- function(
 #'
 #' @return (`data.frame`)\cr A data.frame object similar to the "ipadmdad" table
 #' containing the following fields:
-#' - `genc_id` (`integer`): GEMINI encounter ID
-#' - `hospital_num` (`integer`): Hospital ID
+#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1
+#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1
 #' - `admission_date_time` (`character`): Date-time of admission in YYYY-MM-DD HH:MM format
 #' - `discharge_date_time` (`character`): Date-time of discharge in YYYY-MM-DD HH:MM format
 #' - `age` (`integer`): Patient age
@@ -678,8 +678,8 @@ dummy_admdad <- function(id, admtime) {
 #' @param scu_cohort (`data.table`) The dummy data table requiring the addition of SCU admission and discharge
 #' date time columns. It requires the following columns:
 #' - `genc_occurrence` (`integer`): for each `genc_id`, its numbered appearance in the data table, i.e. 1, 2, 3, ...
-#' - `genc_id` (`integer`): GEMINI encounter ID
-#' - `hospital_num` (`integer`): hospital ID
+#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1
+#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1
 #' If `use_ip_dates` is TRUE, it will also require the following columns:
 #' - `admission_date_time` (`POSIXct`): the date and time of IP admission in YYYY-MM-DD HH:MM format
 #' - `discharge_date_time` (`POSIXct`): the date and time of IP discharge in YYYY-MM-DD HH:MM format
@@ -942,7 +942,7 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 #'
 #' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results
 #'
-#' @param cohort (`data.frame | data.table`)\cr Optional, data frame with the following columns:
+#' @param cohort (`data.frame or data.table`)\cr Optional, data frame with the following columns:
 #' - `genc_id` (`integer`): GEMINI encounter ID
 #' - `hospital_num` (`integer`): Hospital ID
 #' - `admission_date_time` (`character`): Date and time of IP admission in YYYY-MM-DD HH:MM format
@@ -950,8 +950,8 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 #' When `cohort` is not NULL, `nid`, `n_hospitals`, and `time_period` are ignored.
 #'
 #' @return (`data.table`)\cr A data.table object similar to the "ipscu" table that contains the following fields:
-#' - `genc_id` (`integer`): GEMINI encounter ID
-#' - `hospital_num` (`integer`): Hospital ID
+#' - `genc_id` (`integer`): Mock encounter ID integers start from 1
+#' - `hospital_num` (`integer`): Mock hospital ID number; integers start from 1
 #' - `scu_admit_date_time` (`character`): Date and time of SCU admission in YYYY-MM-DD HH:MM format
 #' - `scu_discharge_date_time` (`character`): Date and time of SCU admission in YYYY-MM-DD HH:MM format
 #' - `icu_flag` (`logical`): Flag specifying whether the encounter was admitted to the ICU or not.
@@ -1178,9 +1178,9 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 #' The start date and end date will be (yyyy-01-01 and yyyy-12-31) if (yyyy, yyyy)
 #' is the date range format provided. Optional when `cohort` is provided.
 #'
-#' @param cohort (`data.frame | data.table`): Optional, a data frame with the following columns:
-#' - `genc_id` (`integer`): GEMINI encounter ID
-#' - `hospital_num` (`integer`): hospital number
+#' @param cohort (`data.frame or data.table`): Optional, a data frame with the following columns:
+#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1
+#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1
 #' - `admission_date_time` (`character`): The date and time of admission to the hospital with format "%Y-%m-%d %H:%M"
 #' - `discharge_date_time` (`character`): The date and time of discharge from the hospital with format "%Y-%m-%d %H:%M"
 #' When `cohort` is not NULL, `nid`, `n_hospitals`, and `time_period` are ignored.

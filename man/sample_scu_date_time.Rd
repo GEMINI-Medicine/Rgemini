@@ -17,8 +17,8 @@ sample_scu_date_time(
 date time columns. It requires the following columns:
 \itemize{
 \item \code{genc_occurrence} (\code{integer}): for each \code{genc_id}, its numbered appearance in the data table, i.e. 1, 2, 3, ...
-\item \code{genc_id} (\code{integer}): GEMINI encounter ID
-\item \code{hospital_num} (\code{integer}): hospital ID
+\item \code{genc_id} (\code{integer}): Mock encounter ID; integers starting from 1
+\item \code{hospital_num} (\code{integer}): Mock hospital ID number; integers starting from 1
 If \code{use_ip_dates} is TRUE, it will also require the following columns:
 \item \code{admission_date_time} (\code{POSIXct}): the date and time of IP admission in YYYY-MM-DD HH:MM format
 \item \code{discharge_date_time} (\code{POSIXct}): the date and time of IP discharge in YYYY-MM-DD HH:MM format

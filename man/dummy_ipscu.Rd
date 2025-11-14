@@ -24,7 +24,7 @@ by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yy
 The start date and end date will be (yyyy-01-01 and yyyy-12-31) if (yyyy, yyyy)
 is the date range format provided. Optional when \code{cohort} is provided.}
 
-\item{cohort}{(\code{data.frame | data.table})\cr Optional, data frame with the following columns:
+\item{cohort}{(\verb{data.frame or data.table})\cr Optional, data frame with the following columns:
 \itemize{
 \item \code{genc_id} (\code{integer}): GEMINI encounter ID
 \item \code{hospital_num} (\code{integer}): Hospital ID
@@ -38,8 +38,8 @@ When \code{cohort} is not NULL, \code{nid}, \code{n_hospitals}, and \code{time_p
 \value{
 (\code{data.table})\cr A data.table object similar to the "ipscu" table that contains the following fields:
 \itemize{
-\item \code{genc_id} (\code{integer}): GEMINI encounter ID
-\item \code{hospital_num} (\code{integer}): Hospital ID
+\item \code{genc_id} (\code{integer}): Mock encounter ID integers start from 1
+\item \code{hospital_num} (\code{integer}): Mock hospital ID number; integers start from 1
 \item \code{scu_admit_date_time} (\code{character}): Date and time of SCU admission in YYYY-MM-DD HH:MM format
 \item \code{scu_discharge_date_time} (\code{character}): Date and time of SCU admission in YYYY-MM-DD HH:MM format
 \item \code{icu_flag} (\code{logical}): Flag specifying whether the encounter was admitted to the ICU or not.
