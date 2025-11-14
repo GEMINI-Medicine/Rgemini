@@ -675,7 +675,7 @@ dummy_admdad <- function(id, admtime) {
 #' @param n_hospitals (`integer`)\cr Number of hospitals in simulated dataset.
 #' It is optional when `cohort` is provided.
 #'
-#' @param da21uid (`integer` | `vector`)\cr Allows the user to customize which location ID to include in the output.
+#' @param da21uid (`integer` or `vector`)\cr Allows the user to customize which location ID to include in the output.
 #' It is required when `dbcon` is missing. It can be an integer or an integer vector.
 #'
 #' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
