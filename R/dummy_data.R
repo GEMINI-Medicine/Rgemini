@@ -767,7 +767,7 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
     }]
   } else {
     # otherwise sample from the database
-    # set a range for min and max ID in ontario_id for the location
+    # to mimic how locality IDs are cluster by hospital, set a range for min and max ID for each hospital
     df1[, c("min_id", "max_id") := {
       repeat {
         min_pick <- sample(ontario_id, 1)
