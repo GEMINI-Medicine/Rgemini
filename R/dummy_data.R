@@ -733,7 +733,7 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
   if (!is.null(dbcon)) {
     lookup_statcan_v2021 <- dbGetQuery(dbcon, "SELECT da21uid FROM lookup_statcan_v2021") %>% data.table()
 
-    # most IDs come from Ontario - these IDs start with 35
+    # extract Ontario dissemination codes to resemble GEMINI data characteristics - these IDs start with 35
     ontario_id <- subset(
       lookup_statcan_v2021,
       lookup_statcan_v2021$da21uid < 3.6e7 & lookup_statcan_v2021$da21uid >= 3.5e7
