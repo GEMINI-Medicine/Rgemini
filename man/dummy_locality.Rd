@@ -32,7 +32,7 @@ GEMINI with at least the following columns:
 If \code{cohort} is provided, \code{nid} and \code{n_hospital} inputs are not used.
 }}
 
-\item{da21uid}{(\code{integer} | \code{vector})\cr Allows the user to customize which location ID to include in the output.
+\item{da21uid}{(\code{integer} or \code{vector})\cr Allows the user to customize which location ID to include in the output.
 It is required when \code{dbcon} is missing. It can be an integer or an integer vector.}
 
 \item{seed}{(\code{integer})\cr Optional, a number to be used to set the seed for reproducible results.}
@@ -41,7 +41,7 @@ It is required when \code{dbcon} is missing. It can be an integer or an integer 
 (\code{data.table})\cr
 A data.table object similar to the "locality_variables" table that contains the following fields:
 \itemize{
-\item \code{genc_id} (\code{integer}): GEMINI encounter ID
+\item \code{genc_id} (\code{integer}): Mock encounter ID; integers starting from 1.
 \item \code{da21uid} (\code{integer}): Dissemination area ID based on 2021 Canadian census data using PCCF Version 8A
 }
 }
@@ -50,5 +50,5 @@ This function creates a dummy dataset with a subset of variables that
 are contained in the GEMINI "locality-variables" table, as seen in
 \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
 
-This data table will simulate dissemination area IDs based on Canadian census data.
+Specifically, the function simulates dissemination area IDs (da21uid) based on Canadian census data for a user-specified set of mock encounter and hospital IDs. To mimic GEMINI data characteristics, the majority of simulated area IDs are drawn from Ontario and are clustered by hospital.
 }

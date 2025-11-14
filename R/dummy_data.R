@@ -698,12 +698,12 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
   ### check inputs
   if (is.null(dbcon) && is.null(da21uid)) {
     stop("A DB connection or list of dissemination codes is required.")
-  }  
-  
+  }
+
   if (!is.null(da21uid)) {
     check_input(da21uid, "integer")
-  } 
-  
+  }
+
   if (!is.null(dbcon)) {
     check_input(dbcon, c("DBI", "dbcon", "PostgreSQL"))
   }
