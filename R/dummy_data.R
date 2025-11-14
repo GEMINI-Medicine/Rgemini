@@ -782,7 +782,7 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
       sample(ontario_id[ontario_id >= x & ontario_id <= y], 1, replace = TRUE)
     }, min_id, max_id)]
 
-    # insert outliers with a proportion of 0.2
+    # insert a small proportion (20%) of cases located outside of Ontario
     # sample from whole pool of da21uid
     n_edge <- round(0.2 * nrow(df1))
     rows_edge <- sample(seq_len(nrow(df1)), n_edge)
