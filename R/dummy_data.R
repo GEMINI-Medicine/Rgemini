@@ -765,7 +765,7 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
     ontario_id <- subset(
       lookup_statcan_v2021,
       lookup_statcan_v2021$da21uid < 3.6e7 & lookup_statcan_v2021$da21uid >= 3.5e7
-      )$da21uid
+    )$da21uid
 
     # to mimic how locality IDs are clustered by hospital, set a range for min and max ID for each hospital
     df1[, c("min_id", "max_id") := {

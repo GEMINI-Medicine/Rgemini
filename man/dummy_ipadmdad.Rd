@@ -31,8 +31,8 @@ from 2015-04-01 to 2020-03-31.}
 (\code{data.frame|data.table})\cr A data frame or data table object similar to the "ipadmdad" table
 containing the following fields:
 \itemize{
-\item \code{genc_id} (\code{integer}): GEMINI encounter ID
-\item \code{hospital_num} (\code{integer}): Hospital ID
+\item \code{genc_id} (\code{integer}): Mock encounter ID; integers starting from 1
+\item \code{hospital_num} (\code{integer}): Mock hospital ID number; integers starting from 1
 \item \code{admission_date_time} (\code{character}): Date-time of admission in YYYY-MM-DD HH:MM format
 \item \code{discharge_date_time} (\code{character}): Date-time of discharge in YYYY-MM-DD HH:MM format
 \item \code{age} (\code{integer}): Patient age
