@@ -688,7 +688,8 @@ dummy_admdad <- function(id, admtime) {
 #'
 #' @return (`data.table`)\cr
 #' A data.table object similar to the "locality_variables" table that contains the following fields:
-#' - `genc_id` (`integer`): GEMINI encounter ID
+#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1.
+# - `hospital_num` (`integer`): Mock hospital ID; integers starting from 1.
 #' - `da21uid` (`integer`): Dissemination area ID based on 2021 Canadian census data using PCCF Version 8A
 #'
 #' @export
