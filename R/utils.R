@@ -1420,14 +1420,15 @@ generate_id_hospital <- function(
 
 
 #' @title
-#' Checks a character input to verify that it is as valid date or date time format:
-#' - Date: "YYYY-mm-dd" or "YYYY"
-#' - Date time: "YYYY-mm-dd hh:mm"
+#' Checks a character input to verify that it is as valid date or date time format
 #'
 #' @description
-#' This function
+#' This function checks the format of a `character` object so that it can be converted to a Date or POSIXct type.
+#' The formats are:
+#' - Date: "YYYY-mm-dd" or "YYYY"
+#' - Date time (to convert to POSIXct): "YYYY-mm-dd hh:mm"
 #'
-#' @param x (`character`)\cr A
+#' @param x (`character`)\cr The string to be checked for format.
 #'
 #' @param check_time (`logical`)\cr Optional, a flag indicating whether the function will check for
 #' a date or date time format. The default is `FALSE`, meaning it will check for a date only.
