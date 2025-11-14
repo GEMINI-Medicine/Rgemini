@@ -1454,7 +1454,7 @@ check_date_format <- function(x, check_time = FALSE) {
   } else {
     x_trim <- substr(x_trim, 1, 16) # removes seconds from the date time object
     return(
-      grepl("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}$", x_trim)
+      grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}$", x_trim)
     )
   }
 }
