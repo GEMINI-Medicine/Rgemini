@@ -328,8 +328,8 @@ dummy_diag <- function(
 #'
 #' @return (`data.frame|data.table`)\cr A data frame or data table object similar to the "ipadmdad" table
 #' containing the following fields:
-#' - `genc_id` (`integer`): GEMINI encounter ID
-#' - `hospital_num` (`integer`): Hospital ID
+#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1
+#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1
 #' - `admission_date_time` (`character`): Date-time of admission in YYYY-MM-DD HH:MM format
 #' - `discharge_date_time` (`character`): Date-time of discharge in YYYY-MM-DD HH:MM format
 #' - `age` (`integer`): Patient age
@@ -659,15 +659,17 @@ dummy_admdad <- function(id, admtime) {
 #' Generate simulated locality variables data
 #'
 #' @description
-#' This function creates a dummy dataset with a subset of variables that
+#' This function creates a synthetic dataset with a subset of variables that
 #' are contained in the GEMINI "locality-variables" table, as seen in
 #' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #'
-#' Specifically, the function simulates dissemination area IDs (da21uid) based on Canadian census data for a user-specified set of mock encounter and hospital IDs. To mimic GEMINI data characteristics, the majority of simulated area IDs are drawn from Ontario and are clustered by hospital.
+#' Specifically, the function simulates dissemination area IDs (da21uid) based on Canadian census data for a
+#' user-specified set of mock encounter and hospital IDs. To mimic GEMINI data characteristics, the majority
+#' of simulated area IDs are drawn from Ontario and are clustered by hospital.
 #'
 #' @param dbcon (`DBIConnection`)\cr
 #'  A connection to the GEMINI database, used to access the 2021 Canadian census dissemination codes.
-#' It is required when `da21uid` is missing.
+#' It is required when `da21uid` is missing. If `da21uid` is provided, then this input is ignored.
 #'
 #' @param nid (`integer`)\cr Number of unique encounter IDs to simulate. In this data table, each ID occurs once.
 #' It is optional when `cohort` is provided.
@@ -675,15 +677,16 @@ dummy_admdad <- function(id, admtime) {
 #' @param n_hospitals (`integer`)\cr Number of hospitals in simulated dataset.
 #' It is optional when `cohort` is provided.
 #'
-#' @param da21uid (`integer` or `vector`)\cr Allows the user to customize which location ID to include in the output.
-#' It is required when `dbcon` is missing. It can be an integer or an integer vector.
+#' @param da21uid (`integer` or `vector`)\cr Allows the user to customize which dissemination area ID to include in
+#' the output. It is required when `dbcon` is missing. It can be an integer or an integer vector.
+#' If included, the `dbcon` is not used.
 #'
 #' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
 #'
-#' @param cohort (`data.frame|data.table`) Optional, an existing data frame or data table similar to `admdad` in
+#' @param cohort (`data.frame or data.table`) Optional, an existing data frame or data table similar to `admdad` in
 #' GEMINI with at least the following columns:
-#' - `genc_id` (`integer`): GEMINI encounter ID
-#' - `hospital_num` (`integer`): Hospital ID
+#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1.
+#' - `hospital_num` (`integer`): Mock hospital ID; integers starting from 1.
 #' If `cohort` is provided, `nid` and `n_hospital` inputs are not used.
 #'
 #' @return (`data.table`)\cr
@@ -728,17 +731,6 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
     }
   }
 
-  # get dissemination code lookup table from database
-  if (!is.null(dbcon)) {
-    lookup_statcan_v2021 <- dbGetQuery(dbcon, "SELECT da21uid FROM lookup_statcan_v2021") %>% data.table()
-
-    # extract Ontario dissemination codes to resemble GEMINI data characteristics - these IDs start with 35
-    ontario_id <- subset(
-      lookup_statcan_v2021,
-      lookup_statcan_v2021$da21uid < 3.6e7 & lookup_statcan_v2021$da21uid >= 3.5e7
-    )$da21uid
-  }
-
   if (!is.null(cohort)) {
     # set up `df1` if `cohort` is included
     cohort <- as.data.table(cohort)
@@ -766,7 +758,16 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
     }]
   } else {
     # otherwise sample from the database
-    # to mimic how locality IDs are cluster by hospital, set a range for min and max ID for each hospital
+    # get dissemination code lookup table from database
+    lookup_statcan_v2021 <- dbGetQuery(dbcon, "SELECT da21uid FROM lookup_statcan_v2021") %>% data.table()
+
+    # extract Ontario dissemination codes to resemble GEMINI data characteristics - these IDs start with 35
+    ontario_id <- subset(
+      lookup_statcan_v2021,
+      lookup_statcan_v2021$da21uid < 3.6e7 & lookup_statcan_v2021$da21uid >= 3.5e7
+      )$da21uid
+
+    # to mimic how locality IDs are clustered by hospital, set a range for min and max ID for each hospital
     df1[, c("min_id", "max_id") := {
       repeat {
         min_pick <- sample(ontario_id, 1)
@@ -781,14 +782,17 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
       sample(ontario_id[ontario_id >= x & ontario_id <= y], 1, replace = TRUE)
     }, min_id, max_id)]
 
-    # insert a small proportion (20%) of cases located outside of Ontario
-    # sample from whole pool of da21uid
-    n_edge <- round(0.2 * nrow(df1))
+    # insert a small proportion (0.3%) of cases located outside of Ontario
+    # sample from da21uid outside of Ontario
+    n_edge <- round(0.003 * nrow(df1))
     rows_edge <- sample(seq_len(nrow(df1)), n_edge)
 
-    df1[rows_edge, da21uid := sample(lookup_statcan_v2021$da21uid, .N, replace = TRUE)]
+    df1[rows_edge, da21uid := sample(setdiff(lookup_statcan_v2021, ontario_id),
+      .N,
+      replace = TRUE
+    )]
 
-    # set some NA for da21uid
+    # inject 2% rate of missingness in da21uid
     df1[, da21uid := ifelse(rbinom(.N, 1, 0.02), NA, da21uid)]
 
     # remove extra columns and return
@@ -801,7 +805,7 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
 #' Generate simulated physicians data
 #'
 #' @description
-#' This function creates a dummy dataset with a subset of variables that
+#' This function creates a synthetic dataset with a subset of variables that
 #' are contained in the GEMINI "physicians" table, as seen in
 #' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #'
@@ -816,14 +820,14 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
 #'
 #' @param cohort (`data.frame|data.table`) Optional, an existing data table or data frame
 #' similar to `admdad` in GEMINI with at least the following columns:
-#' - `genc_id` (`integer`): GEMINI encounter ID
-#' - `hospital_num` (`integer`): Hospital ID
+#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1
+#' - `hospital_num` (`integer`): Mock hospital ID; integers starting from 1
 #' If `cohort` is provided, `nid` and `n_hospitals` inputs are not used.
 #'
 #' @return (`data.table`)\cr A data.table object similar to the "physicians" table that contains the
 #' following fields:
-#' - `genc_id` (`integer`): GEMINI encounter ID
-#' - `hospital_num` (`integer`): Hospital ID number
+#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1
+#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1
 #' - `admitting_physician_gim` (`logical`): Whether the admitting physician attends a general medicine ward
 #' - `discharging_physician_gim` (`logical`): Whether the discharging physician attends a general medicine ward
 #' - `adm_phy_cpso_mapped` (`integer`): Unique hash of admitting physician CPSO Number
