@@ -58,7 +58,6 @@ library(RPostgreSQL)
 library(DBI)
 library(dplyr)
 library(getPass)
-library(readxl)
 library(data.table)
 
 ## Connect to the DB that stores the Pharmacy Data Table
@@ -142,7 +141,7 @@ There are 5 primary parameters in the function.
 
 - There are 3 different ways to input your drug identifiers into this function:
     1.  Input a vector of `drug_name`: This is the **recommended way** as it does not introduce complexity. We recommend using `drug_name` solely, instead of `drug_class` or a combination of both `drug_name` and `drug_class`.
-    2.  Input a vector of `drug_class`: The function will prompt user to confirm a list of ATC classes and the drugs associated with the ATC classes. Users are indirectly querying based on drug names and heavily rely on the drug name to ATC relationship from rxnorm.
+    2.  Input a vector of `drug_class`: The function will prompt user to confirm a list of ATC classes and the drugs associated with the ATC classes. Users are indirectly querying based on drug names and heavily rely on the drug name to ATC relationship from RxNorm.
         +  If `durg_class` is used, it is best to provide ATC codes at the level between 2 to 4 according to the Anatomical Therapeutic Chemical Classification system by the World Health Organization. See [WHO ATC](https://www.who.int/tools/atc-ddd-toolkit/atc-classification) for details. ATC codes at level 1 (e.g. "J: Antiinfective for systemic use") lacks specificity. ATC codes at level 5 (e.g. "J01CA04: amoxicillin") are too detailed that they cannot be searched as a drug class in `drug_class`
         +  When `drug_class` is used, the function internally converts the drug classes into a list of drug names and then queries based on the drug names. We recommend users to turn on `return_drug_list` when using `drug_class`. This will output a list of drug names associated with the `drug_class`, allowing users to confirm the list with an SME. 
     3.  Input both `drug_name` and `drug_class`: This will return a **union** of the two searches.
@@ -264,7 +263,7 @@ knitr::include_graphics("figures/pharmacy_mapping/rxnorm_query/fig3_complera.png
 
 2. Only drugs entered into `drug_name` or drugs under `drug_class` selected by users will appear under `rxnorm_match` output (even if the pharmacy entry may contain an additional drug, it will not appear as it wasn't searched for by the user).
 
-3. Rxnorm is a US-based tool. Although this is highly uncommon, drugs that are only prescribed in Canada (and not in the US) cannot be found by RxNorm. In addition, the current `rxnorm_query` tool does not support searches based on Canadian brand names. Please use the equivalent American brand name or generic name instead.
+3. RxNorm is a US-based tool. Although this is highly uncommon, drugs that are only prescribed in Canada (and not in the US) cannot be found by RxNorm. In addition, the current `rxnorm_query` tool does not support searches based on Canadian brand names. Please use the equivalent American brand name or generic name instead.
 
 4. If `rxnorm_query` returns a warning saying "drug could not be found", please check the [RxNav website](https://mor.nlm.nih.gov/RxNav/) as sometimes there may be alternative searchable drug names based on the suggestion from the search bar. For example, Paxlovid returns the same warning, but when entered into RxNav, an auto-completion in the search bar shows "paxlovid 150 mg /100 mg dose pack". In this case, user should input "paxlovid 150 mg /100 mg dose pack" into `drug_name`.
 
@@ -347,7 +346,7 @@ knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/f
 
 - **`row_id`**: a unique identifier for each row of the table. It helps analysts to track entries in case of accidental row deletions during the validation process.
 - **`count`**: number of unique genc_ids associated with each row. With cell_suppression = T, small counts less than 6 encounters are suppressed to "<6".
-- **`search_type`, `raw_input`, `rxnorm_match`**: distinct rxnorm results.
+- **`search_type`, `raw_input`, `rxnorm_match`**: distinct RxNorm results.
 - **`drug_group`**: general classification of the drug in `rxnorm_match` found in the Pharmacy Master Mapping table. `drug_group = NA` for drugs that have not been previously mapped.
 - **`times_validated`**: number of times each `raw_input ~ rxnorm_match` match has previously been validated (0: never been validated, 1: validated by one project, 2+: validated by two or more projects).
 - **`SME_confirm`, `SME_comment`**: fields for SME to fill out during validation.
@@ -393,11 +392,11 @@ knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/f
 
   2. *SME_confirm* should be a logical value of TRUE or FALSE. Input TRUE to indicate that the SME verifies that `raw_input` matches `rxnorm_match` (i.e. information in <span style="background-color: #ae8dda;">purple-highlighted columns</span> are correct), otherwise FALSE. For simplicity, you could instruct the SME to enter 'T' for correct matches and leave cells empty otherwise, then you could fill out the missing entries with 'F'.
 
-  3. *SME_comment* is intended for SME to add comments, ask questions, or flag exclusions. Even with a valid rxnorm match (`SME_confirm = T`), the SME may still want to exclude a drug from the study for specific reasons. This column is especially useful for the SME to flag such exclusions.
+  3. *SME_comment* is intended for SME to add comments, ask questions, or flag exclusions. Even with a valid RxNorm match (`SME_confirm = T`), the SME may still want to exclude a drug from the study for specific reasons. This column is especially useful for the SME to flag such exclusions.
 
   4. In cases where `rxnorm_match` contains multiple matches separated by a pipe (e.g. “cefuroxime | vancomycin”) and not all matches are correct, the SME should still input TRUE in *SME_confirm*, and then specify the correct match(es) in *SME_comment*.
   
-  5. While analysts may modify the table or add extra columns to meet specific project needs, *SME_confirm* should always be included. And analysts should communicate clearly to SME the distinction between rxnorm validation and cohort inclusion.
+  5. While analysts may modify the table or add extra columns to meet specific project needs, *SME_confirm* should always be included. And analysts should communicate clearly to SME the distinction between RxNorm validation and cohort inclusion.
   
   6. *times_validated* allows SME to prioritize verifying entries that haven't been validated yet (times_validated = 0). However, SME should also review previously validated entries and flag any errors they find.
 
@@ -432,7 +431,7 @@ knitr::include_graphics("figures/pharmacy_mapping/prepare_pharm_for_validation/f
 Upon receiving the validated mapping from the SME, analysts should at least perform the following essential checks:
 
 - Any accidental row deletion? Use `row_id` to detect and track deletions.
-- Did the SME make changes and overwrite the rxnorm results?
+- Did the SME make changes and overwrite the RxNorm results?
 - Is `SME_confirm` fully populated? If not, fill in the missing values or consult with the SME.
 - Review `SME_comment`, address SME's questions, clarify uncertainties, and note any cohort exclusion requirements.
 
@@ -452,7 +451,7 @@ Linkages between these tables are:
 <hr style="border-top: 0.5px solid #ccc; margin: 20px 0;">
 Recall the goal of the Insulin study - determine the proportion of encounters that had an order for 'insulin' during their hospital stay. 
 
-Now, the SME has confirmed drug entries corresponding to 'insulin', and also indicated a few drug entries to be excluded from the study (despite correct rxnorm match), the next steps are to identify a list of encounters with drug entries matching these criteria.
+Now, the SME has confirmed drug entries corresponding to 'insulin', and also indicated a few drug entries to be excluded from the study (despite correct RxNorm match), the next steps are to identify a list of encounters with drug entries matching these criteria.
 
 **Steps to identify encounters prescribed with 'insulin' of interest to the study:**
 
