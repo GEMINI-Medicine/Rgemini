@@ -20,12 +20,17 @@ Number of hospitals to be simulated. Total number of \code{genc_ids} will be spl
 up pseudo-randomly between hospitals to ensure roughly equal sample size at
 each hospital.}
 
-\item{time_period}{(\code{numeric})\cr
+\item{time_period}{(\code{vector})\cr
 A numeric vector containing the time period, specified as fiscal years
 (starting in April each year). For example, \code{c(2015, 2019)} generates data
 from 2015-04-01 to 2020-03-31.}
 
+<<<<<<< HEAD
 \item{seed}{(\code{integer})\cr Optional, a number to assign the seed to.}
+=======
+\item{seed}{(\code{numeric})\cr
+Optional, a number to set the seed for reproducible results}
+>>>>>>> d79b9df (#233 add dummy_ipscu() and dummy_er() functions (#234))
 }
 \value{
 (\code{data.frame|data.table})\cr A data frame or data table object similar to the "ipadmdad" table
