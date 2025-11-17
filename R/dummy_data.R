@@ -136,7 +136,10 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #'
 #' @param nid (`integer`)\cr Number of unique encounter IDs (`genc_id`) to simulate. Value must be greater than 0.
 #' Optional when `cohort` is provided.
+#' Optional when `cohort` is provided.
 #'
+#' @param n_hospitals (`integer`)\cr Number of hospitals to simulate in the resulting data table.
+#' Optional when `cohort` is provided.
 #' @param n_hospitals (`integer`)\cr Number of hospitals to simulate in the resulting data table.
 #' Optional when `cohort` is provided.
 #'
@@ -415,6 +418,7 @@ dummy_ipadmdad <- function(nid = 1000,
   ## create all combinations of hospitals and fiscal years
   hospital_num <- as.integer(seq(1, n_hospitals, 1))
   hospital_num <- as.integer(seq(1, n_hospitals, 1))
+  hospital_num <- as.integer(seq(1, n_hospitals, 1))
   year <- seq(time_period[1], time_period[2], 1)
 
   data <- expand.grid(hospital_num = hospital_num, year = year) %>% data.table()
@@ -446,7 +450,6 @@ dummy_ipadmdad <- function(nid = 1000,
 
   # add genc_id from 1-n
   data <- data[order(admission_date_time), ]
-  data[, genc_id := as.integer(seq(1, nrow(data), 1))]
   data[, genc_id := as.integer(seq(1, nrow(data), 1))]
 
 
@@ -953,8 +956,8 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 #' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results
 #'
 #' @param cohort (`data.frame or data.table`)\cr Optional, data frame with the following columns:
-#' - `genc_id` (`integer`): GEMINI encounter ID
-#' - `hospital_num` (`integer`): Hospital ID
+#' - `genc_id` (`integer`): Mock encounter ID number; integers starting from 1
+#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1
 #' - `admission_date_time` (`character`): Date and time of IP admission in YYYY-MM-DD HH:MM format
 #' - `discharge_date_time` (`character`): Date and time of IP discharge in YYYY-MM-DD HH:MM format.
 #' When `cohort` is not NULL, `nid`, `n_hospitals`, and `time_period` are ignored.
@@ -1198,8 +1201,8 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 #' @param seed (`integer`) Optional, a number for setting the seed to get reproducible results.
 #'
 #' @return (`data.table`) A data.table object similar to the "er" table that contains the following fields:
-#' - `genc_id` (`integer`): GEMINI encounter ID
-#' - `hospital_num` (`integer`): Hospital ID
+#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1
+#' - `hospital_num` (`integer`): Mock hospital ID; integers starting from 1
 #' - `triage_date_time` (`character`): The date and time of triage with format "%Y-%m-%d %H:%M"
 #'
 #' @import lubridate
@@ -1262,7 +1265,7 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 
     # get the `data.table` for simulation
     # one repeat per genc_id and include 0.81 of IP admits
-    df1 <- generate_id_hospital(cohort = cohort, include_prop = 0.81, avg_repeats = 1, seed = seed)
+    df1 <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 1, seed = seed)
 
     ##### sample `triage_date_time` by adding to IP admit time #####
     # the output of `rsn` will be negative
