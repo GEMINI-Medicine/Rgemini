@@ -246,7 +246,7 @@ dummy_diag <- function(
     )]
   }
 
-  # total number of rows in dummy data table
+  # total number of rows in synthetic data table
   n_rows <- nrow(df1) + nrow(df2)
 
   ##### sample `diagnosis_codes` #####
@@ -738,7 +738,7 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
     nid <- uniqueN(df1$genc_id)
     n_hospitals <- uniqueN(df1$hospital_num)
 
-    # only include the genc_id and hospital_num columns from `cohort`
+    # only include the `genc_id` and `hospital_num` columns from `cohort`
     df1 <- df1[, c("genc_id", "hospital_num")]
   } else {
     # generate a cohort from nid and n_hospitals
@@ -818,7 +818,7 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
 #'
 #' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
 #'
-#' @param cohort (`data.frame|data.table`) Optional, an existing data table or data frame
+#' @param cohort (`data.frame or data.table`) Optional, an existing data table or data frame
 #' similar to `admdad` in GEMINI with at least the following columns:
 #' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1
 #' - `hospital_num` (`integer`): Mock hospital ID; integers starting from 1
