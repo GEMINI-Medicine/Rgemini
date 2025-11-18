@@ -21,13 +21,9 @@ up pseudo-randomly between hospitals to ensure roughly equal sample size at
 each hospital.}
 
 \item{time_period}{(\code{vector})\cr
-\item{time_period}{(\code{vector})\cr
 A numeric vector containing the time period, specified as fiscal years
 (starting in April each year). For example, \code{c(2015, 2019)} generates data
 from 2015-04-01 to 2020-03-31.}
-
-\item{seed}{(\code{numeric})\cr
-Optional, a number to set the seed for reproducible results}
 
 \item{seed}{(\code{numeric})\cr
 Optional, a number to set the seed for reproducible results}

@@ -16,12 +16,14 @@ dummy_diag(
 }
 \arguments{
 \item{nid}{(\code{integer})\cr Number of unique encounter IDs (\code{genc_id}) to simulate. Value must be greater than 0.
+Optional when \code{cohort} is provided.
+Optional when \code{cohort} is provided.
 Optional when \code{cohort} is provided.}
 
 \item{n_hospitals}{(\code{integer})\cr Number of hospitals to simulate in the resulting data table.
 Optional when \code{cohort} is provided.}
 
-\item{cohort}{(\code{data.frame or data.table})\cr Optional, the administrative data frame with the columns:
+\item{cohort}{(\verb{data.frame or data.table})\cr Optional, the administrative data frame with the columns:
 \itemize{
 \item \code{genc_id} (\code{integer}): GEMINI encounter ID
 \item \code{hospital_num} (\code{integer}): hospital ID
