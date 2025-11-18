@@ -20,17 +20,20 @@ Number of hospitals to be simulated. Total number of \code{genc_ids} will be spl
 up pseudo-randomly between hospitals to ensure roughly equal sample size at
 each hospital.}
 
-\item{time_period}{(\code{numeric})\cr
+\item{time_period}{(\code{vector})\cr
 A numeric vector containing the time period, specified as fiscal years
 (starting in April each year). For example, \code{c(2015, 2019)} generates data
 from 2015-04-01 to 2020-03-31.}
+
+\item{seed}{(\code{numeric})\cr
+Optional, a number to set the seed for reproducible results}
 }
 \value{
 (\code{data.frame})\cr A data.frame object similar to the "ipadmdad" table
 containing the following fields:
 \itemize{
-\item \code{genc_id} (\code{integer}): GEMINI encounter ID
-\item \code{hospital_num} (\code{integer}): Hospital ID
+\item \code{genc_id} (\code{integer}): Mock encounter ID; integers starting from 1
+\item \code{hospital_num} (\code{integer}): Mock hospital ID number; integers starting from 1
 \item \code{admission_date_time} (\code{character}): Date-time of admission in YYYY-MM-DD HH:MM format
 \item \code{discharge_date_time} (\code{character}): Date-time of discharge in YYYY-MM-DD HH:MM format
 \item \code{age} (\code{integer}): Patient age
