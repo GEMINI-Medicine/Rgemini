@@ -137,6 +137,7 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #' @param nid (`integer`)\cr Number of unique encounter IDs (`genc_id`) to simulate. Value must be greater than 0.
 #' Optional when `cohort` is provided.
 #' Optional when `cohort` is provided.
+#' Optional when `cohort` is provided.
 #'
 #' @param n_hospitals (`integer`)\cr Number of hospitals to simulate in the resulting data table.
 #' Optional when `cohort` is provided.
