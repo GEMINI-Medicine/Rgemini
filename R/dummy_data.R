@@ -147,7 +147,7 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #' @param cohort (`data.frame` or `data.table`)\cr Optional, the administrative data frame containing `genc_id`
 #' and `hospital_num` information to be used in the output. `cohort` takes precedence over parameters `nid` and
 #' `n_hospitals`: when `cohort` is not NULL, `nid` and `n_hospitals` are ignored.
-#' @param cohort (`data.frame | data.table`)\cr Optional, the administrative data frame with the columns:
+#' @param cohort (`data.frame or data.table`)\cr Optional, the administrative data frame with the columns:
 #' - `genc_id` (`integer`): GEMINI encounter ID
 #' - `hospital_num` (`integer`): hospital ID
 #' `cohort` takes precedence over parameters `nid` and`n_hospitals`.
