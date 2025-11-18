@@ -27,8 +27,8 @@ It is optional when \code{cohort} is provided.}
 \item{cohort}{(\verb{data.frame or data.table}) Optional, an existing data frame or data table similar to \code{admdad} in
 GEMINI with at least the following columns:
 \itemize{
-\item \code{genc_id} (\code{integer}): Mock encounter ID; integers starting from 1.
-\item \code{hospital_num} (\code{integer}): Mock hospital ID; integers starting from 1.
+\item \code{genc_id} (\code{integer}): Mock encounter ID
+\item \code{hospital_num} (\code{integer}): Mock hospital ID
 If \code{cohort} is provided, \code{nid} and \code{n_hospital} inputs are not used.
 }}
 
@@ -42,7 +42,7 @@ If included, the \code{dbcon} is not used.}
 (\code{data.table})\cr
 A data.table object similar to the "locality_variables" table that contains the following fields:
 \itemize{
-\item \code{genc_id} (\code{integer}): Mock encounter ID; integers starting from 1.
+\item \code{genc_id} (\code{integer}): Mock encounter ID; integers starting from 1 or from \code{cohort} if provided
 \item \code{da21uid} (\code{integer}): Dissemination area ID based on 2021 Canadian census data using PCCF Version 8A
 }
 }

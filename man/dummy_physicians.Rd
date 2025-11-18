@@ -27,8 +27,8 @@ If \code{cohort} is provided, \code{nid} and \code{n_hospitals} inputs are not u
 (\code{data.table})\cr A data.table object similar to the "physicians" table that contains the
 following fields:
 \itemize{
-\item \code{genc_id} (\code{integer}): Mock encounter ID; integers starting from 1
-\item \code{hospital_num} (\code{integer}): Mock hospital ID number; integers starting from 1
+\item \code{genc_id} (\code{integer}): Mock encounter ID; integers starting from 1 or from \code{cohort} if provided
+\item \code{hospital_num} (\code{integer}): Mock hospital ID number; integers starting from 1 or from \code{cohort} if provided
 \item \code{admitting_physician_gim} (\code{logical}): Whether the admitting physician attends a general medicine ward
 \item \code{discharging_physician_gim} (\code{logical}): Whether the discharging physician attends a general medicine ward
 \item \code{adm_phy_cpso_mapped} (\code{integer}): Unique hash of admitting physician CPSO Number
