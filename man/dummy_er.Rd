@@ -37,8 +37,8 @@ When \code{cohort} is not NULL, \code{nid}, \code{n_hospitals}, and \code{time_p
 \value{
 (\code{data.table}) A data.table object similar to the "er" table that contains the following fields:
 \itemize{
-\item \code{genc_id} (\code{integer}): GEMINI encounter ID
-\item \code{hospital_num} (\code{integer}): Hospital ID
+\item \code{genc_id} (\code{integer}): Mock encounter ID; integers starting from 1
+\item \code{hospital_num} (\code{integer}): Mock hospital ID; integers starting from 1
 \item \code{triage_date_time} (\code{character}): The date and time of triage with format "\%Y-\%m-\%d \%H:\%M"
 }
 }

@@ -16,6 +16,7 @@ dummy_diag(
 }
 \arguments{
 \item{nid}{(\code{integer})\cr Number of unique encounter IDs (\code{genc_id}) to simulate. Value must be greater than 0.
+Optional when \code{cohort} is provided.
 Optional when \code{cohort} is provided.}
 
 \item{n_hospitals}{(\code{integer})\cr Number of hospitals to simulate in the resulting data table.
