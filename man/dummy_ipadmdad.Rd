@@ -25,17 +25,15 @@ A numeric vector containing the time period, specified as fiscal years
 (starting in April each year). For example, \code{c(2015, 2019)} generates data
 from 2015-04-01 to 2020-03-31.}
 
-<<<<<<< HEAD
-\item{seed}{(\code{integer})\cr Optional, a number to assign the seed to.}
-=======
 \item{seed}{(\code{numeric})\cr
 Optional, a number to set the seed for reproducible results}
->>>>>>> d79b9df (#233 add dummy_ipscu() and dummy_er() functions (#234))
 }
 \value{
-(\code{data.frame|data.table})\cr A data frame or data table object similar to the "ipadmdad" table
+(\code{data.frame})\cr A data.frame object similar to the "ipadmdad" table
 containing the following fields:
 \itemize{
+\item \code{genc_id} (\code{integer}): Mock encounter ID; integers starting from 1
+\item \code{hospital_num} (\code{integer}): Mock hospital ID number; integers starting from 1
 \item \code{genc_id} (\code{integer}): Mock encounter ID; integers starting from 1
 \item \code{hospital_num} (\code{integer}): Mock hospital ID number; integers starting from 1
 \item \code{admission_date_time} (\code{character}): Date-time of admission in YYYY-MM-DD HH:MM format

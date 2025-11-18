@@ -21,11 +21,6 @@ Optional when \code{cohort} is provided.}
 \item{n_hospitals}{(\code{integer})\cr Number of hospitals to simulate in the resulting data table.
 Optional when \code{cohort} is provided.}
 
-<<<<<<< HEAD
-\item{cohort}{(\code{data.frame} or \code{data.table})\cr Optional, the administrative data frame containing \code{genc_id}
-and \code{hospital_num} information to be used in the output. \code{cohort} takes precedence over parameters \code{nid} and
-\code{n_hospitals}: when \code{cohort} is not NULL, \code{nid} and \code{n_hospitals} are ignored.}
-=======
 \item{cohort}{(\code{data.frame | data.table})\cr Optional, the administrative data frame with the columns:
 \itemize{
 \item \code{genc_id} (\code{integer}): GEMINI encounter ID
@@ -33,7 +28,6 @@ and \code{hospital_num} information to be used in the output. \code{cohort} take
 \code{cohort} takes precedence over parameters \code{nid} and\code{n_hospitals}.
 When \code{cohort} is not NULL, \code{nid} and \code{n_hospitals} are ignored.
 }}
->>>>>>> d79b9df (#233 add dummy_ipscu() and dummy_er() functions (#234))
 
 \item{ipdiagnosis}{(\code{logical})\cr Default to "TRUE" and returns simulated "ipdiagnosis" table.
 If FALSE, returns simulated "erdiagnosis" table.
