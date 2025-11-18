@@ -1193,8 +1193,8 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 #' is the date range format provided. Optional when `cohort` is provided.
 #'
 #' @param cohort (`data.frame or data.table`): Optional, a data frame with the following columns:
-#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1
-#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1
+#' - `genc_id` (`integer`): Mock encounter ID
+#' - `hospital_num` (`integer`): Mock hospital ID number
 #' - `admission_date_time` (`character`): The date and time of admission to the hospital with format "%Y-%m-%d %H:%M"
 #' - `discharge_date_time` (`character`): The date and time of discharge from the hospital with format "%Y-%m-%d %H:%M"
 #' When `cohort` is not NULL, `nid`, `n_hospitals`, and `time_period` are ignored.
@@ -1202,8 +1202,8 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 #' @param seed (`integer`) Optional, a number for setting the seed to get reproducible results.
 #'
 #' @return (`data.table`) A data.table object similar to the "er" table that contains the following fields:
-#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1
-#' - `hospital_num` (`integer`): Mock hospital ID; integers starting from 1
+#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1 or from `cohort` if provided
+#' - `hospital_num` (`integer`): Mock hospital ID; integers starting from 1 or from `cohort` if provided
 #' - `triage_date_time` (`character`): The date and time of triage with format "%Y-%m-%d %H:%M"
 #'
 #' @import lubridate
@@ -1385,14 +1385,14 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #'
 #' @param cohort (`data.frame or data.table`) Optional, an existing data frame or data table similar to `admdad` in
 #' GEMINI with at least the following columns:
-#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1.
-#' - `hospital_num` (`integer`): Mock hospital ID; integers starting from 1.
+#' - `genc_id` (`integer`): Mock encounter ID
+#' - `hospital_num` (`integer`): Mock hospital ID
 #' If `cohort` is provided, `nid` and `n_hospital` inputs are not used.
 #'
 #' @return (`data.table`)\cr
 #' A data.table object similar to the "locality_variables" table that contains the following fields:
-#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1.
-# - `hospital_num` (`integer`): Mock hospital ID; integers starting from 1.
+#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1 or from `cohort` if provided
+# - `hospital_num` (`integer`): Mock hospital ID; integers starting from 1 or from `cohort` if provided
 #' - `da21uid` (`integer`): Dissemination area ID based on 2021 Canadian census data using PCCF Version 8A
 #'
 #' @export
@@ -1526,8 +1526,8 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
 #'
 #' @return (`data.table`)\cr A data.table object similar to the "physicians" table that contains the
 #' following fields:
-#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1
-#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1
+#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1 or from `cohort` if provided
+#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort` if provided
 #' - `admitting_physician_gim` (`logical`): Whether the admitting physician attends a general medicine ward
 #' - `discharging_physician_gim` (`logical`): Whether the discharging physician attends a general medicine ward
 #' - `adm_phy_cpso_mapped` (`integer`): Unique hash of admitting physician CPSO Number
