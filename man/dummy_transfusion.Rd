@@ -15,12 +15,12 @@ dummy_transfusion(
 }
 \arguments{
 \item{nid}{(\code{integer})\cr The number of unique mock encounter IDs to simulate.
-Encounter IDs may repeat, resulting in a data table with more rows than \code{nid}. Optional if \code{cohort} is provided}
+Encounter IDs may repeat, resulting in a data table with more rows than \code{nid}. Optional if \code{cohort} is provided.}
 
 \item{n_hospitals}{(\code{integer})\cr The number of hospitals to simulate, optional if \code{cohort} is provided.}
 
 \item{time_period}{(\code{vector})\cr A numeric or character vector containing the data range of the data
-by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy)
+by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy).
 The start date and end date will be (yyyy-01-01 and yyyy-12-31) if (yyyy, yyyy)
 is the date range format provided. Not used when \code{cohort} is provided.}
 
@@ -28,15 +28,16 @@ is the date range format provided. Not used when \code{cohort} is provided.}
 \itemize{
 \item \code{genc_id} (\code{integer}): Mock encounter ID number
 \item \code{hospital_num} (\code{integer}): Mock hospital ID number
-\item \code{admission_date_time} (\code{character}): Date and time of IP admission in YYYY-MM-DD HH:MM format
+\item \code{admission_date_time} (\code{character}): Date and time of IP admission in YYYY-MM-DD HH:MM format.
 \item \code{discharge_date_time} (\code{character}): Date and time of IP discharge in YYYY-MM-DD HH:MM format.
 When \code{cohort} is not NULL, \code{nid}, \code{n_hospitals}, and \code{time_period} are ignored.
 }}
 
 \item{blood_product_list}{(\code{character})\cr Either a string or a character vector
-to sample for the variable \code{blood_product_mapped_omop}.}
+to sample for the variable \code{blood_product_mapped_omop}.
+Items must be real blood product OMOP codes or it will not be used and a warning will be raised.}
 
-\item{seed}{(\code{integer})\cr Optional, a number to be used to set the seed for reproducible results}
+\item{seed}{(\code{integer})\cr Optional, a number to be used to set the seed for reproducible results.}
 
 \item{int_code}{(\code{character})\cr A string or character vector
 of user-specified intervention codes to include in the returned data table.}

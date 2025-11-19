@@ -667,7 +667,7 @@ dummy_admdad <- function(id, admtime) {
 }
 
 #' @title
-#' Sample SCU admission and discharge date times by genc_id
+#' Sample SCU admission and discharge date times by genc_id.
 #'
 #' @description
 #' The "ipscu" data table is a long format data table with multiple repeats for each genc_id.
@@ -938,9 +938,9 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 #' is the date range format provided. Optional when `cohort` is provided.
 #'
 #'
-#' @param n_hospitals (`integer`)\cr Number of hospitals in simulated dataset
+#' @param n_hospitals (`integer`)\cr Number of hospitals in simulated dataset.
 #'
-#' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results
+#' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
 #'
 #' @param cohort (`data.frame or data.table`)\cr Optional, data frame with the following columns:
 #' - `genc_id` (`integer`): GEMINI encounter ID
@@ -950,8 +950,8 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 #' When `cohort` is not NULL, `nid`, `n_hospitals`, and `time_period` are ignored.
 #'
 #' @return (`data.table`)\cr A data.table object similar to the "ipscu" table that contains the following fields:
-#' - `genc_id` (`integer`): Mock encounter ID integers start from 1
-#' - `hospital_num` (`integer`): Mock hospital ID number; integers start from 1
+#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1 or from `cohort`
+#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort`
 #' - `scu_admit_date_time` (`character`): Date and time of SCU admission in YYYY-MM-DD HH:MM format
 #' - `scu_discharge_date_time` (`character`): Date and time of SCU admission in YYYY-MM-DD HH:MM format
 #' - `icu_flag` (`logical`): Flag specifying whether the encounter was admitted to the ICU or not.
@@ -1010,9 +1010,6 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
       stop("Time period is in the incorrect date format, please fix")
     }
 
-    if (as.Date(time_period[1]) > as.Date(time_period[2])) {
-      stop("Time period needs to end later than it starts")
-    }
   }
 
   if (!is.null(cohort)) {
@@ -1070,16 +1067,20 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
     # User can enter a year range or specific dates
     # Can be of type integer or character
     # convert time_period into Date types
-    if (grepl("^\\d{4}$", time_period[1])) {
+    if (grepl("^[0-9]{4}$", time_period[1])) {
       start_date <- as.Date(paste0(time_period[1], "-01-01"))
     } else {
       start_date <- as.Date(time_period[1])
     }
 
-    if (grepl("^\\d{4}$", time_period[1])) {
+    if (grepl("^[0-9]{4}$", time_period[2])) {
       end_date <- as.Date(paste0(time_period[2], "-01-01"))
     } else {
       end_date <- as.Date(time_period[2])
+    }
+    
+    if (start_date > end_date) {
+      stop("Time period needs to end later than it starts")
     }
 
     ####### Generate the data table #######
@@ -1174,7 +1175,7 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 #' @param n_hospitals (`integer`) Number of hospitals in the simulated dataset. Optional when `cohort` is provided.
 #'
 #' @param time_period (`vector`)\cr A numeric or character vector containing the data range of the data
-#' by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy)
+#' by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy).
 #' The start date and end date will be (yyyy-01-01 and yyyy-12-31) if (yyyy, yyyy)
 #' is the date range format provided. Optional when `cohort` is provided.
 #'
@@ -1231,9 +1232,6 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
       stop("Time period is in the incorrect date format, please fix")
     }
 
-    if (as.Date(time_period[1]) > as.Date(time_period[2])) {
-      stop("Time period needs to end later than it starts")
-    }
   }
 
   if (!is.null(cohort)) {
@@ -1300,16 +1298,20 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
     # User can enter a year range or specific dates
     # Can be of type integer or character
     # Convert time_period into Date types
-    if (grepl("^\\d{4}$", time_period[1])) {
+    if (grepl("^[0-9]{4}$", time_period[1])) {
       start_date <- as.Date(paste0(time_period[1], "-01-01"))
     } else {
       start_date <- as.Date(time_period[1])
     }
 
-    if (grepl("^\\d{4}$", time_period[1])) {
+    if (grepl("^[0-9]{4}$", time_period[2])) {
       end_date <- as.Date(paste0(time_period[2], "-01-01"))
     } else {
       end_date <- as.Date(time_period[2])
+    }
+
+    if (start_date > end_date) {
+      stop("Time period needs to end later than it starts")
     }
 
     ##### get `genc_id` and hospital_num if `cohort` is not provided #####
@@ -1350,12 +1352,12 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #'
 #' @param nid (`integer`)\cr The number of unique mock encounter IDs to simulate.
-#' Encounter IDs may repeat, resulting in a data table with more rows than `nid`. Optional if `cohort` is provided
+#' Encounter IDs may repeat, resulting in a data table with more rows than `nid`. Optional if `cohort` is provided.
 #'
 #' @param n_hospitals (`integer`)\cr The number of hospitals to simulate, optional if `cohort` is provided.
 #'
 #' @param time_period (`vector`)\cr A numeric or character vector containing the data range of the data
-#' by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy)
+#' by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy).
 #' The start date and end date will be (yyyy-01-01 and yyyy-12-31) if (yyyy, yyyy)
 #' is the date range format provided. Not used when `cohort` is provided.
 #'
@@ -1365,14 +1367,15 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' @param cohort (`data.frame or data.table`)\cr Optional, a data frame or data table with columns:
 #' - `genc_id` (`integer`): Mock encounter ID number
 #' - `hospital_num` (`integer`): Mock hospital ID number
-#' - `admission_date_time` (`character`): Date and time of IP admission in YYYY-MM-DD HH:MM format
+#' - `admission_date_time` (`character`): Date and time of IP admission in YYYY-MM-DD HH:MM format.
 #' - `discharge_date_time` (`character`): Date and time of IP discharge in YYYY-MM-DD HH:MM format.
 #' When `cohort` is not NULL, `nid`, `n_hospitals`, and `time_period` are ignored.
 #'
 #' @param blood_product_list (`character`)\cr Either a string or a character vector
 #' to sample for the variable `blood_product_mapped_omop`.
+#' Items must be real blood product OMOP codes or it will not be used and a warning will be raised.
 #'
-#' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results
+#' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
 #'
 #' @return (`data.table`)\cr A data.table object similar to the "transfusion" table with the following fields:
 #' - `genc_id` (`integer`): Mock encounter ID number; integers starting from 1 or from `cohort`
@@ -1409,10 +1412,6 @@ dummy_transfusion <- function(
       stop("Please provide time_period") # check for date formatting
     } else if (!check_date_format(time_period[1]) || !check_date_format(time_period[2])) {
       stop("Time period is in the incorrect date format, please fix")
-    }
-
-    if (as.Date(time_period[1]) > as.Date(time_period[2])) {
-      stop("Time period needs to end later than it starts")
     }
 
     if (nid < n_hospitals) {
@@ -1470,20 +1469,24 @@ dummy_transfusion <- function(
     # get the start and end dates
     time_period <- as.character(time_period)
 
-    if (grepl("^\\d{4}$", time_period[1])) {
+    if (grepl("^[0-9]{4}$", time_period[1])) {
       start_date <- as.Date(paste0(time_period[1], "-01-01"))
     } else {
       start_date <- as.Date(time_period[1])
     }
 
-    if (grepl("^\\d{4}$", time_period[1])) {
+    if (grepl("^[0-9]{4}$", time_period[2])) {
       end_date <- as.Date(paste0(time_period[2], "-01-01"))
     } else {
       end_date <- as.Date(time_period[2])
     }
 
-    # create data.table with genc_id and hospital_num
-    # average 4.9 repeats per genc_id
+    if (start_date > end_date) {
+      stop("Time period needs to end later than it starts")
+    }
+
+    # create `data.table` with `genc_id` and `hospital_num`
+    # average 4.9 repeats per `genc_id`
     df1 <- generate_id_hospital(nid = nid, n_hospitals = n_hospitals, avg_repeats = 4.9, seed = seed)
 
     ##### sample `issue_date_time` #####
@@ -1512,28 +1515,11 @@ dummy_transfusion <- function(
   # remove seconds and turn into character
   df1[, issue_date_time := substr(as.character(issue_date_time), 1, 16)]
 
-  ##### get `blood_product_mapped_omop` #####
-  # mapping the most common raw names of blood products to OMOP code
-  # also get their average relative proportions
-  blood_product_lookup <- data.table(
-    "blood_product_mapped_omop" = c(
-      "35605159", "35615187", "4022171", "4022173", "4023915", "4023918", "4023919", "4024248", "4024639",
-      "40492966", "4125930", "4130829", "4137859", "4139680", "4144461", "4145204", "4168087", "4215476",
-      "4253788", "42538248", "4300185", "43561947", "608105"
-    ),
-    "blood_product_raw" = c(
-      "C1-ESTERASE", "Intravenous Immune Globulin", "Plasma", "Red Blood Cells", "Albumin",
-      "Pooled Cryoprecipitate", "F9", "CST", "Apheresis Platelets", "AUTO: HPC Apheresis Thaw",
-      "Plasma Expanders", "Pooled Platelets", "SAGM Red blood cells, LR", "Anti-thrombin 3",
-      "E6848 WASHED RBC LR", "E3678 Granulocytes Apheresis, Irradiated (HQ)", "VWF8",
-      "Coag Inhibitor", "Factors", "Surgiflo Thrombin", "SUB", "OCTA", "FFP"
-    ),
-    prob = c(
-      1.74e-4, 2.17e-2, 7.61e-2, 4.3e-1, 2.33e-1, 4.76e-3, 8.82e-3, 3.6e-3, 1.06e-2, 3.11e-4, 6.51e-5,
-      8.55e-2, 1.05e-1, 4.83e-5, 2.15e-4, 3.15e-6, 1.68e-5, 1.9e-4, 1.31e-2, 6.83e-5, 6.45e-3, 1.13e-4,
-      1.61e-4
-    )
-  )
+  ##### get `blood_product_mapped_omop` data from Rda file #####
+  # It maps the most common raw names of blood products to OMOP code
+  # Also gets their average relative proportions
+  blood_product_lookup <- load("data/blood_product_lookup.rda") # for package use
+  blood_product_lookup <- readRDS("data/blood_product_lookup.rds") # only for interactive testing
 
   if (is.null(blood_product_list)) {
     all_blood_product <- blood_product_lookup$blood_product_mapped_omop
@@ -1656,6 +1642,9 @@ dummy_transfusion <- function(
     if (length(blood_product_list) == 1 && !(is.na(blood_product_list))) {
       blood_product_list <- c(blood_product_list)
     }
+
+    # coerce `blood_product_list` to character
+    blood_product_list <- as.character(blood_product_list)
 
     # verify the validity of user-entered blood products
     invalid <- setdiff(blood_product_list, blood_product_lookup$blood_product_mapped_omop)
