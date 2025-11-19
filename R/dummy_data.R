@@ -1251,8 +1251,8 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
     )
 
     # get the `data.table` for simulation
-    # one repeat per genc_id and include 0.81 of IP admits
-    df1 <- generate_id_hospital(cohort = cohort, include_prop = 0.81, avg_repeats = 1, seed = seed)
+    # one repeat per `genc_id`
+    df1 <- generate_id_hospital(cohort = cohort, avg_repeats = 1, seed = seed)
 
     ##### sample `triage_date_time` by adding to IP admit time #####
     # the output of `rsn` will be negative
@@ -1312,8 +1312,8 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
       end_date <- as.Date(time_period[2])
     }
 
-    ##### get genc_id and hospital_num if `cohort` is not provided #####
-    # one repeat per genc_id
+    ##### get `genc_id` and hospital_num if `cohort` is not provided #####
+    # one repeat per `genc_id`
     df1 <- generate_id_hospital(nid = nid, n_hospitals = n_hospitals, avg_repeats = 1, seed = seed)
 
     ##### get `triage_date_time` #####
@@ -1349,7 +1349,7 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' are contained in the GEMINI "transfusion" table, as seen in
 #' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #'
-#' @param nid (`integer`)\cr The number of unique GEMINI encounter IDs to simulate.
+#' @param nid (`integer`)\cr The number of unique mock encounter IDs to simulate.
 #' Encounter IDs may repeat, resulting in a data table with more rows than `nid`. Optional if `cohort` is provided
 #'
 #' @param n_hospitals (`integer`)\cr The number of hospitals to simulate, optional if `cohort` is provided.
@@ -1362,9 +1362,9 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' @param int_code (`character`)\cr A string or character vector
 #' of user-specified intervention codes to include in the returned data table.
 #'
-#' @param cohort (`data.frame|data.table`)\cr Optional, a data frame or data table with columns:
-#' - `genc_id` (`integer`): GEMINI encounter ID
-#' - `hospital_num` (`integer`): Hospital ID
+#' @param cohort (`data.frame or data.table`)\cr Optional, a data frame or data table with columns:
+#' - `genc_id` (`integer`): Mock encounter ID number
+#' - `hospital_num` (`integer`): Mock hospital ID number
 #' - `admission_date_time` (`character`): Date and time of IP admission in YYYY-MM-DD HH:MM format
 #' - `discharge_date_time` (`character`): Date and time of IP discharge in YYYY-MM-DD HH:MM format.
 #' When `cohort` is not NULL, `nid`, `n_hospitals`, and `time_period` are ignored.
@@ -1375,8 +1375,8 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results
 #'
 #' @return (`data.table`)\cr A data.table object similar to the "transfusion" table with the following fields:
-#' - `genc_id` (`integer`): GEMINI encounter ID
-#' - `hospital_num` (`integer`): Hospital ID number
+#' - `genc_id` (`integer`): Mock encounter ID number; integers starting from 1 or from `cohort`
+#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort`
 #' - `issue_date_time` (`character`): The date and time the transfusion was issued, in the format ("yy-mm-dd hh:mm")
 #' - `blood_product_mapped_omop(`character`): Blood product name mapped by GEMINI following international standard.
 #' - `blood_product_raw` (`character`): Type of blood product or component transfused as reported by hospital.
@@ -1438,9 +1438,8 @@ dummy_transfusion <- function(
       tz = "UTC"
     )
 
-    # a proportion of 0.1 of IP admissions have transfusions
-    # on average, they have 4.9 transfusions
-    df1 <- generate_id_hospital(cohort = cohort, 1, avg_repeats = 4.9, seed = seed)
+    # on average, a genc_id has 4.9 transfusions
+    df1 <- generate_id_hospital(cohort = cohort, avg_repeats = 4.9, seed = seed)
     nid <- uniqueN(df1$genc_id)
     n_hospitals <- uniqueN(df1$hospital_num)
 

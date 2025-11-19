@@ -14,7 +14,7 @@ dummy_transfusion(
 )
 }
 \arguments{
-\item{nid}{(\code{integer})\cr The number of unique GEMINI encounter IDs to simulate.
+\item{nid}{(\code{integer})\cr The number of unique mock encounter IDs to simulate.
 Encounter IDs may repeat, resulting in a data table with more rows than \code{nid}. Optional if \code{cohort} is provided}
 
 \item{n_hospitals}{(\code{integer})\cr The number of hospitals to simulate, optional if \code{cohort} is provided.}
@@ -24,10 +24,10 @@ by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yy
 The start date and end date will be (yyyy-01-01 and yyyy-12-31) if (yyyy, yyyy)
 is the date range format provided. Not used when \code{cohort} is provided.}
 
-\item{cohort}{(\code{data.frame|data.table})\cr Optional, a data frame or data table with columns:
+\item{cohort}{(\verb{data.frame or data.table})\cr Optional, a data frame or data table with columns:
 \itemize{
-\item \code{genc_id} (\code{integer}): GEMINI encounter ID
-\item \code{hospital_num} (\code{integer}): Hospital ID
+\item \code{genc_id} (\code{integer}): Mock encounter ID number
+\item \code{hospital_num} (\code{integer}): Mock hospital ID number
 \item \code{admission_date_time} (\code{character}): Date and time of IP admission in YYYY-MM-DD HH:MM format
 \item \code{discharge_date_time} (\code{character}): Date and time of IP discharge in YYYY-MM-DD HH:MM format.
 When \code{cohort} is not NULL, \code{nid}, \code{n_hospitals}, and \code{time_period} are ignored.
@@ -44,8 +44,8 @@ of user-specified intervention codes to include in the returned data table.}
 \value{
 (\code{data.table})\cr A data.table object similar to the "transfusion" table with the following fields:
 \itemize{
-\item \code{genc_id} (\code{integer}): GEMINI encounter ID
-\item \code{hospital_num} (\code{integer}): Hospital ID number
+\item \code{genc_id} (\code{integer}): Mock encounter ID number; integers starting from 1 or from \code{cohort}
+\item \code{hospital_num} (\code{integer}): Mock hospital ID number; integers starting from 1 or from \code{cohort}
 \item \code{issue_date_time} (\code{character}): The date and time the transfusion was issued, in the format ("yy-mm-dd hh:mm")
 \item \verb{blood_product_mapped_omop(}character`): Blood product name mapped by GEMINI following international standard.
 \item \code{blood_product_raw} (\code{character}): Type of blood product or component transfused as reported by hospital.
