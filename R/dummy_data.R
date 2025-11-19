@@ -1009,7 +1009,6 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
     } else if (!check_date_format(time_period[1]) || !check_date_format(time_period[2])) {
       stop("Time period is in the incorrect date format, please fix")
     }
-
   }
 
   if (!is.null(cohort)) {
@@ -1078,7 +1077,7 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
     } else {
       end_date <- as.Date(time_period[2])
     }
-    
+
     if (start_date > end_date) {
       stop("Time period needs to end later than it starts")
     }
@@ -1231,7 +1230,6 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
     } else if (!check_date_format(time_period[1]) || !check_date_format(time_period[2])) {
       stop("Time period is in the incorrect date format, please fix")
     }
-
   }
 
   if (!is.null(cohort)) {
