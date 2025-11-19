@@ -1251,8 +1251,8 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
     )
 
     # get the `data.table` for simulation
-    # one repeat per genc_id and include 0.81 of IP admits
-    df1 <- generate_id_hospital(cohort = cohort, include_prop = 0.81, avg_repeats = 1, seed = seed)
+    # one repeat per `genc_id`
+    df1 <- generate_id_hospital(cohort = cohort, avg_repeats = 1, seed = seed)
 
     ##### sample `triage_date_time` by adding to IP admit time #####
     # the output of `rsn` will be negative
@@ -1365,7 +1365,7 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' The start date and end date will be (yyyy-01-01 and yyyy-12-31) if (yyyy, yyyy)
 #' is the date range format provided. Optional when `cohort` is provided.
 #'
-#' @param cohort  (`data.frame | data.table`)\cr Optional, data frame with the following columns:
+#' @param cohort  (`data.frame or data.table`)\cr Optional, data frame or data table with the following columns:
 #' - `genc_id` (`integer`): GEMINI encounter ID
 #' - `hospital_num` (`integer`): Hospital ID
 #' - `admission_date_time` (`character`): Date and time of IP admission in YYYY-MM-DD HH:MM format
@@ -1375,14 +1375,15 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
 #'
 #' @return (`data.table`)\cr A `data.table` object similar that contains the following fields:
-#' - `genc_id` (`integer`): GEMINI encounter ID
+#' - `genc_id` (`integer`): Mock encounter ID number; integers starting from 1 or from `cohort` if provided
+#' - `hospital_id` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort` if provided
 #' - `modality_mapped` (`character`): Imaging modality: either MRI, CT, or Ultrasound.
 #' - `ordered_date_time` (`character`): The date and time the radiology test was ordered
 #' - `performed_date_time` (`character`): The date and time the radiology test was performed
 #' @examples
 #' cohort <- dummy_ipadmdad()
 #' dummy_radiology(cohort = cohort)
-#' dummy_radiology(n = 1000, n_hospitals = 10, time_period = c(2020, 2023))
+#' dummy_radiology(nid = 1000, n_hospitals = 10, time_period = c(2020, 2023))
 #'
 #' @export
 
@@ -1441,7 +1442,7 @@ dummy_radiology <- function(
       units = "hours"
     ))
 
-    # generate df1 based on cohort
+    # generate `df1` based on `cohort`
     df1 <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 4.5, seed = seed)
 
     nid <- uniqueN(df1$genc_id)
@@ -1451,7 +1452,7 @@ dummy_radiology <- function(
     # in days
     admit_order_gap <- round(rlnorm(nrow(df1), meanlog = 0.817, sdlog = 1.215) - 0.8)
 
-    ####### Set the ordered date time #######
+    ####### Set the `ordered_date_time` #######
     # get ordered date
     df1[, ordered_date := as.Date(admission_date_time) + ddays(admit_order_gap)]
 
@@ -1567,9 +1568,9 @@ dummy_radiology <- function(
     df1[, ordered_date_time := ymd(df1$ordered_date) + dhours(ordered_time)]
 
     ####### Sample `performed_date_time` #######
-    # based on ordered date time
+    # based on `ordered_date_time`
     # sample delay time (hours) between ordered and performed
-    # add delay time to ordered date time
+    # add a delay time to `ordered_date_time`
     df1[, perform_gap := ifelse(rbinom(.N, 1, 0.06),
       0,
       rlnorm(.N, meanlog = 1.3, sdlog = 1.9)
@@ -1581,9 +1582,6 @@ dummy_radiology <- function(
     df1[, ordered_date_time := substr(as.character(ordered_date_time), 1, 16)]
     df1[, performed_date_time := substr(as.character(performed_date_time), 1, 16)]
   }
-
-  # only include the relevant columns from `df1`
-  df1 <- df1[, c("genc_id", "hospital_num", "ordered_date_time", "performed_date_time")]
 
   ####### Get `modality_mapped` #######
   # probabilities of included modalities
@@ -1614,8 +1612,6 @@ dummy_radiology <- function(
   by = hospital_num
   ]
 
-  # return final data table without the extra columns
-  df1 <- df1[, -c("p", "p_no_mri")]
-
-  return(df1[order(df1$genc_id)])
+  # return final data table with only required columns
+  return(df1[order(df1$genc_id), c("genc_id", "hospital_num", "ordered_date_time", "performed_date_time", "modality_mapped")])
 }
