@@ -23,7 +23,7 @@ by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yy
 The start date and end date will be (yyyy-01-01 and yyyy-12-31) if (yyyy, yyyy)
 is the date range format provided. Optional when \code{cohort} is provided.}
 
-\item{cohort}{(\code{data.frame | data.table})\cr Optional, data frame with the following columns:
+\item{cohort}{(\verb{data.frame or data.table})\cr Optional, data frame or data table with the following columns:
 \itemize{
 \item \code{genc_id} (\code{integer}): GEMINI encounter ID
 \item \code{hospital_num} (\code{integer}): Hospital ID
@@ -40,7 +40,8 @@ This optional is optional if \code{cohort} is provided.}
 \value{
 (\code{data.table})\cr A \code{data.table} object similar that contains the following fields:
 \itemize{
-\item \code{genc_id} (\code{integer}): GEMINI encounter ID
+\item \code{genc_id} (\code{integer}): Mock encounter ID number; integers starting from 1 or from \code{cohort} if provided
+\item \code{hospital_id} (\code{integer}): Mock hospital ID number; integers starting from 1 or from \code{cohort} if provided
 \item \code{modality_mapped} (\code{character}): Imaging modality: either MRI, CT, or Ultrasound.
 \item \code{ordered_date_time} (\code{character}): The date and time the radiology test was ordered
 \item \code{performed_date_time} (\code{character}): The date and time the radiology test was performed
@@ -57,6 +58,6 @@ Ultrasound. It does not cover all modalities seen in the actual "radiology" data
 \examples{
 cohort <- dummy_ipadmdad()
 dummy_radiology(cohort = cohort)
-dummy_radiology(n = 1000, n_hospitals = 10, time_period = c(2020, 2023))
+dummy_radiology(nid = 1000, n_hospitals = 10, time_period = c(2020, 2023))
 
 }
