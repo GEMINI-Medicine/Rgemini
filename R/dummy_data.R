@@ -1426,13 +1426,13 @@ dummy_radiology <- function(
     time_period <- as.character(time_period)
 
     # get the start and end date
-    if (grepl("^\\d{4}$", time_period[1])) {
+    if (grepl("^[0-9]{4}$", time_period[1])) {
       start_date <- as.Date(paste0(time_period[1], "-01-01"))
     } else {
       start_date <- as.Date(time_period[1])
     }
 
-    if (grepl("^\\d{4}$", time_period[2])) {
+    if (grepl("^[0-9]{4}$", time_period[2])) {
       end_date <- as.Date(paste0(time_period[2], "-01-01"))
     } else {
       end_date <- as.Date(time_period[2])
