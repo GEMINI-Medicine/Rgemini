@@ -2,7 +2,7 @@
 % Please edit documentation in R/dummy_data.R
 \name{dummy_er}
 \alias{dummy_er}
-\title{Generate simulated ER data}
+\title{Generate simulated ER data.}
 \usage{
 dummy_er(
   nid = 1000,
@@ -19,7 +19,7 @@ Optional when \code{cohort} is provided.}
 \item{n_hospitals}{(\code{integer}) Number of hospitals in the simulated dataset. Optional when \code{cohort} is provided.}
 
 \item{time_period}{(\code{vector})\cr A numeric or character vector containing the data range of the data
-by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy)
+by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy).
 The start date and end date will be (yyyy-01-01 and yyyy-12-31) if (yyyy, yyyy)
 is the date range format provided. Optional when \code{cohort} is provided.}
 
