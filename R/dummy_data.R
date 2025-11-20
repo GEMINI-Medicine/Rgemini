@@ -934,7 +934,7 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 }
 
 #' @title
-#' Generate simulated ipscu data
+#' Generate simulated ipscu data.
 #'
 #' @description
 #' This function creates a dummy dataset with a subset of variables that
@@ -952,9 +952,9 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 #' is the date range format provided. Optional when `cohort` is provided.
 #'
 #'
-#' @param n_hospitals (`integer`)\cr Number of hospitals in simulated dataset
+#' @param n_hospitals (`integer`)\cr Number of hospitals in simulated dataset.
 #'
-#' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results
+#' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
 #'
 #' @param cohort (`data.frame or data.table`)\cr Optional, data frame with the following columns:
 #' - `genc_id` (`integer`): Mock encounter ID number; integers starting from 1
@@ -1090,7 +1090,7 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
       start_date <- as.Date(time_period[1])
     }
 
-    if (grepl("^\\d{4}$", time_period[1])) {
+    if (grepl("^\\d{4}$", time_period[2])) {
       end_date <- as.Date(paste0(time_period[2], "-01-01"))
     } else {
       end_date <- as.Date(time_period[2])
@@ -1173,7 +1173,7 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 }
 
 #' @title
-#' Generate simulated ER data
+#' Generate simulated ER data.
 #'
 #' @description
 #'  This function creates a dummy dataset with a subset of variables that
@@ -1188,7 +1188,7 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 #' @param n_hospitals (`integer`) Number of hospitals in the simulated dataset. Optional when `cohort` is provided.
 #'
 #' @param time_period (`vector`)\cr A numeric or character vector containing the data range of the data
-#' by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy)
+#' by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy).
 #' The start date and end date will be (yyyy-01-01 and yyyy-12-31) if (yyyy, yyyy)
 #' is the date range format provided. Optional when `cohort` is provided.
 #'
@@ -1245,9 +1245,6 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
       stop("Time period is in the incorrect date format, please fix")
     }
 
-    if (as.Date(time_period[1]) > as.Date(time_period[2])) {
-      stop("Time period needs to end later than it starts")
-    }
   }
 
   if (!is.null(cohort)) {
@@ -1320,10 +1317,14 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
       start_date <- as.Date(time_period[1])
     }
 
-    if (grepl("^\\d{4}$", time_period[1])) {
+    if (grepl("^\\d{4}$", time_period[2])) {
       end_date <- as.Date(paste0(time_period[2], "-01-01"))
     } else {
       end_date <- as.Date(time_period[2])
+    }
+    
+    if (time_period[1] > time_period[2]) {
+      stop("Time period needs to end later than it starts")
     }
 
     ##### get genc_id and hospital_num if `cohort` is not provided #####
