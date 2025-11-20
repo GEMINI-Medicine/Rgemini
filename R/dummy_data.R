@@ -1513,11 +1513,10 @@ dummy_transfusion <- function(
   # remove seconds and turn into character
   df1[, issue_date_time := substr(as.character(issue_date_time), 1, 16)]
 
-  ##### get `blood_product_mapped_omop` data from Rda file #####
+  ##### get `blood_product_mapped_omop` data from .Rda file #####
   # It maps the most common raw names of blood products to OMOP code
   # Also gets their average relative proportions
-  blood_product_lookup <- load("data/blood_product_lookup.rda") # for package use
-  blood_product_lookup <- readRDS("data/blood_product_lookup.rds") # only for interactive testing
+  blood_product_lookup <- load("data/blood_product_lookup.rda")
 
   if (is.null(blood_product_list)) {
     all_blood_product <- blood_product_lookup$blood_product_mapped_omop
