@@ -1410,10 +1410,6 @@ dummy_radiology <- function(
       stop("Time period is in the incorrect date format, please fix")
     }
 
-    if (as.Date(time_period[1]) > as.Date(time_period[2])) {
-      stop("Time period needs to end later than it starts")
-    }
-
     if (nid < n_hospitals) {
       stop("Number of encounters must be greater than or equal to the number of hospitals")
     }
@@ -1517,10 +1513,14 @@ dummy_radiology <- function(
       start_date <- as.Date(time_period[1])
     }
 
-    if (grepl("^\\d{4}$", time_period[1])) {
+    if (grepl("^\\d{4}$", time_period[2])) {
       end_date <- as.Date(paste0(time_period[2], "-01-01"))
     } else {
       end_date <- as.Date(time_period[2])
+    }
+
+    if (start_date > end_date) {
+      stop("Time period needs to end later than it starts")
     }
 
     # get a data table with hospital ID and encounter ID
