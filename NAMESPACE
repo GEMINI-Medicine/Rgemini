@@ -28,10 +28,7 @@ export(dummy_er)
 export(dummy_ipadmdad)
 export(dummy_ipscu)
 export(dummy_lab)
-<<<<<<< HEAD
 export(dummy_transfusion)
-=======
->>>>>>> 2de14c4d4fd894c2351895a5f2d4262f2f623025
 export(elixhauser_comorbidity_index)
 export(episodes_of_care)
 export(er_los)
