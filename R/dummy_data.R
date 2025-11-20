@@ -986,13 +986,13 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
     # User can enter a year range or specific dates
     # Can be of type integer or character
     # convert time_period into Date types
-    if (grepl("^\\d{4}$", time_period[1])) {
+    if (grepl("^[0-9]{4}$", time_period[1])) {
       start_date <- as.Date(paste0(time_period[1], "-01-01"))
     } else {
       start_date <- as.Date(time_period[1])
     }
 
-    if (grepl("^\\d{4}$", time_period[2])) {
+    if (grepl("^[0-9]{4}$", time_period[2])) {
       end_date <- as.Date(paste0(time_period[2], "-01-01"))
     } else {
       end_date <- as.Date(time_period[2])
@@ -1168,8 +1168,8 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
     )
 
     # get the `data.table` for simulation
-    # one repeat per `genc_id` and include 0.81 of IP admits
-    df1 <- generate_id_hospital(cohort = cohort, include_prop = 0.81, avg_repeats = 1, seed = seed)
+    # one repeat per `genc_id`
+    df1 <- generate_id_hospital(cohort = cohort, avg_repeats = 1, seed = seed)
 
     ##### sample `triage_date_time` by adding to IP admit time #####
     # the output of `rsn` will be negative
@@ -1217,13 +1217,13 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
     # User can enter a year range or specific dates
     # Can be of type integer or character
     # Convert time_period into Date types
-    if (grepl("^\\d{4}$", time_period[1])) {
+    if (grepl("^[0-9]{4}$", time_period[1])) {
       start_date <- as.Date(paste0(time_period[1], "-01-01"))
     } else {
       start_date <- as.Date(time_period[1])
     }
 
-    if (grepl("^\\d{4}$", time_period[2])) {
+    if (grepl("^[0-9]{4}$", time_period[2])) {
       end_date <- as.Date(paste0(time_period[2], "-01-01"))
     } else {
       end_date <- as.Date(time_period[2])
