@@ -943,13 +943,15 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 #' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
 #'
 #' @param cohort (`data.frame or data.table`)\cr Optional, data frame with the following columns:
-#' - `genc_id` (`integer`): GEMINI encounter ID
-#' - `hospital_num` (`integer`): Hospital ID
+#' - `genc_id` (`integer`): Mock encounter ID number
+#' - `hospital_num` (`integer`): Mock hospital ID number
 #' - `admission_date_time` (`character`): Date and time of IP admission in YYYY-MM-DD HH:MM format
 #' - `discharge_date_time` (`character`): Date and time of IP discharge in YYYY-MM-DD HH:MM format.
 #' When `cohort` is not NULL, `nid`, `n_hospitals`, and `time_period` are ignored.
 #'
 #' @return (`data.table`)\cr A data.table object similar to the "ipscu" table that contains the following fields:
+#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1 or from `cohort`
+#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort`
 #' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1 or from `cohort`
 #' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort`
 #' - `scu_admit_date_time` (`character`): Date and time of SCU admission in YYYY-MM-DD HH:MM format
@@ -1054,10 +1056,6 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
     }
 
     ####### if `cohort` is not provided, create `df1` based on `nid` and `n_hospitals` #######
-    # Check that the given time period makes sense
-    if (as.Date(time_period[1]) > as.Date(time_period[2])) {
-      stop("Time period needs to end later than it starts")
-    }
     if (nid < n_hospitals) {
       stop("Number of encounters must be greater than or equal to the number of hospitals")
     }
@@ -1078,6 +1076,11 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
       end_date <- as.Date(time_period[2])
     }
 
+    if (start_date > end_date) {
+      stop("Time period needs to end later than it starts")
+    }
+
+    # Check that the given time period makes sense
     if (start_date > end_date) {
       stop("Time period needs to end later than it starts")
     }
@@ -1188,8 +1191,8 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 #' @param seed (`integer`) Optional, a number for setting the seed to get reproducible results.
 #'
 #' @return (`data.table`) A data.table object similar to the "er" table that contains the following fields:
-#' - `genc_id` (`integer`): GEMINI encounter ID
-#' - `hospital_num` (`integer`): Hospital ID
+#' - `genc_id` (`integer`): Mock encounter ID number; integers starting from 1 or from `cohort`
+#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort`
 #' - `triage_date_time` (`character`): The date and time of triage with format "%Y-%m-%d %H:%M"
 #'
 #' @import lubridate
