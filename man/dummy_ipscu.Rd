@@ -26,8 +26,13 @@ is the date range format provided. Optional when \code{cohort} is provided.}
 
 \item{cohort}{(\verb{data.frame or data.table})\cr Optional, data frame with the following columns:
 \itemize{
+<<<<<<< HEAD
 \item \code{genc_id} (\code{integer}): Mock encounter ID number; integers starting from 1
 \item \code{hospital_num} (\code{integer}): Mock hospital ID number; integers starting from 1
+=======
+\item \code{genc_id} (\code{integer}): Mock encounter ID number
+\item \code{hospital_num} (\code{integer}): Mock hospital ID number
+>>>>>>> 45bf75e05541f1ea2f7806d8a7e9b56497210de7
 \item \code{admission_date_time} (\code{character}): Date and time of IP admission in YYYY-MM-DD HH:MM format
 \item \code{discharge_date_time} (\code{character}): Date and time of IP discharge in YYYY-MM-DD HH:MM format.
 When \code{cohort} is not NULL, \code{nid}, \code{n_hospitals}, and \code{time_period} are ignored.
@@ -38,8 +43,8 @@ When \code{cohort} is not NULL, \code{nid}, \code{n_hospitals}, and \code{time_p
 \value{
 (\code{data.table})\cr A data.table object similar to the "ipscu" table that contains the following fields:
 \itemize{
-\item \code{genc_id} (\code{integer}): Mock encounter ID integers start from 1
-\item \code{hospital_num} (\code{integer}): Mock hospital ID number; integers start from 1
+\item \code{genc_id} (\code{integer}): Mock encounter ID; integers starting from 1 or from \code{cohort}
+\item \code{hospital_num} (\code{integer}): Mock hospital ID number; integers starting from 1 or from \code{cohort}
 \item \code{scu_admit_date_time} (\code{character}): Date and time of SCU admission in YYYY-MM-DD HH:MM format
 \item \code{scu_discharge_date_time} (\code{character}): Date and time of SCU admission in YYYY-MM-DD HH:MM format
 \item \code{icu_flag} (\code{logical}): Flag specifying whether the encounter was admitted to the ICU or not.

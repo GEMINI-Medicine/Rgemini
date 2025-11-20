@@ -604,82 +604,6 @@ dummy_ipadmdad <- function(nid = 1000,
   return(data)
 }
 
-
-#' @title
-#' Generated simulated lab data
-#'
-#' @description
-#' Designed to mimic the most important elements of the GEMINI lab table as defined in the
-#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
-#'
-#' @param id (`numeric`)\cr
-#' A single identifier that is repeated to match the length of `value`.
-#'
-#' @param omop (`character`)\cr
-#' Codes corresponding to OMOP concept identifiers.
-#'
-#' @param value (`numeric`)\cr
-#' Simulated result values for each lab test measurement.
-#'
-#' @param unit (`character`)\cr
-#' Units corresponding to the particular lab test as defined by `omop`. It is repeated to match the length of `value`.
-#'
-#' @param mintime (`character`)\cr
-#' In the format yyyy-mm-dd hh:mm. Earliest recorded test performed time.
-#'
-#' @return (`data.table`)\cr
-#' With the columns, `id`, `omop`, `value`, `unit`, and `collection_date_time` as described above.
-#'
-#' @export
-#'
-#' @examples
-#' lab <- dummy_lab(1, 3024641, c(7, 8, 15, 30), "mmol/L", "2023-01-02 08:00")
-#'
-dummy_lab <- function(id, omop, value, unit, mintime) {
-  res <- data.table(
-    genc_id = rep(id, length(value)),
-    test_type_mapped_omop = omop,
-    result_value = value,
-    result_unit = rep(unit, length(value)),
-    collection_date_time = format(as.POSIXct(mintime, tz = "UTC") +
-      sample(0:(24 * 60 * 60 - 1),
-        size = length(value),
-        replace = TRUE
-      ), "%Y-%m-%d %H:%M")
-  )
-  return(res)
-}
-
-
-#' @title
-#' Generated simulated administrative data
-#'
-#' @description
-#' Designed to partially mimic the `admdad` table as defined in the
-#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
-#'
-#' @param id (`numeric`)\cr
-#' A single identifier that is repeated to match the length of `value`.
-#'
-#' @param admtime (`character`)\cr
-#' In the format yyyy-mm-dd hh:mm. Corresponds to the admission time of the encounter.
-#'
-#' @return (`data.table`)\cr
-#' With the columns `id` and `admission_date_time` as described above.
-#'
-#' @export
-#'
-#' @examples
-#' admdad <- dummy_admdad(1, "2023-01-02 00:00")
-#'
-dummy_admdad <- function(id, admtime) {
-  res <- data.table(
-    genc_id = id,
-    admission_date_time = format(as.POSIXct(admtime, tz = "UTC"), "%Y-%m-%d %H:%M")
-  )
-  return(res)
-}
-
 #' @title
 #' Sample SCU admission and discharge date times by genc_id
 #'
@@ -957,15 +881,15 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 #' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
 #'
 #' @param cohort (`data.frame or data.table`)\cr Optional, data frame with the following columns:
-#' - `genc_id` (`integer`): Mock encounter ID number; integers starting from 1
-#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1
+#' - `genc_id` (`integer`): Mock encounter ID number
+#' - `hospital_num` (`integer`): Mock hospital ID number
 #' - `admission_date_time` (`character`): Date and time of IP admission in YYYY-MM-DD HH:MM format
 #' - `discharge_date_time` (`character`): Date and time of IP discharge in YYYY-MM-DD HH:MM format.
 #' When `cohort` is not NULL, `nid`, `n_hospitals`, and `time_period` are ignored.
 #'
 #' @return (`data.table`)\cr A data.table object similar to the "ipscu" table that contains the following fields:
-#' - `genc_id` (`integer`): Mock encounter ID integers start from 1
-#' - `hospital_num` (`integer`): Mock hospital ID number; integers start from 1
+#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1 or from `cohort`
+#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort`
 #' - `scu_admit_date_time` (`character`): Date and time of SCU admission in YYYY-MM-DD HH:MM format
 #' - `scu_discharge_date_time` (`character`): Date and time of SCU admission in YYYY-MM-DD HH:MM format
 #' - `icu_flag` (`logical`): Flag specifying whether the encounter was admitted to the ICU or not.
@@ -1023,10 +947,6 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
     } else if (!check_date_format(time_period[1]) || !check_date_format(time_period[2])) {
       stop("Time period is in the incorrect date format, please fix")
     }
-
-    if (as.Date(time_period[1]) > as.Date(time_period[2])) {
-      stop("Time period needs to end later than it starts")
-    }
   }
 
   if (!is.null(cohort)) {
@@ -1072,10 +992,6 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
     }
 
     ####### if `cohort` is not provided, create `df1` based on `nid` and `n_hospitals` #######
-    # Check that the given time period makes sense
-    if (as.Date(time_period[1]) > as.Date(time_period[2])) {
-      stop("Time period needs to end later than it starts")
-    }
     if (nid < n_hospitals) {
       stop("Number of encounters must be greater than or equal to the number of hospitals")
     }
@@ -1094,6 +1010,11 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
       end_date <- as.Date(paste0(time_period[2], "-01-01"))
     } else {
       end_date <- as.Date(time_period[2])
+    }
+
+    # Check that the given time period makes sense
+    if (start_date > end_date) {
+      stop("Time period needs to end later than it starts")
     }
 
     ####### Generate the data table #######
@@ -1244,7 +1165,6 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
     } else if (!check_date_format(time_period[1]) || !check_date_format(time_period[2])) {
       stop("Time period is in the incorrect date format, please fix")
     }
-
   }
 
   if (!is.null(cohort)) {
@@ -1322,8 +1242,8 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
     } else {
       end_date <- as.Date(time_period[2])
     }
-    
-    if (time_period[1] > time_period[2]) {
+
+    if (start_date > end_date) {
       stop("Time period needs to end later than it starts")
     }
 
