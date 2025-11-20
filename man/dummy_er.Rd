@@ -2,7 +2,8 @@
 % Please edit documentation in R/dummy_data.R
 \name{dummy_er}
 \alias{dummy_er}
-\title{Generate simulated ER data.}
+\title{Generate simulated ER data.
+Generate simulated ER data.}
 \usage{
 dummy_er(
   nid = 1000,
@@ -20,11 +21,14 @@ Optional when \code{cohort} is provided.}
 
 \item{time_period}{(\code{vector})\cr A numeric or character vector containing the data range of the data
 by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy).
+by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy).
 The start date and end date will be (yyyy-01-01 and yyyy-12-31) if (yyyy, yyyy)
 is the date range format provided. Optional when \code{cohort} is provided.}
 
 \item{cohort}{(\verb{data.frame or data.table}): Optional, a data frame with the following columns:
 \itemize{
+\item \code{genc_id} (\code{integer}): Mock encounter ID
+\item \code{hospital_num} (\code{integer}): Mock hospital ID number
 \item \code{genc_id} (\code{integer}): Mock encounter ID
 \item \code{hospital_num} (\code{integer}): Mock hospital ID number
 \item \code{admission_date_time} (\code{character}): The date and time of admission to the hospital with format "\%Y-\%m-\%d \%H:\%M"
@@ -37,13 +41,8 @@ When \code{cohort} is not NULL, \code{nid}, \code{n_hospitals}, and \code{time_p
 \value{
 (\code{data.table}) A data.table object similar to the "er" table that contains the following fields:
 \itemize{
-<<<<<<< HEAD
 \item \code{genc_id} (\code{integer}): Mock encounter ID; integers starting from 1 or from \code{cohort} if provided
 \item \code{hospital_num} (\code{integer}): Mock hospital ID; integers starting from 1 or from \code{cohort} if provided
-=======
-\item \code{genc_id} (\code{integer}): Mock encounter ID number; integers starting from 1 or from \code{cohort}
-\item \code{hospital_num} (\code{integer}): Mock hospital ID number; integers starting from 1 or from \code{cohort}
->>>>>>> 45bf75e05541f1ea2f7806d8a7e9b56497210de7
 \item \code{triage_date_time} (\code{character}): The date and time of triage with format "\%Y-\%m-\%d \%H:\%M"
 }
 }
