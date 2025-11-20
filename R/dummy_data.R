@@ -986,13 +986,13 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
     # User can enter a year range or specific dates
     # Can be of type integer or character
     # convert time_period into Date types
-    if (grepl("^\\d{4}$", time_period[1])) {
+    if (grepl("^[0-9]{4}$", time_period[1])) {
       start_date <- as.Date(paste0(time_period[1], "-01-01"))
     } else {
       start_date <- as.Date(time_period[1])
     }
 
-    if (grepl("^\\d{4}$", time_period[2])) {
+    if (grepl("^[0-9]{4}$", time_period[2])) {
       end_date <- as.Date(paste0(time_period[2], "-01-01"))
     } else {
       end_date <- as.Date(time_period[2])
@@ -1217,13 +1217,13 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
     # User can enter a year range or specific dates
     # Can be of type integer or character
     # Convert time_period into Date types
-    if (grepl("^\\d{4}$", time_period[1])) {
+    if (grepl("^[0-9]{4}$", time_period[1])) {
       start_date <- as.Date(paste0(time_period[1], "-01-01"))
     } else {
       start_date <- as.Date(time_period[1])
     }
 
-    if (grepl("^\\d{4}$", time_period[2])) {
+    if (grepl("^[0-9]{4}$", time_period[2])) {
       end_date <- as.Date(paste0(time_period[2], "-01-01"))
     } else {
       end_date <- as.Date(time_period[2])
