@@ -1287,8 +1287,8 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' is the date range format provided. Optional when `cohort` is provided.
 #'
 #' @param cohort  (`data.frame or data.table`)\cr Optional, data frame or data table with the following columns:
-#' - `genc_id` (`integer`): GEMINI encounter ID
-#' - `hospital_num` (`integer`): Hospital ID
+#' - `genc_id` (`integer`): Mock encounter ID number
+#' - `hospital_num` (`integer`): Mock hospital ID number
 #' - `admission_date_time` (`character`): Date and time of IP admission in YYYY-MM-DD HH:MM format
 #' - `discharge_date_time` (`character`): Date and time of IP discharge in YYYY-MM-DD HH:MM format.
 #' When `cohort` is not NULL, `nid`, `n_hospitals`, and `time_period` are ignored.
