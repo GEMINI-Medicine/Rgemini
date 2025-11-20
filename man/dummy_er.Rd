@@ -2,7 +2,7 @@
 % Please edit documentation in R/dummy_data.R
 \name{dummy_er}
 \alias{dummy_er}
-\title{Generate simulated ER data}
+\title{Generate simulated ER data.}
 \usage{
 dummy_er(
   nid = 1000,
@@ -25,8 +25,8 @@ is the date range format provided. Optional when \code{cohort} is provided.}
 
 \item{cohort}{(\verb{data.frame or data.table}): Optional, a data frame with the following columns:
 \itemize{
-\item \code{genc_id} (\code{integer}): Mock encounter ID; integers starting from 1
-\item \code{hospital_num} (\code{integer}): Mock hospital ID number; integers starting from 1
+\item \code{genc_id} (\code{integer}): Mock encounter ID
+\item \code{hospital_num} (\code{integer}): Mock hospital ID number
 \item \code{admission_date_time} (\code{character}): The date and time of admission to the hospital with format "\%Y-\%m-\%d \%H:\%M"
 \item \code{discharge_date_time} (\code{character}): The date and time of discharge from the hospital with format "\%Y-\%m-\%d \%H:\%M"
 When \code{cohort} is not NULL, \code{nid}, \code{n_hospitals}, and \code{time_period} are ignored.

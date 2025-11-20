@@ -590,6 +590,76 @@ dummy_ipadmdad <- function(nid = 1000,
   return(data)
 }
 
+#' @title
+#' Generated simulated lab data
+#'
+#' @description
+#' Designed to mimic the most important elements of the GEMINI lab table as defined in the
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
+#'
+#' @param id (`numeric`)\cr
+#' A single identifier that is repeated to match the length of `value`.
+#'
+#' @param omop (`character`)\cr
+#' Codes corresponding to OMOP concept identifiers.
+#'
+#' @param value (`numeric`)\cr
+#' Simulated result values for each lab test measurement.
+#'
+#' @param unit (`character`)\cr
+#' Units corresponding to the particular lab test as defined by `omop`. It is repeated to match the length of `value`.
+#'
+#' @param mintime (`character`)\cr
+#' In the format yyyy-mm-dd hh:mm. Earliest recorded test performed time.
+#'
+#' @return (`data.table`)\cr
+#' With the columns, `id`, `omop`, `value`, `unit`, and `collection_date_time` as described above.
+#'
+#' @export
+#'
+#' @examples
+#' lab <- dummy_lab(1, 3024641, c(7, 8, 15, 30), "mmol/L", "2023-01-02 08:00")
+#'
+dummy_lab <- function(id, omop, value, unit, mintime) {
+  res <- data.table(
+    genc_id = rep(id, length(value)),
+    test_type_mapped_omop = omop,
+    result_value = value,
+    result_unit = rep(unit, length(value)),
+    collection_date_time = format(as.POSIXct(mintime, tz = "UTC") + sample(0:(24 * 60 * 60 - 1), size = length(value), replace = TRUE), "%Y-%m-%d %H:%M")
+  )
+  return(res)
+}
+
+
+#' @title
+#' Generated simulated administrative data
+#'
+#' @description
+#' Designed to partially mimic the `admdad` table as defined in the
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
+#'
+#' @param id (`numeric`)\cr
+#' A single identifier that is repeated to match the length of `value`.
+#'
+#' @param admtime (`character`)\cr
+#' In the format yyyy-mm-dd hh:mm. Corresponds to the admission time of the encounter.
+#'
+#' @return (`data.table`)\cr
+#' With the columns `id` and `admission_date_time` as described above.
+#'
+#' @export
+#'
+#' @examples
+#' admdad <- dummy_admdad(1, "2023-01-02 00:00")
+#'
+dummy_admdad <- function(id, admtime) {
+  res <- data.table(
+    genc_id = id,
+    admission_date_time = format(as.POSIXct(admtime, tz = "UTC"), "%Y-%m-%d %H:%M")
+  )
+  return(res)
+}
 
 #' @title
 #' Generated simulated lab data
@@ -1162,7 +1232,7 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 }
 
 #' @title
-#' Generate simulated ER data
+#' Generate simulated ER data.
 #'
 #' @description
 #'  This function creates a dummy dataset with a subset of variables that
@@ -1182,8 +1252,8 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 #' is the date range format provided. Optional when `cohort` is provided.
 #'
 #' @param cohort (`data.frame or data.table`): Optional, a data frame with the following columns:
-#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1
-#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1
+#' - `genc_id` (`integer`): Mock encounter ID
+#' - `hospital_num` (`integer`): Mock hospital ID number
 #' - `admission_date_time` (`character`): The date and time of admission to the hospital with format "%Y-%m-%d %H:%M"
 #' - `discharge_date_time` (`character`): The date and time of discharge from the hospital with format "%Y-%m-%d %H:%M"
 #' When `cohort` is not NULL, `nid`, `n_hospitals`, and `time_period` are ignored.
@@ -1338,10 +1408,8 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
   # turn date times into a string and remove seconds
   df1[, triage_date_time := substr(as.character(triage_date_time), 1, 16)]
 
-  # keep only the relevant columns and return
-  df1 <- df1[, c("genc_id", "hospital_num", "triage_date_time")]
-
-  return(df1[order(df1$genc_id)])
+  # return only with required columns
+  return(df1[order(df1$genc_id), c("genc_id", "hospital_num", "triage_date_time")])
 }
 
 #' @title
