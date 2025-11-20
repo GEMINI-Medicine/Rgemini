@@ -1080,7 +1080,7 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 }
 
 #' @title
-#' Generate simulated ER data
+#' Generate simulated ER data.
 #'
 #' @description
 #'  This function creates a dummy dataset with a subset of variables that
@@ -1095,13 +1095,13 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 #' @param n_hospitals (`integer`) Number of hospitals in the simulated dataset. Optional when `cohort` is provided.
 #'
 #' @param time_period (`vector`)\cr A numeric or character vector containing the data range of the data
-#' by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy)
+#' by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy).
 #' The start date and end date will be (yyyy-01-01 and yyyy-12-31) if (yyyy, yyyy)
 #' is the date range format provided. Optional when `cohort` is provided.
 #'
 #' @param cohort (`data.frame or data.table`): Optional, a data frame with the following columns:
-#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1
-#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1
+#' - `genc_id` (`integer`): Mock encounter ID
+#' - `hospital_num` (`integer`): Mock hospital ID number
 #' - `admission_date_time` (`character`): The date and time of admission to the hospital with format "%Y-%m-%d %H:%M"
 #' - `discharge_date_time` (`character`): The date and time of discharge from the hospital with format "%Y-%m-%d %H:%M"
 #' When `cohort` is not NULL, `nid`, `n_hospitals`, and `time_period` are ignored.
@@ -1256,10 +1256,8 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
   # turn date times into a string and remove seconds
   df1[, triage_date_time := substr(as.character(triage_date_time), 1, 16)]
 
-  # keep only the relevant columns and return
-  df1 <- df1[, c("genc_id", "hospital_num", "triage_date_time")]
-
-  return(df1[order(df1$genc_id)])
+  # return only with required columns
+  return(df1[order(df1$genc_id), c("genc_id", "hospital_num", "triage_date_time")])
 }
 
 #' @title
