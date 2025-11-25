@@ -1392,7 +1392,7 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' - `da21uid` (`integer`): Dissemination area ID based on 2021 Canadian census data using PCCF Version 8A
 #'
 #' @import DBI
-#' 
+#'
 #' @export
 
 dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = NULL, da21uid = NULL, seed = NULL) {
@@ -1526,9 +1526,9 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
 #' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort` if provided
 #' - `admitting_physician_gim` (`logical`): Whether the admitting physician attends a general medicine ward
 #' - `discharging_physician_gim` (`logical`): Whether the discharging physician attends a general medicine ward
-#' - `adm_phy_cpso_mapped` (`integer`): Unique hash of admitting physician CPSO Number
-#' - `mrp_cpso_mapped` (`integer`): Unique hash of most responsible physician (MRP) CPSO Number
-#' - `dis_phy_cpso_mapped` (`integer`): Unique hash of discharging physician CPSO Number
+#' - `adm_phy_cpso_mapped` (`integer`): Synthetic mock CPSO number (with prefix 'SYN_') of admitting physician
+#' - `mrp_cpso_mapped` (`integer`): Synthetic mock CPSO number (with prefix 'SYN_') of most responsible physician (MRP)
+#' - `dis_phy_cpso_mapped` (`integer`): Synthetic mock CPSO number (with prefix 'SYN_') of discharging physician
 #'
 #' @examples
 #' dummy_physicians(nid = 1000, n_hospitals = 10, seed = 1)
@@ -1611,7 +1611,7 @@ dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed =
   # sample all physician numbers
   # each hospital has about 280 physicians on average
   # multiply this average by n_hospitals to get the total set of physicians across all hospitals
-  sample_cpso <- round(runif(280 * n_hospitals, min = 1e4, max = 3e5))
+  sample_cpso <- paste0("SYN_", round(runif(280 * n_hospitals, min = 1e4, max = 3e5)))
 
   # sample a set of unique physicians for each hospital
   hosp_na_prop$n_physicians <- rsn_trunc(n_hospitals, 470, 220, -1.6, 1, 650)
