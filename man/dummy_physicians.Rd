@@ -31,9 +31,9 @@ following fields:
 \item \code{hospital_num} (\code{integer}): Mock hospital ID number; integers starting from 1 or from \code{cohort} if provided
 \item \code{admitting_physician_gim} (\code{logical}): Whether the admitting physician attends a general medicine ward
 \item \code{discharging_physician_gim} (\code{logical}): Whether the discharging physician attends a general medicine ward
-\item \code{adm_phy_cpso_mapped} (\code{integer}): Unique hash of admitting physician CPSO Number
-\item \code{mrp_cpso_mapped} (\code{integer}): Unique hash of most responsible physician (MRP) CPSO Number
-\item \code{dis_phy_cpso_mapped} (\code{integer}): Unique hash of discharging physician CPSO Number
+\item \code{adm_phy_cpso_mapped} (\code{integer}): Synthetic mock CPSO number (with prefix 'SYN_') of admitting physician
+\item \code{mrp_cpso_mapped} (\code{integer}): Synthetic mock CPSO number (with prefix 'SYN_') of most responsible physician (MRP)
+\item \code{dis_phy_cpso_mapped} (\code{integer}): Synthetic mock CPSO number (with prefix 'SYN_') of discharging physician
 }
 }
 \description{
