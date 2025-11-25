@@ -1526,9 +1526,9 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
 #' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort` if provided
 #' - `admitting_physician_gim` (`logical`): Whether the admitting physician attends a general medicine ward
 #' - `discharging_physician_gim` (`logical`): Whether the discharging physician attends a general medicine ward
-#' - `adm_phy_cpso_mapped` (`integer`): Unique hash of admitting physician CPSO Number
-#' - `mrp_cpso_mapped` (`integer`): Unique hash of most responsible physician (MRP) CPSO Number
-#' - `dis_phy_cpso_mapped` (`integer`): Unique hash of discharging physician CPSO Number
+#' - `adm_phy_cpso_mapped` (`integer`): Synthetic mock CPSO number (with prefix 'SYN_') of admitting physician
+#' - `mrp_cpso_mapped` (`integer`): Synthetic mock CPSO number (with prefix 'SYN_') of most responsible physician (MRP)
+#' - `dis_phy_cpso_mapped` (`integer`): Synthetic mock CPSO number (with prefix 'SYN_') of discharging physician
 #'
 #' @examples
 #' dummy_physicians(nid = 1000, n_hospitals = 10, seed = 1)
