@@ -1611,7 +1611,7 @@ dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed =
   # sample all physician numbers
   # each hospital has about 280 physicians on average
   # multiply this average by n_hospitals to get the total set of physicians across all hospitals
-  sample_cpso <- round(runif(280 * n_hospitals, min = 1e4, max = 3e5))
+  sample_cpso <- paste0("SYN_", round(runif(280 * n_hospitals, min = 1e4, max = 3e5)))
 
   # sample a set of unique physicians for each hospital
   hosp_na_prop$n_physicians <- rsn_trunc(n_hospitals, 470, 220, -1.6, 1, 650)
