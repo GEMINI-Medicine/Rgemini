@@ -1376,6 +1376,8 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' dummy_radiology(cohort = cohort)
 #' dummy_radiology(nid = 1000, n_hospitals = 10, time_period = c(2020, 2023))
 #'
+#' @import Rgemini
+#'
 #' @export
 
 dummy_radiology <- function(
@@ -1388,14 +1390,16 @@ dummy_radiology <- function(
       colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
       coltypes = c("integer", "integer", "", "")
     )
-cohort$admission_date_time <- Rgemini::convert_dt(cohort$admission_date_time, "ymd HM")
-cohort$discharge_date_time <- Rgemini::convert_dt(cohort$discharge_date_time , "ymd HM")
+
+    cohort$admission_date_time <- Rgemini::convert_dt(cohort$admission_date_time, "ymd HM")
+    cohort$discharge_date_time <- Rgemini::convert_dt(cohort$discharge_date_time , "ymd HM")
+
   } else { # when `cohort` is not provided
     check_input(list(nid, n_hospitals), "integer")
 
-    #  check if time_period is provided/has both start and end dates
+    # check if time_period is provided/has both start and end dates
     Rgemini:::check_input(time_period, c("numeric", "character", "POSIXct"), length = 2)
-    } else if (!check_date_format(time_period[1]) || !check_date_format(time_period[2])) {
+    if (!check_date_format(time_period[1]) || !check_date_format(time_period[2])) {
       stop("Time period is in the incorrect date format, please fix")
     }
 
