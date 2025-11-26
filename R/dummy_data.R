@@ -1387,9 +1387,8 @@ dummy_radiology <- function(
       colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
       coltypes = c("integer", "integer", "", "")
     )
-    if (!all(check_date_format(c(cohort$admission_date_time, cohort$discharge_date_time), check_time = TRUE))) {
-      stop("An invalid IP admission and/or discharge date time input was provided in cohort.")
-    }
+cohort$admission_date_time <- Rgemini::convert_dt(cohort$admission_date_time, "ymd HM")
+cohort$discharge_date_time <- Rgemini::convert_dt(cohort$discharge_date_time , "ymd HM")
   } else { # when `cohort` is not provided
     check_input(list(nid, n_hospitals), "integer")
 
