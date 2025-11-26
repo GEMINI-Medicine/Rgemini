@@ -1345,7 +1345,7 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' @param nid (`integer`)\cr Number of unique encounter IDs to simulate.
 #' Encounter IDs may repeat to simulate multiple radiology tests,
 #' resulting in a data table with more rows than `nid`.
-#' This input is optional if `cohort` is provided.
+#' Alternatively, if users provide a `cohort` input, the function will instead simulate radiology data for all `genc_ids` in the user-defined cohort table.
 #'
 #' @param n_hospitals(`integer`)\cr The number of hospitals to simulate.
 #' This is optional if `cohort` is provided.
