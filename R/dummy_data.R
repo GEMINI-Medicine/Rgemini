@@ -500,7 +500,7 @@ dummy_ipadmdad <- function(nid = 1000,
     hosp_data[, discharge_date_time := format(
       round_date(as.POSIXct(admission_date_time, tz = "UTC") +
         ddays(los), unit = "days") +
-        dhours(sample_time_shifted(.N, xi = 11.37, omega = 4.79, alpha = 1.67, max = 28, seed = seed)),
+        dhours(sample_time_shifted(.N, xi = 11.37, omega = 4.79, alpha = 1.67, seed = seed)),
       format = "%Y-%m-%d %H:%M", tz = "UTC"
     )]
 
@@ -1452,7 +1452,7 @@ dummy_radiology <- function(
       df1[
         ordered_date_time >= discharge_date_time,
         ordered_date_time := as.Date(admission_date_time) +
-          dhours(sample_time_shifted(.N, xi = 7.9, omega = 8.8, alpha = 4.5, min = 4, max = 30))
+          dhours(sample_time_shifted(.N, xi = 7.9, omega = 9.0, alpha = 5.2, min = 4, max = 30))
       ]
     }
 
@@ -1480,7 +1480,7 @@ dummy_radiology <- function(
         rlnorm_trunc(
           .N,
           meanlog = 1.3, sdlog = 1.9, min = 0, max = min(as.numeric(
-            difftime(discharge_date_time, ordered_date_time, units = "hours"), 6 * 30.4 * 24)
+            difftime(discharge_date_time, ordered_date_time, units = "hours"), 6 * 30.4 * 24) # set the max to 6 months gap
           )
         )
       )]
@@ -1557,14 +1557,26 @@ dummy_radiology <- function(
 
     ####### Sample `performed_date_time` #######
     # based on `ordered_date_time`
-    # sample delay time (hours) between ordered and performed
-    # add a delay time to `ordered_date_time`
+    # sample delay time (days) between ordered and performed
+    # add a time to get `performed_date_time`
     df1[, perform_gap := ifelse(rbinom(.N, 1, 0.06),
       0,
-      rlnorm(.N, meanlog = 1.3, sdlog = 1.9)
+      rlnorm(.N, meanlog = -1.9, sdlog = 1.86)
     )]
 
-    df1[, performed_date_time := ordered_date_time + dhours(perform_gap)]
+    df1[, performed_time := sample_time_shifted(.N, 8.34, 8.15, 4.84, max = 30)]
+
+    df1[, performed_date_time := round_date(ordered_date_time + ddays(perform_gap), unit = "day") + dhours(performed_time)]
+
+    # ensure that performed does not come before ordered
+    # if it was sampled like so, add hours to `ordered_date_time`
+    df1[performed_date_time < ordered_date_time, performed_date_time := ordered_date_time + dhours(rlnorm(.N, 1.3, 1.9))]
+    
+    # a few encounters have no gap between ordered and performed date time
+    df1[, performed_date_time := ifelse(rbinom(.N, 1, 0.06),
+      ordered_date_time,
+      performed_date_time
+    )]
 
     # remove seconds from date times and turn it into a string
     df1[, ordered_date_time := substr(as.character(ordered_date_time), 1, 16)]
