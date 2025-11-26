@@ -1584,8 +1584,6 @@ dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed =
       hospital_num
     ) %>%
     reframe(
-      admitting_phy_gim_NA = runif(1, 0, 1),
-      discharging_phy_gim_NA = runif(1, 0, 1),
       adm_phy_cpso_mapped_NA = rbeta(1, 0.2, 1.1),
       dis_phy_cpso_mapped_NA = rbeta(1, 0.25, 2.7),
       mrp_cpso_mapped_NA = rbeta(1, 0.4, 11.2),
@@ -1598,15 +1596,23 @@ dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed =
 
   # edit `adm_phy_cpso_mapped` and `dis_phy_cpso_mapped`
   # hospitals with highest adm also have highest dis NA proportion
-  # artificially add some counts of proportion 1.0 NA
+  # artificially add some counts of NA with proportion approximately 0.15
+  # rank the `hospital_num` by proportion of NA `adm_phy_cpso_mapped`
   na_order_adm <- order(hosp_na_prop[["adm_phy_cpso_mapped_NA"]], decreasing = TRUE)
+
   hosp_na_prop[["dis_phy_cpso_mapped_NA"]][na_order_adm[1:round(0.15 * n_hospitals)]] <- jitter(
     hosp_na_prop[["dis_phy_cpso_mapped_NA"]][na_order_adm[1:round(0.15 * n_hospitals)]],
     factor = 0.1
   )
 
+  # randomly set 7% of hospitals to have all NA values
+  # set the highest hospitals to 1.0 proportion since they are already highest in NA
   hosp_na_prop[["adm_phy_cpso_mapped_NA"]][na_order_adm[1:round(0.07 * n_hospitals)]] <- 1
   hosp_na_prop[["dis_phy_cpso_mapped_NA"]][na_order_adm[1:round(0.07 * n_hospitals)]] <- 1
+
+  # for `mrp_cpso_mapped`, let 0.1 of hospitals have no NA values
+  # select the lowest existing values to keep similar to the distribution
+  hosp_na_prop[["mrp_cpso_mapped_NA"]][na_order_adm[1:round(0.1 * n_hospitals)]] <- 0
 
   # sample all physician numbers
   # each hospital has about 280 physicians on average
@@ -1650,14 +1656,13 @@ dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed =
   )]
 
   ####### `dis_phy_cpso_mapped` #######
-  # 0.3 of encounters have adm = mrp = dis overall
   # when adm = mrp, 0.9 of encounters have adm = mrp = dis
   df1[adm_phy_cpso_mapped == mrp_cpso_mapped, dis_phy_cpso_mapped := ifelse(rbinom(.N, 1, 0.9),
     adm_phy_cpso_mapped,
     sapply(setdiff(phy_set, adm_phy_cpso_mapped), sample_from_col)
   )]
 
-  # when adm != mrp, 0.84 of dis = mrp and dis != adm always
+  # when adm != mrp, 0.87 of dis = mrp and dis != adm always
   # these will cover all cases of relations between adm, mrp, and dis
   df1[adm_phy_cpso_mapped != mrp_cpso_mapped, dis_phy_cpso_mapped := ifelse(rbinom(.N, 1, 0.87),
     mrp_cpso_mapped,
