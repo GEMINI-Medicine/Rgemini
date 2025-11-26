@@ -1474,8 +1474,8 @@ cohort$discharge_date_time <- Rgemini::convert_dt(cohort$discharge_date_time , "
       dhours(
         rlnorm_trunc(
           .N,
-          meanlog = 1.3, sdlog = 1.9, min = 0, max = as.numeric(
-            difftime(discharge_date_time, ordered_date_time, units = "hours")
+          meanlog = 1.3, sdlog = 1.9, min = 0, max = min(as.numeric(
+            difftime(discharge_date_time, ordered_date_time, units = "hours"), 6 * 30.4 * 24)
           )
         )
       )]
