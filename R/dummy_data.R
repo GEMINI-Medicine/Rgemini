@@ -1339,7 +1339,7 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' are contained in the GEMINI "radiology" table, as seen in
 #' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #'
-#' This function only simulates modalities used in Our Practice Report (OPR) - CT, MRI,
+#' This function only simulates modalities used in the MyPractice and OurPractice Reports: CT, MRI,
 #' Ultrasound. It does not cover all modalities seen in the actual "radiology" data table.
 #'
 #' @param nid (`integer`)\cr Number of unique encounter IDs to simulate.
