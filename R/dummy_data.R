@@ -1360,7 +1360,7 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' - `hospital_num` (`integer`): Mock hospital ID number
 #' - `admission_date_time` (`character`): Date and time of IP admission in YYYY-MM-DD HH:MM format
 #' - `discharge_date_time` (`character`): Date and time of IP discharge in YYYY-MM-DD HH:MM format.
-#' When `cohort` is not NULL, `nid`, `n_hospitals`, and `time_period` are ignored.
+#' When a `cohort` input is provided, `nid`, `n_hospitals`, and `time_period` are ignored.
 #'
 #' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
 #'
