@@ -1348,7 +1348,7 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' This input is optional if `cohort` is provided.
 #'
 #' @param n_hospitals(`integer`)\cr The number of hospitals to simulate.
-#' This optional is optional if `cohort` is provided.
+#' This is optional if `cohort` is provided.
 #'
 #' @param time_period (`vector`)\cr A numeric or character vector containing the data range of the data
 #' by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy)
