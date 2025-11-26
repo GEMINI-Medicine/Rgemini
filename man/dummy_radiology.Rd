@@ -29,13 +29,13 @@ is the date range format provided. Optional when \code{cohort} is provided.}
 \item \code{hospital_num} (\code{integer}): Mock hospital ID number
 \item \code{admission_date_time} (\code{character}): Date and time of IP admission in YYYY-MM-DD HH:MM format
 \item \code{discharge_date_time} (\code{character}): Date and time of IP discharge in YYYY-MM-DD HH:MM format.
-When \code{cohort} is not NULL, \code{nid}, \code{n_hospitals}, and \code{time_period} are ignored.
+When a \code{cohort} input is provided, \code{nid}, \code{n_hospitals}, and \code{time_period} are ignored.
 }}
 
 \item{seed}{(\code{integer})\cr Optional, a number to be used to set the seed for reproducible results.}
 
 \item{n_hospitals(`integer`)\cr}{The number of hospitals to simulate.
-This optional is optional if \code{cohort} is provided.}
+This is optional if \code{cohort} is provided.}
 }
 \value{
 (\code{data.table})\cr A \code{data.table} object similar that contains the following fields:
