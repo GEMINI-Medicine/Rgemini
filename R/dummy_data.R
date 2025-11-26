@@ -1392,8 +1392,7 @@ dummy_radiology <- function(
     )
 
     cohort$admission_date_time <- Rgemini::convert_dt(cohort$admission_date_time, "ymd HM")
-    cohort$discharge_date_time <- Rgemini::convert_dt(cohort$discharge_date_time , "ymd HM")
-
+    cohort$discharge_date_time <- Rgemini::convert_dt(cohort$discharge_date_time, "ymd HM")
   } else { # when `cohort` is not provided
     check_input(list(nid, n_hospitals), "integer")
 
@@ -1480,8 +1479,8 @@ dummy_radiology <- function(
         rlnorm_trunc(
           .N,
           meanlog = 1.3, sdlog = 1.9, min = 0, max = min(as.numeric(
-            difftime(discharge_date_time, ordered_date_time, units = "hours"), 6 * 30.4 * 24)
-          )
+            difftime(discharge_date_time, ordered_date_time, units = "hours"), 6 * 30.4 * 24
+          ))
         )
       )]
 
