@@ -1420,11 +1420,6 @@ cohort$discharge_date_time <- Rgemini::convert_dt(cohort$discharge_date_time , "
       tz = "UTC"
     )
 
-    cohort$los <- as.numeric(difftime(
-      cohort$discharge_date_time,
-      cohort$admission_date_time,
-      units = "hours"
-    ))
 
     # generate `df1` based on `cohort`
     df1 <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 4.5, seed = seed)
