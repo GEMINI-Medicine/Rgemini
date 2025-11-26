@@ -1394,8 +1394,7 @@ dummy_radiology <- function(
     check_input(list(nid, n_hospitals), "integer")
 
     #  check if time_period is provided/has both start and end dates
-    if (any(is.null(time_period)) || any(is.na(time_period)) || length(time_period) != 2) {
-      stop("Please provide time_period") # check for date formatting
+    Rgemini:::check_input(time_period, c("numeric", "character", "POSIXct"), length = 2)
     } else if (!check_date_format(time_period[1]) || !check_date_format(time_period[2])) {
       stop("Time period is in the incorrect date format, please fix")
     }
