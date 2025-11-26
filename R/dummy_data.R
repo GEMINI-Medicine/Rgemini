@@ -1366,7 +1366,7 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #'
 #' @return (`data.table`)\cr A `data.table` object similar that contains the following fields:
 #' - `genc_id` (`integer`): Mock encounter ID number; integers starting from 1 or from `cohort` if provided
-#' - `hospital_id` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort` if provided
+#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort` if provided
 #' - `modality_mapped` (`character`): Imaging modality: either MRI, CT, or Ultrasound.
 #' - `ordered_date_time` (`character`): The date and time the radiology test was ordered
 #' - `performed_date_time` (`character`): The date and time the radiology test was performed
