@@ -1348,7 +1348,8 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' This input is optional if `cohort` is provided.
 #'
 #' @param n_hospitals(`integer`)\cr The number of hospitals to simulate.
-#' This is optional if `cohort` is provided.
+#' Alternatively, if users provide a `cohort` input, the function will instead simulate
+#' radiology data for all `hospital_nums` in the user-defined cohort table
 #'
 #' @param time_period (`vector`)\cr A numeric or character vector containing the data range of the data
 #' by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy)
@@ -1603,5 +1604,8 @@ dummy_radiology <- function(
   ]
 
   # return final data table with only required columns
-  return(df1[order(df1$genc_id), c("genc_id", "hospital_num", "ordered_date_time", "performed_date_time", "modality_mapped")])
+  return(df1[
+    order(df1$genc_id),
+    c("genc_id", "hospital_num", "ordered_date_time", "performed_date_time", "modality_mapped")
+  ])
 }
