@@ -1339,13 +1339,13 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' are contained in the GEMINI "radiology" table, as seen in
 #' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
 #'
-#' This function only simulates modalities used in Our Practice Report (OPR) - CT, MRI,
+#' This function only simulates modalities used in the MyPractice and OurPractice Reports: CT, MRI,
 #' Ultrasound. It does not cover all modalities seen in the actual "radiology" data table.
 #'
 #' @param nid (`integer`)\cr Number of unique encounter IDs to simulate.
 #' Encounter IDs may repeat to simulate multiple radiology tests,
 #' resulting in a data table with more rows than `nid`.
-#' This input is optional if `cohort` is provided.
+#' Alternatively, if users provide a `cohort` input, the function will instead simulate radiology data for all `genc_ids` in the user-defined cohort table.
 #'
 #' @param n_hospitals(`integer`)\cr The number of hospitals to simulate.
 #' Alternatively, if users provide a `cohort` input, the function will instead simulate
@@ -1367,7 +1367,7 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #'
 #' @return (`data.table`)\cr A `data.table` object similar that contains the following fields:
 #' - `genc_id` (`integer`): Mock encounter ID number; integers starting from 1 or from `cohort` if provided
-#' - `hospital_id` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort` if provided
+#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort` if provided
 #' - `modality_mapped` (`character`): Imaging modality: either MRI, CT, or Ultrasound.
 #' - `ordered_date_time` (`character`): The date and time the radiology test was ordered
 #' - `performed_date_time` (`character`): The date and time the radiology test was performed
@@ -1388,15 +1388,13 @@ dummy_radiology <- function(
       colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
       coltypes = c("integer", "integer", "", "")
     )
-    if (!all(check_date_format(c(cohort$admission_date_time, cohort$discharge_date_time), check_time = TRUE))) {
-      stop("An invalid IP admission and/or discharge date time input was provided in cohort.")
-    }
+cohort$admission_date_time <- Rgemini::convert_dt(cohort$admission_date_time, "ymd HM")
+cohort$discharge_date_time <- Rgemini::convert_dt(cohort$discharge_date_time , "ymd HM")
   } else { # when `cohort` is not provided
     check_input(list(nid, n_hospitals), "integer")
 
     #  check if time_period is provided/has both start and end dates
-    if (any(is.null(time_period)) || any(is.na(time_period)) || length(time_period) != 2) {
-      stop("Please provide time_period") # check for date formatting
+    Rgemini:::check_input(time_period, c("numeric", "character", "POSIXct"), length = 2)
     } else if (!check_date_format(time_period[1]) || !check_date_format(time_period[2])) {
       stop("Time period is in the incorrect date format, please fix")
     }
@@ -1423,11 +1421,6 @@ dummy_radiology <- function(
       tz = "UTC"
     )
 
-    cohort$los <- as.numeric(difftime(
-      cohort$discharge_date_time,
-      cohort$admission_date_time,
-      units = "hours"
-    ))
 
     # generate `df1` based on `cohort`
     df1 <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 4.5, seed = seed)
@@ -1482,8 +1475,8 @@ dummy_radiology <- function(
       dhours(
         rlnorm_trunc(
           .N,
-          meanlog = 1.3, sdlog = 1.9, min = 0, max = as.numeric(
-            difftime(discharge_date_time, ordered_date_time, units = "hours")
+          meanlog = 1.3, sdlog = 1.9, min = 0, max = min(as.numeric(
+            difftime(discharge_date_time, ordered_date_time, units = "hours"), 6 * 30.4 * 24)
           )
         )
       )]

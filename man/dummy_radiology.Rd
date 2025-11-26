@@ -16,7 +16,7 @@ dummy_radiology(
 \item{nid}{(\code{integer})\cr Number of unique encounter IDs to simulate.
 Encounter IDs may repeat to simulate multiple radiology tests,
 resulting in a data table with more rows than \code{nid}.
-This input is optional if \code{cohort} is provided.}
+Alternatively, if users provide a \code{cohort} input, the function will instead simulate radiology data for all \code{genc_ids} in the user-defined cohort table.}
 
 \item{time_period}{(\code{vector})\cr A numeric or character vector containing the data range of the data
 by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy)
@@ -29,19 +29,19 @@ is the date range format provided. Optional when \code{cohort} is provided.}
 \item \code{hospital_num} (\code{integer}): Mock hospital ID number
 \item \code{admission_date_time} (\code{character}): Date and time of IP admission in YYYY-MM-DD HH:MM format
 \item \code{discharge_date_time} (\code{character}): Date and time of IP discharge in YYYY-MM-DD HH:MM format.
-When \code{cohort} is not NULL, \code{nid}, \code{n_hospitals}, and \code{time_period} are ignored.
+When a \code{cohort} input is provided, \code{nid}, \code{n_hospitals}, and \code{time_period} are ignored.
 }}
 
 \item{seed}{(\code{integer})\cr Optional, a number to be used to set the seed for reproducible results.}
 
 \item{n_hospitals(`integer`)\cr}{The number of hospitals to simulate.
-This optional is optional if \code{cohort} is provided.}
+This is optional if \code{cohort} is provided.}
 }
 \value{
 (\code{data.table})\cr A \code{data.table} object similar that contains the following fields:
 \itemize{
 \item \code{genc_id} (\code{integer}): Mock encounter ID number; integers starting from 1 or from \code{cohort} if provided
-\item \code{hospital_id} (\code{integer}): Mock hospital ID number; integers starting from 1 or from \code{cohort} if provided
+\item \code{hospital_num} (\code{integer}): Mock hospital ID number; integers starting from 1 or from \code{cohort} if provided
 \item \code{modality_mapped} (\code{character}): Imaging modality: either MRI, CT, or Ultrasound.
 \item \code{ordered_date_time} (\code{character}): The date and time the radiology test was ordered
 \item \code{performed_date_time} (\code{character}): The date and time the radiology test was performed
