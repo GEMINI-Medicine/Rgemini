@@ -1428,24 +1428,24 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
   }
 
   if (!is.null(cohort)) {
-    # set up `df1` if `cohort` is included
+    # set up `locality_sim` if `cohort` is included
     cohort <- as.data.table(cohort)
-    df1 <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 1, seed = seed)
-    nid <- uniqueN(df1$genc_id)
-    n_hospitals <- uniqueN(df1$hospital_num)
+    locality_sim <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 1, seed = seed)
+    nid <- uniqueN(locality_sim$genc_id)
+    n_hospitals <- uniqueN(locality_sim$hospital_num)
 
     # only include the `genc_id` and `hospital_num` columns from `cohort`
-    df1 <- df1[, c("genc_id", "hospital_num")]
+    locality_sim <- locality_sim[, c("genc_id", "hospital_num")]
   } else {
     # generate a cohort from nid and n_hospitals
-    df1 <- generate_id_hospital(nid, n_hospitals, avg_repeats = 1, seed = seed)
+    locality_sim <- generate_id_hospital(nid, n_hospitals, avg_repeats = 1, seed = seed)
   }
 
   if (!is.null(da21uid)) {
     # if the user provided ID, use those
     # if user provided one ID, fill the column with that
     # otherwise, randomly sample from the list
-    df1[, da21uid := {
+    locality_sim[, da21uid := {
       if (length(da21uid) == 1) {
         rep(da21uid, .N)
       } else {
@@ -1464,7 +1464,7 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
     )$da21uid
 
     # to mimic how locality IDs are clustered by hospital, set a range for min and max ID for each hospital
-    df1[, c("min_id", "max_id") := {
+    locality_sim[, c("min_id", "max_id") := {
       repeat {
         min_pick <- sample(ontario_id, 1)
         candidates <- ontario_id[ontario_id > min_pick]
@@ -1474,27 +1474,27 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
     }, by = hospital_num]
 
     # sample dissemination ID within the range per hospital
-    df1[, da21uid := mapply(function(x, y) {
+    locality_sim[, da21uid := mapply(function(x, y) {
       sample(ontario_id[ontario_id >= x & ontario_id <= y], 1, replace = TRUE)
     }, min_id, max_id)]
 
     # insert a small proportion (0.3%) of cases located outside of Ontario
     # sample from da21uid outside of Ontario
-    n_edge <- round(0.003 * nrow(df1))
-    rows_edge <- sample(seq_len(nrow(df1)), n_edge)
+    n_edge <- round(0.003 * nrow(locality_sim))
+    rows_edge <- sample(seq_len(nrow(locality_sim)), n_edge)
 
-    df1[rows_edge, da21uid := sample(setdiff(lookup_statcan_v2021, ontario_id),
+    locality_sim[rows_edge, da21uid := sample(setdiff(lookup_statcan_v2021, ontario_id),
       .N,
       replace = TRUE
     )]
 
     # inject 2% rate of missingness in da21uid
-    df1[, da21uid := ifelse(rbinom(.N, 1, 0.02), NA, da21uid)]
+    locality_sim[, da21uid := ifelse(rbinom(.N, 1, 0.02), NA, da21uid)]
 
     # remove extra columns and return
-    df1 <- df1[, -c("min_id", "max_id")]
+    locality_sim <- locality_sim[, -c("min_id", "max_id")]
   }
-  return(df1[order(df1$genc_id)])
+  return(locality_sim[order(locality_sim$genc_id)])
 }
 
 #' @title
@@ -1534,6 +1534,9 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
 #' dummy_physicians(nid = 1000, n_hospitals = 10, seed = 1)
 #' dummy_physicians(cohort = dummy_ipadmdad(), seed = 2)
 #'
+#' @import dplyr
+#' @import data.table
+#'
 #' @export
 
 dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed = NULL) {
@@ -1559,16 +1562,16 @@ dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed =
   if (!is.null(cohort)) {
     # if `cohort` is provided, use its `genc_id` and `hospital_num`
     cohort <- as.data.table(cohort)
-    df1 <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 1, seed = seed)
+    physicians_sim <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 1, seed = seed)
 
-    nid <- length(unique(df1$genc_id))
-    n_hospitals <- length(unique(df1$hospital_num))
+    nid <- length(unique(physicians_sim$genc_id))
+    n_hospitals <- length(unique(physicians_sim$hospital_num))
 
     # only include the genc_id and hospital_num columns from `cohort`
-    df1 <- df1[, c("genc_id", "hospital_num")]
+    physicians_sim <- physicians_sim[, c("genc_id", "hospital_num")]
   } else {
     # no repeating genc_id in physicians data table
-    df1 <- generate_id_hospital(nid, n_hospitals, avg_repeats = 1, seed = seed)
+    physicians_sim <- generate_id_hospital(nid, n_hospitals, avg_repeats = 1, seed = seed)
   }
 
   # Function that samples a value from a given vector with replacement
@@ -1579,7 +1582,7 @@ dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed =
   # set the NA proportions per hospital per variable
   # sampling creates hospital-level variation
   # each row is a different hopsital
-  hosp_na_prop <- df1 %>%
+  hosp_na_prop <- physicians_sim %>%
     group_by(
       hospital_num
     ) %>%
@@ -1594,25 +1597,28 @@ dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed =
     ) %>%
     data.table()
 
-  # edit `adm_phy_cpso_mapped` and `dis_phy_cpso_mapped`
-  # hospitals with highest adm also have highest dis NA proportion
-  # artificially add some counts of NA with proportion approximately 0.15
-  # rank the `hospital_num` by proportion of NA `adm_phy_cpso_mapped`
-  na_order_adm <- order(hosp_na_prop[["adm_phy_cpso_mapped_NA"]], decreasing = TRUE)
+  # edit `admitting_phy_gim` and `discharging_phy_gim`
+  # artificially add some counts of NA with proportion approximately 0.33
+  # 0.33 of hospitals have all NA for these variables
+  hosp_sample <- sample(unique(physicians_sim$hospital_num), round(n_hospitals * 0.33))
+  hosp_na_prop[hospital_num %in% hosp_sample, admitting_phy_gim_NA := 1]
+  hosp_na_prop[hospital_num %in% hosp_sample, discharging_phy_gim_NA := 1]
 
-  hosp_na_prop[["dis_phy_cpso_mapped_NA"]][na_order_adm[1:round(0.15 * n_hospitals)]] <- jitter(
-    hosp_na_prop[["dis_phy_cpso_mapped_NA"]][na_order_adm[1:round(0.15 * n_hospitals)]],
-    factor = 0.1
-  )
+  # NA proportions between admitting and discharging GIM are similar per hospital
+  hosp_na_prop[, admitting_phy_gim_NA := sort(hosp_na_prop$admitting_phy_gim_NA)]
+  hosp_na_prop[, discharging_phy_gim_NA := sort(hosp_na_prop$discharging_phy_gim_NA)]
 
+  ### `adm_phy_cpso_mapped` and `dis_phy_cpso_mapped`
   # randomly set 7% of hospitals to have all NA values
   # set the highest hospitals to 1.0 proportion since they are already highest in NA
-  hosp_na_prop[["adm_phy_cpso_mapped_NA"]][na_order_adm[1:round(0.07 * n_hospitals)]] <- 1
-  hosp_na_prop[["dis_phy_cpso_mapped_NA"]][na_order_adm[1:round(0.07 * n_hospitals)]] <- 1
+  na_order_adm <- order(hosp_na_prop[, adm_phy_cpso_mapped_NA], decreasing = TRUE)
+
+  hosp_na_prop[na_order_adm[1:round(0.07 * n_hospitals)], adm_phy_cpso_mapped_NA := 1]
+  hosp_na_prop[na_order_adm[1:round(0.07 * n_hospitals)], dis_phy_cpso_mapped_NA := 1]
 
   # for `mrp_cpso_mapped`, let 0.1 of hospitals have no NA values
-  # select the lowest existing values to keep similar to the distribution
-  hosp_na_prop[["mrp_cpso_mapped_NA"]][na_order_adm[1:round(0.1 * n_hospitals)]] <- 0
+  # select the lowest existing values to keep the result similar to the distribution
+  hosp_na_prop[na_order_adm[1:round(0.1 * n_hospitals)], mrp_cpso_mapped_NA := 0]
 
   # sample all physician numbers
   # each hospital has about 280 physicians on average
@@ -1623,54 +1629,54 @@ dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed =
   hosp_na_prop$n_physicians <- rsn_trunc(n_hospitals, 470, 220, -1.6, 1, 650)
   hosp_na_prop[, phy_set := sapply(n_physicians, function(x) sample(sample_cpso, x, replace = TRUE))]
 
-  # merge df1, the output data table, with hospital information
-  df1 <- merge(df1, hosp_na_prop, by = "hospital_num", all.x = TRUE)
+  # merge `physicians_sim`, the output data table, with hospital information
+  physicians_sim <- merge(physicians_sim, hosp_na_prop, by = "hospital_num", all.x = TRUE)
 
   # now sample all variables
   ####### `admitting_physician_gim` #######
-  df1[, admitting_physician_gim := ifelse(rbinom(.N, 1, admitting_phy_gim_Y), "y", "n")]
+  physicians_sim[, admitting_physician_gim := ifelse(rbinom(.N, 1, admitting_phy_gim_Y), "y", "n")]
 
   # sample the NAs in admitting_physician_gim
-  df1[, admitting_physician_gim := ifelse(rbinom(
+  physicians_sim[, admitting_physician_gim := ifelse(rbinom(
     .N, 1,
     admitting_phy_gim_NA
   ), NA, admitting_physician_gim)]
 
   ####### `discharging_physician_gim` #######
-  df1[, discharging_physician_gim := ifelse(rbinom(.N, 1, discharging_phy_gim_Y), "y", "n")]
+  physicians_sim[, discharging_physician_gim := ifelse(rbinom(.N, 1, discharging_phy_gim_Y), "y", "n")]
 
   # sample the NAs in discharging_physician_gim
-  df1[, discharging_physician_gim := ifelse(rbinom(
+  physicians_sim[, discharging_physician_gim := ifelse(rbinom(
     .N, 1,
     discharging_phy_gim_NA
   ), NA, discharging_physician_gim)]
 
   ####### `adm_phy_cpso_mapped` #######
   # Set adm physician
-  df1[, adm_phy_cpso_mapped := sapply(phy_set, sample_from_col)]
+  physicians_sim[, adm_phy_cpso_mapped := sapply(phy_set, sample_from_col)]
 
   ####### `mrp_cpso_mapped` #######
   # 0.36 of encounters have mrp = adm
-  df1[, mrp_cpso_mapped := ifelse(rbinom(.N, 1, 0.36),
+  physicians_sim[, mrp_cpso_mapped := ifelse(rbinom(.N, 1, 0.36),
     adm_phy_cpso_mapped, sapply(setdiff(phy_set, adm_phy_cpso_mapped), sample_from_col)
   )]
 
   ####### `dis_phy_cpso_mapped` #######
   # when adm = mrp, 0.9 of encounters have adm = mrp = dis
-  df1[adm_phy_cpso_mapped == mrp_cpso_mapped, dis_phy_cpso_mapped := ifelse(rbinom(.N, 1, 0.9),
+  physicians_sim[adm_phy_cpso_mapped == mrp_cpso_mapped, dis_phy_cpso_mapped := ifelse(rbinom(.N, 1, 0.9),
     adm_phy_cpso_mapped,
     sapply(setdiff(phy_set, adm_phy_cpso_mapped), sample_from_col)
   )]
 
   # when adm != mrp, 0.87 of dis = mrp and dis != adm always
   # these will cover all cases of relations between adm, mrp, and dis
-  df1[adm_phy_cpso_mapped != mrp_cpso_mapped, dis_phy_cpso_mapped := ifelse(rbinom(.N, 1, 0.87),
+  physicians_sim[adm_phy_cpso_mapped != mrp_cpso_mapped, dis_phy_cpso_mapped := ifelse(rbinom(.N, 1, 0.87),
     mrp_cpso_mapped,
     sapply(setdiff(phy_set, c(mrp_cpso_mapped)), sample_from_col)
   )]
 
-  return(df1[
-    order(df1$genc_id), # return only with required columns
+  return(physicians_sim[
+    order(physicians_sim$genc_id), # return only with required columns
     c(
       "genc_id", "hospital_num", "admitting_physician_gim", "discharging_physician_gim", "adm_phy_cpso_mapped",
       "mrp_cpso_mapped"
