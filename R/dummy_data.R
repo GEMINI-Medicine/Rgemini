@@ -384,18 +384,34 @@ dummy_ipadmdad <- function(nid = 1000,
                            time_period = c(2015, 2023),
                            seed = NULL) {
   ############## CHECKS: for valid inputs: `n_id`, `n_hospitals`, `time_period`
-  check_input(list(nid, n_hospitals), "integer")
-  check_input(time_period, "integer", argtype = "integer", length = 2)
-  if (!all(check_date_format(time_period[1]), check_date_format(time_period[2]))) {
-    stop("An invalid date input was provided.")
+  Rgemini:::check_input(list(nid, n_hospitals), "integer")
+  Rgemini:::check_input(time_period, c("numeric", "character", "POSIXct"), length = 2)
+
+  time_period <- as.character(time_period)
+
+  # get start and end dates
+  if (grepl("^[0-9]{4}$", time_period[1])) {
+    # if the user only provided a year
+    start_date <- convert_dt(paste0(time_period[1], "-01-01"), "ymd")
+  } else {
+    start_date <- convert_dt(time_period[1], "ymd")
   }
-  # Make sure `nid` is at least n_hospitals * length(time_period)
-  if (nid < n_hospitals * length(time_period)) {
+
+  if (grepl("^[0-9]{4}$", time_period[2])) {
+    end_date <- convert_dt(paste0(time_period[2], "-12-31"), "ymd")
+  } else {
+    end_date <- convert_dt(time_period[2], "ymd")
+  }
+
+  if (is.na(start_date) | is.na(end_date)) {
+    # if either are NA, then the input was invalid
+    stop("Time period is in the incorrect date format.")
+  }
+
+  # Make sure `nid` is at least `n_hospitals`
+  if (nid < n_hospitals) {
     stop("Invalid user input.
-    Number of encounters `nid` should at least be equal to `n_hospitals` * `length(time_period)`")
-  }
-  if (time_period[1] > time_period[2]) {
-    stop("The start date is after the end date. Stopping")
+    Number of encounters `nid` should at least be equal to `n_hospitals`")
   }
 
   # set the seed if the input provided is not NULL
@@ -404,24 +420,19 @@ dummy_ipadmdad <- function(nid = 1000,
   }
 
   ############### PREPARE OUTPUT TABLE ###############
-  ## create all combinations of hospitals and fiscal years
+  ## create all combinations of hospitals and dates
   hospital_num <- as.integer(seq(1, n_hospitals, 1))
-  year <- seq(time_period[1], time_period[2], 1)
+  hosp_assignment <- sample(hosp_names, nid, replace = TRUE)
 
-  data <- expand.grid(hospital_num = hospital_num, year = year) %>% data.table()
+  id_list <- 1:nid
+  id_vector <- rep(id_list, times = rep(1, nid))
+  site_vector <- rep(hosp_assignment, times = rep(1, nid))
 
-  # randomly draw number of encounters per hospital*year combo
-  data[, n := rmultinom(1, nid, rep.int(1 / nrow(data), nrow(data)))]
-
-  # blow up row number according to encounter per combo
-  data <- data[rep(seq_len(nrow(data)), data$n), ]
+  data <- data.table(genc_id = id_vector, hospital_num = site_vector, stringsAsFactors = FALSE)
 
   # turn year variable into actual date by randomly drawing date_time
-  add_random_datetime <- function(year) {
-    start_date <- paste0(year, "-04-01 00:00 UTC") # start each fisc year on Apr 1
-    end_date <- paste0(year + 1, "-03-31 23:59 UTC") # end of fisc year
-
-    random_date <- as.Date(round(runif(length(year),
+  add_random_datetime <- function(n, start_date, end_date) {
+    random_date <- as.Date(round(runif(n,
       min = as.numeric(as.Date(start_date)),
       max = as.numeric(as.Date(end_date))
     )))
@@ -433,12 +444,7 @@ dummy_ipadmdad <- function(nid = 1000,
     return(random_datetime)
   }
 
-  data[, admission_date_time := add_random_datetime(year)]
-
-  # add genc_id from 1-n
-  data <- data[order(admission_date_time), ]
-  data[, genc_id := as.integer(seq(1, nrow(data), 1))]
-
+  data[, admission_date_time := add_random_datetime(.N, start_date, end_date)]
 
   ############### DEFINE VARIABLE DISTRIBUTIONS ###############
   ## AGE
@@ -1377,6 +1383,9 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' dummy_radiology(nid = 1000, n_hospitals = 10, time_period = c(2020, 2023))
 #'
 #' @import Rgemini
+#' @import data.table
+#' @importFrom lubridate ddays dhours
+#' @importFrom MCMCpack rdirichlet
 #'
 #' @export
 
@@ -1391,197 +1400,91 @@ dummy_radiology <- function(
       coltypes = c("integer", "integer", "", "")
     )
 
-    cohort$admission_date_time <- Rgemini::convert_dt(cohort$admission_date_time, "ymd HM")
-    cohort$discharge_date_time <- Rgemini::convert_dt(cohort$discharge_date_time , "ymd HM")
-
   } else { # when `cohort` is not provided
     check_input(list(nid, n_hospitals), "integer")
 
-    # check if time_period is provided/has both start and end dates
-    Rgemini:::check_input(time_period, c("numeric", "character", "POSIXct"), length = 2)
-    if (!check_date_format(time_period[1]) || !check_date_format(time_period[2])) {
-      stop("Time period is in the incorrect date format, please fix")
-    }
-
-    if (nid < n_hospitals) {
-      stop("Number of encounters must be greater than or equal to the number of hospitals")
-    }
+    # create a cohort
+    cohort <- dummy_ipadmdad(nid = nid, n_hospitals = n_hospitals, time_period = time_period, seed = seed)
+    # include only required columns
+    cohort <- cohort[, c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time")]
   }
 
   if (!is.null(seed)) {
     set.seed(seed)
   }
 
-  if (!is.null(cohort)) {
-    ####### if `cohort` is provided, create `df1` based on it #######
-    cohort <- as.data.table(cohort)
-    cohort$admission_date_time <- as.POSIXct(cohort$admission_date_time,
-      format = "%Y-%m-%d %H:%M",
-      tz = "UTC"
-    )
-
-    cohort$discharge_date_time <- as.POSIXct(cohort$discharge_date_time,
-      format = "%Y-%m-%d %H:%M",
-      tz = "UTC"
-    )
-
-
-    # generate `df1` based on `cohort`
-    df1 <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 4.5, seed = seed)
-
-    nid <- uniqueN(df1$genc_id)
-    n_hospitals <- uniqueN(df1$hospital_num)
-
-    ####### sample the gap between IP admission and ordered date time #######
-    # in days
-    admit_order_gap <- round(rlnorm(nrow(df1), meanlog = 0.817, sdlog = 1.215) - 0.8)
-
-    ####### Set the `ordered_date_time` #######
-    # get ordered date
-    df1[, ordered_date := as.Date(admission_date_time) + ddays(admit_order_gap)]
-
-    # sample ordered time
-    df1[, ordered_time := sample_time_shifted(.N, xi = 7.9, omega = 8.8, alpha = 4.5, min = 4, max = 30, seed = seed)]
-
-    ####### get ordered date time by combining ordered date and time #######
-    df1[, ordered_date_time := ordered_date + dhours(ordered_time)]
-
-    # ensure that `ordered_date_time` is not after `discharge_date_time`
-    # re-sample bad values
-    while (nrow(df1[ordered_date_time >= discharge_date_time, ]) > 0) {
-      df1[
-        ordered_date_time >= discharge_date_time,
-        ordered_date_time := as.Date(admission_date_time) +
-          dhours(sample_time_shifted(.N, xi = 7.9, omega = 9.0, alpha = 5.2, min = 4, max = 30))
-      ]
-    }
-
-    # sample gap between ordered and performed date time, in hours
-    # maximum perform gap is the difference between IP discharge and `ordered_date_time`
-    # this prevents `perform_date_time` from being after `discharge_date_time`
-    df1[, max_perform_gap := as.numeric(
-      difftime(discharge_date_time, ordered_date_time, units = "hours")
-    )]
-
-    df1[, perform_gap := rlnorm_trunc(
-      .N,
-      meanlog = 1.3, sdlog = 1.9, min = 0, max = max_perform_gap
-    )]
-
-    df1[sample(nrow(df1), round(0.06 * nrow(df1))), perform_gap := 0] # set some values to 0
-
-    ####### Get performed date time by adding `perform_gap` to `ordered_date_time` #######
-    df1[, performed_date_time := ordered_date_time + dhours(perform_gap)]
-
-    # performed date time should not be after discharge
-    # re-sample it if performed > discharge was sampled previously
-    df1[performed_date_time > discharge_date_time, performed_date_time := ordered_date_time +
-      dhours(
-        rlnorm_trunc(
-          .N,
-          meanlog = 1.3, sdlog = 1.9, min = 0, max = min(as.numeric(
-            difftime(discharge_date_time, ordered_date_time, units = "hours"), 6 * 30.4 * 24) # set the max to 6 months gap
-          )
-        )
-      )]
-
-    df1[performed_date_time > discharge_date_time, performed_date_time := discharge_date_time]
-
-    df1[, ordered_date_time := substr(as.character(ordered_date_time), 1, 16)]
-    df1[, performed_date_time := substr(as.character(performed_date_time), 1, 16)]
-  } else {
-    ####### if `cohort` is not provided, use parameters to get `df1` #######
-    # check that `time_period` is valid
-    time_period <- as.character(time_period)
-
-    # get the start and end date
-    if (grepl("^[0-9]{4}$", time_period[1])) {
-      start_date <- as.Date(paste0(time_period[1], "-01-01"))
-    } else {
-      start_date <- as.Date(time_period[1])
-    }
-
-    if (grepl("^[0-9]{4}$", time_period[2])) {
-      end_date <- as.Date(paste0(time_period[2], "-01-01"))
-    } else {
-      end_date <- as.Date(time_period[2])
-    }
-
-    if (start_date > end_date) {
-      stop("Time period needs to end later than it starts")
-    }
-
-    # get a data table with hospital ID and encounter ID
-    df1 <- generate_id_hospital(nid, n_hospitals, avg_repeats = 4.5, seed = seed)
-    df1[, num_id_repeat := .N, by = genc_id]
-
-    ####### sample `ordered_date_time` #######
-    # get ordered time
-    df1[, ordered_time := sample_time_shifted(
-      nrow = nrow(df1), xi = 7.9, omega = 8.8, alpha = 4.5, min = 4, max = 30, seed = seed
-    )]
-
-    # for each `genc_id`, sample a minimum and maximum ordered date
-    # this is the time range where they will have radiology scans
-    df1[, min_ordered_date := as.Date(round(runif(1,
-      min = as.numeric(start_date),
-      max = as.numeric(end_date)
-    ))), by = genc_id]
-
-    # set time range for ordered date times
-    # ensure it is not greater than `end_date`
-    df1[, max_ordered_date := as.Date(min_ordered_date) +
-      ddays(ceiling(rlnorm(1, meanlog = 1.33, sdlog = 1.66))),
-    by = genc_id
-    ]
-
-    # Get a longer range of values for genc_id with more repeats
-    df1[num_id_repeat >= 4, max_ordered_date := as.Date(min_ordered_date) +
-      ddays(ceiling(rlnorm(1, meanlog = 2.27, sdlog = 1.36))),
-    by = genc_id
-    ]
-
-    # ensure `max_ordered_date` it does not exceed `end_date`
-    df1[max_ordered_date > end_date, max_ordered_date := end_date]
-    # protect from `min_ordered_date` being after `max_ordered_date`
-    # set it to either the median date range or start date in the range
-    df1[min_ordered_date > max_ordered_date, min_ordered_date := max(start_date, min_ordered_date + 4)]
-
-    # uniformly sample an ordered date during the range
-    df1[, ordered_date := as.Date(round(
-      runif(.N, min = as.numeric(min_ordered_date), max = as.numeric(max_ordered_date))
-    ))]
-
-    # get `ordered_date_time` by comibining the date and time
-    df1[, ordered_date_time := ymd(df1$ordered_date) + dhours(ordered_time)]
-
-    ####### Sample `performed_date_time` #######
-    # based on `ordered_date_time`
-    # sample delay time (days) between ordered and performed
-    # add a time to get `performed_date_time`
-    df1[, perform_gap := ifelse(rbinom(.N, 1, 0.06),
-      0,
-      rlnorm(.N, meanlog = -1.9, sdlog = 1.86)
-    )]
-
-    df1[, performed_time := sample_time_shifted(.N, 8.34, 8.15, 4.84, max = 30)]
-
-    df1[, performed_date_time := round_date(ordered_date_time + ddays(perform_gap), unit = "day") + dhours(performed_time)]
-
-    # ensure that performed does not come before ordered
-    # if it was sampled like so, add hours to `ordered_date_time`
-    df1[performed_date_time < ordered_date_time, performed_date_time := ordered_date_time + dhours(rlnorm(.N, 1.3, 1.9))]
-    
-    # a few encounters have no gap between ordered and performed date time
-    df1[, performed_date_time := ifelse(rbinom(.N, 1, 0.06),
-      ordered_date_time,
-      performed_date_time
-    )]
-
-    # remove seconds from date times and turn it into a string
-    df1[, ordered_date_time := substr(as.character(ordered_date_time), 1, 16)]
-    df1[, performed_date_time := substr(as.character(performed_date_time), 1, 16)]
+  ####### if `cohort` is provided, create `df_sim` based on it #######
+  cohort <- suppressWarnings(Rgemini:::coerce_to_datatable(cohort))
+  cohort$admission_date_time <- Rgemini::convert_dt(cohort$admission_date_time, "ymd HM")
+  cohort$discharge_date_time <- Rgemini::convert_dt(cohort$discharge_date_time , "ymd HM")
+  
+  if (any(is.na(cohort$admission_date_time) | any(is.na(cohort$discharge_date_time)))) {
+    stop("The cohort has missing or invalid admission and/or discharge date times. Stopping.")
   }
+
+  # generate `df_sim` based on `cohort`
+  df_sim <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 4.5, seed = seed)
+
+  nid <- uniqueN(df_sim$genc_id)
+  n_hospitals <- uniqueN(df_sim$hospital_num)
+
+  ####### sample the gap between IP admission and ordered date time #######
+  # in days
+  admit_order_gap <- round(rlnorm(nrow(df_sim), meanlog = 0.817, sdlog = 1.215) - 0.8)
+
+  ####### Set the `ordered_date_time` #######
+  # get ordered date
+  df_sim[, ordered_date := as.Date(admission_date_time) + ddays(admit_order_gap)]
+
+  # sample ordered time
+  df_sim[, ordered_time := sample_time_shifted(.N, xi = 7.9, omega = 8.8, alpha = 4.5, min = 4, max = 30, seed = seed)]
+
+  ####### get ordered date time by combining ordered date and time #######
+  df_sim[, ordered_date_time := ordered_date + dhours(ordered_time)]
+
+  # ensure that `ordered_date_time` is not after `discharge_date_time`
+  # re-sample bad values
+  while (nrow(df_sim[ordered_date_time >= discharge_date_time, ]) > 0) {
+    df_sim[
+      ordered_date_time >= discharge_date_time,
+      ordered_date_time := as.Date(admission_date_time) +
+        dhours(sample_time_shifted(.N, xi = 7.9, omega = 9.0, alpha = 5.2, min = 4, max = 30))
+    ]
+  }
+
+  # sample gap between ordered and performed date time, in hours
+  # maximum perform gap is the difference between IP discharge and `ordered_date_time`
+  # this prevents `perform_date_time` from being after `discharge_date_time`
+  df_sim[, max_perform_gap := as.numeric(
+    difftime(discharge_date_time, ordered_date_time, units = "hours")
+  )]
+
+  df_sim[, perform_gap := rlnorm_trunc(
+    .N,
+    meanlog = 1.3, sdlog = 1.9, min = 0, max = max_perform_gap
+  )]
+
+  df_sim[sample(nrow(df_sim), round(0.06 * nrow(df_sim))), perform_gap := 0] # set some values to 0
+
+  ####### Get performed date time by adding `perform_gap` to `ordered_date_time` #######
+  df_sim[, performed_date_time := ordered_date_time + dhours(perform_gap)]
+
+  # performed date time should not be after discharge
+  # re-sample it if performed > discharge was sampled previously
+  df_sim[performed_date_time > discharge_date_time, performed_date_time := ordered_date_time +
+    dhours(
+      rlnorm_trunc(
+        .N,
+        meanlog = 1.3, sdlog = 1.9, min = 0, max = min(as.numeric(
+          difftime(discharge_date_time, ordered_date_time, units = "hours"), 6 * 30.4 * 24) # set the max to 6 months gap
+        )
+      )
+    )]
+
+  df_sim[performed_date_time > discharge_date_time, performed_date_time := discharge_date_time]
+
+  df_sim[, ordered_date_time := substr(as.character(ordered_date_time), 1, 16)]
+  df_sim[, performed_date_time := substr(as.character(performed_date_time), 1, 16)]
 
   ####### Get `modality_mapped` #######
   # probabilities of included modalities
@@ -1591,19 +1494,19 @@ dummy_radiology <- function(
   )
   # Introduce random hospital-level variability in modality proportions
   # 0.005 = level of variability
-  df1[, p := list(list(as.numeric(t(rdirichlet(1, alpha = prob$p / 0.005))))), by = hospital_num]
+  df_sim[, p := list(list(as.numeric(t(rdirichlet(1, alpha = prob$p / 0.005))))), by = hospital_num]
 
-  df1[, modality_mapped := sapply(p, function(v) {
+  df_sim[, modality_mapped := sapply(p, function(v) {
     base::sample(prob$modality_mapped, 1, replace = TRUE, prob = v / (sum(v)))
   })]
 
   # hospitals without MRI
   # In real data, not all hospitals have an MRI machine on site.
   # Randomly select hospitals without MRI (~10%) and replace modality with CT and Ultrasound
-  hosp_no_mri <- sample(unique(df1$hospital_num), round(n_hospitals * 0.1), replace = FALSE)
+  hosp_no_mri <- sample(unique(df_sim$hospital_num), round(n_hospitals * 0.1), replace = FALSE)
 
-  df1[hospital_num %in% hosp_no_mri, p_no_mri := as.numeric(runif(1, 0.55, 0.75)), by = hospital_num]
-  df1[hospital_num %in% hosp_no_mri, modality_mapped := sample(
+  df_sim[hospital_num %in% hosp_no_mri, p_no_mri := as.numeric(runif(1, 0.55, 0.75)), by = hospital_num]
+  df_sim[hospital_num %in% hosp_no_mri, modality_mapped := sample(
     c("CT", "Ultrasound"),
     .N,
     prob = c(.SD[1, p_no_mri], 1 - .SD[1, p_no_mri]),
@@ -1613,8 +1516,8 @@ dummy_radiology <- function(
   ]
 
   # return final data table with only required columns
-  return(df1[
-    order(df1$genc_id),
+  return(df_sim[
+    order(df_sim$genc_id),
     c("genc_id", "hospital_num", "ordered_date_time", "performed_date_time", "modality_mapped")
   ])
 }
