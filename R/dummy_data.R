@@ -1399,7 +1399,6 @@ dummy_radiology <- function(
       colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
       coltypes = c("integer", "integer", "", "")
     )
-
   } else { # when `cohort` is not provided
     check_input(list(nid, n_hospitals), "integer")
 
@@ -1416,8 +1415,8 @@ dummy_radiology <- function(
   ####### if `cohort` is provided, create `df_sim` based on it #######
   cohort <- suppressWarnings(Rgemini:::coerce_to_datatable(cohort))
   cohort$admission_date_time <- Rgemini::convert_dt(cohort$admission_date_time, "ymd HM")
-  cohort$discharge_date_time <- Rgemini::convert_dt(cohort$discharge_date_time , "ymd HM")
-  
+  cohort$discharge_date_time <- Rgemini::convert_dt(cohort$discharge_date_time, "ymd HM")
+
   if (any(is.na(cohort$admission_date_time) | any(is.na(cohort$discharge_date_time)))) {
     stop("The cohort has missing or invalid admission and/or discharge date times. Stopping.")
   }
@@ -1475,8 +1474,10 @@ dummy_radiology <- function(
     dhours(
       rlnorm_trunc(
         .N,
-        meanlog = 1.3, sdlog = 1.9, min = 0, max = min(as.numeric(
-          difftime(discharge_date_time, ordered_date_time, units = "hours"), 6 * 30.4 * 24) # set the max to 6 months gap
+        meanlog = 1.3, sdlog = 1.9, min = 0, max = min(
+          as.numeric(
+            difftime(discharge_date_time, ordered_date_time, units = "hours"), 6 * 30.4 * 24
+          ) # set the max to 6 months gap
         )
       )
     )]
