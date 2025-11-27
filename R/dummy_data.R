@@ -437,7 +437,7 @@ dummy_ipadmdad <- function(nid = 1000,
       max = as.numeric(as.Date(end_date))
     )))
 
-    random_datetime <- format(as.POSIXct(random_date + dhours(sample_time_shifted(length(year),
+    random_datetime <- format(as.POSIXct(random_date + dhours(sample_time_shifted(n,
       xi = 19.5, omega = 6.29, alpha = 0.20
     )), tz = "UTC"), format = "%Y-%m-%d %H:%M")
 
