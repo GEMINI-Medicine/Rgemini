@@ -1426,14 +1426,26 @@ dummy_radiology <- function(
     set.seed(seed)
   }
 
-  ####### if `cohort` is provided, create `df_sim` based on it #######
+  ####### if `cohort` is not provided, create it #######
   cohort <- suppressWarnings(Rgemini:::coerce_to_datatable(cohort))
-  cohort$admission_date_time <- Rgemini::convert_dt(cohort$admission_date_time, "ymd HM")
-  cohort$discharge_date_time <- Rgemini::convert_dt(cohort$discharge_date_time, "ymd HM")
+  # convert date times
+  tryCatch(
+    {
+      cohort$admission_date_time <- Rgemini::convert_dt(cohort$admission_date_time, "ymd HM")
+    },
+    warning = function(w) {
+      stop(conditionMessage(w))
+    }
+  )
 
-  if (any(is.na(cohort$admission_date_time) | any(is.na(cohort$discharge_date_time)))) {
-    stop("The cohort has missing or invalid admission and/or discharge date times. Stopping.")
-  }
+  tryCatch(
+    {
+      cohort$discharge_date_time <- Rgemini::convert_dt(cohort$discharge_date_time, "ymd HM")
+    },
+    warning = function(w) {
+      stop(conditionMessage(w))
+    }
+  )
 
   # generate `df_sim` based on `cohort`
   df_sim <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 4.5, seed = seed)
