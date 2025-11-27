@@ -1076,7 +1076,10 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 
     # include only required columns
     cohort <- cohort[, c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time")]
+
   }
+  
+  cohort <- suppressWarnings(Rgemini::coerce_to_datatable(cohort))
 
   # create a new data table based on `cohort`
   # this step also converts cohort's admission and discharge date times into POSIXct
@@ -1213,126 +1216,82 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
       colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
       coltypes = c("integer", "integer", "", "")
     )
-    if (!all(check_date_format(c(cohort$admission_date_time, cohort$discharge_date_time), check_time = TRUE))) {
-      stop("An invalid admission and/or discharge date time was provided in cohort.")
-    }
+
+    # update the parameters
+    nid <- uniqueN(cohort$genc_id)
+    n_hospitals <- uniqueN(cohort$hospital_num)
+
   } else { # when `cohort` is not provided
-
-    # `nid` and `n_hospitals` are integers
-    check_input(list(nid, n_hospitals), "integer")
-
-    if (nid < n_hospitals) {
-      stop("Number of encounters must be greater than or equal to the number of hospitals")
-    }
-
-    # checks for time period:
-    # not NULL, not NA, and has a length of 2
-    if (any(is.null(time_period)) || any(is.na(time_period)) || length(time_period) != 2) {
-      stop("Please provide time_period as a vector of length 2") # check for date formatting
-    } else if (!check_date_format(time_period[1]) || !check_date_format(time_period[2])) {
-      stop("Time period is in the incorrect date format, please fix")
-    }
+    # create a cohort
+    cohort <- dummy_ipadmdad(nid, n_hospitals, time_period, seed)
   }
 
-  if (!is.null(cohort)) {
-    ##### get genc_id and hospital_num if `cohort` is provided #####
-    cohort <- as.data.table(cohort)
+  ##### update `cohort` data types
+  cohort <- suppressWarnings(Rgemini:::coerce_to_datatable(cohort))
 
-    cohort$admission_date_time <- as.POSIXct(cohort$admission_date_time,
-      format = "%Y-%m-%d %H:%M",
-      tz = "UTC"
-    )
+  tryCatch(
+    {
+      cohort$admission_date_time <- Rgemini::convert_dt(cohort$admission_date_time, "ymd HM")
+    },
+    warning = function(w) {
+      stop(conditionMessage(w))
+    }
+  )
 
-    cohort$discharge_date_time <- as.POSIXct(cohort$discharge_date_time,
-      format = "%Y-%m-%d %H:%M",
-      tz = "UTC"
-    )
+  tryCatch(
+    {
+      cohort$discharge_date_time <- Rgemini::convert_dt(cohort$discharge_date_time, "ymd HM")
+    },
+    warning = function(w) {
+      stop(conditionMessage(w))
+    }
+  )
 
-    # get the `data.table` for simulation
-    # one repeat per `genc_id`
-    df1 <- generate_id_hospital(cohort = cohort, avg_repeats = 1, seed = seed)
+  # get the `data.table` for simulation
+  # one repeat per `genc_id`
+  df1 <- generate_id_hospital(cohort = cohort, avg_repeats = 1, seed = seed)
 
-    ##### sample `triage_date_time` by adding to IP admit time #####
-    # the output of `rsn` will be negative
-    # triage occurs before inpatient admissions
-    df1[, triage_date := floor_date(admission_date_time - ddays(rsn_trunc(
+  ##### sample `triage_date_time` by adding to IP admit time #####
+  # the output of `rsn` will be negative
+  # triage occurs before inpatient admissions
+  df1[, triage_date := floor_date(admission_date_time - ddays(rsn_trunc(
+    .N,
+    xi = 0.098, omega = 0.285, alpha = 4.45, min = 0, max = 370
+  )), unit = "day")]
+
+  # log normal distribution of `triage_date_time`
+  df1[, triage_time_hour := rlnorm_trunc(.N, meanlog = 2.69, sdlog = 0.38, min = 4, max = 30, seed = seed)]
+
+  # move times > 24 hours to 12am and after (early AM)
+  df1[, triage_time_hour := ifelse(triage_time_hour < 24, triage_time_hour, triage_time_hour - 24)]
+
+  df1[, triage_date_time := triage_date + dhours(triage_time_hour)]
+
+  df1[, admission_time := as.numeric(format(admission_date_time, "%H")) +
+    as.numeric(format(admission_date_time, "%M")) / 60 +
+    as.numeric(format(admission_date_time, "%S")) / 3600]
+
+  # re-sample bad values where triage comes up after admission
+  while (nrow(df1[triage_date_time > admission_date_time, ]) > 0) {
+    df1[triage_date_time > admission_date_time, triage_date := floor_date(
+      admission_date_time - ddays(rsn_trunc(.N,
+        xi = 0.098, omega = 0.285, alpha = 4.45, min = 0, max = 370
+      )),
+      unit = "day"
+    )]
+
+    df1[triage_date_time > admission_date_time, triage_time_hour := rlnorm_trunc(
       .N,
-      xi = 0.098, omega = 0.285, alpha = 4.45, min = 0, max = 370
-    )), unit = "day")]
-
-    # log normal distribution of `triage_date_time`
-    df1[, triage_time_hour := rlnorm_trunc(.N, meanlog = 2.69, sdlog = 0.38, min = 4, max = 30, seed = seed)]
-
-    # move times > 24 hours to 12am and after (early AM)
-    df1[, triage_time_hour := ifelse(triage_time_hour < 24, triage_time_hour, triage_time_hour - 24)]
-
-    df1[, triage_date_time := triage_date + dhours(triage_time_hour)]
-
-    df1[, admission_time := as.numeric(format(admission_date_time, "%H")) +
-      as.numeric(format(admission_date_time, "%M")) / 60 +
-      as.numeric(format(admission_date_time, "%S")) / 3600]
-
-    # re-sample bad values where triage comes up after admission
-    while (nrow(df1[triage_date_time > admission_date_time, ]) > 0) {
-      df1[triage_date_time > admission_date_time, triage_date := floor_date(
-        admission_date_time - ddays(rsn_trunc(.N,
-          xi = 0.098, omega = 0.285, alpha = 4.45, min = 0, max = 370
-        )),
-        unit = "day"
-      )]
-
-      df1[triage_date_time > admission_date_time, triage_time_hour := rlnorm_trunc(
-        .N,
-        meanlog = 2.69, sdlog = 0.38, min = 4, max = 30
-      )]
-
-      # move times > 24 hours to 12am and after
-      df1[triage_date_time > admission_date_time, triage_time_hour := ifelse(
-        triage_time_hour < 24, triage_time_hour, triage_time_hour - 24
-      )]
-
-      df1[triage_date_time > admission_date_time, triage_date_time := triage_date + dhours(triage_time_hour)]
-    }
-  } else {
-    time_period <- as.character(time_period)
-    # User can enter a year range or specific dates
-    # Can be of type integer or character
-    # Convert time_period into Date types
-    if (grepl("^[0-9]{4}$", time_period[1])) {
-      start_date <- as.Date(paste0(time_period[1], "-01-01"))
-    } else {
-      start_date <- as.Date(time_period[1])
-    }
-
-    if (grepl("^[0-9]{4}$", time_period[2])) {
-      end_date <- as.Date(paste0(time_period[2], "-01-01"))
-    } else {
-      end_date <- as.Date(time_period[2])
-    }
-
-    if (start_date > end_date) {
-      stop("Time period needs to end later than it starts")
-    }
-
-    ##### get `genc_id` and hospital_num if `cohort` is not provided #####
-    # one repeat per `genc_id`
-    df1 <- generate_id_hospital(nid = nid, n_hospitals = n_hospitals, avg_repeats = 1, seed = seed)
-
-    ##### get `triage_date_time` #####
-    # dates are distributed uniformly between the min and max date
-    df1[, triage_date := as.Date(round(runif(.N,
-      min = as.numeric(start_date),
-      max = as.numeric(end_date)
-    )))]
-
-    # log normal distribution of `triage_date_time`
-    df1[, triage_time_hour := rlnorm_trunc(.N, meanlog = 2.69, sdlog = 0.38, min = 4, max = 30, seed = seed)]
+      meanlog = 2.69, sdlog = 0.38, min = 4, max = 30
+    )]
 
     # move times > 24 hours to 12am and after
-    df1[, triage_time_hour := ifelse(triage_time_hour < 24, triage_time_hour, triage_time_hour - 24)]
+    df1[triage_date_time > admission_date_time, triage_time_hour := ifelse(
+      triage_time_hour < 24, triage_time_hour, triage_time_hour - 24
+    )]
 
-    df1[, triage_date_time := triage_date + dhours(triage_time_hour)]
-  }
+    df1[triage_date_time > admission_date_time, triage_date_time := triage_date + dhours(triage_time_hour)]
+    }
 
   # turn date times into a string and remove seconds
   df1[, triage_date_time := substr(as.character(triage_date_time), 1, 16)]
@@ -1403,6 +1362,9 @@ dummy_transfusion <- function(
       coltypes = c("integer", "integer", "", "")
     )
 
+    nid <- uniqueN(cohort$genc_id)
+    n_hospitals <- uniqueN(cohort$hospital_num)
+
   } else { # when `cohort` is not provided
     # `dummy_ipadmdad()` checks inputs
     cohort <- dummy_ipadmdad(nid, n_hospitals, time_period, seed)
@@ -1418,8 +1380,6 @@ dummy_transfusion <- function(
 
   # on average, a genc_id has 4.9 transfusions
   df1 <- generate_id_hospital(cohort = cohort, avg_repeats = 4.9, seed = seed)
-  nid <- uniqueN(df1$genc_id)
-  n_hospitals <- uniqueN(df1$hospital_num)
 
   ##### Sample `issue_date_time` #####
   # uniformly sample a date between IP admission and discharge
