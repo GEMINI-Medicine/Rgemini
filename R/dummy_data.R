@@ -1562,16 +1562,17 @@ dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed =
   if (!is.null(cohort)) {
     # if `cohort` is provided, use its `genc_id` and `hospital_num`
     cohort <- as.data.table(cohort)
-    physicians_sim <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 1, seed = seed)
+    df_sim <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 1, seed = seed)
 
-    nid <- length(unique(physicians_sim$genc_id))
-    n_hospitals <- length(unique(physicians_sim$hospital_num))
+    nid <- length(unique(df_sim$genc_id))
+    n_hospitals <- length(unique(df_sim$hospital_num))
 
     # only include the genc_id and hospital_num columns from `cohort`
-    physicians_sim <- physicians_sim[, c("genc_id", "hospital_num")]
+    df_sim <- df_sim[, c("genc_id", "hospital_num")]
   } else {
     # no repeating genc_id in physicians data table
-    physicians_sim <- generate_id_hospital(nid, n_hospitals, avg_repeats = 1, seed = seed)
+    # generate a cohort with `genc_id` and `hospital_num`
+    df_sim <- generate_id_hospital(nid, n_hospitals, avg_repeats = 1, seed = seed)
   }
 
   # Function that samples a value from a given vector with replacement
@@ -1582,7 +1583,7 @@ dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed =
   # set the NA proportions per hospital per variable
   # sampling creates hospital-level variation
   # each row is a different hopsital
-  hosp_na_prop <- physicians_sim %>%
+  hosp_na_prop <- df_sim %>%
     group_by(
       hospital_num
     ) %>%
@@ -1600,7 +1601,7 @@ dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed =
   # edit `admitting_phy_gim` and `discharging_phy_gim`
   # artificially add some counts of NA with proportion approximately 0.33
   # 0.33 of hospitals have all NA for these variables
-  hosp_sample <- sample(unique(physicians_sim$hospital_num), round(n_hospitals * 0.33))
+  hosp_sample <- sample(unique(df_sim$hospital_num), round(n_hospitals * 0.33))
   hosp_na_prop[hospital_num %in% hosp_sample, admitting_phy_gim_NA := 1]
   hosp_na_prop[hospital_num %in% hosp_sample, discharging_phy_gim_NA := 1]
 
@@ -1629,54 +1630,54 @@ dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed =
   hosp_na_prop$n_physicians <- rsn_trunc(n_hospitals, 470, 220, -1.6, 1, 650)
   hosp_na_prop[, phy_set := sapply(n_physicians, function(x) sample(sample_cpso, x, replace = TRUE))]
 
-  # merge `physicians_sim`, the output data table, with hospital information
-  physicians_sim <- merge(physicians_sim, hosp_na_prop, by = "hospital_num", all.x = TRUE)
+  # merge `df_sim`, the output data table, with hospital information
+  df_sim <- merge(df_sim, hosp_na_prop, by = "hospital_num", all.x = TRUE)
 
   # now sample all variables
   ####### `admitting_physician_gim` #######
-  physicians_sim[, admitting_physician_gim := ifelse(rbinom(.N, 1, admitting_phy_gim_Y), "y", "n")]
+  df_sim[, admitting_physician_gim := ifelse(rbinom(.N, 1, admitting_phy_gim_Y), "y", "n")]
 
   # sample the NAs in admitting_physician_gim
-  physicians_sim[, admitting_physician_gim := ifelse(rbinom(
+  df_sim[, admitting_physician_gim := ifelse(rbinom(
     .N, 1,
     admitting_phy_gim_NA
   ), NA, admitting_physician_gim)]
 
   ####### `discharging_physician_gim` #######
-  physicians_sim[, discharging_physician_gim := ifelse(rbinom(.N, 1, discharging_phy_gim_Y), "y", "n")]
+  df_sim[, discharging_physician_gim := ifelse(rbinom(.N, 1, discharging_phy_gim_Y), "y", "n")]
 
   # sample the NAs in discharging_physician_gim
-  physicians_sim[, discharging_physician_gim := ifelse(rbinom(
+  df_sim[, discharging_physician_gim := ifelse(rbinom(
     .N, 1,
     discharging_phy_gim_NA
   ), NA, discharging_physician_gim)]
 
   ####### `adm_phy_cpso_mapped` #######
   # Set adm physician
-  physicians_sim[, adm_phy_cpso_mapped := sapply(phy_set, sample_from_col)]
+  df_sim[, adm_phy_cpso_mapped := sapply(phy_set, sample_from_col)]
 
   ####### `mrp_cpso_mapped` #######
   # 0.36 of encounters have mrp = adm
-  physicians_sim[, mrp_cpso_mapped := ifelse(rbinom(.N, 1, 0.36),
+  df_sim[, mrp_cpso_mapped := ifelse(rbinom(.N, 1, 0.36),
     adm_phy_cpso_mapped, sapply(setdiff(phy_set, adm_phy_cpso_mapped), sample_from_col)
   )]
 
   ####### `dis_phy_cpso_mapped` #######
   # when adm = mrp, 0.9 of encounters have adm = mrp = dis
-  physicians_sim[adm_phy_cpso_mapped == mrp_cpso_mapped, dis_phy_cpso_mapped := ifelse(rbinom(.N, 1, 0.9),
+  df_sim[adm_phy_cpso_mapped == mrp_cpso_mapped, dis_phy_cpso_mapped := ifelse(rbinom(.N, 1, 0.9),
     adm_phy_cpso_mapped,
     sapply(setdiff(phy_set, adm_phy_cpso_mapped), sample_from_col)
   )]
 
   # when adm != mrp, 0.87 of dis = mrp and dis != adm always
   # these will cover all cases of relations between adm, mrp, and dis
-  physicians_sim[adm_phy_cpso_mapped != mrp_cpso_mapped, dis_phy_cpso_mapped := ifelse(rbinom(.N, 1, 0.87),
+  df_sim[adm_phy_cpso_mapped != mrp_cpso_mapped, dis_phy_cpso_mapped := ifelse(rbinom(.N, 1, 0.87),
     mrp_cpso_mapped,
     sapply(setdiff(phy_set, c(mrp_cpso_mapped)), sample_from_col)
   )]
 
-  return(physicians_sim[
-    order(physicians_sim$genc_id), # return only with required columns
+  return(df_sim[
+    order(df_sim$genc_id), # return only with required columns
     c(
       "genc_id", "hospital_num", "admitting_physician_gim", "discharging_physician_gim", "adm_phy_cpso_mapped",
       "mrp_cpso_mapped"
