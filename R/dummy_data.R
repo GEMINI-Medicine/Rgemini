@@ -772,6 +772,8 @@ dummy_admdad <- function(id, admtime) {
 #' - `scu_discharge_date_time` (`character`): the date and time of discharge from the SCU
 #'
 #' @import lubridate
+#' @import data.table
+#'
 #' @export
 #'
 sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = NULL, end_date = NULL, seed = NULL) {
@@ -1044,6 +1046,8 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 #'   - 93: Combined Medical/Surgical Step-Down Unit
 #'   - 95: Step-Down Surgical Unit
 #'
+#' @import Rgemini
+#'
 #' @export
 #'
 #' @examples
@@ -1055,120 +1059,45 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
     set.seed(seed)
   }
 
-  ## Check inputs ##
-  if (!is.null(cohort)) { # if `cohort` is provided
-    check_input(cohort,
+  ## Check inputs and create cohorts ##
+  if (!is.null(cohort)) { 
+    # if `cohort` is provided, check the columns
+    Rgemini:::check_input(cohort,
       c("data.frame", "data.table"),
       colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
       coltypes = c("integer", "integer", "", "")
     )
-    if (!all(check_date_format(c(cohort$admission_date_time, cohort$discharge_date_time), check_time = TRUE))) {
-      stop("An invalid admission and/or discharge date time was provided in cohort.")
-    }
-  } else { # when `cohort` is not provided
 
-    # `nid` and `n_hospitals` are integers
-    check_input(list(nid, n_hospitals), "integer")
-
-    if (nid < n_hospitals) {
-      stop("Number of encounters must be greater than or equal to the number of hospitals")
-    }
-
-    # checks for time period:
-    # not NULL, not NA, and has a length of 2
-    if (any(is.null(time_period)) || any(is.na(time_period)) || length(time_period) != 2) {
-      stop("Please provide time_period as a vector of length 2") # check for date formatting
-    } else if (!check_date_format(time_period[1]) || !check_date_format(time_period[2])) {
-      stop("Time period is in the incorrect date format, please fix")
-    }
-  }
-
-  if (!is.null(cohort)) {
-    ####### If `cohort` is provided, generate the data table #######
-    # convert data types in `cohort`
-    cohort <- as.data.table(cohort)
-    cohort$admission_date_time <- as.POSIXct(cohort$admission_date_time,
-      format = "%Y-%m-%d %H:%M",
-      tz = "UTC"
-    )
-
-    cohort$discharge_date_time <- as.POSIXct(cohort$discharge_date_time,
-      format = "%Y-%m-%d %H:%M",
-      tz = "UTC"
-    )
-
-    cohort$los <- as.numeric(difftime(
-      cohort$discharge_date_time,
-      cohort$admission_date_time
-    ))
-
-    # create a new data table based on `cohort`
-    df1 <- generate_id_hospital(
-      cohort = cohort,
-      include_prop = 1,
-      avg_repeats = 1.4,
-      by_los = TRUE,
-      seed = seed
-    )
-
-    # `nid` and `n_hospitals` will depend on `df1`
-    nid <- uniqueN(df1$genc_id)
-    n_hospitals <- uniqueN(df1$hospitals)
-
-    # Number each SCU stay per genc_id
-    df1[, genc_occurrence := seq_len(.N), by = genc_id]
-
-    ####### sample SCU admit and discharge date times #######
-    df1 <- sample_scu_date_time(scu_cohort = df1, use_ip_dates = TRUE, seed = seed)
   } else {
-    if (!all(check_date_format(time_period[1]), check_date_format(time_period[2]))) {
-      stop("An invalid date input was provided.")
-    }
+    # create a cohort
+    # `dummy_ipadmdad()` checks inputs
+    # create a cohort
+    cohort <- dummy_ipadmdad(nid = nid, n_hospitals = n_hospitals, time_period = time_period, seed = seed)
 
-    ####### if `cohort` is not provided, create `df1` based on `nid` and `n_hospitals` #######
-    if (nid < n_hospitals) {
-      stop("Number of encounters must be greater than or equal to the number of hospitals")
-    }
-
-    time_period <- as.character(time_period)
-    # User can enter a year range or specific dates
-    # Can be of type integer or character
-    # convert time_period into Date types
-    if (grepl("^[0-9]{4}$", time_period[1])) {
-      start_date <- as.Date(paste0(time_period[1], "-01-01"))
-    } else {
-      start_date <- as.Date(time_period[1])
-    }
-
-    if (grepl("^[0-9]{4}$", time_period[2])) {
-      end_date <- as.Date(paste0(time_period[2], "-01-01"))
-    } else {
-      end_date <- as.Date(time_period[2])
-    }
-
-    if (start_date > end_date) {
-      stop("Time period needs to end later than it starts")
-    }
-
-    # Check that the given time period makes sense
-    if (start_date > end_date) {
-      stop("Time period needs to end later than it starts")
-    }
-
-    ####### Generate the data table #######
-    df1 <- generate_id_hospital(nid, n_hospitals, avg_repeats = 1.2, seed = seed)
-
-    # Number each SCU stay per genc_id
-    df1[, genc_occurrence := seq_len(.N), by = genc_id]
-
-    setorder(df1, genc_id, genc_occurrence)
-
-    ####### sample SCU admit and discharge date times #######
-    df1 <- sample_scu_date_time(
-      scu_cohort = df1, use_ip_dates = FALSE,
-      start_date = start_date, end_date = end_date, seed = seed
-    )
+    # include only required columns
+    cohort <- cohort[, c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time")]
   }
+
+  # create a new data table based on `cohort`
+  # this step also converts cohort's admission and discharge date times into POSIXct
+  df1 <- generate_id_hospital(
+    cohort = cohort,
+    include_prop = 1,
+    avg_repeats = 1.4,
+    by_los = TRUE,
+    seed = seed
+  )
+
+  # adjust `nid` and `n_hospitals`
+  nid <- uniqueN(df1$genc_id)
+  n_hospitals <- uniqueN(df1$hospitals)
+  
+  # Number each SCU stay per genc_id
+  df1[, genc_occurrence := seq_len(.N), by = genc_id]
+
+  ####### sample SCU admit and discharge date times #######
+  df1 <- sample_scu_date_time(scu_cohort = df1, use_ip_dates = TRUE, seed = seed)
+
 
   # keep only relevant columns
   df1 <- df1[, c("genc_id", "hospital_num", "scu_admit_date_time", "scu_discharge_date_time")]
@@ -1457,12 +1386,16 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' dummy_transfusion(cohort = dummy_ipadmdad())
 #' dummy_transfusion(nid = 100, n_hospitals = 1, blood_product_list = c("0", "35605159", "35615187"))
 #'
+#' @import data.table
+#' @importFrom lubridate dhours days
+#'
 #' @export
 #'
 dummy_transfusion <- function(
   nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), cohort = NULL, blood_product_list = NULL, seed = NULL
 ) {
-  ### input checks for varaible types and validity ###
+
+  ### input checks for variable types and validity ###
   if (!is.null(cohort)) { # if `cohort` is provided
     check_input(cohort,
       c("data.frame", "data.table"),
@@ -1470,116 +1403,46 @@ dummy_transfusion <- function(
       coltypes = c("integer", "integer", "", "")
     )
 
-    if (!all(check_date_format(c(cohort$admission_date_time, cohort$discharge_date_time), check_time = TRUE))) {
-      stop("An invalid IP admission and/or discharge date time input was provided in cohort.")
-    }
   } else { # when `cohort` is not provided
-    check_input(list(nid, n_hospitals), "integer")
-
-    #  check if time_period is provided/has both start and end dates
-    if (any(is.null(time_period)) || any(is.na(time_period)) || length(time_period) != 2) {
-      stop("Please provide time_period") # check for date formatting
-    } else if (!check_date_format(time_period[1]) || !check_date_format(time_period[2])) {
-      stop("Time period is in the incorrect date format, please fix")
-    }
-
-    if (nid < n_hospitals) {
-      stop("Number of encounters must be greater than or equal to the number of hospitals")
-    }
+    # `dummy_ipadmdad()` checks inputs
+    cohort <- dummy_ipadmdad(nid, n_hospitals, time_period, seed)
   }
+
+  cohort <- suppressWarnings(Rgemini:::coerce_to_datatable(cohort))
+  cohort$admission_date_time <- Rgemini::convert_dt(cohort$admission_date_time, "ymd HM")
+  cohort$discharge_date_time <- Rgemini::convert_dt(cohort$discharge_date_time, "ymd HM")
 
   if (!is.null(seed)) {
     set.seed(seed)
   }
 
-  if (!is.null(cohort)) {
-    # if cohort is provided, sample ordered and performed date time based on IP admission and discharge times
-    cohort <- as.data.table(cohort)
+  # on average, a genc_id has 4.9 transfusions
+  df1 <- generate_id_hospital(cohort = cohort, avg_repeats = 4.9, seed = seed)
+  nid <- uniqueN(df1$genc_id)
+  n_hospitals <- uniqueN(df1$hospital_num)
 
-    cohort$admission_date_time <- as.POSIXct(cohort$admission_date_time,
-      format = "%Y-%m-%d %H:%M",
-      tz = "UTC"
-    )
+  ##### Sample `issue_date_time` #####
+  # uniformly sample a date between IP admission and discharge
+  # add a time based on the skewed normal distribution
+  df1[, issue_date_time := as.Date(round(runif(.N,
+    min = as.Date(admission_date_time),
+    max = as.Date(discharge_date_time)
+  ))) +
+    dhours(sample_time_shifted(.N, 8.7, 9.1, 2.7, max = 30, seed = seed))]
 
-    cohort$discharge_date_time <- as.POSIXct(cohort$discharge_date_time,
-      format = "%Y-%m-%d %H:%M",
-      tz = "UTC"
-    )
-
-    # on average, a genc_id has 4.9 transfusions
-    df1 <- generate_id_hospital(cohort = cohort, avg_repeats = 4.9, seed = seed)
-    nid <- uniqueN(df1$genc_id)
-    n_hospitals <- uniqueN(df1$hospital_num)
-
-    ##### Sample `issue_date_time` #####
-    # uniformly sample a date between IP admission and discharge
-    # add a time based on the skewed normal distribution
-    df1[, issue_date_time := as.Date(round(runif(.N,
-      min = as.Date(admission_date_time),
-      max = as.Date(discharge_date_time)
-    ))) +
-      dhours(sample_time_shifted(.N, 8.7, 9.1, 2.7, max = 30, seed = seed))]
-
-    # if `issue_date_time` < `admission_date_time`, re-sample
-    while (nrow(df1[issue_date_time < admission_date_time, ] > 0)) {
-      df1[issue_date_time < admission_date_time, issue_date_time := admission_date_time +
-        dhours(rlnorm_trunc(.N, meanlog = 4.52, sdlog = 1.91, min = 0, max = 38500, seed = seed))]
-      # add time to `admission_date_time`
-    }
-
-    # if `issue_date_time` > `discharge_date_time`, re-sample
-    df1[issue_date_time > discharge_date_time, issue_date_time := as.Date(admission_date_time) +
-      dhours(sample_time_shifted(.N, 8.7, 9.1, 2.7, max = 30, seed = seed))]
-
-    # then set to discharge_date_time if re-sampling does not fix it
-    df1[issue_date_time > discharge_date_time, issue_date_time := discharge_date_time]
-  } else {
-    # set up all required variables based on input if no cohort is provided
-    # get the start and end dates
-    time_period <- as.character(time_period)
-
-    if (grepl("^[0-9]{4}$", time_period[1])) {
-      start_date <- as.Date(paste0(time_period[1], "-01-01"))
-    } else {
-      start_date <- as.Date(time_period[1])
-    }
-
-    if (grepl("^[0-9]{4}$", time_period[2])) {
-      end_date <- as.Date(paste0(time_period[2], "-01-01"))
-    } else {
-      end_date <- as.Date(time_period[2])
-    }
-
-    if (start_date > end_date) {
-      stop("Time period needs to end later than it starts")
-    }
-
-    # create `data.table` with `genc_id` and `hospital_num`
-    # average 4.9 repeats per `genc_id`
-    df1 <- generate_id_hospital(nid = nid, n_hospitals = n_hospitals, avg_repeats = 4.9, seed = seed)
-
-    ##### sample `issue_date_time` #####
-    df1[, min_issue_date := as.Date(round(runif(
-      1,
-      min = as.numeric(start_date),
-      max = as.numeric(end_date)
-    ))), by = genc_id]
-
-    # set range of time for repeated transfusions
-    # for each hospital stay, transfusions should not be too spaced out
-    df1[, max_issue_date := min_issue_date +
-      lubridate::days(ceiling(rlnorm(1, meanlog = 0.59, sdlog = 1.99))), by = genc_id]
-
-    # ensure that transfusions do not go beyond the end date
-    df1[as.numeric(max_issue_date) > as.numeric(end_date), max_issue_date := end_date]
-
-    # get all issued date times
-    df1[, issue_date_time := as.Date(round(runif(.N,
-      min = as.numeric(min_issue_date),
-      as.numeric(max_issue_date)
-    ))) +
-      dhours(sample_time_shifted(.N, 8.7, 9.1, 2.7, max = 30, seed = seed))]
+  # if `issue_date_time` < `admission_date_time`, re-sample
+  while (nrow(df1[issue_date_time < admission_date_time, ] > 0)) {
+    df1[issue_date_time < admission_date_time, issue_date_time := admission_date_time +
+      dhours(rlnorm_trunc(.N, meanlog = 4.52, sdlog = 1.91, min = 0, max = 38500, seed = seed))]
+    # add time to `admission_date_time`
   }
+
+  # if `issue_date_time` > `discharge_date_time`, re-sample
+  df1[issue_date_time > discharge_date_time, issue_date_time := as.Date(admission_date_time) +
+    dhours(sample_time_shifted(.N, 8.7, 9.1, 2.7, max = 30, seed = seed))]
+
+  # then set to discharge_date_time if re-sampling does not fix it
+  df1[issue_date_time > discharge_date_time, issue_date_time := discharge_date_time]
 
   # remove seconds and turn into character
   df1[, issue_date_time := substr(as.character(issue_date_time), 1, 16)]

@@ -1390,11 +1390,18 @@ generate_id_hospital <- function(
     # may sort by LOS to assign more repeats to longer stays
     if (by_los) {
       # convert date times to a useable format
-      include_set$admission_date_time <- as.POSIXct(include_set$admission_date_time,
-        format = "%Y-%m-%d %H:%M"
+      tryCatch(
+        {include_set$admission_date_time <- Rgemini::convert_dt(include_set$admission_date_time, "ymd HM")},
+        warning = function(w) {
+        stop(conditionMessage(w))
+        }
       )
-      include_set$discharge_date_time <- as.POSIXct(include_set$discharge_date_time,
-        format = "%Y-%m-%d %H:%M"
+
+      tryCatch(
+        {include_set$discharge_date_time <- Rgemini::convert_dt(include_set$discharge_date_time, "ymd HM")},
+        warning = function(w) {
+          stop(conditionMessage(w))
+        }
       )
 
       include_set$los <- as.numeric(difftime(
