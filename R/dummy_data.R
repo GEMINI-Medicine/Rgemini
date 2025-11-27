@@ -1060,14 +1060,13 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
   }
 
   ## Check inputs and create cohorts ##
-  if (!is.null(cohort)) { 
+  if (!is.null(cohort)) {
     # if `cohort` is provided, check the columns
     Rgemini:::check_input(cohort,
       c("data.frame", "data.table"),
       colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
       coltypes = c("integer", "integer", "", "")
     )
-
   } else {
     # create a cohort
     # `dummy_ipadmdad()` checks inputs
@@ -1094,7 +1093,7 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
   # adjust `nid` and `n_hospitals`
   nid <- uniqueN(df1$genc_id)
   n_hospitals <- uniqueN(df1$hospitals)
-  
+
   # Number each SCU stay per genc_id
   df1[, genc_occurrence := seq_len(.N), by = genc_id]
 
@@ -1353,7 +1352,6 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 dummy_transfusion <- function(
   nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), cohort = NULL, blood_product_list = NULL, seed = NULL
 ) {
-
   ### input checks for variable types and validity ###
   if (!is.null(cohort)) { # if `cohort` is provided
     check_input(cohort,
