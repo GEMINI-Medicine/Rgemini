@@ -431,7 +431,7 @@ dummy_ipadmdad <- function(nid = 1000,
 
   ############### PREPARE OUTPUT TABLE ###############
   ## create all combinations of hospitals and dates
-  hospital_num <- as.integer(seq(1, n_hospitals, 1))
+  hosp_names <- as.integer(seq(1, n_hospitals, 1))
   hosp_assignment <- sample(hosp_names, nid, replace = TRUE)
 
   id_list <- 1:nid
