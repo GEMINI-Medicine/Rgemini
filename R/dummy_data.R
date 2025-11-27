@@ -397,10 +397,12 @@ dummy_ipadmdad <- function(nid = 1000,
     # convert to date while checking for the format
     # stop if the format is not correct
     tryCatch(
-      {start_date <- convert_dt(time_period[1], "ymd")},
+      {
+        start_date <- convert_dt(time_period[1], "ymd")
+      },
       warning = function(w) {
         stop(conditionMessage(w))
-        }
+      }
     )
   }
 
@@ -411,10 +413,12 @@ dummy_ipadmdad <- function(nid = 1000,
     # convert to date while checking for the format
     # stop if the format is not correct
     tryCatch(
-      {end_date <- convert_dt(time_period[2], "ymd")},
+      {
+        end_date <- convert_dt(time_period[2], "ymd")
+      },
       warning = function(w) {
         stop(conditionMessage(w))
-        }
+      }
     )
   }
 
