@@ -1075,9 +1075,8 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 
     # include only required columns
     cohort <- cohort[, c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time")]
-
   }
-  
+
   cohort <- suppressWarnings(Rgemini::coerce_to_datatable(cohort))
 
   # create a new data table based on `cohort`
@@ -1219,7 +1218,6 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
     # update the parameters
     nid <- uniqueN(cohort$genc_id)
     n_hospitals <- uniqueN(cohort$hospital_num)
-
   } else { # when `cohort` is not provided
     # create a cohort
     cohort <- dummy_ipadmdad(nid, n_hospitals, time_period, seed)
@@ -1290,7 +1288,7 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
     )]
 
     df1[triage_date_time > admission_date_time, triage_date_time := triage_date + dhours(triage_time_hour)]
-    }
+  }
 
   # turn date times into a string and remove seconds
   df1[, triage_date_time := substr(as.character(triage_date_time), 1, 16)]
@@ -1362,7 +1360,6 @@ dummy_transfusion <- function(
 
     nid <- uniqueN(cohort$genc_id)
     n_hospitals <- uniqueN(cohort$hospital_num)
-
   } else { # when `cohort` is not provided
     # `dummy_ipadmdad()` checks inputs
     cohort <- dummy_ipadmdad(nid, n_hospitals, time_period, seed)
