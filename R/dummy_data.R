@@ -771,6 +771,7 @@ dummy_admdad <- function(id, admtime) {
 #' - `scu_admit_date_time` (`character`): the date and time of admission to the SCU
 #' - `scu_discharge_date_time` (`character`): the date and time of discharge from the SCU
 #'
+#' @import Rgemini
 #' @import lubridate
 #' @import data.table
 #'
@@ -784,20 +785,20 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
   ## Check inputs ##
   if (use_ip_dates) {
     # if `scu_cohort` contains IP admission and discharge date times
-    check_input(scu_cohort,
+    Rgemini:::check_input(scu_cohort,
       c("data.table"),
       colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
       coltypes = c("integer", "integer", "POSIXct", "POSIXct")
     )
   } else {
     # if `scu_cohort` does not have IP admission and discharge date times
-    check_input(scu_cohort,
+    Rgemini:::check_input(scu_cohort,
       c("data.table"),
       colnames = c("genc_id", "hospital_num"),
       coltypes = c("integer", "integer")
     )
-    check_input(start_date, c("Date", "POSIXct", "POSIXt"))
-    check_input(end_date, c("Date", "POSIXct", "POSIXt"))
+    Rgemini:::check_input(start_date, c("Date", "POSIXct", "POSIXt"))
+    Rgemini:::check_input(end_date, c("Date", "POSIXct", "POSIXt"))
 
     if (start_date > end_date) {
       stop("Time period needs to end later than it starts")
@@ -1047,6 +1048,7 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 #'   - 95: Step-Down Surgical Unit
 #'
 #' @import Rgemini
+#' @import data.table
 #'
 #' @export
 #'
@@ -1077,7 +1079,7 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
     cohort <- cohort[, c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time")]
 
   }
-  
+
   cohort <- suppressWarnings(Rgemini::coerce_to_datatable(cohort))
 
   # create a new data table based on `cohort`
@@ -1196,7 +1198,9 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 #' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort`
 #' - `triage_date_time` (`character`): The date and time of triage with format "%Y-%m-%d %H:%M"
 #'
-#' @import lubridate
+#' @importFrom lubridate ddays dhours
+#' @import Rgemini
+#' @import data.table
 #' @export
 #'
 #' @examples
@@ -1344,6 +1348,7 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' dummy_transfusion(cohort = dummy_ipadmdad())
 #' dummy_transfusion(nid = 100, n_hospitals = 1, blood_product_list = c("0", "35605159", "35615187"))
 #'
+#' @import Rgemini
 #' @import data.table
 #' @importFrom lubridate dhours days
 #'
@@ -1352,6 +1357,10 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 dummy_transfusion <- function(
   nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), cohort = NULL, blood_product_list = NULL, seed = NULL
 ) {
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
+
   ### input checks for variable types and validity ###
   if (!is.null(cohort)) { # if `cohort` is provided
     check_input(cohort,
@@ -1369,12 +1378,24 @@ dummy_transfusion <- function(
   }
 
   cohort <- suppressWarnings(Rgemini:::coerce_to_datatable(cohort))
-  cohort$admission_date_time <- Rgemini::convert_dt(cohort$admission_date_time, "ymd HM")
-  cohort$discharge_date_time <- Rgemini::convert_dt(cohort$discharge_date_time, "ymd HM")
 
-  if (!is.null(seed)) {
-    set.seed(seed)
-  }
+  tryCatch(
+    {
+      cohort$admission_date_time <- Rgemini::convert_dt(cohort$admission_date_time, "ymd HM")
+    },
+    warning = function(w) {
+      stop(conditionMessage(w))
+    }
+  )
+
+  tryCatch(
+    {
+      cohort$discharge_date_time <- Rgemini::convert_dt(cohort$discharge_date_time, "ymd HM")
+    },
+    warning = function(w) {
+      stop(conditionMessage(w))
+    }
+  )
 
   # on average, a genc_id has 4.9 transfusions
   df1 <- generate_id_hospital(cohort = cohort, avg_repeats = 4.9, seed = seed)
