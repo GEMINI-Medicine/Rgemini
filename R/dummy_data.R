@@ -394,18 +394,28 @@ dummy_ipadmdad <- function(nid = 1000,
     # if the user only provided a year
     start_date <- convert_dt(paste0(time_period[1], "-01-01"), "ymd")
   } else {
-    start_date <- convert_dt(time_period[1], "ymd")
+    # convert to date while checking for the format
+    # stop if the format is not correct
+    tryCatch(
+      {start_date <- convert_dt(time_period[1], "ymd")},
+      warning = function(w) {
+        stop(conditionMessage(w))
+        }
+    )
   }
 
   if (grepl("^[0-9]{4}$", time_period[2])) {
+    # if the user only provided a year
     end_date <- convert_dt(paste0(time_period[2], "-12-31"), "ymd")
   } else {
-    end_date <- convert_dt(time_period[2], "ymd")
-  }
-
-  if (is.na(start_date) | is.na(end_date)) {
-    # if either are NA, then the input was invalid
-    stop("Time period is in the incorrect date format.")
+    # convert to date while checking for the format
+    # stop if the format is not correct
+    tryCatch(
+      {end_date <- convert_dt(time_period[2], "ymd")},
+      warning = function(w) {
+        stop(conditionMessage(w))
+        }
+    )
   }
 
   # Make sure `nid` is at least `n_hospitals`
