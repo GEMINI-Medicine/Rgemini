@@ -35,7 +35,8 @@ When a \code{cohort} input is provided, \code{nid}, \code{n_hospitals}, and \cod
 \item{seed}{(\code{integer})\cr Optional, a number to be used to set the seed for reproducible results.}
 
 \item{n_hospitals(`integer`)\cr}{The number of hospitals to simulate.
-This is optional if \code{cohort} is provided.}
+Alternatively, if users provide a \code{cohort} input, the function will instead simulate
+radiology data for all \code{hospital_nums} in the user-defined cohort table}
 }
 \value{
 (\code{data.table})\cr A \code{data.table} object similar that contains the following fields:
@@ -52,7 +53,7 @@ This function creates a dummy dataset with a subset of variables that
 are contained in the GEMINI "radiology" table, as seen in
 \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
 
-This function only simulates modalities used in Our Practice Report (OPR) - CT, MRI,
+This function only simulates modalities used in the MyPractice and OurPractice Reports: CT, MRI,
 Ultrasound. It does not cover all modalities seen in the actual "radiology" data table.
 }
 \examples{
