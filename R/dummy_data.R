@@ -1046,8 +1046,6 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 #' @return (`data.table`)\cr A data.table object similar to the "ipscu" table that contains the following fields:
 #' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1 or from `cohort`
 #' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort`
-#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1 or from `cohort`
-#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort`
 #' - `scu_admit_date_time` (`character`): Date and time of SCU admission in YYYY-MM-DD HH:MM format
 #' - `scu_discharge_date_time` (`character`): Date and time of SCU admission in YYYY-MM-DD HH:MM format
 #' - `icu_flag` (`logical`): Flag specifying whether the encounter was admitted to the ICU or not.

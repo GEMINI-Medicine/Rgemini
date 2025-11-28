@@ -1184,7 +1184,7 @@ rsn_trunc <- function(n, xi, omega, alpha, min, max, seed = NULL) {
   res <- rsn(n = n, xi = xi, omega = omega, alpha = alpha)
   if (n == 1) {
     # if only one number is sampled
-    while (res[1] < min | res[1] > max) {
+    while (res[1] < min || res[1] > max) {
       res <- rsn(n = 1, xi = xi, omega = omega, alpha = alpha)
     }
     return(res[1])
@@ -1303,7 +1303,7 @@ sample_time_shifted_lnorm <- function(nrow, meanlog, sdlog, min = 0, max = 48, s
   res <- sample_dist(nrow, meanlog, sdlog)
   while (sum(res < min) + sum(res > max) > 0) {
     oor_sum <- sum(res < min) + sum(res > max)
-    res[c(res < min | res > max)] <- sample_dist(oor_sum, meanlog, sdlog)
+    res[c(res < min || res > max)] <- sample_dist(oor_sum, meanlog, sdlog)
   }
   return(res)
 }
@@ -1390,11 +1390,22 @@ generate_id_hospital <- function(
     # may sort by LOS to assign more repeats to longer stays
     if (by_los) {
       # convert date times to a useable format
-      include_set$admission_date_time <- as.POSIXct(include_set$admission_date_time,
-        format = "%Y-%m-%d %H:%M"
+      tryCatch(
+        {
+          include_set$admission_date_time <- Rgemini::convert_dt(include_set$admission_date_time, "ymd HM")
+        },
+        warning = function(w) {
+          stop(conditionMessage(w))
+          }
       )
-      include_set$discharge_date_time <- as.POSIXct(include_set$discharge_date_time,
-        format = "%Y-%m-%d %H:%M"
+
+      tryCatch(
+        {
+          include_set$discharge_date_time <- Rgemini::convert_dt(include_set$discharge_date_time, "ymd HM")
+        },
+        warning = function(w) {
+          stop(conditionMessage(w))
+        }
       )
 
       include_set$los <- as.numeric(difftime(
