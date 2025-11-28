@@ -1319,7 +1319,6 @@ sample_time_shifted_lnorm <- function(nrow, meanlog, sdlog, min = 0, max = 48, s
 #' The creation is either based on user's desired number of encounters and unique hospitals,
 #' or based on a given set of encounter IDs. It can be used to create long format data tables
 #' where users have control over average repeat frequency.
-
 #'
 #' @param nid (`integer`)\cr Optional, number of unique encounter IDs to simulate
 #'

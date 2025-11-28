@@ -34,8 +34,6 @@ containing the following fields:
 \itemize{
 \item \code{genc_id} (\code{integer}): Mock encounter ID; integers starting from 1
 \item \code{hospital_num} (\code{integer}): Mock hospital ID number; integers starting from 1
-\item \code{genc_id} (\code{integer}): Mock encounter ID; integers starting from 1
-\item \code{hospital_num} (\code{integer}): Mock hospital ID number; integers starting from 1
 \item \code{admission_date_time} (\code{character}): Date-time of admission in YYYY-MM-DD HH:MM format
 \item \code{discharge_date_time} (\code{character}): Date-time of discharge in YYYY-MM-DD HH:MM format
 \item \code{age} (\code{integer}): Patient age
