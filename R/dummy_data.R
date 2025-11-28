@@ -384,18 +384,48 @@ dummy_ipadmdad <- function(nid = 1000,
                            time_period = c(2015, 2023),
                            seed = NULL) {
   ############## CHECKS: for valid inputs: `n_id`, `n_hospitals`, `time_period`
-  check_input(list(nid, n_hospitals), "integer")
-  check_input(time_period, "integer", argtype = "integer", length = 2)
-  if (!all(check_date_format(time_period[1]), check_date_format(time_period[2]))) {
-    stop("An invalid date input was provided.")
+  Rgemini:::check_input(list(nid, n_hospitals), "integer")
+  Rgemini:::check_input(time_period, c("numeric", "character", "POSIXct"), length = 2)
+
+  time_period <- as.character(time_period)
+
+  # get start and end dates
+  if (grepl("^[0-9]{4}$", time_period[1])) {
+    # if the user only provided a year
+    start_date <- convert_dt(paste0(time_period[1], "-01-01"), "ymd")
+  } else {
+    # convert to date while checking for the format
+    # stop if the format is not correct
+    tryCatch(
+      {
+        start_date <- convert_dt(time_period[1], "ymd")
+      },
+      warning = function(w) {
+        stop(conditionMessage(w))
+      }
+    )
   }
-  # Make sure `nid` is at least n_hospitals * length(time_period)
-  if (nid < n_hospitals * length(time_period)) {
+
+  if (grepl("^[0-9]{4}$", time_period[2])) {
+    # if the user only provided a year
+    end_date <- convert_dt(paste0(time_period[2], "-12-31"), "ymd")
+  } else {
+    # convert to date while checking for the format
+    # stop if the format is not correct
+    tryCatch(
+      {
+        end_date <- convert_dt(time_period[2], "ymd")
+      },
+      warning = function(w) {
+        stop(conditionMessage(w))
+      }
+    )
+  }
+
+  # Make sure `nid` is at least `n_hospitals`
+  if (nid < n_hospitals) {
     stop("Invalid user input.
-    Number of encounters `nid` should at least be equal to `n_hospitals` * `length(time_period)`")
-  }
-  if (time_period[1] > time_period[2]) {
-    stop("The start date is after the end date. Stopping")
+    Number of encounters `nid` should at least be equal to `n_hospitals`")
   }
 
   # set the seed if the input provided is not NULL
@@ -404,41 +434,31 @@ dummy_ipadmdad <- function(nid = 1000,
   }
 
   ############### PREPARE OUTPUT TABLE ###############
-  ## create all combinations of hospitals and fiscal years
-  hospital_num <- as.integer(seq(1, n_hospitals, 1))
-  year <- seq(time_period[1], time_period[2], 1)
+  ## create all combinations of hospitals and dates
+  hosp_names <- as.integer(seq(1, n_hospitals, 1))
+  hosp_assignment <- sample(hosp_names, nid, replace = TRUE)
 
-  data <- expand.grid(hospital_num = hospital_num, year = year) %>% data.table()
+  id_list <- 1:nid
+  id_vector <- rep(id_list, times = rep(1, nid))
+  site_vector <- rep(hosp_assignment, times = rep(1, nid))
 
-  # randomly draw number of encounters per hospital*year combo
-  data[, n := rmultinom(1, nid, rep.int(1 / nrow(data), nrow(data)))]
-
-  # blow up row number according to encounter per combo
-  data <- data[rep(seq_len(nrow(data)), data$n), ]
+  data <- data.table(genc_id = id_vector, hospital_num = site_vector, stringsAsFactors = FALSE)
 
   # turn year variable into actual date by randomly drawing date_time
-  add_random_datetime <- function(year) {
-    start_date <- paste0(year, "-04-01 00:00 UTC") # start each fisc year on Apr 1
-    end_date <- paste0(year + 1, "-03-31 23:59 UTC") # end of fisc year
-
-    random_date <- as.Date(round(runif(length(year),
+  add_random_datetime <- function(n, start_date, end_date) {
+    random_date <- as.Date(round(runif(n,
       min = as.numeric(as.Date(start_date)),
       max = as.numeric(as.Date(end_date))
     )))
 
-    random_datetime <- format(as.POSIXct(random_date + dhours(sample_time_shifted(length(year),
+    random_datetime <- format(as.POSIXct(random_date + dhours(sample_time_shifted(n,
       xi = 19.5, omega = 6.29, alpha = 0.20
     )), tz = "UTC"), format = "%Y-%m-%d %H:%M")
 
     return(random_datetime)
   }
 
-  data[, admission_date_time := add_random_datetime(year)]
-
-  # add genc_id from 1-n
-  data <- data[order(admission_date_time), ]
-  data[, genc_id := as.integer(seq(1, nrow(data), 1))]
-
+  data[, admission_date_time := add_random_datetime(.N, start_date, end_date)]
 
   ############### DEFINE VARIABLE DISTRIBUTIONS ###############
   ## AGE
@@ -500,7 +520,7 @@ dummy_ipadmdad <- function(nid = 1000,
     hosp_data[, discharge_date_time := format(
       round_date(as.POSIXct(admission_date_time, tz = "UTC") +
         ddays(los), unit = "days") +
-        dhours(sample_time_shifted(.N, xi = 11.37, omega = 4.79, alpha = 1.67, max = 28, seed = seed)),
+        dhours(sample_time_shifted(.N, xi = 11.37, omega = 4.79, alpha = 1.67, seed = seed)),
       format = "%Y-%m-%d %H:%M", tz = "UTC"
     )]
 
@@ -1318,9 +1338,6 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy).
 #' The start date and end date will be (yyyy-01-01 and yyyy-12-31) if (yyyy, yyyy)
 #' is the date range format provided. Not used when `cohort` is provided.
-#'
-#' @param int_code (`character`)\cr A string or character vector
-#' of user-specified intervention codes to include in the returned data table.
 #'
 #' @param cohort (`data.frame or data.table`)\cr Optional, a data frame or data table with columns:
 #' - `genc_id` (`integer`): Mock encounter ID number

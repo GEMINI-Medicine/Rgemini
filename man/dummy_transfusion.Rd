@@ -38,9 +38,6 @@ to sample for the variable \code{blood_product_mapped_omop}.
 Items must be real blood product OMOP codes or it will not be used and a warning will be raised.}
 
 \item{seed}{(\code{integer})\cr Optional, a number to be used to set the seed for reproducible results.}
-
-\item{int_code}{(\code{character})\cr A string or character vector
-of user-specified intervention codes to include in the returned data table.}
 }
 \value{
 (\code{data.table})\cr A data.table object similar to the "transfusion" table with the following fields:
