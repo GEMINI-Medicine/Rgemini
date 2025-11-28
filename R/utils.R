@@ -1395,7 +1395,7 @@ generate_id_hospital <- function(
         },
         warning = function(w) {
           stop(conditionMessage(w))
-          }
+        }
       )
 
       tryCatch(
