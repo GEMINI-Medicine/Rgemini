@@ -1303,7 +1303,7 @@ sample_time_shifted_lnorm <- function(nrow, meanlog, sdlog, min = 0, max = 48, s
   res <- sample_dist(nrow, meanlog, sdlog)
   while (sum(res < min) + sum(res > max) > 0) {
     oor_sum <- sum(res < min) + sum(res > max)
-    res[c(res < min | res > max)] <- sample_dist(oor_sum, meanlog, sdlog)
+    res[c(res < min || res > max)] <- sample_dist(oor_sum, meanlog, sdlog)
   }
   return(res)
 }
@@ -1319,7 +1319,6 @@ sample_time_shifted_lnorm <- function(nrow, meanlog, sdlog, min = 0, max = 48, s
 #' The creation is either based on user's desired number of encounters and unique hospitals,
 #' or based on a given set of encounter IDs. It can be used to create long format data tables
 #' where users have control over average repeat frequency.
-
 #'
 #' @param nid (`integer`)\cr Optional, number of unique encounter IDs to simulate
 #'
