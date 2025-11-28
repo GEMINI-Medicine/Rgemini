@@ -370,6 +370,7 @@ dummy_diag <- function(
 #' stay. However, due to the fact that ALC days are rounded up, it's possible
 #' for `number_of_alc_days` to be larger than `los_days_derived`.
 #'
+#' @import Rgemini
 #' @importFrom sn rsn
 #' @importFrom MCMCpack rdirichlet
 #' @importFrom lubridate ymd_hm
