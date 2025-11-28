@@ -418,8 +418,6 @@ dummy_ipadmdad <- function(nid = 1000,
   ############### PREPARE OUTPUT TABLE ###############
   ## create all combinations of hospitals and fiscal years
   hospital_num <- as.integer(seq(1, n_hospitals, 1))
-  hospital_num <- as.integer(seq(1, n_hospitals, 1))
-  hospital_num <- as.integer(seq(1, n_hospitals, 1))
   year <- seq(time_period[1], time_period[2], 1)
 
   data <- expand.grid(hospital_num = hospital_num, year = year) %>% data.table()
