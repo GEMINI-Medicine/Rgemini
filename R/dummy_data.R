@@ -1343,46 +1343,6 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 
       df1[triage_date_time > admission_date_time, triage_date_time := triage_date + dhours(triage_time_hour)]
     }
-  } else {
-    time_period <- as.character(time_period)
-    # User can enter a year range or specific dates
-    # Can be of type integer or character
-    # Convert time_period into Date types
-    if (grepl("^[0-9]{4}$", time_period[1])) {
-      start_date <- as.Date(paste0(time_period[1], "-01-01"))
-    } else {
-      start_date <- as.Date(time_period[1])
-    }
-
-    if (grepl("^[0-9]{4}$", time_period[2])) {
-      end_date <- as.Date(paste0(time_period[2], "-01-01"))
-    } else {
-      end_date <- as.Date(time_period[2])
-    }
-
-    if (start_date > end_date) {
-      stop("Time period needs to end later than it starts")
-    }
-
-    ##### get genc_id and hospital_num if `cohort` is not provided #####
-    # one repeat per genc_id
-    df1 <- generate_id_hospital(nid = nid, n_hospitals = n_hospitals, avg_repeats = 1, seed = seed)
-
-    ##### get `triage_date_time` #####
-    # dates are distributed uniformly between the min and max date
-    df1[, triage_date := as.Date(round(runif(.N,
-      min = as.numeric(start_date),
-      max = as.numeric(end_date)
-    )))]
-
-    # log normal distribution of `triage_date_time`
-    df1[, triage_time_hour := rlnorm_trunc(.N, meanlog = 2.69, sdlog = 0.38, min = 4, max = 30, seed = seed)]
-
-    # move times > 24 hours to 12am and after
-    df1[, triage_time_hour := ifelse(triage_time_hour < 24, triage_time_hour, triage_time_hour - 24)]
-
-    df1[, triage_date_time := triage_date + dhours(triage_time_hour)]
-  }
 
   # turn date times into a string and remove seconds
   df1[, triage_date_time := substr(as.character(triage_date_time), 1, 16)]
