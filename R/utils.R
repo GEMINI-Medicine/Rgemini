@@ -1184,7 +1184,7 @@ rsn_trunc <- function(n, xi, omega, alpha, min, max, seed = NULL) {
   res <- rsn(n = n, xi = xi, omega = omega, alpha = alpha)
   if (n == 1) {
     # if only one number is sampled
-    while (res[1] < min | res[1] > max) {
+    while (res[1] < min || res[1] > max) {
       res <- rsn(n = 1, xi = xi, omega = omega, alpha = alpha)
     }
     return(res[1])
@@ -1303,7 +1303,7 @@ sample_time_shifted_lnorm <- function(nrow, meanlog, sdlog, min = 0, max = 48, s
   res <- sample_dist(nrow, meanlog, sdlog)
   while (sum(res < min) + sum(res > max) > 0) {
     oor_sum <- sum(res < min) + sum(res > max)
-    res[c(res < min | res > max)] <- sample_dist(oor_sum, meanlog, sdlog)
+    res[c(res < min || res > max)] <- sample_dist(oor_sum, meanlog, sdlog)
   }
   return(res)
 }
@@ -1427,45 +1427,4 @@ generate_id_hospital <- function(
   res[, genc_id := as.integer(genc_id)]
   res[, hospital_num := as.integer(hospital_num)]
   return(res)
-}
-
-
-#' @title
-#' Checks a character input to verify that it is as valid date or date time format
-#'
-#' @description
-#' This function checks the format of a `character` object so that it can be converted to a Date or POSIXct type.
-#' The formats are:
-#' - Date: "YYYY-mm-dd" or "YYYY"
-#' - Date time (to convert to POSIXct): "YYYY-mm-dd hh:mm"
-#'
-#' @param x (`character`)\cr The string to be checked for format.
-#'
-#' @param check_time (`logical`)\cr Optional, a flag indicating whether the function will check for
-#' a date or date time format. The default is `FALSE`, meaning it will check for a date only.
-#'
-#' @return (`logical`)\cr The function returns `TRUE` if the input was a valid date or date time format.
-#' Otherwise, it returns `FALSE`.
-#'
-#' @export
-#'
-#' @examples
-#' check_date_format("2020-01-01", check_time = FALSE)
-#' check_date_format("2021-01-01 12:01", check_time = TRUE)
-#' check_date_format(c("2015-12-31 01:01", "2016-01-01 01:01"), check_time = TRUE)
-#' check_date_format("November 13th, 2025")
-#'
-check_date_format <- function(x, check_time = FALSE) {
-  x <- as.character(x)
-  x_trim <- trimws(x)
-  if (check_time == FALSE) {
-    return(
-      grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", x_trim) | grepl("^[0-9]{4}$", x_trim)
-    )
-  } else {
-    x_trim <- substr(x_trim, 1, 16) # removes seconds from the date time object
-    return(
-      grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}$", x_trim)
-    )
-  }
 }

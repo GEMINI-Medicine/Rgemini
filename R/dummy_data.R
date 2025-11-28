@@ -371,6 +371,7 @@ dummy_diag <- function(
 #' for `number_of_alc_days` to be larger than `los_days_derived`.
 #'
 #' @import Rgemini
+#' @import Rgemini
 #' @importFrom sn rsn
 #' @importFrom MCMCpack rdirichlet
 #' @importFrom lubridate ymd_hm
@@ -1249,7 +1250,7 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
   }
 
   ##### update `cohort` data types
-  cohort <- suppressWarnings(Rgemini:::coerce_to_datatable(cohort))
+  cohort <- suppressWarnings(Rgemini::coerce_to_datatable(cohort))
 
   tryCatch(
     {
