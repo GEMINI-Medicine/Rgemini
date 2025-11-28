@@ -1335,8 +1335,8 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
       triage_time_hour < 24, triage_time_hour, triage_time_hour - 24
     )]
 
-      df1[triage_date_time > admission_date_time, triage_date_time := triage_date + dhours(triage_time_hour)]
-    }
+    df1[triage_date_time > admission_date_time, triage_date_time := triage_date + dhours(triage_time_hour)]
+  }
 
   # turn date times into a string and remove seconds
   df1[, triage_date_time := substr(as.character(triage_date_time), 1, 16)]
