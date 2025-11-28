@@ -342,8 +342,6 @@ dummy_diag <- function(
 #' containing the following fields:
 #' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1
 #' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1
-#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1
-#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1
 #' - `admission_date_time` (`character`): Date-time of admission in YYYY-MM-DD HH:MM format
 #' - `discharge_date_time` (`character`): Date-time of discharge in YYYY-MM-DD HH:MM format
 #' - `age` (`integer`): Patient age
@@ -382,6 +380,7 @@ dummy_diag <- function(
 #' stay. However, due to the fact that ALC days are rounded up, it's possible
 #' for `number_of_alc_days` to be larger than `los_days_derived`.
 #'
+#' @import Rgemini
 #' @importFrom sn rsn
 #' @importFrom MCMCpack rdirichlet
 #' @importFrom lubridate ymd_hm
@@ -396,18 +395,48 @@ dummy_ipadmdad <- function(nid = 1000,
                            time_period = c(2015, 2023),
                            seed = NULL) {
   ############## CHECKS: for valid inputs: `n_id`, `n_hospitals`, `time_period`
-  check_input(list(nid, n_hospitals), "integer")
-  check_input(time_period, "integer", argtype = "integer", length = 2)
-  if (!all(check_date_format(time_period[1]), check_date_format(time_period[2]))) {
-    stop("An invalid date input was provided.")
+  Rgemini:::check_input(list(nid, n_hospitals), "integer")
+  Rgemini:::check_input(time_period, c("numeric", "character", "POSIXct"), length = 2)
+
+  time_period <- as.character(time_period)
+
+  # get start and end dates
+  if (grepl("^[0-9]{4}$", time_period[1])) {
+    # if the user only provided a year
+    start_date <- convert_dt(paste0(time_period[1], "-01-01"), "ymd")
+  } else {
+    # convert to date while checking for the format
+    # stop if the format is not correct
+    tryCatch(
+      {
+        start_date <- convert_dt(time_period[1], "ymd")
+      },
+      warning = function(w) {
+        stop(conditionMessage(w))
+      }
+    )
   }
-  # Make sure `nid` is at least n_hospitals * length(time_period)
-  if (nid < n_hospitals * length(time_period)) {
+
+  if (grepl("^[0-9]{4}$", time_period[2])) {
+    # if the user only provided a year
+    end_date <- convert_dt(paste0(time_period[2], "-12-31"), "ymd")
+  } else {
+    # convert to date while checking for the format
+    # stop if the format is not correct
+    tryCatch(
+      {
+        end_date <- convert_dt(time_period[2], "ymd")
+      },
+      warning = function(w) {
+        stop(conditionMessage(w))
+      }
+    )
+  }
+
+  # Make sure `nid` is at least `n_hospitals`
+  if (nid < n_hospitals) {
     stop("Invalid user input.
-    Number of encounters `nid` should at least be equal to `n_hospitals` * `length(time_period)`")
-  }
-  if (time_period[1] > time_period[2]) {
-    stop("The start date is after the end date. Stopping")
+    Number of encounters `nid` should at least be equal to `n_hospitals`")
   }
 
   # set the seed if the input provided is not NULL
@@ -416,43 +445,31 @@ dummy_ipadmdad <- function(nid = 1000,
   }
 
   ############### PREPARE OUTPUT TABLE ###############
-  ## create all combinations of hospitals and fiscal years
-  hospital_num <- as.integer(seq(1, n_hospitals, 1))
-  hospital_num <- as.integer(seq(1, n_hospitals, 1))
-  hospital_num <- as.integer(seq(1, n_hospitals, 1))
-  year <- seq(time_period[1], time_period[2], 1)
+  ## create all combinations of hospitals and dates
+  hosp_names <- as.integer(seq(1, n_hospitals, 1))
+  hosp_assignment <- sample(hosp_names, nid, replace = TRUE)
 
-  data <- expand.grid(hospital_num = hospital_num, year = year) %>% data.table()
+  id_list <- 1:nid
+  id_vector <- rep(id_list, times = rep(1, nid))
+  site_vector <- rep(hosp_assignment, times = rep(1, nid))
 
-  # randomly draw number of encounters per hospital*year combo
-  data[, n := rmultinom(1, nid, rep.int(1 / nrow(data), nrow(data)))]
-
-  # blow up row number according to encounter per combo
-  data <- data[rep(seq_len(nrow(data)), data$n), ]
+  data <- data.table(genc_id = id_vector, hospital_num = site_vector, stringsAsFactors = FALSE)
 
   # turn year variable into actual date by randomly drawing date_time
-  add_random_datetime <- function(year) {
-    start_date <- paste0(year, "-04-01 00:00 UTC") # start each fisc year on Apr 1
-    end_date <- paste0(year + 1, "-03-31 23:59 UTC") # end of fisc year
-
-    random_date <- as.Date(round(runif(length(year),
+  add_random_datetime <- function(n, start_date, end_date) {
+    random_date <- as.Date(round(runif(n,
       min = as.numeric(as.Date(start_date)),
       max = as.numeric(as.Date(end_date))
     )))
 
-    random_datetime <- format(as.POSIXct(random_date + dhours(sample_time_shifted(length(year),
+    random_datetime <- format(as.POSIXct(random_date + dhours(sample_time_shifted(n,
       xi = 19.5, omega = 6.29, alpha = 0.20
     )), tz = "UTC"), format = "%Y-%m-%d %H:%M")
 
     return(random_datetime)
   }
 
-  data[, admission_date_time := add_random_datetime(year)]
-
-  # add genc_id from 1-n
-  data <- data[order(admission_date_time), ]
-  data[, genc_id := as.integer(seq(1, nrow(data), 1))]
-
+  data[, admission_date_time := add_random_datetime(.N, start_date, end_date)]
 
   ############### DEFINE VARIABLE DISTRIBUTIONS ###############
   ## AGE
@@ -514,7 +531,7 @@ dummy_ipadmdad <- function(nid = 1000,
     hosp_data[, discharge_date_time := format(
       round_date(as.POSIXct(admission_date_time, tz = "UTC") +
         ddays(los), unit = "days") +
-        dhours(sample_time_shifted(.N, xi = 11.37, omega = 4.79, alpha = 1.67, max = 28, seed = seed)),
+        dhours(sample_time_shifted(.N, xi = 11.37, omega = 4.79, alpha = 1.67, seed = seed)),
       format = "%Y-%m-%d %H:%M", tz = "UTC"
     )]
 
@@ -676,7 +693,82 @@ dummy_admdad <- function(id, admtime) {
 }
 
 #' @title
-#' Sample SCU admission and discharge date times by genc_id
+#' Generated simulated lab data
+#'
+#' @description
+#' Designed to mimic the most important elements of the GEMINI lab table as defined in the
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
+#'
+#' @param id (`numeric`)\cr
+#' A single identifier that is repeated to match the length of `value`.
+#'
+#' @param omop (`character`)\cr
+#' Codes corresponding to OMOP concept identifiers.
+#'
+#' @param value (`numeric`)\cr
+#' Simulated result values for each lab test measurement.
+#'
+#' @param unit (`character`)\cr
+#' Units corresponding to the particular lab test as defined by `omop`. It is repeated to match the length of `value`.
+#'
+#' @param mintime (`character`)\cr
+#' In the format yyyy-mm-dd hh:mm. Earliest recorded test performed time.
+#'
+#' @return (`data.table`)\cr
+#' With the columns, `id`, `omop`, `value`, `unit`, and `collection_date_time` as described above.
+#'
+#' @export
+#'
+#' @examples
+#' lab <- dummy_lab(1, 3024641, c(7, 8, 15, 30), "mmol/L", "2023-01-02 08:00")
+#'
+dummy_lab <- function(id, omop, value, unit, mintime) {
+  res <- data.table(
+    genc_id = rep(id, length(value)),
+    test_type_mapped_omop = omop,
+    result_value = value,
+    result_unit = rep(unit, length(value)),
+    collection_date_time = format(as.POSIXct(mintime, tz = "UTC") +
+      sample(0:(24 * 60 * 60 - 1),
+        size = length(value),
+        replace = TRUE
+      ), "%Y-%m-%d %H:%M")
+  )
+  return(res)
+}
+
+
+#' @title
+#' Generated simulated administrative data
+#'
+#' @description
+#' Designed to partially mimic the `admdad` table as defined in the
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
+#'
+#' @param id (`numeric`)\cr
+#' A single identifier that is repeated to match the length of `value`.
+#'
+#' @param admtime (`character`)\cr
+#' In the format yyyy-mm-dd hh:mm. Corresponds to the admission time of the encounter.
+#'
+#' @return (`data.table`)\cr
+#' With the columns `id` and `admission_date_time` as described above.
+#'
+#' @export
+#'
+#' @examples
+#' admdad <- dummy_admdad(1, "2023-01-02 00:00")
+#'
+dummy_admdad <- function(id, admtime) {
+  res <- data.table(
+    genc_id = id,
+    admission_date_time = format(as.POSIXct(admtime, tz = "UTC"), "%Y-%m-%d %H:%M")
+  )
+  return(res)
+}
+
+#' @title
+#' Sample SCU admission and discharge date times by genc_id.
 #'
 #' @description
 #' The "ipscu" data table is a long format data table with multiple repeats for each genc_id.
@@ -710,7 +802,10 @@ dummy_admdad <- function(id, admtime) {
 #' - `scu_admit_date_time` (`character`): the date and time of admission to the SCU
 #' - `scu_discharge_date_time` (`character`): the date and time of discharge from the SCU
 #'
+#' @import Rgemini
 #' @import lubridate
+#' @import data.table
+#'
 #' @export
 #'
 sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = NULL, end_date = NULL, seed = NULL) {
@@ -721,20 +816,20 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
   ## Check inputs ##
   if (use_ip_dates) {
     # if `scu_cohort` contains IP admission and discharge date times
-    check_input(scu_cohort,
+    Rgemini:::check_input(scu_cohort,
       c("data.table"),
       colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
       coltypes = c("integer", "integer", "POSIXct", "POSIXct")
     )
   } else {
     # if `scu_cohort` does not have IP admission and discharge date times
-    check_input(scu_cohort,
+    Rgemini:::check_input(scu_cohort,
       c("data.table"),
       colnames = c("genc_id", "hospital_num"),
       coltypes = c("integer", "integer")
     )
-    check_input(start_date, c("Date", "POSIXct", "POSIXt"))
-    check_input(end_date, c("Date", "POSIXct", "POSIXt"))
+    Rgemini:::check_input(start_date, c("Date", "POSIXct", "POSIXt"))
+    Rgemini:::check_input(end_date, c("Date", "POSIXct", "POSIXt"))
 
     if (start_date > end_date) {
       stop("Time period needs to end later than it starts")
@@ -981,6 +1076,9 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 #'   - 93: Combined Medical/Surgical Step-Down Unit
 #'   - 95: Step-Down Surgical Unit
 #'
+#' @import Rgemini
+#' @import data.table
+#'
 #' @export
 #'
 #' @examples
@@ -992,116 +1090,46 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
     set.seed(seed)
   }
 
-  ## Check inputs ##
-  if (!is.null(cohort)) { # if `cohort` is provided
-    check_input(cohort,
+  ## Check inputs and create cohorts ##
+  if (!is.null(cohort)) {
+    # if `cohort` is provided, check the columns
+    Rgemini:::check_input(cohort,
       c("data.frame", "data.table"),
       colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
       coltypes = c("integer", "integer", "", "")
     )
-    if (!all(check_date_format(c(cohort$admission_date_time, cohort$discharge_date_time), check_time = TRUE))) {
-      stop("An invalid admission and/or discharge date time was provided in cohort.")
-    }
-  } else { # when `cohort` is not provided
-
-    # `nid` and `n_hospitals` are integers
-    check_input(list(nid, n_hospitals), "integer")
-
-    if (nid < n_hospitals) {
-      stop("Number of encounters must be greater than or equal to the number of hospitals")
-    }
-
-    # checks for time period:
-    # not NULL, not NA, and has a length of 2
-    if (any(is.null(time_period)) || any(is.na(time_period)) || length(time_period) != 2) {
-      stop("Please provide time_period as a vector of length 2") # check for date formatting
-    } else if (!check_date_format(time_period[1]) || !check_date_format(time_period[2])) {
-      stop("Time period is in the incorrect date format, please fix")
-    }
-  }
-
-  if (!is.null(cohort)) {
-    ####### If `cohort` is provided, generate the data table #######
-    # convert data types in `cohort`
-    cohort <- as.data.table(cohort)
-    cohort$admission_date_time <- as.POSIXct(cohort$admission_date_time,
-      format = "%Y-%m-%d %H:%M",
-      tz = "UTC"
-    )
-
-    cohort$discharge_date_time <- as.POSIXct(cohort$discharge_date_time,
-      format = "%Y-%m-%d %H:%M",
-      tz = "UTC"
-    )
-
-    cohort$los <- as.numeric(difftime(
-      cohort$discharge_date_time,
-      cohort$admission_date_time
-    ))
-
-    # create a new data table based on `cohort`
-    df1 <- generate_id_hospital(
-      cohort = cohort,
-      include_prop = 1,
-      avg_repeats = 1.4,
-      by_los = TRUE,
-      seed = seed
-    )
-
-    # `nid` and `n_hospitals` will depend on `df1`
-    nid <- uniqueN(df1$genc_id)
-    n_hospitals <- uniqueN(df1$hospitals)
-
-    # Number each SCU stay per genc_id
-    df1[, genc_occurrence := seq_len(.N), by = genc_id]
-
-    ####### sample SCU admit and discharge date times #######
-    df1 <- sample_scu_date_time(scu_cohort = df1, use_ip_dates = TRUE, seed = seed)
   } else {
-    if (!all(check_date_format(time_period[1]), check_date_format(time_period[2]))) {
-      stop("An invalid date input was provided.")
-    }
+    # create a cohort
+    # `dummy_ipadmdad()` checks inputs
+    # create a cohort
+    cohort <- dummy_ipadmdad(nid = nid, n_hospitals = n_hospitals, time_period = time_period, seed = seed)
 
-    ####### if `cohort` is not provided, create `df1` based on `nid` and `n_hospitals` #######
-    if (nid < n_hospitals) {
-      stop("Number of encounters must be greater than or equal to the number of hospitals")
-    }
-
-    time_period <- as.character(time_period)
-    # User can enter a year range or specific dates
-    # Can be of type integer or character
-    # convert time_period into Date types
-    if (grepl("^[0-9]{4}$", time_period[1])) {
-      start_date <- as.Date(paste0(time_period[1], "-01-01"))
-    } else {
-      start_date <- as.Date(time_period[1])
-    }
-
-    if (grepl("^[0-9]{4}$", time_period[2])) {
-      end_date <- as.Date(paste0(time_period[2], "-01-01"))
-    } else {
-      end_date <- as.Date(time_period[2])
-    }
-
-    # Check that the given time period makes sense
-    if (start_date > end_date) {
-      stop("Time period needs to end later than it starts")
-    }
-
-    ####### Generate the data table #######
-    df1 <- generate_id_hospital(nid, n_hospitals, avg_repeats = 1.2, seed = seed)
-
-    # Number each SCU stay per genc_id
-    df1[, genc_occurrence := seq_len(.N), by = genc_id]
-
-    setorder(df1, genc_id, genc_occurrence)
-
-    ####### sample SCU admit and discharge date times #######
-    df1 <- sample_scu_date_time(
-      scu_cohort = df1, use_ip_dates = FALSE,
-      start_date = start_date, end_date = end_date, seed = seed
-    )
+    # include only required columns
+    cohort <- cohort[, c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time")]
   }
+
+  cohort <- suppressWarnings(Rgemini::coerce_to_datatable(cohort))
+
+  # create a new data table based on `cohort`
+  # this step also converts cohort's admission and discharge date times into POSIXct
+  df1 <- generate_id_hospital(
+    cohort = cohort,
+    include_prop = 1,
+    avg_repeats = 1.4,
+    by_los = TRUE,
+    seed = seed
+  )
+
+  # adjust `nid` and `n_hospitals`
+  nid <- uniqueN(df1$genc_id)
+  n_hospitals <- uniqueN(df1$hospitals)
+
+  # Number each SCU stay per genc_id
+  df1[, genc_occurrence := seq_len(.N), by = genc_id]
+
+  ####### sample SCU admit and discharge date times #######
+  df1 <- sample_scu_date_time(scu_cohort = df1, use_ip_dates = TRUE, seed = seed)
+
 
   # keep only relevant columns
   df1 <- df1[, c("genc_id", "hospital_num", "scu_admit_date_time", "scu_discharge_date_time")]
@@ -1166,7 +1194,6 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 
 #' @title
 #' Generate simulated ER data.
-#' Generate simulated ER data.
 #'
 #' @description
 #'  This function creates a dummy dataset with a subset of variables that
@@ -1182,13 +1209,10 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 #'
 #' @param time_period (`vector`)\cr A numeric or character vector containing the data range of the data
 #' by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy).
-#' by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy).
 #' The start date and end date will be (yyyy-01-01 and yyyy-12-31) if (yyyy, yyyy)
 #' is the date range format provided. Optional when `cohort` is provided.
 #'
 #' @param cohort (`data.frame or data.table`): Optional, a data frame with the following columns:
-#' - `genc_id` (`integer`): Mock encounter ID
-#' - `hospital_num` (`integer`): Mock hospital ID number
 #' - `genc_id` (`integer`): Mock encounter ID
 #' - `hospital_num` (`integer`): Mock hospital ID number
 #' - `admission_date_time` (`character`): The date and time of admission to the hospital with format "%Y-%m-%d %H:%M"
@@ -1202,7 +1226,9 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 #' - `hospital_num` (`integer`): Mock hospital ID; integers starting from 1 or from `cohort` if provided
 #' - `triage_date_time` (`character`): The date and time of triage with format "%Y-%m-%d %H:%M"
 #'
-#' @import lubridate
+#' @importFrom lubridate ddays dhours
+#' @import Rgemini
+#' @import data.table
 #' @export
 #'
 #' @examples
@@ -1221,466 +1247,85 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
       colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
       coltypes = c("integer", "integer", "", "")
     )
-    if (!all(check_date_format(c(cohort$admission_date_time, cohort$discharge_date_time), check_time = TRUE))) {
-      stop("An invalid admission and/or discharge date time was provided in cohort.")
-    }
+
+    # update the parameters
+    nid <- uniqueN(cohort$genc_id)
+    n_hospitals <- uniqueN(cohort$hospital_num)
   } else { # when `cohort` is not provided
-
-    # `nid` and `n_hospitals` are integers
-    check_input(list(nid, n_hospitals), "integer")
-
-    if (nid < n_hospitals) {
-      stop("Number of encounters must be greater than or equal to the number of hospitals")
-    }
-
-    # checks for time period:
-    # not NULL, not NA, and has a length of 2
-    if (any(is.null(time_period)) || any(is.na(time_period)) || length(time_period) != 2) {
-      stop("Please provide time_period as a vector of length 2") # check for date formatting
-    } else if (!check_date_format(time_period[1]) || !check_date_format(time_period[2])) {
-      stop("Time period is in the incorrect date format, please fix")
-    }
+    # create a cohort
+    cohort <- dummy_ipadmdad(nid, n_hospitals, time_period, seed)
   }
 
-  if (!is.null(cohort)) {
-    ##### get genc_id and hospital_num if `cohort` is provided #####
-    cohort <- as.data.table(cohort)
+  ##### update `cohort` data types
+  cohort <- suppressWarnings(Rgemini::coerce_to_datatable(cohort))
 
-    cohort$admission_date_time <- as.POSIXct(cohort$admission_date_time,
-      format = "%Y-%m-%d %H:%M",
-      tz = "UTC"
-    )
+  tryCatch(
+    {
+      cohort$admission_date_time <- Rgemini::convert_dt(cohort$admission_date_time, "ymd HM")
+    },
+    warning = function(w) {
+      stop(conditionMessage(w))
+    }
+  )
 
-    cohort$discharge_date_time <- as.POSIXct(cohort$discharge_date_time,
-      format = "%Y-%m-%d %H:%M",
-      tz = "UTC"
-    )
+  tryCatch(
+    {
+      cohort$discharge_date_time <- Rgemini::convert_dt(cohort$discharge_date_time, "ymd HM")
+    },
+    warning = function(w) {
+      stop(conditionMessage(w))
+    }
+  )
 
-    # get the `data.table` for simulation
-    # one repeat per `genc_id`
-    df1 <- generate_id_hospital(cohort = cohort, avg_repeats = 1, seed = seed)
+  # get the `data.table` for simulation
+  # one repeat per `genc_id`
+  df1 <- generate_id_hospital(cohort = cohort, avg_repeats = 1, seed = seed)
 
-    ##### sample `triage_date_time` by adding to IP admit time #####
-    # the output of `rsn` will be negative
-    # triage occurs before inpatient admissions
-    df1[, triage_date := floor_date(admission_date_time - ddays(rsn_trunc(
+  ##### sample `triage_date_time` by adding to IP admit time #####
+  # the output of `rsn` will be negative
+  # triage occurs before inpatient admissions
+  df1[, triage_date := floor_date(admission_date_time - ddays(rsn_trunc(
+    .N,
+    xi = 0.098, omega = 0.285, alpha = 4.45, min = 0, max = 370
+  )), unit = "day")]
+
+  # log normal distribution of `triage_date_time`
+  df1[, triage_time_hour := rlnorm_trunc(.N, meanlog = 2.69, sdlog = 0.38, min = 4, max = 30, seed = seed)]
+
+  # move times > 24 hours to 12am and after (early AM)
+  df1[, triage_time_hour := ifelse(triage_time_hour < 24, triage_time_hour, triage_time_hour - 24)]
+
+  df1[, triage_date_time := triage_date + dhours(triage_time_hour)]
+
+  df1[, admission_time := as.numeric(format(admission_date_time, "%H")) +
+    as.numeric(format(admission_date_time, "%M")) / 60 +
+    as.numeric(format(admission_date_time, "%S")) / 3600]
+
+  # re-sample bad values where triage comes up after admission
+  while (nrow(df1[triage_date_time > admission_date_time, ]) > 0) {
+    df1[triage_date_time > admission_date_time, triage_date := floor_date(
+      admission_date_time - ddays(rsn_trunc(.N,
+        xi = 0.098, omega = 0.285, alpha = 4.45, min = 0, max = 370
+      )),
+      unit = "day"
+    )]
+
+    df1[triage_date_time > admission_date_time, triage_time_hour := rlnorm_trunc(
       .N,
-      xi = 0.098, omega = 0.285, alpha = 4.45, min = 0, max = 370
-    )), unit = "day")]
-
-    # log normal distribution of `triage_date_time`
-    df1[, triage_time_hour := rlnorm_trunc(.N, meanlog = 2.69, sdlog = 0.38, min = 4, max = 30, seed = seed)]
-
-    # move times > 24 hours to 12am and after (early AM)
-    df1[, triage_time_hour := ifelse(triage_time_hour < 24, triage_time_hour, triage_time_hour - 24)]
-
-    df1[, triage_date_time := triage_date + dhours(triage_time_hour)]
-
-    df1[, admission_time := as.numeric(format(admission_date_time, "%H")) +
-      as.numeric(format(admission_date_time, "%M")) / 60 +
-      as.numeric(format(admission_date_time, "%S")) / 3600]
-
-    # re-sample bad values where triage comes up after admission
-    while (nrow(df1[triage_date_time > admission_date_time, ]) > 0) {
-      df1[triage_date_time > admission_date_time, triage_date := floor_date(
-        admission_date_time - ddays(rsn_trunc(.N,
-          xi = 0.098, omega = 0.285, alpha = 4.45, min = 0, max = 370
-        )),
-        unit = "day"
-      )]
-
-      df1[triage_date_time > admission_date_time, triage_time_hour := rlnorm_trunc(
-        .N,
-        meanlog = 2.69, sdlog = 0.38, min = 4, max = 30
-      )]
-
-      # move times > 24 hours to 12am and after
-      df1[triage_date_time > admission_date_time, triage_time_hour := ifelse(
-        triage_time_hour < 24, triage_time_hour, triage_time_hour - 24
-      )]
-
-      df1[triage_date_time > admission_date_time, triage_date_time := triage_date + dhours(triage_time_hour)]
-    }
-  } else {
-    time_period <- as.character(time_period)
-    # User can enter a year range or specific dates
-    # Can be of type integer or character
-    # Convert time_period into Date types
-    if (grepl("^[0-9]{4}$", time_period[1])) {
-      start_date <- as.Date(paste0(time_period[1], "-01-01"))
-    } else {
-      start_date <- as.Date(time_period[1])
-    }
-
-    if (grepl("^[0-9]{4}$", time_period[2])) {
-      end_date <- as.Date(paste0(time_period[2], "-01-01"))
-    } else {
-      end_date <- as.Date(time_period[2])
-    }
-
-    if (start_date > end_date) {
-      stop("Time period needs to end later than it starts")
-    }
-
-    ##### get genc_id and hospital_num if `cohort` is not provided #####
-    # one repeat per genc_id
-    df1 <- generate_id_hospital(nid = nid, n_hospitals = n_hospitals, avg_repeats = 1, seed = seed)
-
-    ##### get `triage_date_time` #####
-    # dates are distributed uniformly between the min and max date
-    df1[, triage_date := as.Date(round(runif(.N,
-      min = as.numeric(start_date),
-      max = as.numeric(end_date)
-    )))]
-
-    # log normal distribution of `triage_date_time`
-    df1[, triage_time_hour := rlnorm_trunc(.N, meanlog = 2.69, sdlog = 0.38, min = 4, max = 30, seed = seed)]
+      meanlog = 2.69, sdlog = 0.38, min = 4, max = 30
+    )]
 
     # move times > 24 hours to 12am and after
-    df1[, triage_time_hour := ifelse(triage_time_hour < 24, triage_time_hour, triage_time_hour - 24)]
+    df1[triage_date_time > admission_date_time, triage_time_hour := ifelse(
+      triage_time_hour < 24, triage_time_hour, triage_time_hour - 24
+    )]
 
-    df1[, triage_date_time := triage_date + dhours(triage_time_hour)]
+    df1[triage_date_time > admission_date_time, triage_date_time := triage_date + dhours(triage_time_hour)]
   }
 
   # turn date times into a string and remove seconds
   df1[, triage_date_time := substr(as.character(triage_date_time), 1, 16)]
 
-  # keep only the relevant columns and return
-  df1 <- df1[, c("genc_id", "hospital_num", "triage_date_time")]
-
-  return(df1[order(df1$genc_id)])
-}
-
-#' @title
-#' Generate simulated locality variables data
-#'
-#' @description
-#' This function creates a synthetic dataset with a subset of variables that
-#' are contained in the GEMINI "locality-variables" table, as seen in
-#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
-#'
-#' Specifically, the function simulates dissemination area IDs (da21uid) based on Canadian census data for a
-#' user-specified set of mock encounter and hospital IDs. To mimic GEMINI data characteristics, the majority
-#' of simulated area IDs are drawn from Ontario and are clustered by hospital.
-#'
-#' @param dbcon (`DBIConnection`)\cr
-#'  A connection to the GEMINI database, used to access the 2021 Canadian census dissemination codes.
-#' It is required when `da21uid` is missing. If `da21uid` is provided, then this input is ignored.
-#'
-#' @param nid (`integer`)\cr Number of unique encounter IDs to simulate. In this data table, each ID occurs once.
-#' It is optional when `cohort` is provided.
-#'
-#' @param n_hospitals (`integer`)\cr Number of hospitals in simulated dataset.
-#' It is optional when `cohort` is provided.
-#'
-#' @param da21uid (`integer` or `vector`)\cr Allows the user to customize which dissemination area ID to include in
-#' the output. It is required when `dbcon` is missing. It can be an integer or an integer vector.
-#' If included, the `dbcon` is not used.
-#'
-#' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
-#'
-#' @param cohort (`data.frame or data.table`) Optional, an existing data frame or data table similar to `admdad` in
-#' GEMINI with at least the following columns:
-#' - `genc_id` (`integer`): Mock encounter ID
-#' - `hospital_num` (`integer`): Mock hospital ID
-#' If `cohort` is provided, `nid` and `n_hospital` inputs are not used.
-#'
-#' @return (`data.table`)\cr
-#' A data.table object similar to the "locality_variables" table that contains the following fields:
-#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1 or from `cohort` if provided
-# - `hospital_num` (`integer`): Mock hospital ID; integers starting from 1 or from `cohort` if provided
-#' - `da21uid` (`integer`): Dissemination area ID based on 2021 Canadian census data using PCCF Version 8A
-#'
-#' @import DBI
-#'
-#' @export
-
-dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = NULL, da21uid = NULL, seed = NULL) {
-  ### check inputs
-  if (is.null(dbcon) && is.null(da21uid)) {
-    stop("A DB connection or list of dissemination codes is required.")
-  }
-
-  if (!is.null(da21uid)) {
-    check_input(da21uid, "integer")
-  } else {
-    check_input(dbcon, c("DBI", "dbcon", "PostgreSQL"))
-  }
-
-  if (is.numeric(seed)) {
-    set.seed(seed)
-  }
-
-  if (!is.null(cohort)) {
-    # check for correct columns in `cohort` if it is provided
-    check_input(cohort,
-      c("data.frame", "data.table"),
-      colnames = c("genc_id", "hospital_num"),
-      coltypes = c("integer", "integer")
-    )
-  } else {
-    # if `cohort` is not provided, check inputs that will be used
-    check_input(list(nid, n_hospitals), "integer")
-
-    if (nid < n_hospitals) {
-      stop("Number of encounters must be greater than or equal to the number of hospitals")
-    }
-  }
-
-  if (!is.null(cohort)) {
-    # set up `locality_sim` if `cohort` is included
-    cohort <- as.data.table(cohort)
-    locality_sim <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 1, seed = seed)
-    nid <- uniqueN(locality_sim$genc_id)
-    n_hospitals <- uniqueN(locality_sim$hospital_num)
-
-    # only include the `genc_id` and `hospital_num` columns from `cohort`
-    locality_sim <- locality_sim[, c("genc_id", "hospital_num")]
-  } else {
-    # generate a cohort from nid and n_hospitals
-    locality_sim <- generate_id_hospital(nid, n_hospitals, avg_repeats = 1, seed = seed)
-  }
-
-  if (!is.null(da21uid)) {
-    # if the user provided ID, use those
-    # if user provided one ID, fill the column with that
-    # otherwise, randomly sample from the list
-    locality_sim[, da21uid := {
-      if (length(da21uid) == 1) {
-        rep(da21uid, .N)
-      } else {
-        sample(da21uid, .N, replace = TRUE)
-      }
-    }]
-  } else {
-    # otherwise sample from the database
-    # get dissemination code lookup table from database
-    lookup_statcan_v2021 <- dbGetQuery(dbcon, "SELECT da21uid FROM lookup_statcan_v2021") %>% data.table()
-
-    # extract Ontario dissemination codes to resemble GEMINI data characteristics - these IDs start with 35
-    ontario_id <- subset(
-      lookup_statcan_v2021,
-      lookup_statcan_v2021$da21uid < 3.6e7 & lookup_statcan_v2021$da21uid >= 3.5e7
-    )$da21uid
-
-    # to mimic how locality IDs are clustered by hospital, set a range for min and max ID for each hospital
-    locality_sim[, c("min_id", "max_id") := {
-      repeat {
-        min_pick <- sample(ontario_id, 1)
-        candidates <- ontario_id[ontario_id > min_pick]
-        if (length(candidates) > 0) break # ensure min_id < max_id
-      }
-      list(min_pick, sample(candidates, 1))
-    }, by = hospital_num]
-
-    # sample dissemination ID within the range per hospital
-    locality_sim[, da21uid := mapply(function(x, y) {
-      sample(ontario_id[ontario_id >= x & ontario_id <= y], 1, replace = TRUE)
-    }, min_id, max_id)]
-
-    # insert a small proportion (0.3%) of cases located outside of Ontario
-    # sample from da21uid outside of Ontario
-    n_edge <- round(0.003 * nrow(locality_sim))
-    rows_edge <- sample(seq_len(nrow(locality_sim)), n_edge)
-
-    locality_sim[rows_edge, da21uid := sample(setdiff(lookup_statcan_v2021, ontario_id),
-      .N,
-      replace = TRUE
-    )]
-
-    # inject 2% rate of missingness in da21uid
-    locality_sim[, da21uid := ifelse(rbinom(.N, 1, 0.02), NA, da21uid)]
-
-    # remove extra columns and return
-    locality_sim <- locality_sim[, -c("min_id", "max_id")]
-  }
-  return(locality_sim[order(locality_sim$genc_id)])
-}
-
-#' @title
-#' Generate simulated physicians data
-#'
-#' @description
-#' This function creates a synthetic dataset with a subset of variables that
-#' are contained in the GEMINI "physicians" table, as seen in
-#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
-#'
-#'
-#' @param nid (`integer`)\cr Number of unique encounter IDs to simulate.
-#' Optional if `cohort` is provided.
-#'
-#' @param n_hospitals (`integer`)\cr Number of hospitals in simulated dataset.
-#' Optional if `cohort` is provided.
-#'
-#' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
-#'
-#' @param cohort (`data.frame or data.table`) Optional, an existing data table or data frame
-#' similar to `admdad` in GEMINI with at least the following columns:
-#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1
-#' - `hospital_num` (`integer`): Mock hospital ID; integers starting from 1
-#' If `cohort` is provided, `nid` and `n_hospitals` inputs are not used.
-#'
-#' @return (`data.table`)\cr A data.table object similar to the "physicians" table that contains the
-#' following fields:
-#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1 or from `cohort` if provided
-#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort` if provided
-#' - `admitting_physician_gim` (`logical`): Whether the admitting physician attends a general medicine ward
-#' - `discharging_physician_gim` (`logical`): Whether the discharging physician attends a general medicine ward
-#' - `adm_phy_cpso_mapped` (`integer`): Synthetic mock CPSO number (with prefix 'SYN_') of admitting physician
-#' - `mrp_cpso_mapped` (`integer`): Synthetic mock CPSO number (with prefix 'SYN_') of most responsible physician (MRP)
-#' - `dis_phy_cpso_mapped` (`integer`): Synthetic mock CPSO number (with prefix 'SYN_') of discharging physician
-#'
-#' @examples
-#' dummy_physicians(nid = 1000, n_hospitals = 10, seed = 1)
-#' dummy_physicians(cohort = dummy_ipadmdad(), seed = 2)
-#'
-#' @import dplyr
-#' @import data.table
-#'
-#' @export
-
-dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed = NULL) {
-  if (!is.null(seed)) {
-    set.seed(seed)
-  }
-
-  ####### checks for valid inputs #######
-  if (!is.null(cohort)) { # if `cohort` is provided
-    check_input(cohort,
-      c("data.frame", "data.table"),
-      colnames = c("genc_id", "hospital_num"),
-      coltypes = c("integer", "integer")
-    )
-  } else { # when `cohort` is not provided
-    check_input(list(nid, n_hospitals), "integer")
-
-    if (nid < n_hospitals) {
-      stop("Number of encounters must be greater than or equal to the number of hospitals")
-    }
-  }
-
-  if (!is.null(cohort)) {
-    # if `cohort` is provided, use its `genc_id` and `hospital_num`
-    cohort <- as.data.table(cohort)
-    df_sim <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 1, seed = seed)
-
-    nid <- length(unique(df_sim$genc_id))
-    n_hospitals <- length(unique(df_sim$hospital_num))
-
-    # only include the genc_id and hospital_num columns from `cohort`
-    df_sim <- df_sim[, c("genc_id", "hospital_num")]
-  } else {
-    # no repeating genc_id in physicians data table
-    # generate a cohort with `genc_id` and `hospital_num`
-    df_sim <- generate_id_hospital(nid, n_hospitals, avg_repeats = 1, seed = seed)
-  }
-
-  # Function that samples a value from a given vector with replacement
-  sample_from_col <- function(dat) {
-    return(sample(dat, 1, replace = TRUE))
-  }
-
-  # set the NA proportions per hospital per variable
-  # sampling creates hospital-level variation
-  # each row is a different hopsital
-  hosp_na_prop <- df_sim %>%
-    group_by(
-      hospital_num
-    ) %>%
-    reframe(
-      adm_phy_cpso_mapped_NA = rbeta(1, 0.2, 1.1),
-      dis_phy_cpso_mapped_NA = rbeta(1, 0.25, 2.7),
-      mrp_cpso_mapped_NA = rbeta(1, 0.4, 11.2),
-      admitting_phy_gim_NA = runif(1, 0, 1),
-      admitting_phy_gim_Y = runif(1, 0, 1),
-      discharging_phy_gim_NA = runif(1, 0, 1),
-      discharging_phy_gim_Y = runif(1, 0, 1),
-    ) %>%
-    data.table()
-
-  # edit `admitting_phy_gim` and `discharging_phy_gim`
-  # artificially add some counts of NA with proportion approximately 0.33
-  # 0.33 of hospitals have all NA for these variables
-  hosp_sample <- sample(unique(df_sim$hospital_num), round(n_hospitals * 0.33))
-  hosp_na_prop[hospital_num %in% hosp_sample, admitting_phy_gim_NA := 1]
-  hosp_na_prop[hospital_num %in% hosp_sample, discharging_phy_gim_NA := 1]
-
-  # NA proportions between admitting and discharging GIM are similar per hospital
-  hosp_na_prop[, admitting_phy_gim_NA := sort(hosp_na_prop$admitting_phy_gim_NA)]
-  hosp_na_prop[, discharging_phy_gim_NA := sort(hosp_na_prop$discharging_phy_gim_NA)]
-
-  ### `adm_phy_cpso_mapped` and `dis_phy_cpso_mapped`
-  # randomly set 7% of hospitals to have all NA values
-  # set the highest hospitals to 1.0 proportion since they are already highest in NA
-  na_order_adm <- order(hosp_na_prop[, adm_phy_cpso_mapped_NA], decreasing = TRUE)
-
-  hosp_na_prop[na_order_adm[1:round(0.07 * n_hospitals)], adm_phy_cpso_mapped_NA := 1]
-  hosp_na_prop[na_order_adm[1:round(0.07 * n_hospitals)], dis_phy_cpso_mapped_NA := 1]
-
-  # for `mrp_cpso_mapped`, let 0.1 of hospitals have no NA values
-  # select the lowest existing values to keep the result similar to the distribution
-  hosp_na_prop[na_order_adm[1:round(0.1 * n_hospitals)], mrp_cpso_mapped_NA := 0]
-
-  # sample all physician numbers
-  # each hospital has about 280 physicians on average
-  # multiply this average by n_hospitals to get the total set of physicians across all hospitals
-  sample_cpso <- paste0("SYN_", round(runif(280 * n_hospitals, min = 1e4, max = 3e5)))
-
-  # sample a set of unique physicians for each hospital
-  hosp_na_prop$n_physicians <- rsn_trunc(n_hospitals, 470, 220, -1.6, 1, 650)
-  hosp_na_prop[, phy_set := sapply(n_physicians, function(x) sample(sample_cpso, x, replace = TRUE))]
-
-  # merge `df_sim`, the output data table, with hospital information
-  df_sim <- merge(df_sim, hosp_na_prop, by = "hospital_num", all.x = TRUE)
-
-  # now sample all variables
-  ####### `admitting_physician_gim` #######
-  df_sim[, admitting_physician_gim := ifelse(rbinom(.N, 1, admitting_phy_gim_Y), "y", "n")]
-
-  # sample the NAs in admitting_physician_gim
-  df_sim[, admitting_physician_gim := ifelse(rbinom(
-    .N, 1,
-    admitting_phy_gim_NA
-  ), NA, admitting_physician_gim)]
-
-  ####### `discharging_physician_gim` #######
-  df_sim[, discharging_physician_gim := ifelse(rbinom(.N, 1, discharging_phy_gim_Y), "y", "n")]
-
-  # sample the NAs in discharging_physician_gim
-  df_sim[, discharging_physician_gim := ifelse(rbinom(
-    .N, 1,
-    discharging_phy_gim_NA
-  ), NA, discharging_physician_gim)]
-
-  ####### `adm_phy_cpso_mapped` #######
-  # Set adm physician
-  df_sim[, adm_phy_cpso_mapped := sapply(phy_set, sample_from_col)]
-
-  ####### `mrp_cpso_mapped` #######
-  # 0.36 of encounters have mrp = adm
-  df_sim[, mrp_cpso_mapped := ifelse(rbinom(.N, 1, 0.36),
-    adm_phy_cpso_mapped, sapply(setdiff(phy_set, adm_phy_cpso_mapped), sample_from_col)
-  )]
-
-  ####### `dis_phy_cpso_mapped` #######
-  # when adm = mrp, 0.9 of encounters have adm = mrp = dis
-  df_sim[adm_phy_cpso_mapped == mrp_cpso_mapped, dis_phy_cpso_mapped := ifelse(rbinom(.N, 1, 0.9),
-    adm_phy_cpso_mapped,
-    sapply(setdiff(phy_set, adm_phy_cpso_mapped), sample_from_col)
-  )]
-
-  # when adm != mrp, 0.87 of dis = mrp and dis != adm always
-  # these will cover all cases of relations between adm, mrp, and dis
-  df_sim[adm_phy_cpso_mapped != mrp_cpso_mapped, dis_phy_cpso_mapped := ifelse(rbinom(.N, 1, 0.87),
-    mrp_cpso_mapped,
-    sapply(setdiff(phy_set, c(mrp_cpso_mapped)), sample_from_col)
-  )]
-
-  return(df_sim[
-    order(df_sim$genc_id), # return only with required columns
-    c(
-      "genc_id", "hospital_num", "admitting_physician_gim", "discharging_physician_gim", "adm_phy_cpso_mapped",
-      "mrp_cpso_mapped"
-    )
-  ])
+  # return only with required columns
+  return(df1[order(df1$genc_id), c("genc_id", "hospital_num", "triage_date_time")])
 }

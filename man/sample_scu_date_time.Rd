@@ -2,7 +2,7 @@
 % Please edit documentation in R/dummy_data.R
 \name{sample_scu_date_time}
 \alias{sample_scu_date_time}
-\title{Sample SCU admission and discharge date times by genc_id}
+\title{Sample SCU admission and discharge date times by genc_id.}
 \usage{
 sample_scu_date_time(
   scu_cohort,

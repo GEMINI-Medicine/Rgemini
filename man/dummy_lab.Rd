@@ -5,6 +5,8 @@
 \title{Generated simulated lab data}
 \usage{
 dummy_lab(id, omop, value, unit, mintime)
+
+dummy_lab(id, omop, value, unit, mintime)
 }
 \arguments{
 \item{id}{(\code{numeric})\cr
@@ -25,12 +27,20 @@ In the format yyyy-mm-dd hh:mm. Earliest recorded test performed time.}
 \value{
 (\code{data.table})\cr
 With the columns, \code{id}, \code{omop}, \code{value}, \code{unit}, and \code{collection_date_time} as described above.
+
+(\code{data.table})\cr
+With the columns, \code{id}, \code{omop}, \code{value}, \code{unit}, and \code{collection_date_time} as described above.
 }
 \description{
 Designed to mimic the most important elements of the GEMINI lab table as defined in the
 \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
+
+Designed to mimic the most important elements of the GEMINI lab table as defined in the
+\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
 }
 \examples{
+lab <- dummy_lab(1, 3024641, c(7, 8, 15, 30), "mmol/L", "2023-01-02 08:00")
+
 lab <- dummy_lab(1, 3024641, c(7, 8, 15, 30), "mmol/L", "2023-01-02 08:00")
 
 }
