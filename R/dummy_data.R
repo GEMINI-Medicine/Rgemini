@@ -1359,26 +1359,21 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' user-specified set of mock encounter and hospital IDs. To mimic GEMINI data characteristics, the majority
 #' of simulated area IDs are drawn from Ontario and are clustered by hospital.
 #'
-#' @param dbcon (`DBIConnection`)\cr
-#'  A connection to the GEMINI database, used to access the 2021 Canadian census dissemination codes.
-#' It is required when `da21uid` is missing. If `da21uid` is provided, then this input is ignored.
-#'
 #' @param nid (`integer`)\cr Number of unique encounter IDs to simulate. In this data table, each ID occurs once.
 #' It is optional when `cohort` is provided.
 #'
 #' @param n_hospitals (`integer`)\cr Number of hospitals in simulated dataset.
 #' It is optional when `cohort` is provided.
 #'
-#' @param da21uid (`integer` or `vector`)\cr Allows the user to customize which dissemination area ID to include in
-#' the output. It is required when `dbcon` is missing. It can be an integer or an integer vector.
-#' If included, the `dbcon` is not used.
+#' @param da21uid (`integer` or `vector`)\cr Optional, allows the user to customize which dissemination area ID(s)
+#' to include in the output. 
 #'
 #' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
 #'
 #' @param cohort (`data.frame or data.table`) Optional, an existing data frame or data table similar to `admdad` in
 #' GEMINI with at least the following columns:
-#' - `genc_id` (`integer`): Mock encounter ID
-#' - `hospital_num` (`integer`): Mock hospital ID
+#' - `genc_id` (`integer`): Mock encounter ID, integers starting from 1 or from `cohort`
+#' - `hospital_num` (`integer`): Mock hospital ID, integers starting from 1 or from `cohort`
 #' If `cohort` is provided, `nid` and `n_hospital` inputs are not used.
 #'
 #' @return (`data.table`)\cr
@@ -1387,20 +1382,18 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 # - `hospital_num` (`integer`): Mock hospital ID; integers starting from 1 or from `cohort` if provided
 #' - `da21uid` (`integer`): Dissemination area ID based on 2021 Canadian census data using PCCF Version 8A
 #'
-#' @import DBI
+#' @import Rgemini
+#' @import data.table
 #'
 #' @export
-
-dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = NULL, da21uid = NULL, seed = NULL) {
+#'
+#' @examples
+#' dummy_locality(nid = 1000, n_hospitals = 10)
+#'
+dummy_locality <- function(nid = 1000, n_hospitals = 10, cohort = NULL, da21uid = NULL, seed = NULL) {
   ### check inputs
-  if (is.null(dbcon) && is.null(da21uid)) {
-    stop("A DB connection or list of dissemination codes is required.")
-  }
-
   if (!is.null(da21uid)) {
-    check_input(da21uid, "integer")
-  } else {
-    check_input(dbcon, c("DBI", "dbcon", "PostgreSQL"))
+    Rgemini:::check_input(da21uid, "integer")
   }
 
   if (is.numeric(seed)) {
@@ -1409,14 +1402,14 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
 
   if (!is.null(cohort)) {
     # check for correct columns in `cohort` if it is provided
-    check_input(cohort,
+    Rgemini:::check_input(cohort,
       c("data.frame", "data.table"),
       colnames = c("genc_id", "hospital_num"),
       coltypes = c("integer", "integer")
     )
   } else {
     # if `cohort` is not provided, check inputs that will be used
-    check_input(list(nid, n_hospitals), "integer")
+    Rgemini:::check_input(list(nid, n_hospitals), "integer")
 
     if (nid < n_hospitals) {
       stop("Number of encounters must be greater than or equal to the number of hospitals")
@@ -1450,8 +1443,8 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
     }]
   } else {
     # otherwise sample from the database
-    # get dissemination code lookup table from database
-    lookup_statcan_v2021 <- dbGetQuery(dbcon, "SELECT da21uid FROM lookup_statcan_v2021") %>% data.table()
+    # get dissemination code lookup table from RDA
+    lookup_statcan_v2021 <- load("data/da21uid_statcan_v2021.rda") %>% data.table()
 
     # extract Ontario dissemination codes to resemble GEMINI data characteristics - these IDs start with 35
     ontario_id <- subset(
@@ -1484,7 +1477,7 @@ dummy_locality <- function(dbcon = NULL, nid = 1000, n_hospitals = 10, cohort = 
       replace = TRUE
     )]
 
-    # inject 2% rate of missingness in da21uid
+    # inject 2% rate of missingness in `da21uid`
     locality_sim[, da21uid := ifelse(rbinom(.N, 1, 0.02), NA, da21uid)]
 
     # remove extra columns and return
