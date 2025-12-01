@@ -1362,7 +1362,7 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' It is optional when `cohort` is provided.
 #'
 #' @param da21uid (`integer` or `vector`)\cr Optional, allows the user to customize which dissemination area ID(s)
-#' to include in the output. 
+#' to include in the output.
 #'
 #' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
 #'
