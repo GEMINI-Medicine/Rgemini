@@ -22,55 +22,33 @@
 #' discharge in the provided cohort. For example, if the latest discharge is
 #' on 2023-03-24, the reference year will be 2022 aligning with the fiscal year.
 #' 
-#' @import RPostgreSQL cansim stringr
+#' @param hospital_level (`logical`)\cr
+#' Logical indicating whether the user wants costs to be calculated using the 
+#' "Cost Per Standard Hospital Stay" at the hospital level rather than the
+#' provincial level. Default is FALSE.
+#' 
+#' @import RPostgreSQL
+#' @import cansim
+#' @import stringr
+#' @import DBI
+#' @import RPostgreSQL
 #' 
 #' @return
-#' This function returns a `data.table` containing `genc_id`,
-#' `derived_total_inpatient_cost`, `inflation_rate`, and
-#' 'derived_total_inpatient_cost_adjusted', the last of which corresponds
-#' to the total inpatient costs are adjusted to prices in the reference year 
-#' if provided. If the reference year is not provided, then costs are adjusted
-#' to the most recent fiscal year in the cohort.
+#' This function returns a `data.table` containing:
+#' - `genc_id`: gemini encounter_id
+#' - `derived_total_inpatient_cost`: Derived inpatient cost for the current
+#'    encounter using the RIW method, without other adjustments.
+#' - `inflation_rate`: Inflation rate from discharge year to reference year.
+#' - 'derived_total_inpatient_cost_adjusted': cost adjusted to prices in the
+#'    provided reference year. If the reference year is not provided, then costs
+#'    are adjusted to the most recent fiscal year in the cohort.
 #' 
 #' @references 
 #' include references to CIHI's CSHS table
 
-# Function that derives cost of hospitalization based on
-# Resource Intensity Weights (RIW), which represents weighted costs relative to
-# average inpatient cost. The actual cost amount can be inferred based on CMG
-# methodology year (by year, based on when the data were pulled) and needs to
-# be adjused for (healthcare specific) inflation.
-# The suggested general approach used in the Pediatric Complexity project:
-# 1. Create a scv file for CPWC(CSHS) for each hospital number and year, based
-# on cihi info
-# 2. This CSV file then needs to be merged with other GEMINI tables as follows:
-# 3. Merge ipcmg into your cohort by genc_id, assess missingness of methodology
-#    year and riw_15
-# 4. Methodology_year has some missing data. If methodology_year is empty, but
-#    there is another row that is otherwise identical (in terms of cmg,
-#    diagnosis_for_cmg_assessment, comorbidity_level, riw_inpatient_atypical_
-#    indicator), impute the methodology_year from that row.
-# 5. Methodology_year also has some values that are >1 year different than 
-#    calendar year, calling into question data quality. We use the same
-#    process as above to impute methodology years in rows where methodology_
-#    year and calendar year are > 1 year apart.
-# 6. Report all records excluded due to missing values required for total cost
-#    calculation (i.e. RIW).
-# 7. Merge in CSHS data by hospital_num
-# 8. Multiply riw_15 by CHSC
-# 9. Adjust for healthcare-specific inflation
-# Once the method has been developed, we should triangulate the results with
-# some publicly reported values (probably from CIHI) to make sure we are in the
-# ballpark.
 
 # useful links: 
 # http://mchp-appserv.cpe.umanitoba.ca/viewConcept.php?conceptID=1100
-library(dplyr)
-library(data.table)
-library(RPostgreSQL)
-library(cansim)
-library(stringr)
-
 # Useful documentation 
 
 # CSHS methodology: https://www.cihi.ca/sites/default/files/document/cost-standard-hospital-stay-methodology-notes-en.pdf
@@ -87,16 +65,16 @@ library(stringr)
 # treating the average acute inpatient is relatively low"
 
 # soursc relevant Rgemini functions
-source("R/n_missing.R")
-source("R/utils.R")
+derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA, hospital_level = FALSE) {
 
-derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   ## check user inputs
-  check_input(dbcon, "DBI")
-  check_input(cohort, c("data.table", "data.frame"), colnames = c("genc_id", "admission_date_time", "discharge_date_time"))
+  Rgemini:::check_input(dbcon, "DBI")
+  Rgemini:::check_input(cohort, c("data.table", "data.frame"), colnames = c("genc_id", "admission_date_time", "discharge_date_time"))
   if (!is.na(reference_year)) {
-      check_input(reference_year, "integer") 
+      Rgemini:::check_input(reference_year, "integer") 
   }
+
+  cohort <- cohort %>% data.table
 
   ## Detect if we're using hospital_id or hospital_num
   ## depreciated for provincial level cshs
@@ -106,63 +84,70 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   #  hosp_identifier <- "hospital_id"
   #}
 
-
-  ## TODO: CITE COVID FEATURES IN RIW
   cat("\n *** WARNING: Resource Intensity Weights (RIW) and Case Mix Groups (CMG) are calculated differently year by year, and the inpatient costs derived by this function use the methodologies of the year an encounter was discharged. Year by year the features to model RIW values change, for example, RIW values for the 2022 methodology year were computed using data that included patients with COVID-19 diagnoses. These RIW values are directly used to compute total inpatient cost, as they represent the relative resources, intensity, and weight of each inpatient case compared to an average case. Please keep in mind that as a result, the derived costs are not standardized in terms of RIW methodologies across years. ***\n")
 
   # Resource intensity weight represents the relative resources, intensity, and weight of each inpatient case compared with the typical average case that has a value of 1.0000. 
   
   # create temp table for cohort_gencs to pull ipcmg
-  DBI::dbSendQuery(dbcon, "DROP TABLE IF EXISTS temp_g;")
-  DBI::dbWriteTable(dbcon, c("pg_temp", "temp_g"), data.table(cohort[, .(genc_id)]))
-  # Analyze to speed up table
-  DBI::dbSendQuery(dbcon, "ANALYZE temp_g;")
+  dbSendQuery(dbcon, "DROP TABLE IF EXISTS temp_g;")
+  dbWriteTable(dbcon, c("pg_temp", "temp_g"), data.table(cohort[, .(genc_id)]))
+
+  # Analyze to speed up Query
+  dbSendQuery(dbcon, "ANALYZE temp_g;")
 
   # get ipcmg for cohort
-  ipcmg <- DBI::dbGetQuery(dbcon, "SELECT i.genc_id, cmg, diagnosis_for_cmg_assignment, comorbidity_level, riw_inpatient_atypical_indicator, methodology_year, riw_15, hospital_id FROM public.ipcmg i INNER JOIN temp_g t ON i.genc_id = t.genc_id;") %>% data.table()
+  ipcmg <- dbGetQuery(dbcon, "SELECT i.genc_id, cmg, diagnosis_for_cmg_assignment, comorbidity_level, riw_inpatient_atypical_indicator, methodology_year, riw_15, hospital_id FROM public.ipcmg i INNER JOIN temp_g t ON i.genc_id = t.genc_id;") %>% data.table()
 
   # merge ipcmg with cohort to have adm/dis dates
   cohort_cmg <- merge(cohort[, .(genc_id, admission_date_time, discharge_date_time)], ipcmg, by = "genc_id", all.x = TRUE) %>% data.table()
 
   ########################### Handle Missingness ###########################
-  ## Impute Methodology years
+
+  ### Methodology year missingness
   cat("\n Imputing missing methodology year where appropriate. \n\n")
 
   # Impute missing years based on cmg, diagnosis_for_cmg_assignment, 
-  # comorbidity_level, and riw_inpatient_atypical_indicator
-  cohort_cmg[, methodology_year := ifelse(is.na(methodology_year), na.omit(methodology_year)[1], methodology_year), by = .(cmg, diagnosis_for_cmg_assignment, comorbidity_level, riw_inpatient_atypical_indicator)]
+  # comorbidity_level, riw_inpatient_atypical_indicator, and RIW_15
+
+  #TODO: is imputing methodology year this way appropriate?
+  cohort_cmg[, methodology_year := ifelse(is.na(methodology_year), na.omit(methodology_year)[1], methodology_year), by = .(cmg, diagnosis_for_cmg_assignment, comorbidity_level, riw_inpatient_atypical_indicator, riw_15)]
 
   # impute methodology year for rows w abs(year - adm_year) > 1
   cohort_cmg$admission_year <- as.integer(substr(cohort_cmg$admission_date_time, 1, 4))
   cohort_cmg$discharge_year <- as.integer(substr(cohort_cmg$discharge_date_time, 1, 4))
 
-  #cohort_cmg[, methodology_year := ifelse(abs(methodology_year - admission_year) > 1 | abs(methodology_year - discharge_year) > 1, na.omit(methodology_year)[1], methodology_year), by = .(cmg, diagnosis_for_cmg_assignment, comorbidity_level, riw_inpatient_atypical_indicator)]
-  
   # Use admission year to see if there is a difference> 1 with methodology year, since fiscal year of the encounter is when they were admitted
+
+  # TODO: is this really valid since in the CIHI meeting they said that methodology doesn't always change every single year? In this case can we not just leave it as is?
+
   cohort_cmg[abs(admission_year - methodology_year) > 1, methodology_year := NA]
 
   ## Remove rows where methodology_year is still missing after imputing
-  missing_yr <- n_missing(cohort_cmg$methodology_year)
-  print(paste0(missing_yr, " rows are missing methodology year. Removing."))
+  missing_yr <- Rgemini::n_missing(cohort_cmg$methodology_year)
+  message(paste0(missing_yr, " rows are missing methodology year. Removing."))
   cat("\n\n")
   cohort_cmg <- cohort_cmg %>% filter(!is.na(methodology_year))
 
-
-  # Q: Is riw_15 = 0 considered missing? Since the result effectively says
-  #    that for rows with riw_15 = 0 total cost = 0. A: Find out what RIW_15 = 0
-  #    means in CIHI definitions. If there's some meaning, then decide what we
-  #    should do. A: RIW_15 is not a valid RIW value according to CIHI.
-  #    should be dropped.
-
+  #### RIW missingness
   # impute RIW for missing rows
+
+  # TODO: is this truly appropriate since what if in the previous step methodology year was incorrectly imputed, this would translate to incorrect RIW imputation.
   cat("\n Imputing missing riw_15 where appropriate. \n\n")
+  
   cohort_cmg[, riw_15 := ifelse(is.na(riw_15) | riw_15 == 0, na.omit(riw_15)[1], riw_15), by = .(cmg, diagnosis_for_cmg_assignment, comorbidity_level, riw_inpatient_atypical_indicator, methodology_year)]
   
+  # Q: Is riw_15 = 0 considered missing? Since the result effectively says
+  #    that for rows with riw_15 = 0 total cost = 0.
+  # A: RIW_15 is not a valid RIW value according to CIHI. Should be dropped.
+
   # remove rows missing riw or have riw_15 = 0 as the latter is not a valid
-  # riw value as per cihi
+  # riw value as per CIHI documentation.
+
   missing_riw <- n_missing(cohort_cmg$riw_15)
-  print(paste0(missing_riw, " rows are missing riw_15 or have riw_15 = 0. Removing."))
+  
+  message(paste0(missing_riw, " rows are missing riw_15 or have riw_15 = 0. Removing."))
   cat("\n\n")
+
   cohort_cmg <- cohort_cmg %>% filter(!is.na(riw_15) & riw_15 != 0)
 
   ########################### Compute Inpatient Cost ###########################
@@ -171,14 +156,22 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   # Q: CHSC data only has data for up to fiscal/methodology year 2022 and only
   #    since fiscal/methodology year 2018. How should we handle these values?
   #    We definitely need to document this in the function, but should we remove
-  #    rows from the output? A: Don't remove, see what interpolation techniques
-  #    we could use until the data is available. Let the user know.
+  #    rows from the output? A: TODO: Don't remove, see what interpolation   
+  #    techniques we could use until the data is available. Let the user know.
 
+  # get correct CSHS data and merge depending on if the user wants costs to be 
+  # computed at the hospital level or the provincial level.
 
-  ## TODO: How do we handle encounters whose methodology year isn't included in
-  ## the CPWC data that we have? Currently just not computing.
-  cshs_data <- readRDS("data/mapping_cihi_provincial_cshs.rds")
-  setnames(cshs_data, old = "fiscal_year", new = "methodology_year")
+  if (hospital_level == FALSE){
+    cshs_data <- copy(mapping_cihi_provincial_cshs) %>% data.table()
+    setnames(cshs_data, old = "fiscal_year", new = "methodology_year")
+    cshs_merge <- cshs_data[cohort_cmg, on = "methodology_year"]
+  } else {
+    cshs_data <- copy(mapping_cihi_hospital_cshs) %>% data.table()
+    # TODO: make this compatible with hospital_num.
+    setnames(cshs_data, old = "fiscal_year", new = "methodology_year")
+    cshs_merge <- cshs_data[cohort_cmg, on = .(hospital_id, methodology_year)]
+  }
 
   # Check if cohort contains any methodology years that fall outside of
   # the years for which we have cpwc for.
@@ -189,12 +182,11 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   }
 
   # merge cshs table with cohort, assuming ontario data for the time being
-  cshs_merge <- cshs_data[cohort_cmg, on = "methodology_year"]
+  #cshs_merge <- cshs_data[cohort_cmg, on = "methodology_year"]
 
   # compute unadjusted derived total inpatient cost by multiplying
   # riw_15 by cost of standard hospital stay for that year and hospital.
   cshs_merge[, derived_total_inpatient_cost := (riw_15 * cost_of_standard_hospital_stay)]
-
 
   ################## Adjust derived total cost for inflation ##################
   # Adjusting cost by doing:
@@ -207,13 +199,14 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
   # (i.e. cpi value for 2018 is given at REF_DATE = '2018-04') from
   # statcan table: 18-10-0004-01.
 
-  cpi_values_apr <- get_cansim_connection("18-10-0004-01") |>
+  cpi_values_apr <- suppressMessages(get_cansim_connection("18-10-0004-01") |>
       dplyr::filter(GEO == "Canada" & UOM == "2002=100" & `Products and product groups` == "Health care" & REF_DATE >= "2018-04" & grepl("-04", REF_DATE)) |>
-      collect_and_normalize()
+      collect_and_normalize())
   
   cpi_values_apr <- cpi_values_apr %>%
-      select(REF_DATE, VALUE, UOM) %>%
-      data.table()
+    select(REF_DATE, VALUE, UOM) %>%
+    data.table()
+  
   # add methodology year column for merging into cshs_merge
   cpi_values_apr[, methodology_year := as.integer(substr(REF_DATE, 1, 4))]
 
@@ -229,7 +222,7 @@ derive_total_inpatient_cost <- function(dbcon, cohort, reference_year = NA) {
         reference_year <- as.integer(substr(max_discharge_date, 1, 4))
       }
   }
-  print(paste0("Adjusting derived total inpatient cost to fiscal year ", reference_year, "..."))
+  message(paste0("Adjusting derived total inpatient cost to fiscal year ", reference_year, "..."))
   cat("\n\n")
 
   ## Adjust derived costs to reference year
