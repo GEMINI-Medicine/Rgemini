@@ -136,8 +136,6 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #'
 #' @param nid (`integer`)\cr Number of unique encounter IDs (`genc_id`) to simulate. Value must be greater than 0.
 #' Optional when `cohort` is provided.
-#' Optional when `cohort` is provided.
-#' Optional when `cohort` is provided.
 #'
 #' @param n_hospitals (`integer`)\cr Number of hospitals to simulate in the resulting data table.
 #' Optional when `cohort` is provided.
@@ -455,8 +453,6 @@ dummy_ipadmdad <- function(nid = 1000,
 
   data <- data.table(genc_id = id_vector, hospital_num = site_vector, stringsAsFactors = FALSE)
   ## create all combinations of hospitals and fiscal years
-  hospital_num <- as.integer(seq(1, n_hospitals, 1))
-  hospital_num <- as.integer(seq(1, n_hospitals, 1))
   hospital_num <- as.integer(seq(1, n_hospitals, 1))
   year <- seq(time_period[1], time_period[2], 1)
 
