@@ -378,6 +378,7 @@ dummy_diag <- function(
 #' stay. However, due to the fact that ALC days are rounded up, it's possible
 #' for `number_of_alc_days` to be larger than `los_days_derived`.
 #'
+#' @import data.table
 #' @import Rgemini
 #' @importFrom sn rsn
 #' @importFrom MCMCpack rdirichlet
@@ -1181,7 +1182,7 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
     max_val = c(0.0, 0.01, 0.6)
   )
 
-  # merge SCU set and ICU flag classification tablesa
+  # merge SCU set and ICU flag classification tables
   # get a table with each hospital's SCU unit numbers and ICU flag proportion ranges
   hosp_class <- merge(hosp_class, range_table, by = "category", all.x = TRUE)
   hosp_class[, prop_false := runif(.N, min_val, max_val)]

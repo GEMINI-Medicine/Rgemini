@@ -1416,11 +1416,9 @@ generate_id_hospital <- function(
       include_set <- include_set[order(los)]
       n_repeats <- sort(n_repeats)
 
-      res <- include_set[rep(seq_len(.N), times = n_repeats), ]
-    } else {
-      # if not sorting by LOS, just assign repeats randomly
-      res <- include_set[rep(seq_len(.N), times = n_repeats), ]
     }
+    # In both cases, assign repeats
+    res <- include_set[rep(seq_len(.N), times = n_repeats), ]
   }
 
   res[, genc_id := as.integer(genc_id)]
