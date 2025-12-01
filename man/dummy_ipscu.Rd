@@ -17,7 +17,7 @@ dummy_ipscu(
 Encounter IDs may repeat due to repeat visits being simulated,
 resulting in a data table with more rows than \code{nid}.}
 
-\item{n_hospitals}{(\code{integer})\cr Number of hospitals in simulated dataset}
+\item{n_hospitals}{(\code{integer})\cr Number of hospitals in simulated dataset.}
 
 \item{time_period}{(\code{vector})\cr A numeric or character vector containing the data range of the data
 by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy).
@@ -33,7 +33,7 @@ is the date range format provided. Optional when \code{cohort} is provided.}
 When \code{cohort} is not NULL, \code{nid}, \code{n_hospitals}, and \code{time_period} are ignored.
 }}
 
-\item{seed}{(\code{integer})\cr Optional, a number to be used to set the seed for reproducible results}
+\item{seed}{(\code{integer})\cr Optional, a number to be used to set the seed for reproducible results.}
 }
 \value{
 (\code{data.table})\cr A data.table object similar to the "ipscu" table that contains the following fields:

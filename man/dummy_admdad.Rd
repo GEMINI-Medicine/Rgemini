@@ -5,6 +5,8 @@
 \title{Generated simulated administrative data}
 \usage{
 dummy_admdad(id, admtime)
+
+dummy_admdad(id, admtime)
 }
 \arguments{
 \item{id}{(\code{numeric})\cr
@@ -16,12 +18,20 @@ In the format yyyy-mm-dd hh:mm. Corresponds to the admission time of the encount
 \value{
 (\code{data.table})\cr
 With the columns \code{id} and \code{admission_date_time} as described above.
+
+(\code{data.table})\cr
+With the columns \code{id} and \code{admission_date_time} as described above.
 }
 \description{
 Designed to partially mimic the \code{admdad} table as defined in the
 \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
+
+Designed to partially mimic the \code{admdad} table as defined in the
+\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
 }
 \examples{
+admdad <- dummy_admdad(1, "2023-01-02 00:00")
+
 admdad <- dummy_admdad(1, "2023-01-02 00:00")
 
 }
