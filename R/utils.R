@@ -1416,7 +1416,6 @@ generate_id_hospital <- function(
       # order from shortest to longest
       include_set <- include_set[order(los)]
       n_repeats <- sort(n_repeats)
-
     }
     # In both cases, assign repeats
     res <- include_set[rep(seq_len(.N), times = n_repeats), ]
