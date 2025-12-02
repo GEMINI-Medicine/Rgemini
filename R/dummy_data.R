@@ -890,7 +890,10 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
       while (nrow(scu_cohort[scu_discharge_date_time < scu_admit_date_time, ]) > 0) {
         scu_cohort[
           genc_occurrence == i & scu_discharge_date_time < scu_admit_date_time,
-          scu_discharge_date_time := round_date(scu_discharge_date_time) +
+          scu_discharge_date_time := floor_date(
+            scu_admit_date_time + ddays(scu_los),
+            unit = "day"
+            ) +
             dhours(sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29))
         ]
       }
@@ -918,7 +921,7 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
           )]
 
           scu_cohort[genc_occurrence == i & scu_discharge_date_time > discharge_date_time, scu_discharge_date_time := {
-            round_date(scu_admit_date_time + ddays(floor(scu_los))) + dhours(
+            round_date(scu_admit_date_time + ddays(floor(scu_los)), unit = "days") + dhours(
               sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29)
             )
           }]
@@ -935,7 +938,7 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
         # CASE 1: prev discharge is >= IP discharge → no more stays possible
         if (prev_time >= discharge_date_time) {
           discharge_date_time
-        } else {
+        } else { # CASE 2
           # sample a diff in hours
           max_gap <- as.numeric(difftime(discharge_date_time, prev_time, units = "hours"))
           
