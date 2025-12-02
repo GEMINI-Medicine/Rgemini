@@ -729,7 +729,8 @@ dummy_lab <- function(id, omop, value, unit, mintime) {
     result_value = value,
     result_unit = rep(unit, length(value)),
     collection_date_time = format(as.POSIXct(mintime, tz = "UTC") +
-      sample(0:(24 * 60 * 60 - 1),
+      sample(
+        0:(24 * 60 * 60 - 1),
         size = length(value),
         replace = TRUE
       ), "%Y-%m-%d %H:%M")
@@ -1006,7 +1007,7 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
         # avoid endless loops
         max_iter <- 20
         n_iter <- 0
-        while (nrow(scu_cohort[scu_discharge_date_time > discharge_date_time, ]) > 0 & n_iter < max_iter) {
+        while (nrow(scu_cohort[scu_discharge_date_time > discharge_date_time, ]) > 0 && n_iter < max_iter) {
           # for very short stays, set to `scu_discharge_date_time` to `discharge_date_time`
           # avoids re-sampling in a very small range
           scu_cohort[
@@ -1555,6 +1556,7 @@ dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed =
     if (nid < n_hospitals) {
       stop("Number of encounters must be greater than or equal to the number of hospitals")
     }
+  }
   
   if (!is.null(cohort)) {
     # if `cohort` is provided, use its `genc_id` and `hospital_num`
@@ -1696,7 +1698,8 @@ dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed =
 #' @param nid (`integer`)\cr Number of unique encounter IDs to simulate.
 #' Encounter IDs may repeat to simulate multiple radiology tests,
 #' resulting in a data table with more rows than `nid`.
-#' Alternatively, if users provide a `cohort` input, the function will instead simulate radiology data for all `genc_ids` in the user-defined cohort table.
+#' Alternatively, if users provide a `cohort` input, the function will instead
+#' simulate radiology data for all `genc_ids` in the user-defined cohort table.
 #'
 #' @param n_hospitals(`integer`)\cr The number of hospitals to simulate.
 #' Alternatively, if users provide a `cohort` input, the function will instead simulate
@@ -1793,7 +1796,7 @@ dummy_radiology <- function(
   # re-sample bad values
   max_iter <- 20
   iter <- 0
-  while (nrow(df_sim[ordered_date_time >= discharge_date_time, ]) > 0 & iter < max_iter) {
+  while (nrow(df_sim[ordered_date_time >= discharge_date_time, ]) > 0 && iter < max_iter) {
     df_sim[
       ordered_date_time >= discharge_date_time,
       ordered_date_time := as.Date(admission_date_time) +
@@ -1986,7 +1989,7 @@ dummy_transfusion <- function(
     dhours(sample_time_shifted(.N, 8.7, 9.1, 2.7, max = 30, seed = seed))]
 
   # if `issue_date_time` < `admission_date_time`, re-sample
-  while (nrow(df1[issue_date_time < admission_date_time, ] > 0)) {
+  while (nrow(df1[issue_date_time < admission_date_time, ]) > 0) {
     df1[issue_date_time < admission_date_time, issue_date_time := admission_date_time +
       dhours(rlnorm_trunc(.N, meanlog = 4.52, sdlog = 1.91, min = 0, max = 38500, seed = seed))]
     # add time to `admission_date_time`
