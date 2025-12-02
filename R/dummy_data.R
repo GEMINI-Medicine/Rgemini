@@ -1125,7 +1125,7 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 
   # create a new data table based on `cohort`
   # this step also converts cohort's admission and discharge date times into POSIXct
-  df1 <- generate_id_hospital(
+  df_sim <- generate_id_hospital(
     cohort = cohort,
     include_prop = 1,
     avg_repeats = 1.4,
@@ -1134,18 +1134,18 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
   )
 
   # adjust `nid` and `n_hospitals`
-  nid <- uniqueN(df1$genc_id)
-  n_hospitals <- uniqueN(df1$hospitals)
+  nid <- uniqueN(df_sim$genc_id)
+  n_hospitals <- uniqueN(df_sim$hospitals)
 
   # Number each SCU stay per genc_id
-  df1[, genc_occurrence := seq_len(.N), by = genc_id]
+  df_sim[, genc_occurrence := seq_len(.N), by = genc_id]
 
   ####### sample SCU admit and discharge date times #######
-  df1 <- sample_scu_date_time(scu_cohort = df1, use_ip_dates = TRUE, seed = seed)
+  df_sim <- sample_scu_date_time(scu_cohort = df_sim, use_ip_dates = TRUE, seed = seed)
 
 
   # keep only relevant columns
-  df1 <- df1[, c("genc_id", "hospital_num", "scu_admit_date_time", "scu_discharge_date_time")]
+  df_sim <- df_sim[, c("genc_id", "hospital_num", "scu_admit_date_time", "scu_discharge_date_time")]
 
   # set remaining columns of the data.table
   # it will be the same regardless of whether cohort exists or not
@@ -1154,7 +1154,7 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
   # add hospital-level variation for the ICU flag:
   # all TRUE (no encounters go to the step down unit),
   # or low or higher FALSE proportions (FALSE goes to the step down unit)
-  hosp_class <- data.table("hospital_num" = unique(df1$hospital_num))
+  hosp_class <- data.table("hospital_num" = unique(df_sim$hospital_num))
   probs <- c(all_true = 0.35, low_false = 0.15, high_false = 0.5)
   hosp_class[, category := sample(c("all_true", "low_false", "high_false"), .N, replace = TRUE, prob = probs)]
 
@@ -1189,20 +1189,20 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
   hosp_class[, prop_false := runif(.N, min_val, max_val)]
 
   # merge hospital classification with existing ipscu data for sampling
-  df1 <- merge(df1, hosp_class, by = "hospital_num", all.x = TRUE)
+  df_sim <- merge(df_sim, hosp_class, by = "hospital_num", all.x = TRUE)
   # sample binomially for the ICU flag
-  df1[, icu_flag := ifelse(rbinom(.N, 1, prop_false), FALSE, TRUE)]
+  df_sim[, icu_flag := ifelse(rbinom(.N, 1, prop_false), FALSE, TRUE)]
 
-  # sample SCU number in df1
-  df1[, scu_unit_number := sapply(scu_set, function(v) sample(v, 1))]
+  # sample SCU number in `df_sim`
+  df_sim[, scu_unit_number := sapply(scu_set, function(v) sample(v, 1))]
 
   # if icu_flag FALSE, replace SCU unit number with a step down unit number
-  df1[icu_flag == FALSE, scu_unit_number := base::sample(c(90, 93, 95), .N, replace = TRUE)]
+  df_sim[icu_flag == FALSE, scu_unit_number := base::sample(c(90, 93, 95), .N, replace = TRUE)]
 
   # drop unneeded columns and return data.table
-  df1 <- df1[, -c("category", "min_val", "max_val", "prop_false", "scu_set")]
+  df_sim <- df_sim[, -c("category", "min_val", "max_val", "prop_false", "scu_set")]
 
-  return(df1[order(df1$genc_id)])
+  return(df_sim[order(df_sim$genc_id)])
 }
 
 #' @title
@@ -1292,55 +1292,55 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 
   # get the `data.table` for simulation
   # one repeat per `genc_id`
-  df1 <- generate_id_hospital(cohort = cohort, avg_repeats = 1, seed = seed)
+  df_sim <- generate_id_hospital(cohort = cohort, avg_repeats = 1, seed = seed)
 
   ##### sample `triage_date_time` by adding to IP admit time #####
   # the output of `rsn` will be negative
   # triage occurs before inpatient admissions
-  df1[, triage_date := floor_date(admission_date_time - ddays(rsn_trunc(
+  df_sim[, triage_date := floor_date(admission_date_time - ddays(rsn_trunc(
     .N,
     xi = 0.098, omega = 0.285, alpha = 4.45, min = 0, max = 370
   )), unit = "day")]
 
   # log normal distribution of `triage_date_time`
-  df1[, triage_time_hour := rlnorm_trunc(.N, meanlog = 2.69, sdlog = 0.38, min = 4, max = 30, seed = seed)]
+  df_sim[, triage_time_hour := rlnorm_trunc(.N, meanlog = 2.69, sdlog = 0.38, min = 4, max = 30, seed = seed)]
 
   # move times > 24 hours to 12am and after (early AM)
-  df1[, triage_time_hour := ifelse(triage_time_hour < 24, triage_time_hour, triage_time_hour - 24)]
+  df_sim[, triage_time_hour := ifelse(triage_time_hour < 24, triage_time_hour, triage_time_hour - 24)]
 
-  df1[, triage_date_time := triage_date + dhours(triage_time_hour)]
+  df_sim[, triage_date_time := triage_date + dhours(triage_time_hour)]
 
-  df1[, admission_time := as.numeric(format(admission_date_time, "%H")) +
+  df_sim[, admission_time := as.numeric(format(admission_date_time, "%H")) +
     as.numeric(format(admission_date_time, "%M")) / 60 +
     as.numeric(format(admission_date_time, "%S")) / 3600]
 
   # re-sample bad values where triage comes up after admission
-  while (nrow(df1[triage_date_time > admission_date_time, ]) > 0) {
-    df1[triage_date_time > admission_date_time, triage_date := floor_date(
+  while (nrow(df_sim[triage_date_time > admission_date_time, ]) > 0) {
+    df_sim[triage_date_time > admission_date_time, triage_date := floor_date(
       admission_date_time - ddays(rsn_trunc(.N,
         xi = 0.098, omega = 0.285, alpha = 4.45, min = 0, max = 370
       )),
       unit = "day"
     )]
 
-    df1[triage_date_time > admission_date_time, triage_time_hour := rlnorm_trunc(
+    df_sim[triage_date_time > admission_date_time, triage_time_hour := rlnorm_trunc(
       .N,
       meanlog = 2.69, sdlog = 0.38, min = 4, max = 30
     )]
 
     # move times > 24 hours to 12am and after
-    df1[triage_date_time > admission_date_time, triage_time_hour := ifelse(
+    df_sim[triage_date_time > admission_date_time, triage_time_hour := ifelse(
       triage_time_hour < 24, triage_time_hour, triage_time_hour - 24
     )]
 
-    df1[triage_date_time > admission_date_time, triage_date_time := triage_date + dhours(triage_time_hour)]
+    df_sim[triage_date_time > admission_date_time, triage_date_time := triage_date + dhours(triage_time_hour)]
   }
 
   # turn date times into a string and remove seconds
-  df1[, triage_date_time := substr(as.character(triage_date_time), 1, 16)]
+  df_sim[, triage_date_time := substr(as.character(triage_date_time), 1, 16)]
 
   # return only with required columns
-  return(df1[order(df1$genc_id), c("genc_id", "hospital_num", "triage_date_time")])
+  return(df_sim[order(df_sim$genc_id), c("genc_id", "hospital_num", "triage_date_time")])
 }
 
 #' @title
