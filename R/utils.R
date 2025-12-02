@@ -1245,7 +1245,7 @@ sample_time_shifted <- function(nrow, xi, omega, alpha, min = 0, max = 48, seed 
     max = max,
   )
   # times greater than 24 hours are after 12am
-  # subtract 25 to turn 12am into 00:00
+  # subtract 24 to turn 12am into 00:00
   final_time <- ifelse(time_orig >= 24,
     time_orig - 24,
     time_orig
@@ -1416,12 +1416,9 @@ generate_id_hospital <- function(
       # order from shortest to longest
       include_set <- include_set[order(los)]
       n_repeats <- sort(n_repeats)
-
-      res <- include_set[rep(seq_len(.N), times = n_repeats), ]
-    } else {
-      # if not sorting by LOS, just assign repeats randomly
-      res <- include_set[rep(seq_len(.N), times = n_repeats), ]
     }
+    # In both cases, assign repeats
+    res <- include_set[rep(seq_len(.N), times = n_repeats), ]
   }
 
   res[, genc_id := as.integer(genc_id)]

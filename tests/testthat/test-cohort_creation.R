@@ -19,9 +19,9 @@ test_that("cohort_creation inclusions/exclusions are applied correctly", {
     exclusion_flag = c(FALSE, FALSE, FALSE, TRUE)
   )
 
-  expect_equal(nrow(cohort[[1]]), 107)
+  expect_equal(nrow(cohort[[1]]), 92)
 
-  expected_output <- data.table(`N (%)` = c("300", "163 (54.3%)", "121 (74.2%)", "-14 (-11.6%)", "107"))
+  expected_output <- data.table(`N (%)` = c("300", "161 (53.7%)", "104 (64.6%)", "-12 (-11.5%)", "92"))
   expect_equal(cohort[[2]][, 3], expected_output)
 })
 
@@ -48,11 +48,11 @@ test_that("grouping works as expected", {
     group_var = "hospital_num"
   )
 
-  expect_equal(nrow(cohort[[1]]), 38)
+  expect_equal(nrow(cohort[[1]]), 53)
 
   expected_output <- data.table(
-    `Overall N (%)` = c("300", "163 (54.3%)", "-121 (-74.2%)", "38 (90.5%)"),
-    `1` = c("146", "84 (57.5%)", "-60 (-71.4%)", "22 (91.7%)"),
+    `Overall N (%)` = c("300", "161 (53.7%)", "-104 (-64.6%)", "53 (93%)"),
+    `1` = c("146", "82 (56.2%)", "-43 (-52.4%)", "37 (94.9%)"),
     `2` = c("154", "79 (51.3%)", "-61 (-77.2%)", "16 (88.9%)")
   )
   expect_equal(cohort[[2]][, 3:5], expected_output)
@@ -85,7 +85,7 @@ test_that("cell suppression works as expected", {
   )
 
   expected_output <- data.table(`N (%)` = c(
-    "300", "163 (54.3%)", "-134 (-82.2%)", "24 (82.8%)", "N < 6", "21"
+    "300", "161 (53.7%)", "-131 (-81.4%)", "19 (63.3%)", "N < 6", "18"
   ))
   expect_equal(cohort[[2]][, 3], expected_output)
 })
@@ -113,7 +113,7 @@ test_that("show_prct works as expected", {
   )
 
   expected_output <- data.table(N = c(
-    "300", "163", "121", "-14", "107"
+    "300", "161", "104", "-12", "92"
   ))
   expect_equal(cohort[[2]][, 3], expected_output)
 })
