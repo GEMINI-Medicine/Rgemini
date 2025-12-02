@@ -1677,7 +1677,7 @@ dummy_transfusion <- function(
   ##### get `blood_product_mapped_omop` data from .Rda file #####
   # It maps the most common raw names of blood products to OMOP code
   # Also gets their average relative proportions
-  blood_product_lookup <- Rgemini::blood_product_lookup %>%
+  blood_product_lookup <- Rgemini:::blood_product_lookup %>%
     data.table()
 
   if (is.null(blood_product_list)) {
