@@ -1454,13 +1454,10 @@ dummy_locality <- function(nid = 1000, n_hospitals = 10, cohort = NULL, da21uid 
     # get dissemination code lookup table from RDA
     data("da21uid_statcan_v2021", envir = environment())
     lookup_statcan_v2021 <- data.table::as.data.table(da21uid_statcan_v2021)
-    lookup_statcan_v2021[, da21uid := trimws(da21uid)]
+    lookup_statcan_v2021[, da21uid := as.numeric(trimws(da21uid))]
 
     # extract Ontario dissemination codes to resemble GEMINI data characteristics - these IDs start with 35
-    ontario_id <- subset(
-      lookup_statcan_v2021,
-      lookup_statcan_v2021$da21uid < 3.6e7 & lookup_statcan_v2021$da21uid >= 3.5e7
-    )$da21uid
+    ontario_id <- lookup_statcan_v2021[da21uid < 3.6e7 & da21uid >= 3.5e7, da21uid]
 
     # to mimic how locality IDs are clustered by hospital, set a range for min and max ID for each hospital
     df_sim[, c("min_id", "max_id") := {
