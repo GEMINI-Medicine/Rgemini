@@ -5,5 +5,5 @@
 \alias{da21uid_statcan_v2021}
 \title{StatCan da21uid lookup for \code{dummy_locality} function}
 \description{
-StatCan da21uid lookup for \code{dummy_locality} function
+It contains dissemination area IDs for Canada
 }

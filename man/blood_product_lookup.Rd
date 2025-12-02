@@ -5,5 +5,5 @@
 \alias{blood_product_lookup}
 \title{Blood product lookup table for \code{dummy_transfusion} function}
 \description{
-Blood product lookup table for \code{dummy_transfusion} function
+It contains OMOP codes for blood products
 }
