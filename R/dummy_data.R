@@ -454,7 +454,7 @@ dummy_ipadmdad <- function(nid = 1000,
     )))
 
     random_datetime <- format(as.POSIXct(random_date + dhours(sample_time_shifted(n,
-      xi = 19.5, omega = 6.29, alpha = 0.20
+      xi = 19.5, omega = 6.29, alpha = 0.20, seed = seed
     )), tz = "UTC"), format = "%Y-%m-%d %H:%M")
 
     return(random_datetime)
@@ -930,18 +930,32 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
       if (use_ip_dates) {
         scu_cohort[which(genc_occurrence == i), scu_admit_date_time := {
           prev_time <- scu_cohort[genc_id == .BY$genc_id &
-            genc_occurrence == (i - 1), scu_discharge_date_time]
+                          genc_occurrence == (i - 1), 
+                          scu_discharge_date_time]
+        # CASE 1: prev discharge is >= IP discharge → no more stays possible
+        if (prev_time >= discharge_date_time) {
+          discharge_date_time
+        } else {
+          # sample a diff in hours
+          max_gap <- as.numeric(difftime(discharge_date_time, prev_time, units = "hours"))
+          
+          # direct admit OR sample a gap
+          if (rbinom(.N, 1, 0.25) | prev_time == discharge_date_time) {
+            prev_time
+          } else {
+            prev_time + dhours(
+              rlnorm_trunc(
+                n = .N,
+                meanlog = 4.2, sdlog = 1.6,
+                min = 0,
+                max = max_gap
+              )
+            )
+          }
+        }
+      }, by = genc_id]
 
-          # admit directly to the next SCU stay or have a gap in between
-          ifelse(rbinom(.N, 1, 0.25) | discharge_date_time == prev_time,
-            prev_time,
-            prev_time + dhours(rlnorm_trunc(
-              n = 1, meanlog = 4.2, sdlog = 1.6, min = 0,
-              max = as.numeric(difftime(discharge_date_time, prev_time, units = "hours"))
-            ))
-          )
-        }, by = genc_id]
-      } else {
+    } else {
         # if no `cohort` then sample scu_discharge_date_time
         scu_cohort[which(genc_occurrence == i), scu_admit_date_time := {
           prev_time <- scu_cohort[
@@ -963,12 +977,10 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
         dhours(sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29))]
 
       # ensure `scu_discharge_date_time` is after `scu_admit_date_time`
-      while (nrow(scu_cohort[scu_discharge_date_time < scu_admit_date_time, ]) > 0) {
-        scu_cohort[genc_occurrence == i &
+      scu_cohort[genc_occurrence == i &
           scu_discharge_date_time < scu_admit_date_time, scu_discharge_date_time :=
-          round_date(scu_discharge_date_time) +
+          round_date(scu_discharge_date_time, unit = "day") + ddays(1) +
           dhours(sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29))]
-      }
 
       # re-sample invalid date time values again
       # if `scu_discharge_date_time` is after `discharge_date_time`
@@ -978,8 +990,10 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
           discharge_date_time, scu_admit_date_time,
           units = "hours"
         ))]
-
-        while (nrow(scu_cohort[scu_discharge_date_time > discharge_date_time, ]) > 0) {
+        # avoid endless loops
+        max_iter <- 20
+        n_iter <- 0
+        while (nrow(scu_cohort[scu_discharge_date_time > discharge_date_time, ]) > 0 & n_iter < max_iter) {
           # for very short stays, set to `scu_discharge_date_time` to `discharge_date_time`
           # avoids re-sampling in a very small range
           scu_cohort[
@@ -998,11 +1012,15 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
               sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29)
             )
           ]
+          n_iter <- n_iter + 1
         }
         scu_cohort <- scu_cohort[, -c("discharge_lim")]
       }
     }
   }
+  # drop bad rows
+  scu_cohort <- scu_cohort[!duplicated(scu_discharge_date_time) & scu_discharge_date_time < discharge_date_time, ]
+
   # convert all POSIXct variables to truncated strings without seconds
   if (use_ip_dates) {
     scu_cohort[, admission_date_time := substr(as.character(admission_date_time), 1, 16)]
@@ -1439,13 +1457,22 @@ dummy_radiology <- function(
 
   # ensure that `ordered_date_time` is not after `discharge_date_time`
   # re-sample bad values
-  while (nrow(df_sim[ordered_date_time >= discharge_date_time, ]) > 0) {
+  max_iter <- 20
+  iter <- 0
+  while (nrow(df_sim[ordered_date_time >= discharge_date_time, ]) > 0 & iter < max_iter) {
     df_sim[
       ordered_date_time >= discharge_date_time,
       ordered_date_time := as.Date(admission_date_time) +
-        dhours(sample_time_shifted(.N, xi = 7.9, omega = 9.0, alpha = 5.2, min = 4, max = 30))
+        dhours(sample_time_shifted(.N, xi = 7.9, omega = 9.0, alpha = 5.2, min = 4, max = 30, seed = seed))
     ]
+    iter <- iter + 1 # protect from infinite loop
   }
+
+  # remaining bad values
+  df_sim[
+    ordered_date_time >= discharge_date_time,
+    ordered_date_time := admission_date_time
+  ]
 
   # sample gap between ordered and performed date time, in hours
   # maximum perform gap is the difference between IP discharge and `ordered_date_time`
@@ -1456,7 +1483,7 @@ dummy_radiology <- function(
 
   df_sim[, perform_gap := rlnorm_trunc(
     .N,
-    meanlog = 1.3, sdlog = 1.9, min = 0, max = max_perform_gap
+    meanlog = 1.3, sdlog = 1.9, min = 0, max = max_perform_gap, seed = seed
   )]
 
   df_sim[sample(nrow(df_sim), round(0.06 * nrow(df_sim))), perform_gap := 0] # set some values to 0
@@ -1474,7 +1501,8 @@ dummy_radiology <- function(
           as.numeric(
             difftime(discharge_date_time, ordered_date_time, units = "hours"), 6 * 30.4 * 24
           ) # set the max to 6 months gap
-        )
+        ),
+        seed = seed
       )
     )]
 
