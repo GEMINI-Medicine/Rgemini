@@ -4,4 +4,4 @@
 #' \describe{
 #'   \item{da21uid}{Dissemination area IDs in Canada}
 #' }
-"lookup_statcan_v2021"
+"da21uid_statcan_v2021"
