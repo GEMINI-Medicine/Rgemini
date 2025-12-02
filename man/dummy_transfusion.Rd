@@ -45,7 +45,7 @@ Items must be real blood product OMOP codes or it will not be used and a warning
 \item \code{genc_id} (\code{integer}): Mock encounter ID number; integers starting from 1 or from \code{cohort}
 \item \code{hospital_num} (\code{integer}): Mock hospital ID number; integers starting from 1 or from \code{cohort}
 \item \code{issue_date_time} (\code{character}): The date and time the transfusion was issued, in the format ("yy-mm-dd hh:mm")
-\item \verb{blood_product_mapped_omop(}character`): Blood product name mapped by GEMINI following international standard.
+\item \code{blood_product_mapped_omop} (\code{character}): Blood product name mapped by GEMINI following international standard.
 \item \code{blood_product_raw} (\code{character}): Type of blood product or component transfused as reported by hospital.
 }
 }

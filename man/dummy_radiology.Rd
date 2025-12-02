@@ -19,6 +19,10 @@ resulting in a data table with more rows than \code{nid}.
 Alternatively, if users provide a \code{cohort} input, the function will instead
 simulate radiology data for all \code{genc_ids} in the user-defined cohort table.}
 
+\item{n_hospitals}{(\code{integer})\cr The number of hospitals to simulate.
+Alternatively, if users provide a \code{cohort} input, the function will instead simulate
+radiology data for all \code{hospital_nums} in the user-defined cohort table}
+
 \item{time_period}{(\code{vector})\cr A numeric or character vector containing the data range of the data
 by years or specific dates in either format: ("yyyy-mm-dd", "yyyy-mm-dd") or (yyyy, yyyy)
 The start date and end date will be (yyyy-01-01 and yyyy-12-31) if (yyyy, yyyy)
@@ -34,10 +38,6 @@ When a \code{cohort} input is provided, \code{nid}, \code{n_hospitals}, and \cod
 }}
 
 \item{seed}{(\code{integer})\cr Optional, a number to be used to set the seed for reproducible results.}
-
-\item{n_hospitals(`integer`)\cr}{The number of hospitals to simulate.
-Alternatively, if users provide a \code{cohort} input, the function will instead simulate
-radiology data for all \code{hospital_nums} in the user-defined cohort table}
 }
 \value{
 (\code{data.table})\cr A \code{data.table} object similar that contains the following fields:

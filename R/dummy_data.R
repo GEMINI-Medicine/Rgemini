@@ -1401,9 +1401,8 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #'
 #' @examples
 #' \dontrun{
-#'  dummy_locality(nid = 1000, n_hospitals = 10)
+#' dummy_locality(nid = 1000, n_hospitals = 10)
 #' }
-#'
 dummy_locality <- function(nid = 1000, n_hospitals = 10, cohort = NULL, da21uid = NULL, seed = NULL) {
   ### check inputs
   if (!is.null(da21uid)) {
@@ -1701,7 +1700,7 @@ dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed =
 #' Alternatively, if users provide a `cohort` input, the function will instead
 #' simulate radiology data for all `genc_ids` in the user-defined cohort table.
 #'
-#' @param n_hospitals(`integer`)\cr The number of hospitals to simulate.
+#' @param n_hospitals (`integer`)\cr The number of hospitals to simulate.
 #' Alternatively, if users provide a `cohort` input, the function will instead simulate
 #' radiology data for all `hospital_nums` in the user-defined cohort table
 #'
@@ -1920,7 +1919,7 @@ dummy_radiology <- function(
 #' - `genc_id` (`integer`): Mock encounter ID number; integers starting from 1 or from `cohort`
 #' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort`
 #' - `issue_date_time` (`character`): The date and time the transfusion was issued, in the format ("yy-mm-dd hh:mm")
-#' - `blood_product_mapped_omop(`character`): Blood product name mapped by GEMINI following international standard.
+#' - `blood_product_mapped_omop` (`character`): Blood product name mapped by GEMINI following international standard.
 #' - `blood_product_raw` (`character`): Type of blood product or component transfused as reported by hospital.
 #' @examples
 #' dummy_transfusion(nid = 1000, n_hospitals = 30, seed = 1)
@@ -2162,7 +2161,7 @@ dummy_transfusion <- function(
     blood_product_lookup[is.na(blood_product_raw), blood_product_raw := "Invalid blood product OMOP provided"]
   }
 
-  ##### get `blood_product_mapped_raw` #####
+  ##### get `blood_product_raw` #####
   # set blood_product_raw by joining `df1` with the lookup table
   df1 <- left_join(df1, blood_product_lookup, by = join_by(blood_product_mapped_omop))
   df1[blood_product_mapped_omop == "0", blood_product_raw := "FAR"]
