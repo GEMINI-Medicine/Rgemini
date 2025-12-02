@@ -1403,15 +1403,15 @@ dummy_radiology <- function(
 ) {
   ####### checks for valid inputs #######
   if (!is.null(cohort)) { # if `cohort` is provided
-    check_input(cohort,
+    Rgemini:::check_input(cohort,
       c("data.frame", "data.table"),
       colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
       coltypes = c("integer", "integer", "", "")
     )
-  } else { # when `cohort` is not provided
-    check_input(list(nid, n_hospitals), "integer")
+  } else {
+    ####### if `cohort` is not provided, create it #######
+    Rgemini:::check_input(list(nid, n_hospitals), "integer")
 
-    # create a cohort
     cohort <- dummy_ipadmdad(nid = nid, n_hospitals = n_hospitals, time_period = time_period, seed = seed)
     # include only required columns
     cohort <- cohort[, c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time")]
@@ -1421,7 +1421,7 @@ dummy_radiology <- function(
     set.seed(seed)
   }
 
-  ####### if `cohort` is not provided, create it #######
+  # convert `cohort` to `data.table`
   cohort <- suppressWarnings(Rgemini:::coerce_to_datatable(cohort))
   # convert date times
   tryCatch(
@@ -1624,6 +1624,7 @@ dummy_transfusion <- function(
     cohort <- dummy_ipadmdad(nid, n_hospitals, time_period, seed)
   }
 
+  # convert to `data.table`
   cohort <- suppressWarnings(Rgemini:::coerce_to_datatable(cohort))
 
   tryCatch(
