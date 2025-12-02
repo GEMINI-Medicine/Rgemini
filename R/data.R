@@ -86,16 +86,13 @@ NULL
 #' @docType data
 NULL
 
-#' Blood product lookup table
+#' StatCan da21uid lookup for `dummy_locality` function
 #'
-#' A dataset containing common blood product codes, their raw names, and relative proportions.
-#'
-#' @format A data frame with 23 rows and 3 columns:
-#' \describe{
-#'   \item{blood_product_mapped_omop}{Mapped OMOP codes for each blood product}
-#'   \item{blood_product_mapped_raw}{Raw names for each blood product}
-#'   \item{prob}{Relative proportions of each product, 0-1}
-#' }
+#' @name da21uid_statcan_v2021
+#' @docType data
+NULL
+
+#' Blood product lookup table for `dummy_transfusion` function
 #'
 #' @name blood_product_lookup
 #' @docType data
