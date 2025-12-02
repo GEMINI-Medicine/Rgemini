@@ -1350,9 +1350,9 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
   df_sim[, triage_date_time := substr(as.character(triage_date_time), 1, 16)]
 
   # keep only the relevant columns and return
-  df1 <- df1[, c("genc_id", "hospital_num", "triage_date_time")]
+  df_sim <- df_sim[, c("genc_id", "hospital_num", "triage_date_time")]
 
-  return(df1[order(df1$genc_id)])
+  return(df_sim[order(df_sim$genc_id)])
 }
 
 #' @title
