@@ -893,7 +893,7 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
           scu_discharge_date_time := floor_date(
             scu_admit_date_time + ddays(scu_los),
             unit = "day"
-            ) +
+          ) +
             dhours(sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29))
         ]
       }
@@ -932,33 +932,34 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
       # account for `discharge_date_time`
       if (use_ip_dates) {
         scu_cohort[which(genc_occurrence == i), scu_admit_date_time := {
-          prev_time <- scu_cohort[genc_id == .BY$genc_id &
-                          genc_occurrence == (i - 1), 
-                          scu_discharge_date_time]
-        # CASE 1: prev discharge is >= IP discharge → no more stays possible
-        if (prev_time >= discharge_date_time) {
-          discharge_date_time
-        } else { # CASE 2
-          # sample a diff in hours
-          max_gap <- as.numeric(difftime(discharge_date_time, prev_time, units = "hours"))
-          
-          # direct admit OR sample a gap
-          if (rbinom(.N, 1, 0.25) | prev_time == discharge_date_time) {
-            prev_time
-          } else {
-            prev_time + dhours(
-              rlnorm_trunc(
-                n = .N,
-                meanlog = 4.2, sdlog = 1.6,
-                min = 0,
-                max = max_gap
-              )
-            )
-          }
-        }
-      }, by = genc_id]
+          prev_time <- scu_cohort[
+            genc_id == .BY$genc_id &
+              genc_occurrence == (i - 1),
+            scu_discharge_date_time
+          ]
+          # CASE 1: prev discharge is >= IP discharge → no more stays possible
+          if (prev_time >= discharge_date_time) {
+            discharge_date_time
+          } else { # CASE 2
+            # sample a diff in hours
+            max_gap <- as.numeric(difftime(discharge_date_time, prev_time, units = "hours"))
 
-    } else {
+            # direct admit OR sample a gap
+            if (rbinom(.N, 1, 0.25) | prev_time == discharge_date_time) {
+              prev_time
+            } else {
+              prev_time + dhours(
+                rlnorm_trunc(
+                  n = .N,
+                  meanlog = 4.2, sdlog = 1.6,
+                  min = 0,
+                  max = max_gap
+                )
+              )
+            }
+          }
+        }, by = genc_id]
+      } else {
         # if no `cohort` then sample scu_discharge_date_time
         scu_cohort[which(genc_occurrence == i), scu_admit_date_time := {
           prev_time <- scu_cohort[
