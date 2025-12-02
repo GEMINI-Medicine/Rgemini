@@ -981,9 +981,9 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 
       # ensure `scu_discharge_date_time` is after `scu_admit_date_time`
       scu_cohort[genc_occurrence == i &
-          scu_discharge_date_time < scu_admit_date_time, scu_discharge_date_time :=
-          round_date(scu_discharge_date_time, unit = "day") + ddays(1) +
-          dhours(sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29))]
+        scu_discharge_date_time < scu_admit_date_time, scu_discharge_date_time :=
+        round_date(scu_discharge_date_time, unit = "day") + ddays(1) +
+        dhours(sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29))]
 
       # re-sample invalid date time values again
       # if `scu_discharge_date_time` is after `discharge_date_time`
