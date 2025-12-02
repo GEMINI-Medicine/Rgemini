@@ -1479,7 +1479,7 @@ dummy_locality <- function(nid = 1000, n_hospitals = 10, cohort = NULL, da21uid 
     n_edge <- round(0.003 * nrow(df_sim))
     rows_edge <- sample(seq_len(nrow(df_sim)), n_edge)
 
-    df_sim[rows_edge, da21uid := sample(setdiff(lookup_statcan_v2021, ontario_id),
+    df_sim[rows_edge, da21uid := sample(setdiff(lookup_statcan_v2021$da21uid, ontario_id),
       .N,
       replace = TRUE
     )]
