@@ -453,17 +453,6 @@ dummy_ipadmdad <- function(nid = 1000,
   site_vector <- rep(hosp_assignment, times = rep(1, nid))
 
   data <- data.table(genc_id = id_vector, hospital_num = site_vector, stringsAsFactors = FALSE)
-  ## create all combinations of hospitals and fiscal years
-  hospital_num <- as.integer(seq(1, n_hospitals, 1))
-  year <- seq(time_period[1], time_period[2], 1)
-
-  data <- expand.grid(hospital_num = hospital_num, year = year) %>% data.table()
-
-  # randomly draw number of encounters per hospital*year combo
-  data[, n := rmultinom(1, nid, rep.int(1 / nrow(data), nrow(data)))]
-
-  # blow up row number according to encounter per combo
-  data <- data[rep(seq_len(nrow(data)), data$n), ]
 
   # turn year variable into actual date by randomly drawing date_time
   add_random_datetime <- function(n, start_date, end_date) {
@@ -473,7 +462,7 @@ dummy_ipadmdad <- function(nid = 1000,
     )))
 
     random_datetime <- format(as.POSIXct(random_date + dhours(sample_time_shifted(n,
-      xi = 19.5, omega = 6.29, alpha = 0.20
+      xi = 19.5, omega = 6.29, alpha = 0.20, seed = seed
     )), tz = "UTC"), format = "%Y-%m-%d %H:%M")
 
     return(random_datetime)
@@ -909,7 +898,10 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
       while (nrow(scu_cohort[scu_discharge_date_time < scu_admit_date_time, ]) > 0) {
         scu_cohort[
           genc_occurrence == i & scu_discharge_date_time < scu_admit_date_time,
-          scu_discharge_date_time := round_date(scu_discharge_date_time) +
+          scu_discharge_date_time := floor_date(
+            scu_admit_date_time + ddays(scu_los),
+            unit = "day"
+          ) +
             dhours(sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29))
         ]
       }
@@ -937,7 +929,7 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
           )]
 
           scu_cohort[genc_occurrence == i & scu_discharge_date_time > discharge_date_time, scu_discharge_date_time := {
-            round_date(scu_admit_date_time + ddays(floor(scu_los))) + dhours(
+            round_date(scu_admit_date_time + ddays(floor(scu_los)), unit = "days") + dhours(
               sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29)
             )
           }]
@@ -948,17 +940,32 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
       # account for `discharge_date_time`
       if (use_ip_dates) {
         scu_cohort[which(genc_occurrence == i), scu_admit_date_time := {
-          prev_time <- scu_cohort[genc_id == .BY$genc_id &
-            genc_occurrence == (i - 1), scu_discharge_date_time]
+          prev_time <- scu_cohort[
+            genc_id == .BY$genc_id &
+              genc_occurrence == (i - 1),
+            scu_discharge_date_time
+          ]
+          # CASE 1: prev discharge is >= IP discharge → no more stays possible
+          if (prev_time >= discharge_date_time) {
+            discharge_date_time
+          } else { # CASE 2
+            # sample a diff in hours
+            max_gap <- as.numeric(difftime(discharge_date_time, prev_time, units = "hours"))
 
-          # admit directly to the next SCU stay or have a gap in between
-          ifelse(rbinom(.N, 1, 0.25) | discharge_date_time == prev_time,
-            prev_time,
-            prev_time + dhours(rlnorm_trunc(
-              n = 1, meanlog = 4.2, sdlog = 1.6, min = 0,
-              max = as.numeric(difftime(discharge_date_time, prev_time, units = "hours"))
-            ))
-          )
+            # direct admit OR sample a gap
+            if (rbinom(.N, 1, 0.25) | prev_time == discharge_date_time) {
+              prev_time
+            } else {
+              prev_time + dhours(
+                rlnorm_trunc(
+                  n = .N,
+                  meanlog = 4.2, sdlog = 1.6,
+                  min = 0,
+                  max = max_gap
+                )
+              )
+            }
+          }
         }, by = genc_id]
       } else {
         # if no `cohort` then sample scu_discharge_date_time
@@ -982,12 +989,10 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
         dhours(sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29))]
 
       # ensure `scu_discharge_date_time` is after `scu_admit_date_time`
-      while (nrow(scu_cohort[scu_discharge_date_time < scu_admit_date_time, ]) > 0) {
-        scu_cohort[genc_occurrence == i &
-          scu_discharge_date_time < scu_admit_date_time, scu_discharge_date_time :=
-          round_date(scu_discharge_date_time) +
-          dhours(sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29))]
-      }
+      scu_cohort[genc_occurrence == i &
+        scu_discharge_date_time < scu_admit_date_time, scu_discharge_date_time :=
+        round_date(scu_discharge_date_time, unit = "day") + ddays(1) +
+        dhours(sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29))]
 
       # re-sample invalid date time values again
       # if `scu_discharge_date_time` is after `discharge_date_time`
@@ -997,8 +1002,10 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
           discharge_date_time, scu_admit_date_time,
           units = "hours"
         ))]
-
-        while (nrow(scu_cohort[scu_discharge_date_time > discharge_date_time, ]) > 0) {
+        # avoid endless loops
+        max_iter <- 20
+        n_iter <- 0
+        while (nrow(scu_cohort[scu_discharge_date_time > discharge_date_time, ]) > 0 & n_iter < max_iter) {
           # for very short stays, set to `scu_discharge_date_time` to `discharge_date_time`
           # avoids re-sampling in a very small range
           scu_cohort[
@@ -1017,11 +1024,15 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
               sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29)
             )
           ]
+          n_iter <- n_iter + 1
         }
         scu_cohort <- scu_cohort[, -c("discharge_lim")]
       }
     }
   }
+  # drop bad rows
+  scu_cohort <- scu_cohort[!duplicated(scu_discharge_date_time) & scu_discharge_date_time < discharge_date_time, ]
+
   # convert all POSIXct variables to truncated strings without seconds
   if (use_ip_dates) {
     scu_cohort[, admission_date_time := substr(as.character(admission_date_time), 1, 16)]
@@ -1124,7 +1135,7 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 
   # create a new data table based on `cohort`
   # this step also converts cohort's admission and discharge date times into POSIXct
-  df1 <- generate_id_hospital(
+  df_sim <- generate_id_hospital(
     cohort = cohort,
     include_prop = 1,
     avg_repeats = 1.4,
@@ -1133,18 +1144,18 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
   )
 
   # adjust `nid` and `n_hospitals`
-  nid <- uniqueN(df1$genc_id)
-  n_hospitals <- uniqueN(df1$hospitals)
+  nid <- uniqueN(df_sim$genc_id)
+  n_hospitals <- uniqueN(df_sim$hospitals)
 
   # Number each SCU stay per genc_id
-  df1[, genc_occurrence := seq_len(.N), by = genc_id]
+  df_sim[, genc_occurrence := seq_len(.N), by = genc_id]
 
   ####### sample SCU admit and discharge date times #######
-  df1 <- sample_scu_date_time(scu_cohort = df1, use_ip_dates = TRUE, seed = seed)
+  df_sim <- sample_scu_date_time(scu_cohort = df_sim, use_ip_dates = TRUE, seed = seed)
 
 
   # keep only relevant columns
-  df1 <- df1[, c("genc_id", "hospital_num", "scu_admit_date_time", "scu_discharge_date_time")]
+  df_sim <- df_sim[, c("genc_id", "hospital_num", "scu_admit_date_time", "scu_discharge_date_time")]
 
   # set remaining columns of the data.table
   # it will be the same regardless of whether cohort exists or not
@@ -1153,7 +1164,7 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
   # add hospital-level variation for the ICU flag:
   # all TRUE (no encounters go to the step down unit),
   # or low or higher FALSE proportions (FALSE goes to the step down unit)
-  hosp_class <- data.table("hospital_num" = unique(df1$hospital_num))
+  hosp_class <- data.table("hospital_num" = unique(df_sim$hospital_num))
   probs <- c(all_true = 0.35, low_false = 0.15, high_false = 0.5)
   hosp_class[, category := sample(c("all_true", "low_false", "high_false"), .N, replace = TRUE, prob = probs)]
 
@@ -1188,20 +1199,20 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
   hosp_class[, prop_false := runif(.N, min_val, max_val)]
 
   # merge hospital classification with existing ipscu data for sampling
-  df1 <- merge(df1, hosp_class, by = "hospital_num", all.x = TRUE)
+  df_sim <- merge(df_sim, hosp_class, by = "hospital_num", all.x = TRUE)
   # sample binomially for the ICU flag
-  df1[, icu_flag := ifelse(rbinom(.N, 1, prop_false), FALSE, TRUE)]
+  df_sim[, icu_flag := ifelse(rbinom(.N, 1, prop_false), FALSE, TRUE)]
 
-  # sample SCU number in df1
-  df1[, scu_unit_number := sapply(scu_set, function(v) sample(v, 1))]
+  # sample SCU number in `df_sim`
+  df_sim[, scu_unit_number := sapply(scu_set, function(v) sample(v, 1))]
 
   # if icu_flag FALSE, replace SCU unit number with a step down unit number
-  df1[icu_flag == FALSE, scu_unit_number := base::sample(c(90, 93, 95), .N, replace = TRUE)]
+  df_sim[icu_flag == FALSE, scu_unit_number := base::sample(c(90, 93, 95), .N, replace = TRUE)]
 
   # drop unneeded columns and return data.table
-  df1 <- df1[, -c("category", "min_val", "max_val", "prop_false", "scu_set")]
+  df_sim <- df_sim[, -c("category", "min_val", "max_val", "prop_false", "scu_set")]
 
-  return(df1[order(df1$genc_id)])
+  return(df_sim[order(df_sim$genc_id)])
 }
 
 #' @title
@@ -1291,52 +1302,52 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 
   # get the `data.table` for simulation
   # one repeat per `genc_id`
-  df1 <- generate_id_hospital(cohort = cohort, avg_repeats = 1, seed = seed)
+  df_sim <- generate_id_hospital(cohort = cohort, avg_repeats = 1, seed = seed)
 
   ##### sample `triage_date_time` by adding to IP admit time #####
   # the output of `rsn` will be negative
   # triage occurs before inpatient admissions
-  df1[, triage_date := floor_date(admission_date_time - ddays(rsn_trunc(
+  df_sim[, triage_date := floor_date(admission_date_time - ddays(rsn_trunc(
     .N,
     xi = 0.098, omega = 0.285, alpha = 4.45, min = 0, max = 370
   )), unit = "day")]
 
   # log normal distribution of `triage_date_time`
-  df1[, triage_time_hour := rlnorm_trunc(.N, meanlog = 2.69, sdlog = 0.38, min = 4, max = 30, seed = seed)]
+  df_sim[, triage_time_hour := rlnorm_trunc(.N, meanlog = 2.69, sdlog = 0.38, min = 4, max = 30, seed = seed)]
 
   # move times > 24 hours to 12am and after (early AM)
-  df1[, triage_time_hour := ifelse(triage_time_hour < 24, triage_time_hour, triage_time_hour - 24)]
+  df_sim[, triage_time_hour := ifelse(triage_time_hour < 24, triage_time_hour, triage_time_hour - 24)]
 
-  df1[, triage_date_time := triage_date + dhours(triage_time_hour)]
+  df_sim[, triage_date_time := triage_date + dhours(triage_time_hour)]
 
-  df1[, admission_time := as.numeric(format(admission_date_time, "%H")) +
+  df_sim[, admission_time := as.numeric(format(admission_date_time, "%H")) +
     as.numeric(format(admission_date_time, "%M")) / 60 +
     as.numeric(format(admission_date_time, "%S")) / 3600]
 
   # re-sample bad values where triage comes up after admission
-  while (nrow(df1[triage_date_time > admission_date_time, ]) > 0) {
-    df1[triage_date_time > admission_date_time, triage_date := floor_date(
+  while (nrow(df_sim[triage_date_time > admission_date_time, ]) > 0) {
+    df_sim[triage_date_time > admission_date_time, triage_date := floor_date(
       admission_date_time - ddays(rsn_trunc(.N,
         xi = 0.098, omega = 0.285, alpha = 4.45, min = 0, max = 370
       )),
       unit = "day"
     )]
 
-    df1[triage_date_time > admission_date_time, triage_time_hour := rlnorm_trunc(
+    df_sim[triage_date_time > admission_date_time, triage_time_hour := rlnorm_trunc(
       .N,
       meanlog = 2.69, sdlog = 0.38, min = 4, max = 30
     )]
 
     # move times > 24 hours to 12am and after
-    df1[triage_date_time > admission_date_time, triage_time_hour := ifelse(
+    df_sim[triage_date_time > admission_date_time, triage_time_hour := ifelse(
       triage_time_hour < 24, triage_time_hour, triage_time_hour - 24
     )]
 
-    df1[triage_date_time > admission_date_time, triage_date_time := triage_date + dhours(triage_time_hour)]
+    df_sim[triage_date_time > admission_date_time, triage_date_time := triage_date + dhours(triage_time_hour)]
   }
 
   # turn date times into a string and remove seconds
-  df1[, triage_date_time := substr(as.character(triage_date_time), 1, 16)]
+  df_sim[, triage_date_time := substr(as.character(triage_date_time), 1, 16)]
 
   # keep only the relevant columns and return
   df1 <- df1[, c("genc_id", "hospital_num", "triage_date_time")]
@@ -1414,24 +1425,24 @@ dummy_locality <- function(nid = 1000, n_hospitals = 10, cohort = NULL, da21uid 
   }
 
   if (!is.null(cohort)) {
-    # set up `locality_sim` if `cohort` is included
+    # set up `df_sim` if `cohort` is included
     cohort <- suppressWarnings(Rgemini::coerce_to_datatable(cohort))
-    locality_sim <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 1, seed = seed)
-    nid <- uniqueN(locality_sim$genc_id)
-    n_hospitals <- uniqueN(locality_sim$hospital_num)
+    df_sim <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 1, seed = seed)
+    nid <- uniqueN(df_sim$genc_id)
+    n_hospitals <- uniqueN(df_sim$hospital_num)
 
     # only include the `genc_id` and `hospital_num` columns from `cohort`
-    locality_sim <- locality_sim[, c("genc_id", "hospital_num")]
+    df_sim <- df_sim[, c("genc_id", "hospital_num")]
   } else {
     # generate a cohort from nid and n_hospitals
-    locality_sim <- generate_id_hospital(nid, n_hospitals, avg_repeats = 1, seed = seed)
+    df_sim <- generate_id_hospital(nid, n_hospitals, avg_repeats = 1, seed = seed)
   }
 
   if (!is.null(da21uid)) {
     # if the user provided ID, use those
     # if user provided one ID, fill the column with that
     # otherwise, randomly sample from the list
-    locality_sim[, da21uid := {
+    df_sim[, da21uid := {
       if (length(da21uid) == 1) {
         rep(da21uid, .N)
       } else {
@@ -1450,7 +1461,7 @@ dummy_locality <- function(nid = 1000, n_hospitals = 10, cohort = NULL, da21uid 
     )$da21uid
 
     # to mimic how locality IDs are clustered by hospital, set a range for min and max ID for each hospital
-    locality_sim[, c("min_id", "max_id") := {
+    df_sim[, c("min_id", "max_id") := {
       repeat {
         min_pick <- sample(ontario_id, 1)
         candidates <- ontario_id[ontario_id > min_pick]
@@ -1460,27 +1471,27 @@ dummy_locality <- function(nid = 1000, n_hospitals = 10, cohort = NULL, da21uid 
     }, by = hospital_num]
 
     # sample dissemination ID within the range per hospital
-    locality_sim[, da21uid := mapply(function(x, y) {
+    df_sim[, da21uid := mapply(function(x, y) {
       sample(ontario_id[ontario_id >= x & ontario_id <= y], 1, replace = TRUE)
     }, min_id, max_id)]
 
     # insert a small proportion (0.3%) of cases located outside of Ontario
     # sample from da21uid outside of Ontario
-    n_edge <- round(0.003 * nrow(locality_sim))
-    rows_edge <- sample(seq_len(nrow(locality_sim)), n_edge)
+    n_edge <- round(0.003 * nrow(df_sim))
+    rows_edge <- sample(seq_len(nrow(df_sim)), n_edge)
 
-    locality_sim[rows_edge, da21uid := sample(setdiff(lookup_statcan_v2021, ontario_id),
+    df_sim[rows_edge, da21uid := sample(setdiff(lookup_statcan_v2021, ontario_id),
       .N,
       replace = TRUE
     )]
 
     # inject 2% rate of missingness in `da21uid`
-    locality_sim[, da21uid := ifelse(rbinom(.N, 1, 0.02), NA, da21uid)]
+    df_sim[, da21uid := ifelse(rbinom(.N, 1, 0.02), NA, da21uid)]
 
     # remove extra columns and return
-    locality_sim <- locality_sim[, -c("min_id", "max_id")]
+    df_sim <- df_sim[, -c("min_id", "max_id")]
   }
-  return(locality_sim[order(locality_sim$genc_id)])
+  return(df_sim[order(df_sim$genc_id)])
 }
 
 #' @title
