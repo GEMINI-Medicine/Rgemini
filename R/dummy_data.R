@@ -1396,7 +1396,9 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' @export
 #'
 #' @examples
-#' dummy_locality(nid = 1000, n_hospitals = 10)
+#' \dontrun {
+#'  dummy_locality(nid = 1000, n_hospitals = 10)
+#' }
 #'
 dummy_locality <- function(nid = 1000, n_hospitals = 10, cohort = NULL, da21uid = NULL, seed = NULL) {
   ### check inputs
