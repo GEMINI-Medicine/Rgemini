@@ -1401,7 +1401,7 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #'
 #' @examples
 #' \dontrun{
-#'  dummy_locality(nid = 1000, n_hospitals = 10)
+#' dummy_locality(nid = 1000, n_hospitals = 10)
 #' }
 #'
 dummy_locality <- function(nid = 1000, n_hospitals = 10, cohort = NULL, da21uid = NULL, seed = NULL) {
@@ -1557,7 +1557,7 @@ dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed =
       stop("Number of encounters must be greater than or equal to the number of hospitals")
     }
   }
-  
+
   if (!is.null(cohort)) {
     # if `cohort` is provided, use its `genc_id` and `hospital_num`
     cohort <- suppressWarnings(Rgemini::coerce_to_datatable(cohort))
@@ -1761,16 +1761,16 @@ dummy_radiology <- function(
   }
 
   # convert `cohort` to `data.table`
-    cohort <- suppressWarnings(Rgemini:::coerce_to_datatable(cohort))
-    # convert date times
-    tryCatch(
-      {
-        cohort$admission_date_time <- Rgemini::convert_dt(cohort$admission_date_time, "ymd HM")
-      },
-      warning = function(w) {
-        stop(conditionMessage(w))
-      }
-    )
+  cohort <- suppressWarnings(Rgemini:::coerce_to_datatable(cohort))
+  # convert date times
+  tryCatch(
+    {
+      cohort$admission_date_time <- Rgemini::convert_dt(cohort$admission_date_time, "ymd HM")
+    },
+    warning = function(w) {
+      stop(conditionMessage(w))
+    }
+  )
 
   # generate `df_sim` based on `cohort`
   df_sim <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 4.5, seed = seed)
