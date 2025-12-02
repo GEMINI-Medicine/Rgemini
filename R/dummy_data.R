@@ -1611,7 +1611,7 @@ dummy_transfusion <- function(
 
   ### input checks for variable types and validity ###
   if (!is.null(cohort)) { # if `cohort` is provided
-    check_input(cohort,
+    Rgemini:::check_input(cohort,
       c("data.frame", "data.table"),
       colnames = c("genc_id", "hospital_num", "admission_date_time", "discharge_date_time"),
       coltypes = c("integer", "integer", "", "")
