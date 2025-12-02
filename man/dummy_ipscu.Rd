@@ -40,6 +40,8 @@ When \code{cohort} is not NULL, \code{nid}, \code{n_hospitals}, and \code{time_p
 \itemize{
 \item \code{genc_id} (\code{integer}): Mock encounter ID; integers starting from 1 or from \code{cohort}
 \item \code{hospital_num} (\code{integer}): Mock hospital ID number; integers starting from 1 or from \code{cohort}
+\item \code{genc_id} (\code{integer}): Mock encounter ID; integers starting from 1 or from \code{cohort}
+\item \code{hospital_num} (\code{integer}): Mock hospital ID number; integers starting from 1 or from \code{cohort}
 \item \code{scu_admit_date_time} (\code{character}): Date and time of SCU admission in YYYY-MM-DD HH:MM format
 \item \code{scu_discharge_date_time} (\code{character}): Date and time of SCU admission in YYYY-MM-DD HH:MM format
 \item \code{icu_flag} (\code{logical}): Flag specifying whether the encounter was admitted to the ICU or not.
