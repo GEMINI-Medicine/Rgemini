@@ -882,7 +882,7 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
       scu_cohort[genc_occurrence == i, scu_los := rlnorm(.N, meanlog = 0.78, sdlog = 1.21)]
 
       scu_cohort[genc_occurrence == i, scu_discharge_date_time := floor_date(
-        scu_admit_date_time + lubridate::lubridate::days(scu_los),
+        scu_admit_date_time + lubridate::days(scu_los),
         unit = "day"
       ) +
         dhours(sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29))]
