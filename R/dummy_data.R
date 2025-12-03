@@ -375,7 +375,7 @@ dummy_diag <- function(
 #' @import Rgemini
 #' @importFrom sn rsn
 #' @importFrom MCMCpack rdirichlet
-#' @importFrom lubridate ymd_hm dhours ddays
+#' @importFrom lubridate ymd_hm dhours lubridate::days
 #' @export
 #'
 #' @examples
@@ -522,14 +522,14 @@ dummy_ipadmdad <- function(nid = 1000,
 
     hosp_data[, discharge_date_time := format(
       round_date(as.POSIXct(admission_date_time, tz = "UTC") +
-        ddays(los), unit = "days") +
+        lubridate::days(los), unit = "days") +
         dhours(sample_time_shifted(.N, xi = 11.37, omega = 4.79, alpha = 1.67, seed = seed)),
       format = "%Y-%m-%d %H:%M", tz = "UTC"
     )]
 
     # if `discharge_date_time` ends up before `admission_date_time`
     hosp_data[, los := as.numeric(difftime(ymd_hm(discharge_date_time), ymd_hm(admission_date_time), units = "days"))]
-    hosp_data[los < 0, discharge_date_time := format(ymd_hm(discharge_date_time) + ddays(1), "%Y-%m-%d %H:%M")]
+    hosp_data[los < 0, discharge_date_time := format(ymd_hm(discharge_date_time) + lubridate::days(1), "%Y-%m-%d %H:%M")]
     # handle sampling edge case with negative los
 
     ## Alternate level of care (ALC) & days spent in ALC
@@ -882,7 +882,7 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
       scu_cohort[genc_occurrence == i, scu_los := rlnorm(.N, meanlog = 0.78, sdlog = 1.21)]
 
       scu_cohort[genc_occurrence == i, scu_discharge_date_time := floor_date(
-        scu_admit_date_time + ddays(scu_los),
+        scu_admit_date_time + lubridate::lubridate::days(scu_los),
         unit = "day"
       ) +
         dhours(sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29))]
@@ -892,7 +892,7 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
         scu_cohort[
           genc_occurrence == i & scu_discharge_date_time < scu_admit_date_time,
           scu_discharge_date_time := floor_date(
-            scu_admit_date_time + ddays(scu_los),
+            scu_admit_date_time + lubridate::days(scu_los),
             unit = "day"
           ) +
             dhours(sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29))
@@ -922,7 +922,7 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
           )]
 
           scu_cohort[genc_occurrence == i & scu_discharge_date_time > discharge_date_time, scu_discharge_date_time := {
-            round_date(scu_admit_date_time + ddays(floor(scu_los)), unit = "days") + dhours(
+            round_date(scu_admit_date_time + lubridate::days(floor(scu_los)), unit = "days") + dhours(
               sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29)
             )
           }]
@@ -978,13 +978,13 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 
       # add an SCU discharge date and time
       scu_cohort[which(genc_occurrence == i), scu_discharge_date_time := floor_date(scu_admit_date_time +
-        ddays(rlnorm(.N, meanlog = 0.78, sdlog = 1.21)), unit = "day") +
+        lubridate::days(rlnorm(.N, meanlog = 0.78, sdlog = 1.21)), unit = "day") +
         dhours(sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29))]
 
       # ensure `scu_discharge_date_time` is after `scu_admit_date_time`
       scu_cohort[genc_occurrence == i &
         scu_discharge_date_time < scu_admit_date_time, scu_discharge_date_time :=
-        round_date(scu_discharge_date_time, unit = "day") + ddays(1) +
+        round_date(scu_discharge_date_time, unit = "day") + lubridate::days(1) +
         dhours(sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29))]
 
       # re-sample invalid date time values again
@@ -1013,7 +1013,7 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 
           scu_cohort[
             genc_occurrence == i & scu_discharge_date_time > discharge_date_time,
-            scu_discharge_date_time := round_date(scu_admit_date_time + ddays(floor(scu_los))) + dhours(
+            scu_discharge_date_time := round_date(scu_admit_date_time + lubridate::days(floor(scu_los))) + dhours(
               sample_time_shifted(.N, xi = 11.70, omega = 6.09, alpha = 1.93, min = 5, max = 29)
             )
           ]
@@ -1242,7 +1242,7 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 #' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort`
 #' - `triage_date_time` (`character`): The date and time of triage with format "%Y-%m-%d %H:%M"
 #'
-#' @importFrom lubridate ddays dhours
+#' @importFrom lubridate days dhours
 #' @import Rgemini
 #' @import data.table
 #' @export
@@ -1300,7 +1300,7 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
   ##### sample `triage_date_time` by adding to IP admit time #####
   # the output of `rsn` will be negative
   # triage occurs before inpatient admissions
-  df_sim[, triage_date := floor_date(admission_date_time - ddays(rsn_trunc(
+  df_sim[, triage_date := floor_date(admission_date_time - lubridate::days(rsn_trunc(
     .N,
     xi = 0.098, omega = 0.285, alpha = 4.45, min = 0, max = 370
   )), unit = "day")]
@@ -1320,7 +1320,7 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
   # re-sample bad values where triage comes up after admission
   while (nrow(df_sim[triage_date_time > admission_date_time, ]) > 0) {
     df_sim[triage_date_time > admission_date_time, triage_date := floor_date(
-      admission_date_time - ddays(rsn_trunc(.N,
+      admission_date_time - lubridate::days(rsn_trunc(.N,
         xi = 0.098, omega = 0.285, alpha = 4.45, min = 0, max = 370
       )),
       unit = "day"
@@ -1393,7 +1393,7 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #'
 #' @import Rgemini
 #' @import data.table
-#' @importFrom lubridate ddays dhours
+#' @importFrom lubridate days dhours
 #' @importFrom MCMCpack rdirichlet
 #'
 #' @export
@@ -1454,7 +1454,7 @@ dummy_radiology <- function(
 
   ####### Set the `ordered_date_time` #######
   # get ordered date
-  df_sim[, ordered_date := as.Date(admission_date_time) + ddays(admit_order_gap)]
+  df_sim[, ordered_date := as.Date(admission_date_time) + lubridate::days(admit_order_gap)]
 
   # sample ordered time
   df_sim[, ordered_time := sample_time_shifted(.N, xi = 7.9, omega = 8.8, alpha = 4.5, min = 4, max = 30, seed = seed)]
