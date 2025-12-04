@@ -2,7 +2,7 @@
 % Please edit documentation in R/dummy_data.R
 \name{dummy_ipscu}
 \alias{dummy_ipscu}
-\title{Generate simulated ipscu data}
+\title{Generate simulated ipscu data.}
 \usage{
 dummy_ipscu(
   nid = 1000,

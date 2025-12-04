@@ -139,8 +139,13 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #'
 #' @param n_hospitals (`integer`)\cr Number of hospitals to simulate in the resulting data table.
 #' Optional when `cohort` is provided.
+#' @param n_hospitals (`integer`)\cr Number of hospitals to simulate in the resulting data table.
+#' Optional when `cohort` is provided.
 #'
-#' @param cohort (`data.frame | data.table`)\cr Optional, the administrative data frame with the columns:
+#' @param cohort (`data.frame` or `data.table`)\cr Optional, the administrative data frame containing `genc_id`
+#' and `hospital_num` information to be used in the output. `cohort` takes precedence over parameters `nid` and
+#' `n_hospitals`: when `cohort` is not NULL, `nid` and `n_hospitals` are ignored.
+#' @param cohort (`data.frame or data.table`)\cr Optional, the administrative data frame with the columns:
 #' - `genc_id` (`integer`): GEMINI encounter ID
 #' - `hospital_num` (`integer`): hospital ID
 #' `cohort` takes precedence over parameters `nid` and`n_hospitals`.
@@ -239,7 +244,10 @@ dummy_diag <- function(
     mutate(diagnosis_type = "M") # ensure each id has a type M diagnosis
 
   if (!is.null(diagnosis_type)) {
-    df2[, diagnosis_type := sample(diagnosis_type, size = .N, replace = TRUE)]
+    df2 <- data.table(
+      genc_id = sample(1:nid, size = (nrow - nid), replace = TRUE),
+      diagnosis_type = sample(diagnosis_type, size = (nrow - nid), replace = TRUE)
+    )
   } else {
     df2[, diagnosis_type := sample(c("1", "2", "3", "4", "5", "6", "9", "W", "X", "Y"),
       size = .N, replace = TRUE,
@@ -247,7 +255,7 @@ dummy_diag <- function(
     )]
   }
 
-  # total number of rows in dummy data table
+  # total number of rows in synthetic data table
   n_rows <- nrow(df1) + nrow(df2)
 
   ##### sample `diagnosis_codes` #####
@@ -721,7 +729,8 @@ dummy_lab <- function(id, omop, value, unit, mintime) {
     result_value = value,
     result_unit = rep(unit, length(value)),
     collection_date_time = format(as.POSIXct(mintime, tz = "UTC") +
-      sample(0:(24 * 60 * 60 - 1),
+      sample(
+        0:(24 * 60 * 60 - 1),
         size = length(value),
         replace = TRUE
       ), "%Y-%m-%d %H:%M")
@@ -998,7 +1007,7 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
         # avoid endless loops
         max_iter <- 20
         n_iter <- 0
-        while (nrow(scu_cohort[scu_discharge_date_time > discharge_date_time, ]) > 0 & n_iter < max_iter) {
+        while (nrow(scu_cohort[scu_discharge_date_time > discharge_date_time, ]) > 0 && n_iter < max_iter) {
           # for very short stays, set to `scu_discharge_date_time` to `discharge_date_time`
           # avoids re-sampling in a very small range
           scu_cohort[
@@ -1038,7 +1047,7 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 }
 
 #' @title
-#' Generate simulated ipscu data
+#' Generate simulated ipscu data.
 #'
 #' @description
 #' This function creates a dummy dataset with a subset of variables that
@@ -1057,7 +1066,9 @@ sample_scu_date_time <- function(scu_cohort, use_ip_dates = TRUE, start_date = N
 #'
 #'
 #' @param n_hospitals (`integer`)\cr Number of hospitals in simulated dataset.
+#' @param n_hospitals (`integer`)\cr Number of hospitals in simulated dataset.
 #'
+#' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
 #' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
 #'
 #' @param cohort (`data.frame or data.table`)\cr Optional, data frame with the following columns:
@@ -1238,8 +1249,8 @@ dummy_ipscu <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023
 #' @param seed (`integer`) Optional, a number for setting the seed to get reproducible results.
 #'
 #' @return (`data.table`) A data.table object similar to the "er" table that contains the following fields:
-#' - `genc_id` (`integer`): Mock encounter ID number; integers starting from 1 or from `cohort`
-#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort`
+#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1 or from `cohort` if provided
+#' - `hospital_num` (`integer`): Mock hospital ID; integers starting from 1 or from `cohort` if provided
 #' - `triage_date_time` (`character`): The date and time of triage with format "%Y-%m-%d %H:%M"
 #'
 #' @importFrom lubridate ddays dhours
@@ -1342,8 +1353,333 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
   # turn date times into a string and remove seconds
   df_sim[, triage_date_time := substr(as.character(triage_date_time), 1, 16)]
 
-  # return only with required columns
-  return(df_sim[order(df_sim$genc_id), c("genc_id", "hospital_num", "triage_date_time")])
+  # keep only the relevant columns and return
+  df_sim <- df_sim[, c("genc_id", "hospital_num", "triage_date_time")]
+
+  return(df_sim[order(df_sim$genc_id)])
+}
+
+#' @title
+#' Generate simulated locality variables data
+#'
+#' @description
+#' This function creates a synthetic dataset with a subset of variables that
+#' are contained in the GEMINI "locality-variables" table, as seen in
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
+#'
+#' Specifically, the function simulates dissemination area IDs (da21uid) based on Canadian census data for a
+#' user-specified set of mock encounter and hospital IDs. To mimic GEMINI data characteristics, the majority
+#' of simulated area IDs are drawn from Ontario and are clustered by hospital.
+#'
+#' @param nid (`integer`)\cr Number of unique encounter IDs to simulate. In this data table, each ID occurs once.
+#' It is optional when `cohort` is provided.
+#'
+#' @param n_hospitals (`integer`)\cr Number of hospitals in simulated dataset.
+#' It is optional when `cohort` is provided.
+#'
+#' @param da21uid (`integer` or `vector`)\cr Optional, allows the user to customize which dissemination area ID(s)
+#' to include in the output.
+#'
+#' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
+#'
+#' @param cohort (`data.frame or data.table`) Optional, an existing data frame or data table similar to `admdad` in
+#' GEMINI with at least the following columns:
+#' - `genc_id` (`integer`): Mock encounter ID, integers starting from 1 or from `cohort`
+#' - `hospital_num` (`integer`): Mock hospital ID, integers starting from 1 or from `cohort`
+#' If `cohort` is provided, `nid` and `n_hospital` inputs are not used.
+#'
+#' @return (`data.table`)\cr
+#' A data.table object similar to the "locality_variables" table that contains the following fields:
+#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1 or from `cohort` if provided
+# - `hospital_num` (`integer`): Mock hospital ID; integers starting from 1 or from `cohort` if provided
+#' - `da21uid` (`integer`): Dissemination area ID based on 2021 Canadian census data using PCCF Version 8A
+#'
+#' @import Rgemini
+#' @import data.table
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' dummy_locality(nid = 1000, n_hospitals = 10)
+#' }
+dummy_locality <- function(nid = 1000, n_hospitals = 10, cohort = NULL, da21uid = NULL, seed = NULL) {
+  ### check inputs
+  if (!is.null(da21uid)) {
+    Rgemini:::check_input(da21uid, "integer")
+  }
+
+  if (is.numeric(seed)) {
+    set.seed(seed)
+  }
+
+  if (!is.null(cohort)) {
+    # check for correct columns in `cohort` if it is provided
+    Rgemini:::check_input(cohort,
+      c("data.frame", "data.table"),
+      colnames = c("genc_id", "hospital_num"),
+      coltypes = c("integer", "integer")
+    )
+  } else {
+    # if `cohort` is not provided, check inputs that will be used
+    Rgemini:::check_input(list(nid, n_hospitals), "integer")
+
+    if (nid < n_hospitals) {
+      stop("Number of encounters must be greater than or equal to the number of hospitals")
+    }
+  }
+
+  if (!is.null(cohort)) {
+    # set up `df_sim` if `cohort` is included
+    cohort <- suppressWarnings(Rgemini::coerce_to_datatable(cohort))
+    df_sim <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 1, seed = seed)
+    nid <- uniqueN(df_sim$genc_id)
+    n_hospitals <- uniqueN(df_sim$hospital_num)
+
+    # only include the `genc_id` and `hospital_num` columns from `cohort`
+    df_sim <- df_sim[, c("genc_id", "hospital_num")]
+  } else {
+    # generate a cohort from nid and n_hospitals
+    df_sim <- generate_id_hospital(nid, n_hospitals, avg_repeats = 1, seed = seed)
+  }
+
+  if (!is.null(da21uid)) {
+    # if the user provided ID, use those
+    # if user provided one ID, fill the column with that
+    # otherwise, randomly sample from the list
+    df_sim[, da21uid := {
+      if (length(da21uid) == 1) {
+        rep(da21uid, .N)
+      } else {
+        sample(da21uid, .N, replace = TRUE)
+      }
+    }]
+  } else {
+    # otherwise sample from the database
+    # get dissemination code lookup table from RDA
+    lookup_statcan_v2021 <- Rgemini::da21uid_statcan_v2021 %>% data.table()
+    lookup_statcan_v2021[, da21uid := as.numeric(trimws(da21uid))]
+
+    # extract Ontario dissemination codes to resemble GEMINI data characteristics - these IDs start with 35
+    ontario_id <- lookup_statcan_v2021[da21uid < 3.6e7 & da21uid >= 3.5e7, da21uid]
+
+    # to mimic how locality IDs are clustered by hospital, set a range for min and max ID for each hospital
+    df_sim[, c("min_id", "max_id") := {
+      repeat {
+        min_pick <- sample(ontario_id, 1)
+        candidates <- ontario_id[ontario_id > min_pick]
+        if (length(candidates) > 0) break # ensure min_id < max_id
+      }
+      list(min_pick, sample(candidates, 1))
+    }, by = hospital_num]
+
+    # sample dissemination ID within the range per hospital
+    df_sim[, da21uid := mapply(function(x, y) {
+      sample(ontario_id[ontario_id >= x & ontario_id <= y], 1, replace = TRUE)
+    }, min_id, max_id)]
+
+    # insert a small proportion (0.3%) of cases located outside of Ontario
+    # sample from da21uid outside of Ontario
+    n_edge <- round(0.003 * nrow(df_sim))
+    rows_edge <- sample(seq_len(nrow(df_sim)), n_edge)
+
+    df_sim[rows_edge, da21uid := sample(setdiff(lookup_statcan_v2021$da21uid, ontario_id),
+      .N,
+      replace = TRUE
+    )]
+
+    # inject 2% rate of missingness in `da21uid`
+    df_sim[, da21uid := ifelse(rbinom(.N, 1, 0.02), NA, da21uid)]
+
+    # remove extra columns and return
+    df_sim <- df_sim[, -c("min_id", "max_id")]
+  }
+  return(df_sim[order(df_sim$genc_id)])
+}
+
+#' @title
+#' Generate simulated physicians data
+#'
+#' @description
+#' This function creates a synthetic dataset with a subset of variables that
+#' are contained in the GEMINI "physicians" table, as seen in
+#' [GEMINI Data Repository Dictionary](https://geminimedicine.ca/the-gemini-database/).
+#'
+#'
+#' @param nid (`integer`)\cr Number of unique encounter IDs to simulate.
+#' Optional if `cohort` is provided.
+#'
+#' @param n_hospitals (`integer`)\cr Number of hospitals in simulated dataset.
+#' Optional if `cohort` is provided.
+#'
+#' @param seed (`integer`)\cr Optional, a number to be used to set the seed for reproducible results.
+#'
+#' @param cohort (`data.frame or data.table`) Optional, an existing data table or data frame
+#' similar to `admdad` in GEMINI with at least the following columns:
+#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1
+#' - `hospital_num` (`integer`): Mock hospital ID; integers starting from 1
+#' If `cohort` is provided, `nid` and `n_hospitals` inputs are not used.
+#'
+#' @return (`data.table`)\cr A data.table object similar to the "physicians" table that contains the
+#' following fields:
+#' - `genc_id` (`integer`): Mock encounter ID; integers starting from 1 or from `cohort` if provided
+#' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort` if provided
+#' - `admitting_physician_gim` (`logical`): Whether the admitting physician attends a general medicine ward
+#' - `discharging_physician_gim` (`logical`): Whether the discharging physician attends a general medicine ward
+#' - `adm_phy_cpso_mapped` (`integer`): Synthetic mock CPSO number (with prefix 'SYN_') of admitting physician
+#' - `mrp_cpso_mapped` (`integer`): Synthetic mock CPSO number (with prefix 'SYN_') of most responsible physician (MRP)
+#' - `dis_phy_cpso_mapped` (`integer`): Synthetic mock CPSO number (with prefix 'SYN_') of discharging physician
+#'
+#' @examples
+#' dummy_physicians(nid = 1000, n_hospitals = 10, seed = 1)
+#' dummy_physicians(cohort = dummy_ipadmdad(), seed = 2)
+#'
+#' @import Rgemini
+#' @import dplyr
+#' @import data.table
+#'
+#' @export
+
+dummy_physicians <- function(nid = 1000, n_hospitals = 10, cohort = NULL, seed = NULL) {
+  ####### checks for valid inputs #######
+  if (!is.null(cohort)) { # if `cohort` is provided
+    Rgemini:::check_input(cohort,
+      c("data.frame", "data.table"),
+      colnames = c("genc_id", "hospital_num"),
+      coltypes = c("integer", "integer")
+    )
+  } else { # when `cohort` is not provided
+    Rgemini:::check_input(list(nid, n_hospitals), "integer")
+
+    if (nid < n_hospitals) {
+      stop("Number of encounters must be greater than or equal to the number of hospitals")
+    }
+  }
+
+  if (!is.null(cohort)) {
+    # if `cohort` is provided, use its `genc_id` and `hospital_num`
+    cohort <- suppressWarnings(Rgemini::coerce_to_datatable(cohort))
+    df_sim <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 1, seed = seed)
+
+    nid <- length(unique(df_sim$genc_id))
+    n_hospitals <- length(unique(df_sim$hospital_num))
+
+    # only include the genc_id and hospital_num columns from `cohort`
+    df_sim <- df_sim[, c("genc_id", "hospital_num")]
+  } else {
+    # no repeating genc_id in physicians data table
+    # generate a cohort with `genc_id` and `hospital_num`
+    df_sim <- generate_id_hospital(nid, n_hospitals, avg_repeats = 1, seed = seed)
+  }
+
+  # Function that samples a value from a given vector with replacement
+  sample_from_col <- function(dat) {
+    return(sample(dat, 1, replace = TRUE))
+  }
+
+  # set the NA proportions per hospital per variable
+  # sampling creates hospital-level variation
+  # each row is a different hopsital
+  hosp_na_prop <- df_sim %>%
+    group_by(
+      hospital_num
+    ) %>%
+    reframe(
+      adm_phy_cpso_mapped_NA = rbeta(1, 0.2, 1.1),
+      dis_phy_cpso_mapped_NA = rbeta(1, 0.25, 2.7),
+      mrp_cpso_mapped_NA = rbeta(1, 0.4, 11.2),
+      admitting_phy_gim_NA = runif(1, 0, 1),
+      admitting_phy_gim_Y = runif(1, 0, 1),
+      discharging_phy_gim_NA = runif(1, 0, 1),
+      discharging_phy_gim_Y = runif(1, 0, 1),
+    ) %>%
+    data.table()
+
+  # edit `admitting_phy_gim` and `discharging_phy_gim`
+  # artificially add some counts of NA with proportion approximately 0.33
+  # 0.33 of hospitals have all NA for these variables
+  hosp_sample <- sample(unique(df_sim$hospital_num), round(n_hospitals * 0.33))
+  hosp_na_prop[hospital_num %in% hosp_sample, admitting_phy_gim_NA := 1]
+  hosp_na_prop[hospital_num %in% hosp_sample, discharging_phy_gim_NA := 1]
+
+  # NA proportions between admitting and discharging GIM are similar per hospital
+  hosp_na_prop[, admitting_phy_gim_NA := sort(hosp_na_prop$admitting_phy_gim_NA)]
+  hosp_na_prop[, discharging_phy_gim_NA := sort(hosp_na_prop$discharging_phy_gim_NA)]
+
+  ### `adm_phy_cpso_mapped` and `dis_phy_cpso_mapped`
+  # randomly set 7% of hospitals to have all NA values
+  # set the highest hospitals to 1.0 proportion since they are already highest in NA
+  na_order_adm <- order(hosp_na_prop[, adm_phy_cpso_mapped_NA], decreasing = TRUE)
+
+  hosp_na_prop[na_order_adm[1:round(0.07 * n_hospitals)], adm_phy_cpso_mapped_NA := 1]
+  hosp_na_prop[na_order_adm[1:round(0.07 * n_hospitals)], dis_phy_cpso_mapped_NA := 1]
+
+  # for `mrp_cpso_mapped`, let 0.1 of hospitals have no NA values
+  # select the lowest existing values to keep the result similar to the distribution
+  hosp_na_prop[na_order_adm[1:round(0.1 * n_hospitals)], mrp_cpso_mapped_NA := 0]
+
+  # sample all physician numbers
+  # each hospital has about 280 physicians on average
+  # multiply this average by n_hospitals to get the total set of physicians across all hospitals
+  sample_cpso <- paste0("SYN_", round(runif(280 * n_hospitals, min = 1e4, max = 3e5)))
+
+  # sample a set of unique physicians for each hospital
+  hosp_na_prop$n_physicians <- rsn_trunc(n_hospitals, 470, 220, -1.6, 1, 650)
+  hosp_na_prop[, phy_set := sapply(n_physicians, function(x) sample(sample_cpso, x, replace = TRUE))]
+
+  # merge `df_sim`, the output data table, with hospital information
+  df_sim <- merge(df_sim, hosp_na_prop, by = "hospital_num", all.x = TRUE)
+
+  # now sample all variables
+  ####### `admitting_physician_gim` #######
+  df_sim[, admitting_physician_gim := ifelse(rbinom(.N, 1, admitting_phy_gim_Y), "y", "n")]
+
+  # sample the NAs in admitting_physician_gim
+  df_sim[, admitting_physician_gim := ifelse(rbinom(
+    .N, 1,
+    admitting_phy_gim_NA
+  ), NA, admitting_physician_gim)]
+
+  ####### `discharging_physician_gim` #######
+  df_sim[, discharging_physician_gim := ifelse(rbinom(.N, 1, discharging_phy_gim_Y), "y", "n")]
+
+  # sample the NAs in discharging_physician_gim
+  df_sim[, discharging_physician_gim := ifelse(rbinom(
+    .N, 1,
+    discharging_phy_gim_NA
+  ), NA, discharging_physician_gim)]
+
+  ####### `adm_phy_cpso_mapped` #######
+  # Set adm physician
+  df_sim[, adm_phy_cpso_mapped := sapply(phy_set, sample_from_col)]
+
+  ####### `mrp_cpso_mapped` #######
+  # 0.36 of encounters have mrp = adm
+  df_sim[, mrp_cpso_mapped := ifelse(rbinom(.N, 1, 0.36),
+    adm_phy_cpso_mapped, sapply(setdiff(phy_set, adm_phy_cpso_mapped), sample_from_col)
+  )]
+
+  ####### `dis_phy_cpso_mapped` #######
+  # when adm = mrp, 0.9 of encounters have adm = mrp = dis
+  df_sim[adm_phy_cpso_mapped == mrp_cpso_mapped, dis_phy_cpso_mapped := ifelse(rbinom(.N, 1, 0.9),
+    adm_phy_cpso_mapped,
+    sapply(setdiff(phy_set, adm_phy_cpso_mapped), sample_from_col)
+  )]
+
+  # when adm != mrp, 0.87 of dis = mrp and dis != adm always
+  # these will cover all cases of relations between adm, mrp, and dis
+  df_sim[adm_phy_cpso_mapped != mrp_cpso_mapped, dis_phy_cpso_mapped := ifelse(rbinom(.N, 1, 0.87),
+    mrp_cpso_mapped,
+    sapply(setdiff(phy_set, c(mrp_cpso_mapped)), sample_from_col)
+  )]
+
+  return(df_sim[
+    order(df_sim$genc_id), # return only with required columns
+    c(
+      "genc_id", "hospital_num", "admitting_physician_gim", "discharging_physician_gim", "adm_phy_cpso_mapped",
+      "mrp_cpso_mapped"
+    )
+  ])
 }
 
 #' @title
@@ -1360,9 +1696,10 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' @param nid (`integer`)\cr Number of unique encounter IDs to simulate.
 #' Encounter IDs may repeat to simulate multiple radiology tests,
 #' resulting in a data table with more rows than `nid`.
-#' Alternatively, if users provide a `cohort` input, the function will instead simulate radiology data for all `genc_ids` in the user-defined cohort table.
+#' Alternatively, if users provide a `cohort` input, the function will instead
+#' simulate radiology data for all `genc_ids` in the user-defined cohort table.
 #'
-#' @param n_hospitals(`integer`)\cr The number of hospitals to simulate.
+#' @param n_hospitals (`integer`)\cr The number of hospitals to simulate.
 #' Alternatively, if users provide a `cohort` input, the function will instead simulate
 #' radiology data for all `hospital_nums` in the user-defined cohort table
 #'
@@ -1397,7 +1734,7 @@ dummy_er <- function(nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), 
 #' @importFrom MCMCpack rdirichlet
 #'
 #' @export
-
+#'
 dummy_radiology <- function(
   nid = 1000, n_hospitals = 10, time_period = c(2015, 2023), cohort = NULL, seed = NULL
 ) {
@@ -1433,15 +1770,6 @@ dummy_radiology <- function(
     }
   )
 
-  tryCatch(
-    {
-      cohort$discharge_date_time <- Rgemini::convert_dt(cohort$discharge_date_time, "ymd HM")
-    },
-    warning = function(w) {
-      stop(conditionMessage(w))
-    }
-  )
-
   # generate `df_sim` based on `cohort`
   df_sim <- generate_id_hospital(cohort = cohort, include_prop = 1, avg_repeats = 4.5, seed = seed)
 
@@ -1466,7 +1794,7 @@ dummy_radiology <- function(
   # re-sample bad values
   max_iter <- 20
   iter <- 0
-  while (nrow(df_sim[ordered_date_time >= discharge_date_time, ]) > 0 & iter < max_iter) {
+  while (nrow(df_sim[ordered_date_time >= discharge_date_time, ]) > 0 && iter < max_iter) {
     df_sim[
       ordered_date_time >= discharge_date_time,
       ordered_date_time := as.Date(admission_date_time) +
@@ -1554,6 +1882,7 @@ dummy_radiology <- function(
   ])
 }
 
+
 #' @title
 #' Generate simulated transfusion data
 #'
@@ -1589,7 +1918,7 @@ dummy_radiology <- function(
 #' - `genc_id` (`integer`): Mock encounter ID number; integers starting from 1 or from `cohort`
 #' - `hospital_num` (`integer`): Mock hospital ID number; integers starting from 1 or from `cohort`
 #' - `issue_date_time` (`character`): The date and time the transfusion was issued, in the format ("yy-mm-dd hh:mm")
-#' - `blood_product_mapped_omop(`character`): Blood product name mapped by GEMINI following international standard.
+#' - `blood_product_mapped_omop` (`character`): Blood product name mapped by GEMINI following international standard.
 #' - `blood_product_raw` (`character`): Type of blood product or component transfused as reported by hospital.
 #' @examples
 #' dummy_transfusion(nid = 1000, n_hospitals = 30, seed = 1)
@@ -1658,7 +1987,7 @@ dummy_transfusion <- function(
     dhours(sample_time_shifted(.N, 8.7, 9.1, 2.7, max = 30, seed = seed))]
 
   # if `issue_date_time` < `admission_date_time`, re-sample
-  while (nrow(df1[issue_date_time < admission_date_time, ] > 0)) {
+  while (nrow(df1[issue_date_time < admission_date_time, ]) > 0) {
     df1[issue_date_time < admission_date_time, issue_date_time := admission_date_time +
       dhours(rlnorm_trunc(.N, meanlog = 4.52, sdlog = 1.91, min = 0, max = 38500, seed = seed))]
     # add time to `admission_date_time`
@@ -1677,7 +2006,7 @@ dummy_transfusion <- function(
   ##### get `blood_product_mapped_omop` data from .Rda file #####
   # It maps the most common raw names of blood products to OMOP code
   # Also gets their average relative proportions
-  blood_product_lookup <- Rgemini:::blood_product_lookup %>%
+  blood_product_lookup <- Rgemini::blood_product_lookup %>%
     data.table()
 
   if (is.null(blood_product_list)) {
@@ -1831,7 +2160,7 @@ dummy_transfusion <- function(
     blood_product_lookup[is.na(blood_product_raw), blood_product_raw := "Invalid blood product OMOP provided"]
   }
 
-  ##### get `blood_product_mapped_raw` #####
+  ##### get `blood_product_raw` #####
   # set blood_product_raw by joining `df1` with the lookup table
   df1 <- left_join(df1, blood_product_lookup, by = join_by(blood_product_mapped_omop))
   df1[blood_product_mapped_omop == "0", blood_product_raw := "FAR"]
