@@ -28,6 +28,7 @@
 
 * **Miscellanous:**
   * Added hex sticker
+  * Small fix in `data_coverage` for `hospital_num` class
 
 # Rgemini `1.1.0`
 
