@@ -179,7 +179,6 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
       hospital_years$index
     ),
     function(hospital_id, year, index) {
-      
       if (index == 1) {
         cat(paste0("\nCalculating mlaps for ", hospital_id))
       }
