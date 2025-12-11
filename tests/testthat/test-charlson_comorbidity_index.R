@@ -86,4 +86,3 @@ test_that("exclude type 1/w/x/y that is also type 6/2", {
 
   expect_equal(nrow(res5), 0)
 })
-
