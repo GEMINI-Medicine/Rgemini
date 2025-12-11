@@ -45,11 +45,11 @@ max_pairwise_smd <- function(x, name, round_to = 3, ...) {
   vartype <- vartype[!vartype == "labelled"]
 
   fn <- if ((vartype == "numeric") || is.integer(x$value)) {
-    stddiff.numeric
+    stddiff::stddiff.numeric
   } else if (vartype == "logical") {
-    stddiff.binary
+    stddiff::stddiff.binary
   } else if (vartype %in% c("factor", "character")) {
-    stddiff.category
+    stddiff::stddiff.category
   }
 
   max_smd <- 0
