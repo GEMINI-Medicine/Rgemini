@@ -3,7 +3,7 @@
 #'
 #' @description
 #' `length_of_stay` returns Length of Stay for hospital admissions in unit of
-#' hours and days. 
+#' hours and days.
 #'
 #' @details
 #' Length of Stay is defined as the duration of hospital in-patient stay,
