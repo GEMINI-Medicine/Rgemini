@@ -31,6 +31,7 @@
   * Removed repeated warning messages in `loop_mlaps`
   * Integration of issues with Jira
 
+
 # Rgemini `1.1.0`
 
 * **New functions:**
