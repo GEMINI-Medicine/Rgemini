@@ -29,6 +29,7 @@
 * **Miscellanous:**
   * Added hex sticker
   * Small fix in `data_coverage` for `hospital_num` class
+  * Integration of issues with Jira
 
 # Rgemini `1.1.0`
 
