@@ -1,0 +1,29 @@
+name: Jira Integration
+on:
+  issues:
+    types: [opened, reopened]
+
+jobs:
+  create_jira_issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to Jira
+        uses: atlassian/gajira-login@v3
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_URL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+
+      - name: Create Jira issue
+        uses: atlassian/gajira-create@v3
+        with:
+          project: GDT        # Jira project key
+          issuetype: Task     # or Bug/Story etc.
+          summary: "${{ github.event.issue.title }}"
+          description: "This task was automatically created from an issue in GitHub ${{ github.event.issue.html_url }} ${{ github.event.issue.body }}"
+          fields: '{
+            "labels": ["rgemini-github-import"],
+            "parent": { "key": "GDT-160" },
+            "assignee": { "id": "712020:21997000-8dde-4287-ae0a-3b2a0570bef7" },
+            "customfield_10001": "cbae40bd-ed0f-4a8d-af61-df4dcd9cb103"
+          }' # note that everything listed under 'fields' is repo-specific
