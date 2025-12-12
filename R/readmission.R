@@ -335,7 +335,7 @@ readmission <- function(dbcon,
       discharge_disposition == 73]$epicare
 
     # MAID epicare before FY18-19
-    cci_maid <- ipintervention[grepl(intervention_code %in% c("1ZZ35HAP7", "1ZZ35HAP1", "1ZZ35HAN3"), ] # MAID intervention
+    cci_maid <- ipintervention[intervention_code %in% c("1ZZ35HAP7", "1ZZ35HAP1", "1ZZ35HAN3"), ] # MAID intervention
     cci_maid <- merge(cci_maid, data[, c("genc_id", "discharge_date_time")], by = "genc_id", all.x = TRUE)
     cci_maid <- cci_maid[discharge_date_time < lubridate::ymd_hm("2018-04-01 00:00") &
       genc_id %in% data[discharge_disposition == 7, genc_id]]
