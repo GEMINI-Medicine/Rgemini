@@ -29,6 +29,8 @@
 * **Miscellanous:**
   * Added hex sticker
   * Integration of issues with Jira
+  * Updated readmission vignette to clarify use of restricted cohort in derived readmission
+
 
 # Rgemini `1.1.0`
 
