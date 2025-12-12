@@ -12,9 +12,9 @@
 #' linked regardless of diagnosis. An acute care transfer is assumed to have occurred if either of the following
 #' criteria are met:
 #' \itemize{
-#'   \item{An admission to a medical or intensive care service at a GEMINI hospital within 7 hours after discharge
+#'   \item{An admission to a GEMINI hospital within 7 hours after discharge
 #'   from another GEMINI hospital, regardless of whether the transfer is coded}
-#'   \item{An admission to a medical or intensive care service at a GEMINI hospital within 7-12 hours after discharge
+#'   \item{An admission to a GEMINI hospital within 7-12 hours after discharge
 #'   from another GEMINI hospital, and at least 1 hospital has coded the transfer: Coded transfers are based on the
 #'   DAD Institution From and Institution To fields}
 #'  }
@@ -335,7 +335,7 @@ readmission <- function(dbcon,
       discharge_disposition == 73]$epicare
 
     # MAID epicare before FY18-19
-    cci_maid <- ipintervention[intervention_code %in% c("1ZZ35HAP7", "1ZZ35HAP1", "1ZZ35HAN3"), ] # MAID intervention
+    cci_maid <- ipintervention[grepl(intervention_code %in% c("1ZZ35HAP7", "1ZZ35HAP1", "1ZZ35HAN3"), ] # MAID intervention
     cci_maid <- merge(cci_maid, data[, c("genc_id", "discharge_date_time")], by = "genc_id", all.x = TRUE)
     cci_maid <- cci_maid[discharge_date_time < lubridate::ymd_hm("2018-04-01 00:00") &
       genc_id %in% data[discharge_disposition == 7, genc_id]]
