@@ -29,7 +29,7 @@ This vignette contains detailed information about two functions that are closely
 The function **`episodes_of_care()`** links together hospitalizations with acute care transfers into unique episodes of care. For each hospitalization (`genc_id`), the function returns the corresponding: `patient_id_hashed`, `time_to_next_admission`, `time_since_last_admission`, `AT_in_coded`, `AT_out_coded`, `AT_in_occurred`, `AT_out_occurred`, `epicare`. 
 
 
-- **Coded Transfers (*AT_in_coded*, *AT_out_coded*):** A coded acute care transfer refers to hospital coding of acute care transfers based on DAD *Institution From* and *Institution To* fields. Specifically, a hospitalization has a coded transfer-in (`AT_in_coded = T`), if the `lookup_transfers` table lists `institution_from_type_mns == 'AT'` for a given `genc_id` (and `AT_out_coded = T` if `institution_to_type_mns == 'AT'`).
+- **Coded Transfers (*AT_in_coded*, *AT_out_coded*):** A coded acute care transfer refers to hospital coding of acute care transfers based on DAD `institution_from` and `institution_to` fields. Specifically, a hospitalization has a coded transfer-in (`AT_in_coded = T`), if the `lookup_transfers` table lists `institution_from_type_mns == 'AT'` for a given `genc_id` (and `AT_out_coded = T` if `institution_to_type_mns == 'AT'`).
 
 
 - **Occurred Transfers (*AT_in_occurred*, *AT_out_occurred*):** An acute care transfer is assumed to have occurred (`AT_in_occurred = T`, `AT_out_occurred = T`) if either of the following criteria are met:
@@ -54,12 +54,13 @@ knitr::include_graphics("figures/epicare_and_readmission/epicare_out_2.png", dpi
 ```
 
 
-**Note:** For database versions `drm_cleandb_v4`/`H4H_template_v5` or newer, the `epicare` variable in the `derived_variables` table was derived based on encounters with a medical/SCU touchpoint only since these encounters are consistently available across hospitals and represent the main patient population of interest for readmission calculations used in research projects/quality reports. For all other in-patient encounters (e.g., surgery patients available at some sites), `epicare = NA`. See [*Section 3.4*](#sectionrecohort) for options to compute episodes of care using other, customized cohorts.
+
+**Note:** For database versions `drm_cleandb_v4`/`H4H_template_v5` or newer, the `epicare` variable in the `derived_variables` table was derived exclusively based on encounters with a medical/special care unit (SCU) touchpoint since these encounters are consistently available across hospitals and represent the main patient population of interest for readmission calculations used in research projects/quality reports. For all other in-patient encounters (e.g., surgery patients available at some sites), `epicare = NA`. See [*Section 3.4*](#sectionrecohort) for options to compute episodes of care using other, customized cohorts.
 
 
 ## `readmission()` {#sectionIntro}
 
-The function **`readmission()`** computes whether or not a patient associated with an epicare was readmitted to a GEMINI hospital within a specified time window. For each hospitalization (`genc_id`), the function returns its corresponding: `AT_in_occurred`, `AT_out_occurred`, `epicare`, and `readmitX`. `readmitX` is a boolean variable denoting whether readmission took place during a time window X-days post-discharge. 
+The function **`readmission()`** computes whether or not a patient associated with an epicare was readmitted to a GEMINI hospital within a specified time window. For each hospitalization (`genc_id`), the function returns its corresponding: `AT_in_occurred`, `AT_out_occurred`, `epicare`, and `readmitX`. `readmitX` is a boolean variable denoting whether readmission took place during a time window X-days post-discharge.
 
 It is important to realize that readmission is determined by looking forward into data in the future. Therefore, `readmitX` is a measurement of quality of care of the current episode and evaluates whether factors in the current episode **LEAD** to readmission in the future.
 
@@ -73,7 +74,7 @@ knitr::include_graphics("figures/epicare_and_readmission/readmission_out_2.png",
 ```
 
 
-**Note:** For database versions `drm_cleandb_v4`/`H4H_template_v5` or newer, the `readmission` flags in the `derived_variables` table were derived based on encounters with a medical/SCU touchpoint only since these encounters are consistently available across hospitals and represent the main patient population of interest for readmission calculations used in research projects/quality reports. For all other in-patient encounters (e.g., surgery patients available at some sites), `readmission = NA`. See [*Section 3.4*](#sectionrecohort) for options to compute readmission flags using other, customized cohorts.
+**Note:** For database versions `drm_cleandb_v4`/`H4H_template_v5` or newer, the `readmission` flags in the `derived_variables` table were derived exclusively based on encounters with a medical/SCU touchpoint since these encounters are consistently available across hospitals and represent the main patient population of interest for readmission calculations used in research projects/quality reports. For all other in-patient encounters (e.g., surgery patients available at some sites), `readmission = NA`. See [*Section 3.4*](#sectionrecohort) for options to compute readmission flags using other, customized cohorts.
 
 
 ### General readmission rate calculation
@@ -86,7 +87,7 @@ knitr::include_graphics("figures/epicare_and_readmission/readmission_out_2.png",
 
 > An episode is removed from the ***Numerator*** by setting **<font size="3">`readmitX = F`</font>** for the **preceding episode**.
 
-Typically, we recommend using the `readmission_Xd_derived` variables in the `derived_variables` table to calculate readmission rates. However, if you want to calculate readmission flags yourself, the following code illustrates how to calculate 7-day readmission rate using the default arguments in the `readmission()` function. Note that this example uses all encounters available in your database to derive episodes of care and subsequent readmissions. This may not be desirable, depending on your project-specific definition of readmission rates (also see [*Section 3.4*](#sectionrecohort)):
+Typically, we recommend using the `readmission_Xd_derived` variables in the `derived_variables` table to calculate readmission rates since these flags were derived using all adult  medicine/SCU encounters available in GEMINI data, and therefore, provide the most reliable estimates of readmission rates. However, if you want to calculate readmission flags yourself, the following code illustrates how to calculate 7-day readmissions using the default arguments in the `readmission()` function. Note that this example uses all encounters available in your database/data cut to derive episodes of care and subsequent readmissions. This may not be desirable, depending on your project-specific definition of readmission rates (also see [*Section 3.4*](#sectionrecohort)):
 
 ```{r, eval=F}
 # Load necessary libraries:
@@ -104,6 +105,7 @@ db <- DBI::dbConnect(drv,
 )
 
 # Run default readmission calculation (with elective_admit = T and death = T)
+# this derives epicares/readmission based on all genc_ids in the database/datacut
 readm <- readmission(db)
 
 # Compute readmission rate based on readmission output
@@ -160,9 +162,9 @@ knitr::include_graphics("figures/epicare_and_readmission/buffer_2.png", dpi = 10
 
 - **Readmission time window:** By default, the `readmission()` function computes 7-day and 30-day readmission rates. Users have the option to specify a customized time window using the `readm_win` argument (see [*Section 3.3*](#sectionrewin) for details). 
 
-- **Restricted cohort:** By default, the `readmission` function includes all encounters in the database. Depending on your database version and project-specific needs, this may not be desirable. Both the `episodes_of_care()` and `readmission()` functions therefore allow users to input a customized cohort using the `restricted_cohort` argument (see [*Section 3.4*](#sectionrecohort) for details). For example, the episodes of care and readmission values in the `derived_variables` table are meant to reflect scenarios where acute hospitalizations involving a medical/special care unit (SCU) touchpoint were subsequently followed by a readmission involving another medical/SCU touchpoint (while ignoring potentially scheduled admissions to other in-patient services like surgery). Therefore, in `drm_cleandb_v4`/`H4H_template_v5` or newer, the epicare/readmission values were derived using `restricted_cohort = c(all_med, ipscu)`.
+- **Restricted cohort:** By default, the `readmission` function includes all encounters in the database. Depending on your database version and project-specific needs, this may not be desirable. Both the `episodes_of_care()` and `readmission()` functions therefore allow users to input a customized cohort using the `restricted_cohort` argument (see [*Section 3.4*](#sectionrecohort) for details). For example, the episodes of care and readmission values in the `derived_variables` table are meant to reflect scenarios where acute hospitalizations involving a medical/SCU touchpoint were subsequently followed by a readmission involving another medical/SCU touchpoint (while ignoring potentially scheduled admissions to other in-patient services like surgery). Therefore, in `drm_cleandb_v4`/`H4H_template_v5` or newer, the epicare/readmission values were derived using `restricted_cohort = c(all_med, ipscu)`.
 
-- **Return readmission encounters:** By default, the `readmission()` function only returns TRUE/FALSE based on whether the `genc_id` was followed by a subsequent readmission. There may be scenarios where the readmission encounter itself is of interest to the user, (e.g. analyzing the exact time-to-readmission, or to analyze diagnoses and/or clinical outcomes associated with the readmission encounter). In this case, the user can set the `return_readmit_enc` argument as TRUE to return readmission `genc_ids` (1 additional column per readmission window) if there exists a readmission in that time window. 
+- **Return readmission encounters:** By default, the `readmission()` function only returns TRUE/FALSE based on whether the `genc_id` was followed by a subsequent readmission. There may be scenarios where the readmission encounter itself is of interest to the user (e.g., to analyze the exact time-to-readmission or describe diagnoses/clinical outcomes associated with the readmission encounter). In this case, the user can set the `return_readmit_enc` argument to TRUE to return readmission `genc_ids` (1 additional column per readmission window) if there exists a readmission in that time window. 
 
 
 # Readmission: CIHI flags {#sectionCIHI}
@@ -198,7 +200,7 @@ knitr::include_graphics("figures/epicare_and_readmission/flags_diagram_2.png", d
 
 
 ## Flag details
-**Disclaimer**: all the examples (focus on red text in tables) below are mock outputs of `readmission.R`
+**Note:** All the examples below are mock outputs of `readmission.R`
 
 ### Elective flag
 - An episode of care is considered elective if the **FIRST** encounter of that episode is elective (`admit_category = 'L'`)
@@ -262,7 +264,7 @@ knitr::include_graphics("figures/epicare_and_readmission/sign-out_2.png", dpi = 
 
 # Practical examples & special scenarios
 
-> This flow chart provides an overview of how readmission calculations can be customized for different research purposes. Depending on the research context, you may be able to use the derived readmission variables in the DB (see [*Section 3.1*](#sectionderived)). Alternatively, you can run the readmission function with customized CIHI flags ([*Section 3.2*](#sectioncustomCIHI)), customized readmission window ([*Section 3.3*](#sectionrewin)), readmission encounters for each time window, and/or a restricted readmission cohort ([*Section 3.4*](#sectionrecohort)):
+> This flow chart provides an overview of how readmission calculations can be customized for different research purposes. For many research projects, users can simply use the derived readmission variables in the DB (see [*Section 3.1*](#sectionderived)). However, if you need further customization, you can run the readmission function with customized CIHI flags ([*Section 3.2*](#sectioncustomCIHI)), readmission window ([*Section 3.3*](#sectionrewin)), and/or a restricted cohort ([*Section 3.4*](#sectionrecohort)):
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center"}
 knitr::include_graphics("figures/epicare_and_readmission/customReadm_fig3.png", dpi = 100)
@@ -273,8 +275,9 @@ knitr::include_graphics("figures/epicare_and_readmission/customReadm_fig3.png", 
 
 **When to use:** 
   
-- To get default/CIHI definition of 7-/30-day readmission, including all readmissions to any GEMINI hospital for encounters with a medical/SCU touchpoint
-- Note that encounters without any medical/SCU touchpoint are excluded from the derived variables (i.e., `epicare = NA` and `readmission = NA`)
+- To get default/CIHI definition of 7-/30-day readmission, including all readmissions to any GEMINI hospital for all encounters with a medical/SCU touchpoint*
+- The derived flags are used to calculate readmission rates in GeMQIN reports and most research projects focusing on overall readmission rates for patient cohorts of interest
+- *Note that encounters without any medical/SCU touchpoint are excluded from the derived variables (i.e., `epicare = NA` and `readmission = NA`)
 
 **How to use:** Query the `derived_variables` table, which contains the two most commonly used definitions of 7- and 30-day readmission:
   
@@ -284,27 +287,18 @@ knitr::include_graphics("figures/epicare_and_readmission/customReadm_fig3.png", 
 **Example**: 7-day readmission rates of patients at a given hospital:
 
 ```{r, eval = F}
-# get derived readmissions for phase-1 sites
-readm <- dbGetQuery(db, "SELECT readmission_7d_derived FROM derived_variables
-                    WHERE hospital_num = 100;")
+# get derived readmissions for hospital_num 100
+readm <- dbGetQuery(
+  db, "SELECT readmission_7d_derived FROM derived_variables WHERE hospital_num = 100;"
+)
 
 mean(readm$readmission_7d_derived, na.rm = T)
 ```
 
 
-**Other examples**
-
-These are additional scenarios where users can simply query the `derived_variables` readmission flags:
-  
-- Readmission rates in GeMQIN reports
-- Descriptive analyses of general readmission rates 
-- Comparing overall readmission rates of patients with certain diagnoses/treatments
-- ...
-  
-
 ## Customizing CIHI flags {#sectioncustomCIHI}
 
-The derived variables in the DB only provide readmission values for the default & CIHI definitions of readmission, which are the most common definitions used in GEMINI research projects/reports. However, if another definition is required for specific research purposes, users can specify customized CIHI flags by setting each of the 8 CIHI flags to either TRUE or FALSE (see [*Section 2*](#sectionCIHI) for details). For example, run this code to exclude MAID (in addition to excluding elective admissions & death which are set to TRUE by default):
+If projects require a customized definition of readmission rates, users can set each of the 8 CIHI flags to either TRUE or FALSE (see [*Section 2*](#sectionCIHI) for details). For example, run this code to exclude MAID (in addition to excluding elective admissions & death which are set to TRUE by default):
 
 ```{r, eval = F}
 readmission(db, MAID = T)
@@ -318,7 +312,8 @@ By default, the `readmission` function only calculates 7- and 30-day readmission
 **Example:** Get 14-, 90-, and 180- day readmission. 
 
 ```{r, eval = FALSE}
-readm <- readmission(db, readm_win = c(14, 90, 180)) # specify readmission windows in days
+# specify readmission windows in days
+readm <- readmission(db, readm_win = c(14, 90, 180))
 ```
 
 **Note:** Large readmission windows can lead to the exclusion of a high percentage of encounters at the end of the data availability timeline. This is because the function can only calculate readmissions for patients whose index encounter was prior to the buffer period. The buffer period depends on the length of the readmission window (e.g., 14/90/180 days) + an additional 30 days (see [*Section 1.2.2*](#sectionBuffer)). Therefore, the buffer period is longer for large readmission windows, which can lead to the exclusion of many patients. This is especially problematic if the cohort of interest focuses on the most recent data available in GEMINI (e.g., last year of available data). 
@@ -343,16 +338,18 @@ As mentioned above, the readmission flags in the `derived_variables` table were 
 
 To calculate readmission rates that only consider readmissions from and to certain hospitals/subservices/encounters, you can run the readmission function using a `restricted_cohort`, containing all `genc_ids` you want to consider in the epicare/readmission calculations. 
 
-**Example 1:** For example, to restrict epicare & readmission calculations to the GIM cohort (see `derived_variables$gim == TRUE`):
+**Example 1:** For example, to restrict epicare & readmission calculations to the GIM cohort:
 
 ```{r, eval = FALSE}
-readm <- readmission(db, restricted_cohort = gim_cohort) # only consider GIM encounters in readmission calculation
+# only consider GIM encounters in readmission calculation
+readm <- readmission(db, restricted_cohort = gim_cohort)
 ```
 
+This means that only `genc_ids` meeting the GIM definition (e.g., see `derived_variables$gim == TRUE`) will be considered as index encounters and potential readmission encounters.
 
 **Example 2:**
 
-Note that in certain situations, it may be meaningful to define the `restricted_cohort` based on episodes of care, rather than individual `genc_ids` to ensure all linked encounters are accounted for in the readmission calculations. This may be particularly relevant when calculating readmissions with certain diagnoses - e.g., to accurately capture readmission rates of patients with COVID-19 who are ***readmitted with a COVID-19 diagnosis***. In this case, the `restricted_cohort` may include *all* encounters associated with episodes of care that involve *at least 1* COVID-19 diagnosis (to ensure we capture linked transfers even if a COVID-19 diagnosis was not coded for all encounters associated with that epicare):
+In certain situations, it may be meaningful to define the `restricted_cohort` based on episodes of care, rather than individual `genc_ids` to ensure all linked encounters are accounted for in the readmission calculations. This may be particularly relevant when calculating readmissions with certain diagnoses - e.g., to accurately capture readmission rates of patients with COVID-19 who are ***readmitted with a COVID-19 diagnosis***. In this case, the `restricted_cohort` may include *all* encounters associated with episodes of care that involve *at least 1* COVID-19 diagnosis (to ensure we capture linked transfers even if a COVID-19 diagnosis was not coded for all encounters associated with that epicare):
   
 ```{r, eval = FALSE}
 ## Get all encounters with COVID-19 diagnosis
@@ -366,36 +363,36 @@ epicares <- episodes_of_care(db)
 COVID_epicares <- epicares[genc_id %in% COVID_enc$genc_id, "epicare"]
 
 ## Get all encounters associated with COVID-19 epicares
-# (keep all encounters of those epicares, even those without COVID diagnosis to make sure all linked transfers are accounted for)
+# (keep all encounters of those epicares, even those without COVID diagnosis
+# to make sure all linked transfers are accounted for)
 COVID_epicares_all_enc <- epicares[epicare %in% COVID_epicares$epicare, "genc_id"]
 
 ## Calculate readmissions involving a COVID-19 diagnosis (considering all linked transfers in DB)
 COVID_readm <- readmission(db, restricted_cohort = COVID_epicares_all_enc)
 
-## Get 30-day readmission rate of patient with COVID-19 diagnosis, only counting readmissions that also involve a COVID-19 diagnosis
-# note: numerator/denominator are based on unique COVID-19 epicares, not COVID-19 encounters
-# (i.e., there may be several COVID-19 encounters associated with a single epicare, but those are only counted once;
-# readmission is attributed to the last encounter within each COVID-19 epicare)
+## Get 30-day readmission rate of patient with COVID-19 diagnosis
+# only counting readmissions if the *readmission* epicare also involved a COVID-19 diagnosis
+# if there are multiple encounters per epicare, readmission is attributed to the last encounter
+# within each COVID-19 epicare
 mean(COVID_readm$readmit30, na.rm = T)
 ```
 
-The resulting readmission rates indicate whether patients with COVID-19 at the time of the index admission had ANY subsequent readmission for COVID-19 within a 7-/30-day time window. Those readmissions are **not** necessarily the first readmission after the index epicare! That is, there may have been intermediate epicares not involving any COVID-19 diagnoses, which were ignored in this readmission calculation.  
+The resulting readmission rates indicate whether patients with COVID-19 at the time of the index epicare had ANY subsequent readmission for COVID-19 within a 7-/30-day time window. Those readmissions are **not** necessarily the first readmission after the index epicare! That is, there may have been intermediate epicares not involving any COVID-19 diagnoses, which were ignored in this readmission calculation due to the use of `restricted_cohort`.  
 
 **Note:** In the examples above, the `restricted_cohort` input is only relevant because we are restricting where patients are readmitted ***to*** (e.g., to a specific hospital/service/epicare involving a diagnosis of interest). If you only want to filter your cohort according to where patients are readmitted ***from***, you should **NOT** use the `restricted_cohort` argument. Instead, simply filter the output of the readmission function (or the derived readmission flags in the database) for your encounters of interest (see example in [*Section 3.1*](#sectionderived)).
 
 
 **Other special scenarios:** 
 
-There may be more complex scenarios where the inclusion criteria for index admissions ("readmission from") are different from the inclusion criteria for readmission encounters ("readmission to"). For example, you might want to analyze readmission rates of surgery patients who are readmitted to GIM. In this case, your `restricted_cohort` should include all epicares that meet the criteria for index admissions plus any epicares that meet the criteria for readmissions. You will need to use several steps to create your `restricted_cohort`: 
+There may be more complex scenarios where the inclusion criteria for index epicares ("readmission from") are different from the inclusion criteria for readmission encounters ("readmission to"). For example, you might want to analyze readmission rates of surgery patients who are readmitted to GIM. In this case, your `restricted_cohort` should include all epicares that meet the criteria for index admissions plus any epicares that meet the criteria for readmissions. You will need to use several steps to create your `restricted_cohort`: 
 
-1) Select **all encounters** of episodes of care that meet the criteria for index admissions: In the example scenario, include all encounters of epicares that have at least one surgery encounter. If you only want to strictly consider readmissions to GIM, only include a single surgery episode of care per patient in order to avoid that subsequent surgeries are counted as readmissions. 
-2) Select **all encounters** of episodes of care that meet the criteria for readmissions: In this example, to qualify as a GIM readmission, include all encounters of epicares that a) occurred after the index surgery admission and b) involved an admission to GIM. Note: the implication of this step is that any intermediate non-GIM epicares are ignored.
+1) Select **all encounters** of episodes of care that meet the criteria for **index admissions**: In the example scenario, include all encounters of epicares that have at least one surgery encounter. If you only want to strictly consider readmissions to GIM, only include a single surgery episode of care per patient in order to avoid that subsequent surgeries are counted as readmissions. 
+2) Select **all encounters** of episodes of care that meet the criteria for **readmission encounters**: In this example, to qualify as a GIM readmission, include all encounters from patients included in step 1 that a) occurred after the index surgery admission and b) involved an admission to GIM. Note: the implication of this step is that any intermediate non-GIM epicares are ignored.
 3) Combine all encounters from step 1 & 2 to create the `restricted_cohort` of interest.
 4) Run the readmission function with `restricted_cohort`.
-5) Calculate readmission rates: Filter the output of the `readmission` function based on your index admissions (cohort created in step 1) in order to get readmission rates of surgery patients to GIM. This step is important to exclude any admissions following GIM epicares (e.g., GIM to GIM readmissions or GIM to surgery readmissions) from the readmission rates. 
+5) Calculate readmission rates: Filter the output of the `readmission` function based on your index admissions (cohort created in step 1) in order to get readmission rates of surgery patients to GIM. This step is important to exclude any readmissions following GIM (e.g., GIM to GIM readmissions or GIM to surgery readmissions) from the readmission rates. 
 
 These steps are meant as a general guideline, but you may need to consider additional aspects for a given research project. Please make sure you carefully consider the implications of the decisions you make when building your `restricted_cohort`. You will also need to consider if any additional REB restrictions apply, in which case the `restricted_cohort` should be filtered based on REB considerations first before applying any additional inclusion steps.  
-
 
 
 # FAQ
