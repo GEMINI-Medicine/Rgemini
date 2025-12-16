@@ -210,7 +210,6 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 }
 
 
-
 #' @title
 #' Simulate ipadmdad data
 #'
@@ -468,7 +467,6 @@ dummy_ipadmdad <- function(n = 1000,
 
   return(data)
 }
-
 
 
 #' @title

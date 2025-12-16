@@ -1,4 +1,4 @@
-name: Run Rgemini tests via Python (rpy2)
+name: Unit tests
 
 on:
   push:

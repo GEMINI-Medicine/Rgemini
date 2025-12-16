@@ -1,7 +1,34 @@
 # Rgemini `develop`
 
+* **New vignette:**
+  * Migrated Rxnorm-Pharmacy-Mapping Vignette from GEMINIpkg, and added usage guidelines for HPC4Health users on `rxnorm_query()` and `prepare_pharm_for_validation()`.
+
+* **New functions:**
+  * `prepare_pharm_for_validation()` function migrated from GEMINIpkg to standardize workflow for pharmacy mapping validation following rxnorm_query.
+    * To support broader use cases, the migrated function now takes the database connection as the first argument (`pharm_dbcon`), while the `GEMINIpkg::prepare_pharm_for_validation() connects to the pharmacy mapping database automatically.
+
+**Rxnorm migration**
+* added `GEMINIpkg::gemini_rxnorm_query()` as `rxnorm_query()`, with the following changes
+  * improved documentation
+  * changed the `db_con` parameter to `dbcon`
+  * changed `drug_input` argument name to `drug_name` and `class_input` to `drug_class`
+  * changed the `genc_ids` parameter to `cohort`
+  * removed the `sites` parameter
+  * added `detailed_search` and `return_drug_list` as explicit parameters
+  * applied `find_db_tablename` to query `pharmacy_subset` on H4H
+* Added `normalize_text()` utility function
+ 
+**Other changes**
+* Fixed `render_cell_suppression.strat()` to be compatible with table1 version 1.5.0
+* Removed age exclusion in `episodes_of_care()` to accommodate paeds cohort
+* Small bug fix in `daily_census` to return all hospital ID variables provided in `cohort` input
+
 * **Testing improvements:**
   * Unit tests are now also run in Python via rpy2 to ensure cross-language compatibility
+
+* **Miscellanous:**
+  * Added hex sticker
+  * Integration of issues with Jira
 
 # Rgemini `1.1.0`
 

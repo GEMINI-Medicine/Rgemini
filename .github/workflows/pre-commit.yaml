@@ -1,25 +1,37 @@
 # Workflow to run pre-commit hooks when merging into develop/main
+name: Pre-commit hooks
+
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main, develop]
 
-name: Pre-commit hooks
-
 jobs:
   pre-commit:
-    name: Run pre-commit hooks
+    name: Run hooks
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
+      with:
+          fetch-depth: 0
 
     - name: Setup R
       uses: r-lib/actions/setup-r@v2
+      with:
+          use-public-rspm: true
+
+    - name: Install dependencies
+      uses: r-lib/actions/setup-r-dependencies@v2
+      with:
+        extra-packages: any::styler, any::roxygen2
+        needs: styler
         
     - name: Set up Python
       uses: actions/setup-python@v2
