@@ -44,13 +44,13 @@ The function **`episodes_of_care()`** links together hospitalizations with acute
 > The flowchart below shows how epicares are built:
 
 ```{r, echo=FALSE, out.width = "90%", fig.align = "center"}
-knitr::include_graphics("figures/epicare_and_readmission/epicare_flow_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/epicare_flow.png", dpi = 100)
 ```
 
 > Example output of `episodes_of_care(db)` (mock data for illustration purposes, not real data):
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center"}
-knitr::include_graphics("figures/epicare_and_readmission/epicare_out_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/epicare_out.png", dpi = 100)
 ```
 
 
@@ -70,7 +70,7 @@ For episodes of care involving acute care transfers, readmissions are attributed
 > Mock example output of `readmission(db)` (mock data for illustration purposes, not real data. patient_id added to facilitate interpretation):
 
 ```{r, echo=FALSE, out.width = "70%", fig.align = "center"}
-knitr::include_graphics("figures/epicare_and_readmission/readmission_out_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/readmission_out.png", dpi = 100)
 ```
 
 
@@ -129,7 +129,7 @@ readmission_7d_derived <- mean(readm$readmit7, na.rm = T)
 > Hypothetical example of special readmission attribution (compare colored entries in genc_id 103 vs 301, and genc_id 105 vs 201, and see how readmit7 is affected):
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center"}
-knitr::include_graphics("figures/epicare_and_readmission/attribution_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/attribution.png", dpi = 100)
 ```
 <br>
 
@@ -152,7 +152,7 @@ knitr::include_graphics("figures/epicare_and_readmission/attribution_2.png", dpi
 > Hypothetical example of how buffer period affects 7-day readmission of a patient:
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center"}
-knitr::include_graphics("figures/epicare_and_readmission/buffer_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/buffer.png", dpi = 100)
 ```
 
 
@@ -195,7 +195,7 @@ readmission_30d_derived_cihi <- mean(res$readmit30, na.rm = T)
 > There are 8 CIHI flags, each of which can be set to `TRUE` or `FALSE`. The `elective` and `death` flags are `TRUE` by default. Each flag results in removal of a given episode of care from the numerator and/or denominator as illustrated in the flow chart below. Note that some flags (mental & palliative) result in the removal from both numerator *and* denominator:
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center"}
-knitr::include_graphics("figures/epicare_and_readmission/flags_diagram_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/flags_diagram.png", dpi = 100)
 ```
 
 
@@ -207,7 +207,7 @@ knitr::include_graphics("figures/epicare_and_readmission/flags_diagram_2.png", d
 - Episodes with elective admission are removed from the numerator because they are planned hospitalizations, and therefore, are not reflective of quality of care
 
 ```{r, echo=FALSE, out.width = "65%", fig.align = "center"}
-knitr::include_graphics("figures/epicare_and_readmission/elective_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/elective.png", dpi = 100)
 ```
 
 
@@ -216,7 +216,7 @@ knitr::include_graphics("figures/epicare_and_readmission/elective_2.png", dpi = 
 - If the index admission results in death, there cannot be any readmission. Therefore, episodes of care with death are excluded from the denominator (`reamitX = NA`)
 
 ```{r, echo=FALSE, out.width = "65%", fig.align = "center"}
-knitr::include_graphics("figures/epicare_and_readmission/death_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/death.png", dpi = 100)
 ```
 
 
@@ -228,7 +228,7 @@ knitr::include_graphics("figures/epicare_and_readmission/death_2.png", dpi = 100
 - Note: If `death = TRUE`, the epicare with MAID (which results in death) is additionally removed from the denominator. If `death = FALSE`, the epicare with MAID is kept in the denominator. The general recommendation is to set death to `TRUE` if MAID is `TRUE`.
 
 ```{r, echo=FALSE, out.width = "65%", fig.align = "center"}
-knitr::include_graphics("figures/epicare_and_readmission/maid_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/maid.png", dpi = 100)
 ```
 
 ### Self sign-out / LAMA flag
@@ -237,7 +237,7 @@ knitr::include_graphics("figures/epicare_and_readmission/maid_2.png", dpi = 100)
 - Note: While self sign-out is excluded based on the CIHI definition, coding practices of self sign-out may vary widely across hospitals/physicians (e.g., some physicians may not record self sign-out since it is a patient's right to leave on their own). Please keep that in mind if your analyses involve comparisons of readmission rates between providers. 
 
 ```{r, echo=FALSE, out.width = "65%", fig.align = "center"}
-knitr::include_graphics("figures/epicare_and_readmission/sign-out_2.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/sign_out.png", dpi = 100)
 ```
 
 ### Palliative flag
@@ -267,7 +267,7 @@ knitr::include_graphics("figures/epicare_and_readmission/sign-out_2.png", dpi = 
 > This flow chart provides an overview of how readmission calculations can be customized for different research purposes. For many research projects, users can simply use the derived readmission variables in the DB (see [*Section 3.1*](#sectionderived)). However, if you need further customization, you can run the readmission function with customized CIHI flags ([*Section 3.2*](#sectioncustomCIHI)), readmission window ([*Section 3.3*](#sectionrewin)), and/or a restricted cohort ([*Section 3.4*](#sectionrecohort)):
 
 ```{r, echo=FALSE, out.width = "100%", fig.align = "center"}
-knitr::include_graphics("figures/epicare_and_readmission/customReadm_fig3.png", dpi = 100)
+knitr::include_graphics("figures/epicare_and_readmission/custom_readm.png", dpi = 100)
 ```
 
 
