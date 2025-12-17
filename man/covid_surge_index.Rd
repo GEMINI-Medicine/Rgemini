@@ -4,10 +4,10 @@
 \alias{covid_surge_index}
 \title{Derive COVID Surge Index}
 \usage{
-covid_surge_index(db, gim_only = FALSE, include_er = FALSE)
+covid_surge_index(dbcon, gim_only = FALSE, include_er = FALSE)
 }
 \arguments{
-\item{db}{(\code{DBIConnection})\cr
+\item{dbcon}{(\code{DBIConnection})\cr
 RPostgres DB connection.}
 
 \item{gim_only}{(\code{logical})\cr
@@ -20,13 +20,25 @@ Note: This argument is set to FALSE by default.}
 }
 \value{
 (\code{data.frame})\cr
-\code{hospital_id} (\code{character}),\cr
-\code{month_year} (\code{character}),\cr
-\code{surge_index} (\code{numeric})
+A data.table containing each hospital and the COVID surge index for the given
+month year.
 }
 \description{
 A function that derives the COVID-19 surge index for a given time period.
 For time periods before 2020, or where COVID-19 was not yet diagnosed, the surge index will be 0.
+The function filters for the All-Medicine + ICU cohort. This includes any
+encounter admitted/discharged from a medical service or encounters who
+entered the ICU at any point (specialized or stepdown unit).
+
+The function needs to be run on the entire cohort to create accurate values.
+If users have pre-filtered cohorts, please reach out to the GEMINI team to
+derive the table.
+}
+\details{
+The COVID surge index is a "severity-weighted measure of COVID-19
+caseload relative to pre-COVID-19 bed capacity" (Kadri et al, 2021)
+The index looks at overall COVID admissions, as well as COVID
+admissions who entered the ICU and underwent mechanical ventilation.
 }
 \examples{
 \dontrun{
@@ -41,7 +53,7 @@ db <- DBI::dbConnect(
 )
 
 covid_surge <- derive_covid_surge(
-  db = db,
+  dbcon = db,
   gim_only = FALSE,
   include_er = FALSE
 )
@@ -49,6 +61,9 @@ covid_surge <- derive_covid_surge(
 
 }
 \references{
-The formula to derive the COVID surge index is from:
+Kadri S, et al. Annals of Internal Medicine, 2021.
+https://doi.org/10.7326/m21-1213
+
+McAlister FA et al. JAMA Network Open, 2023.
 https://doi.org/10.1001/jamanetworkopen.2023.23035
 }
