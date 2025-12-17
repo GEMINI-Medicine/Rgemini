@@ -203,10 +203,12 @@ covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
   ## create month_year for aggregating
   if (gim_only == TRUE) {
     ## pull GIM encounters
-    gims <- dbGetQuery(dbcon, paste0("select d.genc_id, d.", hospital_var,
-    " from ", derived_variables_name, " d join ", admdad_name, " a on
+    gims <- dbGetQuery(dbcon, paste0(
+      "select d.genc_id, d.", hospital_var,
+      " from ", derived_variables_name, " d join ", admdad_name, " a on
     d.genc_id = a.genc_id where gim = 't' and
-    a.age >= 18;")) %>% data.table()
+    a.age >= 18;"
+    )) %>% data.table()
 
     cohort <- cohort %>%
       merge(covid_encounters, all.x = TRUE) %>%
