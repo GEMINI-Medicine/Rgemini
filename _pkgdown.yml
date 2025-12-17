@@ -9,6 +9,7 @@ reference:
   - charlson_comorbidity_index
   - comorbidity_index
   - covid_flag
+  - covid_surge_index
   - daily_census
   - day_time_of_admission
   - disability
