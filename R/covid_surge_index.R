@@ -169,7 +169,7 @@ covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
 
     ## now pull covid encounters
     covid_encounters <- dbGetQuery(dbcon, paste0("select distinct
-    ip.genc_id, ip., ", hospital_var, ", a.discharge_date_time from ", ipdiagnosis_name, " ip
+    ip.genc_id, ip.", hospital_var, ", a.discharge_date_time from ", ipdiagnosis_name, " ip
     join ", admdad_name, " a on ip.genc_id = a.genc_id where
     ip.diagnosis_code ~ '^U071' and a.age >= 18")) %>%
       data.table()
