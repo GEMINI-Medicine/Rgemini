@@ -363,7 +363,7 @@ prepare_pharm_for_validation <- function(
     left_join(times_valid, by = c("raw_input", "rxnorm_match")) %>%
     arrange(-count) %>% # arrange data by frequency
     mutate(
-      row_id = 1:nrow(freq_tab), # add row_id as persistent identifier to track accidental row deletion after SME mapping
+      row_id = 1:nrow(freq_tab), # add row_id as permanent identifier to track accidental row deletion after SME mapping
       times_validated = ifelse(is.na(times_validated), 0, times_validated) # set unvalidated to 0
     )
 
