@@ -1,11 +1,11 @@
 # Rgemini `develop`
 
 * **New vignette:**
-  * Migrated Rxnorm-Pharmacy-Mapping Vignette from GEMINIpkg, and added usage guidelines for HPC4Health users on `rxnorm_query()` and `prepare_pharm_for_validation()`.
+  * Migrated Rxnorm-Pharmacy-Mapping Vignette from GEMINIpkg, and added guidelines for HPC4Health users on `rxnorm_query()` and `prepare_pharm_for_validation()`.
 
 * **New functions:**
   * `prepare_pharm_for_validation()` function migrated from GEMINIpkg to standardize workflow for pharmacy mapping validation following rxnorm_query.
-    * To support broader use cases, the migrated function now takes the database connection as the first argument (`pharm_dbcon`), while the `GEMINIpkg::prepare_pharm_for_validation() connects to the pharmacy mapping database automatically.
+    * To support broader use cases, the migrated function now takes uses the `lookup_pharmacy_mapping` table in database versions `drm_cleandb_v4_1_1`/`h4h_template_v5_0_1` and newer. Alternatively, a custom lookup table can be provided.
 
 **Rxnorm migration**
 * added `GEMINIpkg::gemini_rxnorm_query()` as `rxnorm_query()`, with the following changes
