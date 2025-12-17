@@ -10,23 +10,23 @@
 #' additionally applies optional hierarchy filtering and small cell
 #' suppression. The returned output facilitates further analyses of
 #' validated pharmacy entries for the drug(s) of interest.
-#' 
+#'
 #' When the `rxnorm_query()` object contains unmatched rows of the
 #' pharmacy table, the function returns all columns containing drug-containing
 #' columns of unmatched pharmacy rows, together with their historical
 #' mappings from previous projects.
-#' 
+#'
 #' section @warning
 #' The default version of this function requires database versions
 #' `drm_cleandb_v4_1_1`/`h4h_template_v5_0_1` or newer due to the
 #' dependency on the `lookup_pharmacy_mapping` table. However, as
 #' a workaround, users can also supply a custom
-#' `lookup_pharmacy_mapping` table (e.g., based on a flat file or, 
+#' `lookup_pharmacy_mapping` table (e.g., based on a flat file or,
 #' for internal GEMINI staff, the pharmacy master mapping DB).
 #' For HPC4Health users working with older database versions: Please
 #' reach out to our team via the ticketing system if you require
 #' access to the pharmacy mapping lookup table.
-#' 
+#'
 #' @param dbcon (`DBIConnection`)\cr
 #' `DBI` connection to a GEMINI database version `drm_cleandb_v4_1_1`/
 #' `h4h_template_v5_0_1` or newer. This is required to query the
@@ -85,7 +85,7 @@
 #' filtering (e.g., by order date-time).
 #' Note: When an `outpath` is provided, `cell_suppression` needs to be
 #' set to `TRUE`.
-#' 
+#'
 #' @param custom_lookup (`data.frame`, `data.table`)\cr
 #' Optional input allowing users to provide a custom version of
 #' the `lookup_pharmacy_mapping` table (e.g., from a flat file/master
@@ -98,7 +98,7 @@
 #' (e.g., `amoxicillin`)
 #' - `drug_group`: Broader drug group of matched drug (e.g., `antibiotic`)
 #' - `project_name`: Name of the project drug match was validated for
-#' 
+#'
 #' If a `custom_lookup` table is provided to this function, the `dbcon`
 #' argument will be ignored and the custom table will take priority over
 #' the lookup table in the database.
@@ -107,7 +107,7 @@
 #' - sme: Frequency table for SME validation with columns `count`,
 #' `search_type`, `raw_input`, `rxnorm_match`, `drug_group`,
 #' `times_validated`, `SME_confirm` (for SME to confirm each
-#' "raw_input ~ rxnorm_match" pair; must provide a logical value TRUE/FALSE), 
+#' "raw_input ~ rxnorm_match" pair; must provide a logical value TRUE/FALSE),
 #' `SME_comments` (for SME to add comments, e.g. whether the drug should be
 #' included in the study, regardless of whether the match itself is validated)
 #' - analyst: Frequency table for analyst use, with columns `count`,
@@ -154,7 +154,7 @@
 #' than 6 are suppressed to "<6".
 #' - Generates a frequency table for SME to perform validation for each
 #' "raw_input ~ rxnorm_match" pair (note: validation should be agnostic to
-#' all other fields). Each row of the frequency table is uniquely identified 
+#' all other fields). Each row of the frequency table is uniquely identified
 #' by `row_id`. When an `outpath` is provided, the function saves .xlsx/.rds
 #' files to the specified directory.
 #' - Generates a frequency table for analyst use following SME validation. The
@@ -188,40 +188,42 @@
 #'   password = getPass("Password: ")
 #' )
 #' rxnorm_res <- rxnorm_query(
-#'  dbcon, drug_name = c("warfarin"),
-#'  return_unmatched = FALSE
+#'   dbcon,
+#'   drug_name = c("warfarin"),
+#'   return_unmatched = FALSE
 #' )
-#' 
+#'
 #' ## Prepare RxNorm output for validation
 #' res <- prepare_pharm_for_validation(
 #'   dbcon = dbcon,
 #'   rxnorm_res = rxnorm_res,
 #'   hierarchy = TRUE,
 #'   cell_suppression = TRUE,
-#'   outpath = "/user_path/")
+#'   outpath = "/user_path/"
+#' )
 #'
 #' res$sme # frequency table to be validated by SME
 #' res$analyst # frequency table with `pharm_row_num` to be used by analysts after SME validation.
-#' 
+#'
 #' ## For internal GEMINI staff only:
 #' ## Provide custom mapping lookup table based on master mapping DB
 #' # connect to master mapping DB
-#'  pharm_db <- DBI::dbConnect(drv,
-#'    dbname = "pharmacy_mapping",
-#'    host = "domain_name.ca",
-#'    port = 1234,
-#'    user = getPass("Username: "),
-#'    password = getPass("Password: ")
+#' pharm_db <- DBI::dbConnect(drv,
+#'   dbname = "pharmacy_mapping",
+#'   host = "domain_name.ca",
+#'   port = 1234,
+#'   user = getPass("Username: "),
+#'   password = getPass("Password: ")
 #' )
 #' # query master mapping table
 #' pharm_mapping <- dbGetQuery(
-#'  pharm_db, "SELECT * FROM pharmacy_master_mapping;"
+#'   pharm_db, "SELECT * FROM pharmacy_master_mapping;"
 #' ) %>%
-#'  data.table()
-#' 
+#'   data.table()
+#'
 #' res <- prepare_pharm_for_validation(
-#'  rxnorm_res = rxnorm_res,
-#'  custom_lookup = pharm_mapping # no `dbcon` input required
+#'   rxnorm_res = rxnorm_res,
+#'   custom_lookup = pharm_mapping # no `dbcon` input required
 #' )
 #' }
 #'
@@ -236,14 +238,13 @@ prepare_pharm_for_validation <- function(
   cell_suppression = TRUE,
   outpath = NULL,
   custom_lookup = NULL
-  ) {
-
+) {
   ## One of either dbcon or custom_lookup is required
   if (is.null(dbcon) && is.null(custom_lookup)) {
     stop(paste0(
       "Please provide one of either `dbcon` or ",
       "`custom_lookup` as a function input."
-      ))
+    ))
   }
 
   ## Get mapping lookup table
@@ -268,7 +269,7 @@ prepare_pharm_for_validation <- function(
     masterfile <- dbGetQuery(
       dbcon, "SELECT * from lookup_pharmacy_mapping"
     ) %>% data.table()
-  } 
+  }
 
   masterfile[, (c("rxnorm_match", "drug_group")) := lapply(.SD, normalize_text, lemma = TRUE),
     .SDcols = c("rxnorm_match", "drug_group")
@@ -312,15 +313,17 @@ prepare_pharm_for_validation <- function(
       search_type == "order_description", 7 # NOTE: this field will be added to rxnorm_query
     )] %>% .[, .SD[hier_search_type == min(hier_search_type)], by = .(genc_id, row_num)]
     rxnorm_res_final <- rxnorm_res_hier[,
-    .(rxnorm_match = paste0(unique(sort(trimws(unlist(strsplit(rxnorm_match, " \\|+"))))), collapse = " || ")),
+      .(rxnorm_match = paste0(unique(sort(trimws(unlist(strsplit(rxnorm_match, " \\|+"))))), collapse = " || ")),
       by = .(genc_id, row_num, search_type, raw_input)
     ]
   } else {
-    message(paste0("Skipping order-level hierarchy filtering based on user's input...",
-                   "\nAll drug-containing records identified by RxNorm will be returned, including ",
-                   "possibly redundant or conflicting records associated with the same pharmacy order.",
-                   "\n Only set `hierarchy=FALSE` when applying non-standard hierarchy rules or ",
-                   "conducting further order-level investigations.\n"))
+    message(paste0(
+      "Skipping order-level hierarchy filtering based on user's input...",
+      "\nAll drug-containing records identified by RxNorm will be returned, including ",
+      "possibly redundant or conflicting records associated with the same pharmacy order.",
+      "\n Only set `hierarchy=FALSE` when applying non-standard hierarchy rules or ",
+      "conducting further order-level investigations.\n"
+    ))
     rxnorm_res_final <- rxnorm_res
   }
 
@@ -384,11 +387,13 @@ prepare_pharm_for_validation <- function(
     )] # order columns
   ################################# HANDLE UNMATCH ROWS WHEN EXIST #################################
   if (exists("unmatch", inherits = FALSE)) {
-    cat(paste0("Based on user input, `rxnorm_res` contains unmatched rows from the pharmacy table. ",
-               "A secondary search will be performed to match each rxnorm-unmatched row with existing ",
-               "mappings in `pharmacy_master_mapping` following standard hierarchy rules. ",
-               "The secondary search is not specific to user's drug(s) of interest. Users should perform ",
-               "further filtering (e.g. via regex) and manual mapping to identify drug(s) of interest.\n"))
+    cat(paste0(
+      "Based on user input, `rxnorm_res` contains unmatched rows from the pharmacy table. ",
+      "A secondary search will be performed to match each rxnorm-unmatched row with existing ",
+      "mappings in `pharmacy_master_mapping` following standard hierarchy rules. ",
+      "The secondary search is not specific to user's drug(s) of interest. Users should perform ",
+      "further filtering (e.g. via regex) and manual mapping to identify drug(s) of interest.\n"
+    ))
     search_col <- c(
       "med_id_generic_name_raw", "med_id_brand_name_raw", "med_id_hospital_code_raw",
       "med_id_din", "med_id_ndc", "iv_component_type"
@@ -410,7 +415,8 @@ prepare_pharm_for_validation <- function(
     # collapse >1 matches
     res <- res[, .(
       rxnorm_match = paste(unique(sort(trimws(unlist(strsplit(gsub("manual$", "", rxnorm_match), " \\|+"))))),
-       collapse = " || "), # if rxnorm_match contains only "manual", not return
+        collapse = " || "
+      ), # if rxnorm_match contains only "manual", not return
       drug_group = paste(unique(drug_group), collapse = " || ")
     ), by = c("index", "genc_id", search_col)]
 
@@ -418,26 +424,26 @@ prepare_pharm_for_validation <- function(
     unmatch_checked <- bind_rows(res, unmatch[!index %in% res$index, ]) %>%
       data.table() %>%
       filter(!if_all(all_of(search_col), ~ is.na(.) | . == "")) # occasionally all search_cols are NA in
-      # the pharmacy table - remove since no real information generate frequency table for unmatched rows & cleanup
-      unmatch_freq_tab <- unmatch_checked %>%
-        group_by(across(all_of(c(search_col, "rxnorm_match", "drug_group")))) %>%
-        summarise(count = length(unique(genc_id)), .groups = "drop") %>%
-        data.table() %>%
-        arrange(-count) %>%
-        mutate(
-          row_id = 1:length(count),
-          historically_mapped_to_drug = rxnorm_match,
-          historically_mapped_to_drug_group = drug_group,
-          SME_mapped_search_type = as.character(NA),
-          SME_mapped_drug = as.character(NA),
-          SME_mapped_drug_group = as.character(NA),
-          SME_comment = as.character(NA)
-        ) %>%
-        .[, .SD, .SDcols = c(
-          "row_id", "count", search_col, "historically_mapped_to_drug",
-          "historically_mapped_to_drug_group", "SME_mapped_search_type", "SME_mapped_drug",
-          "SME_mapped_drug_group", "SME_comment"
-        )]
+    # the pharmacy table - remove since no real information generate frequency table for unmatched rows & cleanup
+    unmatch_freq_tab <- unmatch_checked %>%
+      group_by(across(all_of(c(search_col, "rxnorm_match", "drug_group")))) %>%
+      summarise(count = length(unique(genc_id)), .groups = "drop") %>%
+      data.table() %>%
+      arrange(-count) %>%
+      mutate(
+        row_id = 1:length(count),
+        historically_mapped_to_drug = rxnorm_match,
+        historically_mapped_to_drug_group = drug_group,
+        SME_mapped_search_type = as.character(NA),
+        SME_mapped_drug = as.character(NA),
+        SME_mapped_drug_group = as.character(NA),
+        SME_comment = as.character(NA)
+      ) %>%
+      .[, .SD, .SDcols = c(
+        "row_id", "count", search_col, "historically_mapped_to_drug",
+        "historically_mapped_to_drug_group", "SME_mapped_search_type", "SME_mapped_drug",
+        "SME_mapped_drug_group", "SME_comment"
+      )]
 
     if (cell_suppression == TRUE) {
       unmatch_freq_tab[, count := ifelse(count < 6, "<6", as.character(count))]
@@ -459,9 +465,11 @@ prepare_pharm_for_validation <- function(
   }
   if (!is.null(outpath)) {
     if (!cell_suppression) {
-      stop(paste0("Based on user input, cell_suppression is set to FALSE.",
-            "\nResults cannot be exported without small cell suppression to protect privacy.",
-            "\nTo write results to folder, please set `cell_suppression=TRUE`"))
+      stop(paste0(
+        "Based on user input, cell_suppression is set to FALSE.",
+        "\nResults cannot be exported without small cell suppression to protect privacy.",
+        "\nTo write results to folder, please set `cell_suppression=TRUE`"
+      ))
     }
     # Return xlsx worksheet
     wb <- openxlsx::createWorkbook()
