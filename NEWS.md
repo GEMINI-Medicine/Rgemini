@@ -29,6 +29,8 @@
 * **Miscellanous:**
   * Added hex sticker
   * Integration of issues with Jira
+  * Improved function documentation
+
 
 # Rgemini `1.1.0`
 
