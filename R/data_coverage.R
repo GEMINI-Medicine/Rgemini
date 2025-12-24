@@ -306,6 +306,10 @@ data_coverage <- function(dbcon,
       ))
     }
   )
+  if (hosp_var == "hospital_num") {
+    # make sure hospital_num is of class integer (in line with data dictionary)
+    data_coverage_lookup[, hospital_num := as.integer(hospital_num)]
+  }
 
 
   ## Preprocess lookup table
