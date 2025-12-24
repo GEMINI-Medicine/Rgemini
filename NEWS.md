@@ -21,18 +21,14 @@
 * Fixed `render_cell_suppression.strat()` to be compatible with table1 version 1.5.0
 * Removed age exclusion in `episodes_of_care()` to accommodate paeds cohort
 * Small bug fix in `daily_census` to return all hospital ID variables provided in `cohort` input
-
+* Added hex sticker
+* Small fix in `data_coverage` for `hospital_num` class
+* Removed repeated warning messages in `loop_mlaps`
+* Integration of issues with Jira
+* Updated readmission vignette to clarify use of restricted cohort in derived readmission
+* Improved function documentation
 * **Testing improvements:**
   * Unit tests are now also run in Python via rpy2 to ensure cross-language compatibility
-
-* **Miscellanous:**
-  * Added hex sticker
-  * Small fix in `data_coverage` for `hospital_num` class
-  * Removed repeated warning messages in `loop_mlaps`
-  * Integration of issues with Jira
-  * Updated readmission vignette to clarify use of restricted cohort in derived readmission
-  * Improved function documentation
-
 
 # Rgemini `1.1.0`
 
