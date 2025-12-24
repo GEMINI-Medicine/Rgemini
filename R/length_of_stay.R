@@ -7,19 +7,13 @@
 #'
 #' @details
 #' Length of Stay is defined as the duration of hospital in-patient stay,
-#' thus, calculated as (`discharge_date_time - admission_date_time`).
-#' It is currently a major patient outcome in various research studies
-#' and one of the physician performance indicators in MyPracticeReport.
-#' Researchers might consider a few modifications to this metric.
-#' One example will be adjusting for patient who receives palliative care.
-#' If transfer to palliative unit within the hospital is trackable
-#' (e.g. through room transfer data), then it might be good idea to re-define
-#' discharge point to the palliative unit entrance. This will reduce bias in
-#' metric since patient care under palliative order is very different.
+#' calculated as `discharge_date_time - admission_date_time`.
+#' It is a clinical outcome variable in various research studies
+#' and one of several indicators of quality of care in GeMQIN reports.
 #'
 #' @section Warning:
-#' NA values in returned data.table indicates either missing admission/discharge
-#' date and time or its format is incorrect.
+#' NA values in returned data.table indicates either missing or invalid
+#' admission/discharge date-time.
 #'
 #' @section Note:
 #' The function takes two optional input arguments defining the admission and

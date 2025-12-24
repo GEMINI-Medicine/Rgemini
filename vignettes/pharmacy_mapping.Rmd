@@ -516,7 +516,7 @@ length(insulin_cohort)
 # write the row_num into a temp table to improve query efficiency
 dbWritetable(db_con, c("pg_temp", "temp_row_num"), insulin_pharm_row_num,
   temporary = T, row.names = F
-) 
+)
 
 query <- paste0("SELECT p.*
                  FROM pharmacy p

@@ -5,7 +5,7 @@
 
 * **New functions:**
   * `prepare_pharm_for_validation()` function migrated from GEMINIpkg to standardize workflow for pharmacy mapping validation following rxnorm_query.
-    * To support broader use cases, the migrated function now takes uses the `lookup_pharmacy_mapping` table in database versions `drm_cleandb_v4_1_1`/`h4h_template_v5_0_1` and newer. Alternatively, a custom lookup table can be provided.
+  * To support broader use cases, the migrated function now takes uses the `lookup_pharmacy_mapping` table in database versions `drm_cleandb_v4_1_1`/`h4h_template_v5_0_1` and newer. Alternatively, a custom lookup table can be provided.
 
 **Rxnorm migration**
 * added `GEMINIpkg::gemini_rxnorm_query()` as `rxnorm_query()`, with the following changes
@@ -28,7 +28,12 @@
 
 * **Miscellanous:**
   * Added hex sticker
+  * Small fix in `data_coverage` for `hospital_num` class
+  * Removed repeated warning messages in `loop_mlaps`
   * Integration of issues with Jira
+  * Improved function documentation
+
+
 
 
 # Rgemini `1.1.0`
