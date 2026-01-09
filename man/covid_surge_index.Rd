@@ -52,7 +52,7 @@ db <- DBI::dbConnect(
   password = getPass::getPass("Enter Password")
 )
 
-covid_surge <- derive_covid_surge(
+covid_surge <- covid_surge_index(
   dbcon = db,
   gim_only = FALSE,
   include_er = FALSE

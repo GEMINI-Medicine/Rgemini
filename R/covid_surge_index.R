@@ -82,24 +82,24 @@ covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
   hospital_var <- return_hospital_field(dbcon)
 
   ## filter for All Med + ICU patients, exclude paeds only sites
-  if(hospital_var == 'hospital_id'){
+  if (hospital_var == "hospital_id") {
     cohort <- dbGetQuery(dbcon, paste0(
-    "select genc_id, admdad.", hospital_var, ", ", "
+      "select genc_id, admdad.", hospital_var, ", ", "
   admission_date_time, discharge_date_time, l.hospital_num from ",
-    admdad_name, " join ", lookup_hospital_name, " l on ", admdad_name, ".hospital_id = l.hospital_id", " where genc_id in ((select genc_id from ",
-    derived_variables_name, " where all_med is TRUE) union
+      admdad_name, " join ", lookup_hospital_name, " l on ", admdad_name, ".hospital_id = l.hospital_id", " where genc_id in ((select genc_id from ",
+      derived_variables_name, " where all_med is TRUE) union
   (select genc_id from ", ipscu_name, ")) and age >= 18
   and discharge_date_time >= '2019-01-01 00:00' and l.hospital_num != '134'"
-  ))
-  } else{
-  cohort <- dbGetQuery(dbcon, paste0(
-    "select genc_id, ", hospital_var, ", ", "
+    ))
+  } else {
+    cohort <- dbGetQuery(dbcon, paste0(
+      "select genc_id, ", hospital_var, ", ", "
   admission_date_time, discharge_date_time from ",
-    admdad_name, " where genc_id in ((select genc_id from ",
-    derived_variables_name, " where all_med is TRUE) union
+      admdad_name, " where genc_id in ((select genc_id from ",
+      derived_variables_name, " where all_med is TRUE) union
   (select genc_id from ", ipscu_name, ")) and age >= 18
   and discharge_date_time >= '2019-01-01 00:00' and hospital_num != '134'"
-  )) %>% data.table()
+    )) %>% data.table()
   }
 
   ### pull icu encounters
