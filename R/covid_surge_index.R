@@ -50,7 +50,7 @@
 #'   password = getPass::getPass("Enter Password")
 #' )
 #'
-#' covid_surge <- derive_covid_surge(
+#' covid_surge <- covid_surge_index(
 #'   dbcon = db,
 #'   gim_only = FALSE,
 #'   include_er = FALSE
@@ -76,30 +76,36 @@ covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
   erintervention_name <- find_db_tablename(dbcon, "erintervention", verbose = FALSE)
   ipdiagnosis_name <- find_db_tablename(dbcon, "ipdiagnosis", verbose = FALSE)
   erdiagnosis_name <- find_db_tablename(dbcon, "erdiagnosis", verbose = FALSE)
+  lookup_hospital_name <- find_db_tablename(dbcon, "lookup_hospital")
 
   ## find which hospital identifier to use
-  # to do minimial changes to querying one row to get all the column names instead
-  admdad_cols <- dbGetQuery(dbcon, paste0("SELECT * from ", admdad_name, " limit 1;")) %>% data.table()
-
-  admdad_cols <- data.table(column_name = colnames(admdad_cols))
-
-  hospital_var <- admdad_cols[column_name %in%
-    c("hospital_id", "hospital_num")]$column_name[1] # if multiple, use first identified variable
+  hospital_var <- return_hospital_field(dbcon)
 
   ## filter for All Med + ICU patients, exclude paeds only sites
+  if(hospital_var == 'hospital_id'){
+    cohort <- dbGetQuery(dbcon, paste0(
+    "select genc_id, admdad.", hospital_var, ", ", "
+  admission_date_time, discharge_date_time, l.hospital_num from ",
+    admdad_name, " join ", lookup_hospital_name, " l on ", admdad_name, ".hospital_id = l.hospital_id", " where genc_id in ((select genc_id from ",
+    derived_variables_name, " where all_med is TRUE) union
+  (select genc_id from ", ipscu_name, ")) and age >= 18
+  and discharge_date_time >= '2019-01-01 00:00' and l.hospital_num != '134'"
+  ))
+  } else{
   cohort <- dbGetQuery(dbcon, paste0(
     "select genc_id, ", hospital_var, ", ", "
   admission_date_time, discharge_date_time from ",
     admdad_name, " where genc_id in ((select genc_id from ",
-    derived_variables_name, " where all_med='t') union
+    derived_variables_name, " where all_med is TRUE) union
   (select genc_id from ", ipscu_name, ")) and age >= 18
   and discharge_date_time >= '2019-01-01 00:00' and hospital_num != '134'"
   )) %>% data.table()
+  }
 
   ### pull icu encounters
   icu_encounters <- dbGetQuery(dbcon, paste0(
     "select distinct genc_id from ",
-    derived_variables_name, " where icu_entry_derived = 't';"
+    derived_variables_name, " where icu_entry_derived is TRUE;"
   )) %>%
     data.table()
 
@@ -206,7 +212,7 @@ covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
     gims <- dbGetQuery(dbcon, paste0(
       "select d.genc_id, d.", hospital_var,
       " from ", derived_variables_name, " d join ", admdad_name, " a on
-    d.genc_id = a.genc_id where gim = 't' and
+    d.genc_id = a.genc_id where gim is TRUE and
     a.age >= 18;"
     )) %>% data.table()
 
@@ -251,9 +257,7 @@ covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
       summarise(bed_estimate = quantile(census, probs = 0.95, na.rm = TRUE)) %>%
       data.table()
   } else { ## if non-gim, have to restrict 2 site's estimates to Nov-Dec
-    ## get lookup hospital name
-    lookup_hospital_name <- find_db_tablename(dbcon, "lookup_hospital")
-
+    ## editing these sites because their cohorts changed in Nov 2019
     ## create query
     lookup_hospital_query <- paste0(
       "select * from ", lookup_hospital_name,
