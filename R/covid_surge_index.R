@@ -2,7 +2,7 @@
 #' Derive COVID Surge Index
 #'
 #' @description
-#' A function that derives the COVID-19 surge index for a given time period.
+#' A function that derives the COVID-19 surge index for sites.
 #' For time periods before 2020, or where COVID-19 was not yet diagnosed, the surge index will be 0.
 #' The function filters for the All-Medicine + ICU cohort. This includes any
 #' encounter admitted/discharged from a medical service or encounters who
@@ -86,7 +86,8 @@ covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
     cohort <- dbGetQuery(dbcon, paste0(
       "select genc_id, admdad.", hospital_var, ", ", "
   admission_date_time, discharge_date_time, l.hospital_num from ",
-      admdad_name, " join ", lookup_hospital_name, " l on ", admdad_name, ".hospital_id = l.hospital_id", " where genc_id in ((select genc_id from ",
+      admdad_name, " join ", lookup_hospital_name, " l on ", admdad_name, ".hospital_id = l.hospital_id",
+      " where genc_id in ((select genc_id from ",
       derived_variables_name, " where all_med is TRUE) union
   (select genc_id from ", ipscu_name, ")) and age >= 18
   and discharge_date_time >= '2019-01-01 00:00' and l.hospital_num != '134'"
@@ -290,6 +291,38 @@ covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
 
   ## calculate surge index
   surge_table[, surge_index := surge_index_num / bed_estimate]
+  ## output list of site(s) that have gaps in the surge index
+  unique_hospitals <- unique(surge_table[[hospital_var]])
+
+  # Check each hospital for gaps
+  gap_sites <- c()
+  for (hosp in unique_hospitals) {
+    hosp_data <- surge_table[surge_table[[hospital_var]] == hosp]
+    if (nrow(hosp_data) > 0) {
+      # Get the full range of months for this hospital
+      min_month <- min(hosp_data$month_year)
+      max_month <- max(hosp_data$month_year)
+
+      # Create expected sequence
+      expected_months <- seq(min_month, max_month, by = "month")
+
+      # Get actual months
+      actual_months <- hosp_data$month_year
+
+      # Check if there are gaps
+      if (length(setdiff(expected_months, actual_months)) > 0) {
+        gap_sites <- c(gap_sites, hosp)
+      }
+    }
+  }
+
+  # warning if gaps were found
+  if (length(gap_sites) > 0) {
+    warning(paste("Data gaps detected in the surge table for the following sites:",
+    paste0(gap_sites, collapse = ", "),
+    "\n  Users should manually verify and handle these periods appropriately."
+    ))
+  }
 
   ## select hospital identifier, month_year, numerator
   final_filter <- c(hospital_var, "month_year", "surge_index")
