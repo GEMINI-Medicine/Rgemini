@@ -24,7 +24,7 @@ A data.table containing each hospital and the COVID surge index for the given
 month year.
 }
 \description{
-A function that derives the COVID-19 surge index for a given time period.
+A function that derives the COVID-19 surge index for sites.
 For time periods before 2020, or where COVID-19 was not yet diagnosed, the surge index will be 0.
 The function filters for the All-Medicine + ICU cohort. This includes any
 encounter admitted/discharged from a medical service or encounters who

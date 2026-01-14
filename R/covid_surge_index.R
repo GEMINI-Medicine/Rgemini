@@ -318,9 +318,10 @@ covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
 
   # warning if gaps were found
   if (length(gap_sites) > 0) {
-    warning(paste("Data gaps detected in the surge table for the following sites:",
-    paste0(gap_sites, collapse = ", "),
-    "\n  Users should manually verify and handle these periods appropriately."
+    warning(paste(
+      "Data gaps detected in the surge table for the following sites:",
+      paste0(gap_sites, collapse = ", "),
+      "\n  Users should manually verify and handle these periods appropriately."
     ))
   }
 
