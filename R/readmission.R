@@ -12,9 +12,9 @@
 #' linked regardless of diagnosis. An acute care transfer is assumed to have occurred if either of the following
 #' criteria are met:
 #' \itemize{
-#'   \item{An admission to a medical or intensive care service at a GEMINI hospital within 7 hours after discharge
+#'   \item{An admission to a GEMINI hospital within 7 hours after discharge
 #'   from another GEMINI hospital, regardless of whether the transfer is coded}
-#'   \item{An admission to a medical or intensive care service at a GEMINI hospital within 7-12 hours after discharge
+#'   \item{An admission to a GEMINI hospital within 7-12 hours after discharge
 #'   from another GEMINI hospital, and at least 1 hospital has coded the transfer: Coded transfers are based on the
 #'   DAD Institution From and Institution To fields}
 #'  }
