@@ -109,7 +109,6 @@
 #' Brown HK, et al. JAMA Netw Open, 2021. https://doi.org/10.1001/jamanetworkopen.2020.34993
 #'
 #' @export
-#'
 disability <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
   ############# CHECK & PREPARE DATA #############
   if (is.null(erdiag)) {
