@@ -27,6 +27,7 @@
 * Integration of issues with Jira
 * Updated readmission vignette to clarify use of restricted cohort in derived readmission
 * Improved function documentation
+* Refactored `disability()` and `frailty_score()` to remove dependency on `fuzzyjoin` package
 * **Testing improvements:**
   * Unit tests are now also run in Python via rpy2 to ensure cross-language compatibility
 

@@ -100,10 +100,7 @@
 #' frailty_score(cohort_dum, ipdiag_dum, erdiag_dum, component_wise = FALSE)
 #' }
 #'
-#' @importFrom fuzzyjoin regex_left_join
-#'
 #' @export
-
 frailty_score <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
   # load CIHI HFRS-ICD mapping from package data folder
   frailty_map <- Rgemini::mapping_cihi_frailty %>%
@@ -150,10 +147,27 @@ frailty_score <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
   alldiag <- rbind(ipdiag, erdiag)
 
   # Calculate score
-  frailty <- alldiag %>%
-    regex_left_join(frailty_map, by = "diagnosis_code", ignore_case = TRUE) %>% # per CIHI manual frailty conditions are identified by 595 icd-10-ca codes and any codes starting with these codes
-    data.table() %>%
-    .[!is.na(frailty_categories), .(genc_id, diagnosis_code.x, diagnosis_code.y, frailty_categories)] # filter to encounters with diagnosis mapped to frailty conditions
+  # Previously used fuzzyjoin, but now removed that dependency due to downtime on CRAN, and to improve speed of function
+  # Case-insensitive prefix match (same as ignore_case = TRUE)
+  alldiag[, diagnosis_code := toupper(diagnosis_code)]
+  frailty_map[, `:=`(
+    prefix = toupper(diagnosis_code),
+    n = nchar(diagnosis_code)
+  )]
+
+  frailty <- rbindlist(lapply(unique(frailty_map$n), \(k) {
+    mapk <- frailty_map[n == k, .(prefix, diagnosis_code.y = diagnosis_code, frailty_categories)]
+    setkey(mapk, prefix)
+
+    alldiag[, .(
+      genc_id,
+      diagnosis_code.x = diagnosis_code,
+      prefix = substr(diagnosis_code, 1, k)
+    )][
+      mapk,
+      on = "prefix", nomatch = 0L
+    ][, .(genc_id, diagnosis_code.x, diagnosis_code.y, frailty_categories)]
+  }), use.names = TRUE)
 
   ## Derive score (# of unique frailty categories) to encounters w/ diagnoses mapped
   res_score <- frailty[, .(frailty_score_derived = length(unique(frailty_categories))), genc_id]
