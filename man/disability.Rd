@@ -104,7 +104,7 @@ dbcon <- DBI::dbConnect(drv,
 
 ipadmdad <- dbGetQuery(dbcon, "select * from admdad") \%>\% data.table()
 ipdiagnosis <- dbGetQuery(dbcon, "select * from ipdiagnosis") \%>\% data.table()
-erdiagnosis <- dbGetQuery(db, "select * from erdiagnosis") \%>\% data.table()
+erdiagnosis <- dbGetQuery(dbcon, "select * from erdiagnosis") \%>\% data.table()
 
 # including ER diagnosis codes
 disability(cohort = ipadmdad, ipdiag = ipdiagnosis, erdiag = erdiagnosis)
