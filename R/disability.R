@@ -93,7 +93,7 @@
 #'
 #' ipadmdad <- dbGetQuery(dbcon, "select * from admdad") %>% data.table()
 #' ipdiagnosis <- dbGetQuery(dbcon, "select * from ipdiagnosis") %>% data.table()
-#' erdiagnosis <- dbGetQuery(db, "select * from erdiagnosis") %>% data.table()
+#' erdiagnosis <- dbGetQuery(dbcon, "select * from erdiagnosis") %>% data.table()
 #'
 #' # including ER diagnosis codes
 #' disability(cohort = ipadmdad, ipdiag = ipdiagnosis, erdiag = erdiagnosis)
@@ -108,9 +108,7 @@
 #' @references
 #' Brown HK, et al. JAMA Netw Open, 2021. https://doi.org/10.1001/jamanetworkopen.2020.34993
 #'
-#' @importFrom fuzzyjoin regex_left_join
 #' @export
-#'
 disability <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
   ############# CHECK & PREPARE DATA #############
   if (is.null(erdiag)) {
@@ -145,13 +143,22 @@ disability <- function(cohort, ipdiag, erdiag, component_wise = FALSE) {
   ## Read file with disability codes from data folder
   disability_codes <- Rgemini::mapping_disability %>% data.table()
 
-
   ## Get encounters with disability
-  res_component <- diagnoses %>%
-    regex_left_join(disability_codes, by = "diagnosis_code", ignore_case = TRUE) %>% # identify any codes starting with mapped codes
-    data.table() %>%
-    .[!is.na(disability_category), .(genc_id, diagnosis_code.x, disability_category)] # filter to encounters with diagnosis mapped to frailty conditions
-  setnames(res_component, "diagnosis_code.x", "diagnosis_code")
+  # Previously used fuzzyjoin, but now removed that dependency due to downtime on CRAN, and to improve speed of function
+  # Case-insensitive match (like ignore_case = TRUE)
+  diagnoses[, diagnosis_code := toupper(diagnosis_code)]
+  disability_codes[, `:=`(prefix = toupper(diagnosis_code), n = nchar(diagnosis_code))]
+
+  res_component <- rbindlist(lapply(unique(disability_codes$n), \(k) {
+    mapk <- disability_codes[n == k, .(prefix, disability_category)]
+    setkey(mapk, prefix)
+    # match based on pre-fix
+    diagnoses[, .(genc_id, diagnosis_code, prefix = substr(diagnosis_code, 1, k))][
+      mapk,
+      on = "prefix", nomatch = 0L
+    ][, .(genc_id, diagnosis_code, disability_category)]
+  }), use.names = TRUE)
+
 
   ## Prepare output based on component-wise flag
   if (component_wise == FALSE) {

@@ -36,7 +36,6 @@ Imports:
     textstem, 
     tidyr, 
     timeDate,
-    fuzzyjoin,
     sn
 Suggests: 
     colorBlindness,
