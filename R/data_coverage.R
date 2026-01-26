@@ -230,7 +230,7 @@ data_coverage <- function(dbcon,
     )
   )
   # make copy of cohort so we don't overwrite anything
-  cohort <- copy(cohort)
+  cohort <- copy(cohort) %>% data.table()
 
   # make sure hospital_group (if any) has 1-1 relationship
   # with hospital ID/num
