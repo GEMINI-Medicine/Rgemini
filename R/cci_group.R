@@ -2,110 +2,103 @@
 #' Grouping CCI intervention codes
 #'
 #' @description
-#' The Canadian Classification of Health Interventions (CCI) codes provides a
-#' detailed documentation of all in-patient intervention in Canada.
+#' The Canadian Classification of Health Interventions (CCI) codes provide a
+#' detailed classification of all in-patient interventions in Canada with more
+#' than 17,000 unique codes.
 #'
-#' The `cci_group()` function categorises inputted CCI codes into their
-#' anatomical groupings/ type of intervention for codes with available groupings
-#' found within the 2022 CIHI document/ CIHI website
-#' (https://www.cihi.ca/en/overview-of-cci-sections-and-code-ranges).
+#' The `cci_group()` function categorizes CCI codes into broader, clinically
+#' meaningful intervention categories based on each code's first 3 characters.
+#' 
+#' Broadly, intervention codes can be grouped into the following CCI Sections
+#' based on the first digit:
+#' - 1: Physical/Physiological Therapeutic Interventions (1AA - 1ZZ)
+#' - 2: Diagnostic Interventions (2AA - 2ZZ)
+#' - 3: Diagnostic Imaging Interventions (3AF - 3ZZ)
+#' - 5: Obstetrical and Fetal Interventions (5AB - 5PD)
+#' - 6: Cognitive, Psychosocial and Sensory Therapeutic Interventions (6AA - 6VA)
+#' - 7: Other Healthcare Interventions (7SC - 7SJ)
+#' - 8: Therapeutic Interventions Strengthening the Immune System and/or Genetic Composition (8AA - 8ZZ)
 #'
-#' @section User Input
-#' This function prompts the user to one column of CCI codes and outputs a table
-#' with a column named `Groupings`.
-#'
-#' @param user_table (`data.frame` | `data.table`)
-#' Column of table with CCI codes of interest.
+#' Each section can further be broken down into more detailed subsections, based
+#' on the CCI group (2nd-3rd character).For example, CCI codes in Sections 1-3
+#' can be differentiated by anatomy region, such as:
+#' - Therapeutic Interventions on the Nervous System (1AA - 1BZ)
+#' - Therapeutic Interventions on the Eye and Ocular Adnexa (1CC - 1CZ)
+#' - Therapeutic Interventions on the Ear and Mastoid (1DA - 1DZ)
+#' - etc.
+#' 
+#' 
+#' For a complete list of all subsections, see
+#' [CIHI CCI sections and code ranges](https://www.cihi.ca/en/overview-of-cci-sections-and-code-ranges).
+#' 
+#' @param cci_codes (`data.frame` | `data.table`)
+#' Table containing `intervention_code` column that lists all CCI intervention
+#' codes of interest (e.g., from the `ipintervention` or `erintervention` table).
 #'
 #' @returns `data.table`
-#' This function returns a table containing the CCI codes of interest, together
-#' with their corresponding definitions.
-#' For each row in the output table, the following variables are returned 
-#' within column `Groupings`
-#' - `anatomy_site` outputs where the the intervention occured if none availabe, outputs 'NA'. Only available for codes in Sections 1, 2, 3, 5, 6.
-#' - `agent_type` outputs the agent type; if none available, outputs 'NA'. Only available for codes in Section 1.
+#' Data table containing the CCI codes of interest, together with their
+#' corresponding groupings as follows:
+#' - `section` (`numeric`): CCI section number (based on first character)
+#' - `section_descr` (`character`): Section description
+#' - `subsection` (`character`): CCI subsection (first 3 characters)
+#' - `subsection_descr` (`character`): Subsection description
 #'
 #' @examples
-#' \dontrun{
-#' drv <- dbDriver("PostgreSQL")
-#' dbcon <- DBI::dbConnect(drv,
-#'   dbname = "db",
-#'   host = "domain_name.ca",
-#'   port = 1234,
-#'   user = getPass("Enter user:"),
-#'   password = getPass("password")
-#' )
-#' }
-#' a <- cci_filter(cci_lookup)
-#'
+#' cci_codes <- data.table(intervention_code = c(
+#'     "1MA52HA", "2PB70DA", "3SC10KM", "5LB08ZZ", "6KA02ME", "8AA70BABA"
+#'     ))
+#' res <- cci_group(cci_codes)
+#' 
+#' @references
+#' https://www.cihi.ca/en/overview-of-cci-sections-and-code-ranges
+#' 
 #' @export
-##install.packages(c("roxygen2", "data.table", "readxl", "dplyr"))
-library(RPostgreSQL)
-library(getPass)
-library(roxygen2)
-library(readxl)
-library(dplyr)
-library(data.table)
-library(getPass)
-drv <- dbDriver("PostgreSQL")
-dbcon <- DBI::dbConnect(drv,
-  dbname = "drm_cleandb_v3_1_0",
-  host = "prime.smh.gemini-hpc.ca",
-  port = 5432,
-  user = getPass("Username:"),
-  password = getPass("Enter Password:")
-)
-
-  # ALL CODES
-cci_lookup <- dbGetQuery(dbcon, "SELECT * FROM lookup_cci;") %>% as.data.frame()
-
-cci_group <- function(dbcon, sample) {
-  cci_table <- read_excel("/mnt/nfs/projects/research_projects/Summer_Students/Alice/CCI_lookup.xlsx") %>%
-    as.data.frame()
-
-  df <- data.frame(
-    cci_code = character(),
-    anatomy_site = character(),
-    agent_type = character(),
-    stringsAsFactors = FALSE
+#' 
+cci_group <- function(cci_codes) {
+  ## prepare data
+  # check input
+  Rgemini:::check_input(
+    cci_codes, c("data.table", "data.frame"),
+    colnames = "intervention_code", coltypes = "character"
   )
+  cci_grouped <- cci_codes %>% data.table()
 
-  cci_codes <- as.data.table(sample)
-  cci_codes$Section <- substr(cci_codes$sample, 1, 1)
-  cci_codes$Group <- substr(cci_codes$sample, 2, 3)
-  cci_codes$Qualifier2 <- substr(cci_codes$sample, 8, 9)
-  cci_table_g <- cci_table %>% filter(Field == "Group")
-  cci_table_q <- cci_table %>% filter(Field == "Qualifier2")
-  for (i in 1:nrow(cci_codes)) {
-    section_val <- as.character(cci_codes[i, "Section"])
-    group_val <- as.character(cci_codes[i, "Group"])
-    q2_val <- as.character(cci_codes[i, "Qualifier2"])
-    desc1 <- cci_table_g %>%
-      filter(Category == section_val, ID == group_val) %>%
-      pull(Grouping) %>%
-      as.character()
-    # SOMETHING IS WRONG HERE!!
-    desc2 <- cci_table_q %>%
-      filter(Category == section_val, ID == q2_val) %>%
-      pull(Grouping) %>%
-      as.character()
-    if (length(desc1) == 0) {
-      desc1 <- NA
-    }
-    if (length(desc2) == 0 || identical(desc2, "Miscellaneous")) {
-      desc2 <- NA
-    }
-    single_code <- cci_codes[i, 1]
-    df <- rbind(
-      df,
-      data.frame(cci_code = single_code, anatomy_site = desc1, agent_type = desc2)
-    )
-  }
-  return(df)
+  # remove any special characters from intervention_codes
+  cci_grouped[, intervention_code := gsub("[^A-Za-z0-9]", "", intervention_code)]
+
+  
+  # read mapping file
+  mapping_cci <- fread("~/Documents/GEMINI/Rgemini/data/mapping_cci.csv") %>%
+    data.table()
+  # remove any leading or trailing white spaces
+  mapping_cci[] <- lapply(mapping_cci, function(x) {
+    if (is.character(x)) trimws(x) else x
+  })
+  
+  ## add CCI section (based on first number)
+  cci_grouped[, section := as.numeric(substr(intervention_code, 1, 1))]
+  cci_grouped[, section := ifelse(section %in% c(1, 2, 3, 5, 6, 7, 8), section, NA)]
+  cci_grouped <- merge(
+    cci_grouped,
+    mapping_cci[field == "Section", .(idx = as.numeric(idx), description)],
+    by.x = "section", by.y = "idx", all.x = TRUE
+  )
+  setnames(cci_grouped, "description", "section_descr")
+  
+  ## add CCI subsection (based on first 3 characters)
+  cci_grouped[, subsection := substr(intervention_code, 1, 3)]
+  mapping_cci[field == "Group", subsection := paste0(section, idx)]
+  cci_grouped <- merge(
+    cci_grouped,
+    mapping_cci[field == "Group", c("subsection", "subsection_descr")],
+    by = "subsection", all.x = TRUE
+  )
+  
+  # clean up final output
+  cci_grouped <- cci_grouped %>%
+    select(intervention_code, section, section_descr, subsection, subsection_descr, everything()) %>%
+    data.table()
+  cci_grouped[cci_grouped == ""] <- NA
+  
+  return(cci_grouped)
 }
-subs <- cci_lookup %>% 
-  sample_n(1000) %>%
-  as.data.frame()
-subs <- subs$intervention_code
-print(subs)
-View(subs)
