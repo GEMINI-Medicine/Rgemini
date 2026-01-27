@@ -61,26 +61,6 @@
 #' a <- cci_filter(cci_lookup)
 #'
 #' @export
-library(roxygen2)
-library(cli)
-library(reactable)
-library(readxl)
-library(dplyr)
-library(data.table)
-library(RPostgreSQL)
-library(getPass)
-library(htmlwidgets)
-
-
-drv <- dbDriver("PostgreSQL")
-dbcon <- DBI::dbConnect(drv,
-  dbname = "drm_cleandb_v3_1_0",
-  host = "prime.smh.gemini-hpc.ca",
-  port = 5432,
-  user = getPass("Username:"),
-  password = getPass("Enter Password:")
-)
-
 cci_filter <- function(dbcon) {
   # LOOKUP TABLE
   cci_table <- read_excel("/mnt/nfs/projects/research_projects/Summer_Students/Alice/CCI_lookup.xlsx")  %>%
@@ -338,4 +318,3 @@ cci_filter <- function(dbcon) {
   correct_codes$intervention_code <- trimws(toupper(as.character(correct_codes$intervention_code)))
   return(correct_codes[, c("intervention_code", "cci_long_title")])
 }
-aa <- cci_filter(dbcon)
