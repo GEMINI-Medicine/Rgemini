@@ -10,19 +10,21 @@ test_that("CCI sections and subsections are correct", {
       "5LB$08ZZ",
       "6KA02ME)",
       "#7SJ08ZZ",
-      "8AA70BABA"
+      "8AA70BABA",
+      "4AAAAAA"
     ),
     section_descr_expected = c(
       "Physical and physiological therapeutic interventions",
       "Physical and physiological therapeutic interventions",
-      "Other diagnostic interventions",
-      "Other diagnostic interventions",
+      "Diagnostic interventions",
+      "Diagnostic interventions",
       "Diagnostic imaging interventions",
       "Diagnostic imaging interventions", 
       "Obstetrical and fetal interventions",
       "Cognitive, psychosocial and sensory therapeutic interventions",
       "Other healthcare interventions", 
-      "Therapeutic interventions strengthening the immune system and/or genetic composition"),
+      "Therapeutic interventions strengthening the immune system and/or genetic composition", 
+      NA),
     subsection_descr_expected = c(
       "Therapeutic Interventions on the Nervous System",
       "Therapeutic Interventions on the Lymphatic System",
@@ -33,7 +35,8 @@ test_that("CCI sections and subsections are correct", {
       "Interventions During Labour and Delivery",
       "Therapeutic Interventions for Cognition and Learning",
       "Support Activity Healthcare Interventions",
-      "Therapeutic Interventions Strengthening the Immune System and/or Genetic Composition"
+      "Therapeutic Interventions Strengthening the Immune System and/or Genetic Composition",
+      NA
     )
   )
   

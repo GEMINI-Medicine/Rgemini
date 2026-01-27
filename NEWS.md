@@ -7,6 +7,7 @@
   * `prepare_pharm_for_validation()` function migrated from GEMINIpkg to standardize workflow for pharmacy mapping validation following rxnorm_query.
   * To support broader use cases, the migrated function now takes uses the `lookup_pharmacy_mapping` table in database versions `drm_cleandb_v4_1_1`/`h4h_template_v5_0_1` and newer. Alternatively, a custom lookup table can be provided.
   * `covid_surge_index()` function that calculates the COVID surge index for hospitals in the database.
+  * `cci_group` to derive grouping of intervention codes into CCI sections and subsections
 
 **Rxnorm migration**
 * added `GEMINIpkg::gemini_rxnorm_query()` as `rxnorm_query()`, with the following changes

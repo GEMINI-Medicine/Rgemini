@@ -38,6 +38,7 @@ reference:
 - title: Data Transformation
   desc: These functions aid in querying the data, either by applying filters or mapping values.
 - contents:
+  - cci_group
   - diagnoses_at_admission
   - icd_to_ccsr
   - max_result_value
@@ -73,6 +74,7 @@ reference:
 - title: Mapping files
   desc: Files containing variable mappings.
 - contents:
+  - mapping_cci
   - mapping_cihi_frailty
   - mapping_disability
 - title: Utility Functions

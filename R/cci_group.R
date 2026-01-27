@@ -27,7 +27,6 @@
 #' - Therapeutic Interventions on the Ear and Mastoid (1DA - 1DZ)
 #' - etc.
 #' 
-#' 
 #' For a complete list of all subsections, see
 #' [CIHI CCI sections and code ranges](https://www.cihi.ca/en/overview-of-cci-sections-and-code-ranges).
 #' 
@@ -55,9 +54,10 @@
 #' @export
 #' 
 cci_group <- function(cci_codes) {
+
   ## prepare data
   # check input
-  Rgemini:::check_input(
+  check_input(
     cci_codes, c("data.table", "data.frame"),
     colnames = "intervention_code", coltypes = "character"
   )
@@ -66,9 +66,8 @@ cci_group <- function(cci_codes) {
   # remove any special characters from intervention_codes
   cci_grouped[, intervention_code := gsub("[^A-Za-z0-9]", "", intervention_code)]
 
-  
   # read mapping file
-  mapping_cci <- fread("~/Documents/GEMINI/Rgemini/data/mapping_cci.csv") %>%
+  mapping_cci <- Rgemini::mapping_cci %>%
     data.table()
   # remove any leading or trailing white spaces
   mapping_cci[] <- lapply(mapping_cci, function(x) {
@@ -81,7 +80,7 @@ cci_group <- function(cci_codes) {
   cci_grouped <- merge(
     cci_grouped,
     mapping_cci[field == "Section", .(idx = as.numeric(idx), description)],
-    by.x = "section", by.y = "idx", all.x = TRUE
+    by.x = "section", by.y = "idx", all.x = TRUE, sort = FALSE
   )
   setnames(cci_grouped, "description", "section_descr")
   
@@ -91,7 +90,7 @@ cci_group <- function(cci_codes) {
   cci_grouped <- merge(
     cci_grouped,
     mapping_cci[field == "Group", c("subsection", "subsection_descr")],
-    by = "subsection", all.x = TRUE
+    by = "subsection", all.x = TRUE, sort = FALSE
   )
   
   # clean up final output
