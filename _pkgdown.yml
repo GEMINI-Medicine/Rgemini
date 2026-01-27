@@ -39,6 +39,7 @@ reference:
   desc: These functions aid in querying the data, either by applying filters or mapping values.
 - contents:
   - cci_group
+  - cci_search
   - diagnoses_at_admission
   - icd_to_ccsr
   - max_result_value

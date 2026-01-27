@@ -15,7 +15,7 @@
 #'
 #' The codes are structured hierarchically and the specific groups, interventions, and qualifiers vary across Sections. 
 #'
-#' The `cci_filter()` function provides a step-by-step search allowing users to extract a
+#' The `cci_search()` function provides a step-by-step search allowing users to extract a
 #' subset of CCI codes matching the Section, Group(s), Intervention(s), and/or Qualifier(s)
 #' that are of interest for a particular study.
 #'
@@ -25,7 +25,7 @@
 #' shown allowing users to select multiple categories at once (e.g., all interventions targeting
 #' the nervous system).
 #'
-#' @section User Input
+#' @section User Input:
 #' This function prompts the user to input IDs through the R console. For all
 #' prompts except Section:
 #' - Enter one or more IDs separated by commas (e.g., `"AA, AB, AC"`).
@@ -58,10 +58,10 @@
 #'   password = getPass("password")
 #' )
 #' }
-#' a <- cci_filter(cci_lookup)
+#' a <- cci_search(cci_lookup)
 #'
 #' @export
-cci_filter <- function(dbcon) {
+cci_search <- function(dbcon) {
   # LOOKUP TABLE
   cci_table <- read_excel("/mnt/nfs/projects/research_projects/Summer_Students/Alice/CCI_lookup.xlsx")  %>%
     as.data.frame()

@@ -8,6 +8,8 @@ import(data.table, except = c("first", "last", "between", "month", "hour",
 import(dplyr, except = c("first", "last", "between", "matches"))
 
 export("%ni%")
+export(cci_group)
+export(cci_search)
 export(charlson_comorbidity_index)
 export(coerce_to_datatable)
 export(cohort_creation)
