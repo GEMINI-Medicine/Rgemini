@@ -1,8 +1,8 @@
 test_that("CCI sections and subsections are correct", {
   cci_codes <- data.table(
     intervention_code = c(
-      "1AA.13H.AC2", 
-      "1M-A52H-A", 
+      "1AA.13H.AC2",
+      "1M-A52H-A",
       "2EA20ZZ ",
       "2 PB70DA",
       "3SC10KM",
@@ -19,12 +19,13 @@ test_that("CCI sections and subsections are correct", {
       "Diagnostic interventions",
       "Diagnostic interventions",
       "Diagnostic imaging interventions",
-      "Diagnostic imaging interventions", 
+      "Diagnostic imaging interventions",
       "Obstetrical and fetal interventions",
       "Cognitive, psychosocial and sensory therapeutic interventions",
-      "Other healthcare interventions", 
-      "Therapeutic interventions strengthening the immune system and/or genetic composition", 
-      NA),
+      "Other healthcare interventions",
+      "Therapeutic interventions strengthening the immune system and/or genetic composition",
+      NA
+    ),
     subsection_descr_expected = c(
       "Therapeutic Interventions on the Nervous System",
       "Therapeutic Interventions on the Lymphatic System",
@@ -39,10 +40,9 @@ test_that("CCI sections and subsections are correct", {
       NA
     )
   )
-  
+
   res <- cci_group(cci_codes)
-  
+
   expect_equal(res$section_descr, res$section_descr_expected)
   expect_equal(res$subsection_descr, res$subsection_descr_expected)
-  
 })

@@ -7,13 +7,13 @@
 #' CCI codes are alphanumeric codes with 5-10 characters, where a given character
 #' defines the following features:
 #' 1) Section (1 character): Broad realm of interventions (e.g., 1 = physical/physiological therapeutic interventions)
-#' 2) Group (2 characters): Subgroups within each Section, e.g., based on anatomy site (e.g., SC = spinal vertebrae) 
+#' 2) Group (2 characters): Subgroups within each Section, e.g., based on anatomy site (e.g., SC = spinal vertebrae)
 #' 3) Intervention (2 characters): Procedure/intervention types within a given Section (e.g., 75 = fusion)
-#' 4) Qualifier 1 (2 characters): Optional details, such as approach/technique used (e.g., LL = using open anterior approach) 
+#' 4) Qualifier 1 (2 characters): Optional details, such as approach/technique used (e.g., LL = using open anterior approach)
 #' 5) Qualifier 2 (2 characters): Optional details, such as devices used/implanted (e.g., KD = fixation device)
 #' 6) Qualifier 3 (1 character): Optional details, such as tissues used (e.g., A = autograft)
 #'
-#' The codes are structured hierarchically and the specific groups, interventions, and qualifiers vary across Sections. 
+#' The codes are structured hierarchically and the specific groups, interventions, and qualifiers vary across Sections.
 #'
 #' The `cci_filter()` function provides a step-by-step search allowing users to extract a
 #' subset of CCI codes matching the Section, Group(s), Intervention(s), and/or Qualifier(s)
@@ -63,7 +63,7 @@
 #' @export
 cci_filter <- function(dbcon) {
   # LOOKUP TABLE
-  cci_table <- read_excel("/mnt/nfs/projects/research_projects/Summer_Students/Alice/CCI_lookup.xlsx")  %>%
+  cci_table <- read_excel("/mnt/nfs/projects/research_projects/Summer_Students/Alice/CCI_lookup.xlsx") %>%
     as.data.frame()
   # ALL CODES
   cci_lookup <- dbGetQuery(dbcon, "SELECT * FROM lookup_cci;") %>%
@@ -102,7 +102,8 @@ cci_filter <- function(dbcon) {
         pagination = TRUE,
         striped = TRUE,
         highlight = TRUE,
-        resizable = TRUE),
+        resizable = TRUE
+      ),
       htmltools::tags$h1("Section number"),
       htmltools::tags$h3("This number dictates the values of the rest of the code")
     ))
@@ -147,7 +148,7 @@ cci_filter <- function(dbcon) {
         filter(ID %in% cci_codes[[category]]) %>%
         select(ID, Description, Include, Grouping, Placeholder, ATC_Codes)
       dropdown(relavent_ids, code_sect, category)
-      input <- readline(paste("Enter ID(s) of the", toupper(c(category)),"you want to select. Press Enter to select all IDs or type 'none' for no IDs in this category. Enter the Placeholder ID to select all IDs in the grouping.Separate IDs with a coma:"))
+      input <- readline(paste("Enter ID(s) of the", toupper(c(category)), "you want to select. Press Enter to select all IDs or type 'none' for no IDs in this category. Enter the Placeholder ID to select all IDs in the grouping.Separate IDs with a coma:"))
       # Validating inputs
       if (input == "quit") {
         return("quit")
@@ -163,7 +164,7 @@ cci_filter <- function(dbcon) {
         if (is.numeric(item)) {
           item <- as.integer(item)
         }
-        if (!(item %in% relavent_ids$ID) && !(item %in% temp)){
+        if (!(item %in% relavent_ids$ID) && !(item %in% temp)) {
           print("Please input valid ID")
           return(find_vals(category, sect_lookup, code_sect, cci_codes))
         } else if (item %in% relavent_ids$Placeholder) {
@@ -205,11 +206,12 @@ cci_filter <- function(dbcon) {
         pagination = FALSE,
         striped = TRUE,
         highlight = TRUE,
-        resizable = TRUE),
+        resizable = TRUE
+      ),
       htmltools::tags$h1(c(category)),
       htmltools::tags$h3("figure out what to type")
     ))
-    input <- readline(paste("Enter ID(s) of the", toupper(c(category)),"you want to select. Press Enter to select all IDs or type 'none' for no IDs in this category. Separate IDs with a coma: "))
+    input <- readline(paste("Enter ID(s) of the", toupper(c(category)), "you want to select. Press Enter to select all IDs or type 'none' for no IDs in this category. Separate IDs with a coma: "))
     # Validating Inputs
     if (input == "quit") {
       return("quit")
@@ -235,7 +237,7 @@ cci_filter <- function(dbcon) {
     if (length(inp_list) == 0) {
       print(paste("All", c(category), " IDs selected."))
       return(cci_codes)
-    } else if (is.character(inp_list) && length(inp_list) == 1 && inp_list == 'none') {
+    } else if (is.character(inp_list) && length(inp_list) == 1 && inp_list == "none") {
       cci_codes <- cci_codes[cci_codes[[category]] == "" | is.na(cci_codes[[category]]), ]
     } else {
       cci_codes <- cci_codes[cci_codes[[category]] %in% inp_list, ]
@@ -249,7 +251,8 @@ cci_filter <- function(dbcon) {
     broad_groups <- relavent_ids %>%
       mutate(
         display_group_text = ifelse(is.na(Grouping), Description, Grouping),
-        display_group_code = ifelse(is.na(Placeholder), ID, Placeholder)) %>%
+        display_group_code = ifelse(is.na(Placeholder), ID, Placeholder)
+      ) %>%
       # Makes sure category dont overlap
       distinct(display_group_code, display_group_text) %>%
       mutate(display_group_code = as.integer(display_group_code))
