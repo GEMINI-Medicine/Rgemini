@@ -44,8 +44,8 @@
 #'
 #' @examples
 #' cci_codes <- data.table(intervention_code = c(
-#'     "1MA52HA", "2PB70DA", "3SC10KM", "5LB08ZZ", "6KA02ME", "8AA70BABA"
-#'     ))
+#'   "1MA52HA", "2PB70DA", "3SC10KM", "5LB08ZZ", "6KA02ME", "8AA70BABA"
+#' ))
 #' res <- cci_group(cci_codes)
 #'
 #' @references
@@ -54,7 +54,6 @@
 #' @export
 #'
 cci_group <- function(cci_codes) {
-
   ## prepare data
   # check input
   check_input(
