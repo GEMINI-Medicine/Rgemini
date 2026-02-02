@@ -96,8 +96,9 @@ dbcon <- DBI::dbConnect(drv,
   user = getPass("Enter user:"),
   password = getPass("password")
 )
-}
 cci_filtered <- cci_search(dbcon)
+}
+
 }
 \references{
 https://www.cihi.ca/sites/default/files/document/guide-for-users-of-cci-manual-en.pdf
