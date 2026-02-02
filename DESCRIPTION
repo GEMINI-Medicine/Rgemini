@@ -1,7 +1,7 @@
 Package: Rgemini
 Type: Package
 Title: R Functions for GEMINI Data
-Version: 1.1.0
+Version: 2.0.0
 Author: GEMINI
 Maintainer: GEMINI <GEMINI.Research@unityhealth.to>
 Description: Common functions for GEMINI data analyses.

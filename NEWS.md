@@ -1,46 +1,37 @@
-# Rgemini `develop`
+# Rgemini `2.0.0`
 
-* **New vignette:**
-  * Migrated Rxnorm-Pharmacy-Mapping Vignette from GEMINIpkg, and added guidelines for HPC4Health users on `rxnorm_query()` and `prepare_pharm_for_validation()`.
+* **Addition of RxNorm functions**:
+  * `rxnorm_query()` to identify drugs of interest from pharmacy table
+  * `prepare_pharm_for_validation()` to standardize RxNorm mapping validation
+  * `normalize_text()` utility function to standardize medication names
+  * Rxnorm vignette with step-by-step instructions for pharmacy mapping workflow
+    * *Changes for internal GEMINI staff:* Compared to the previous GEMINIpkg version of RxNorm, the following changes have been made
+      * improved documentation
+      * `rxnorm_query()`: Changes to input arguments
+      * `prepare_pharm_for_validation()`:
+        * DB connection to `drm_cleandb_v4_1_1` required to query `lookup_pharmacy_mapping` table with previously validated mappings
+        * Pharmacy mapping DB no longer queried, but can be provided as `custom_lookup`
 
-* **New functions:**
-  * `prepare_pharm_for_validation()` function migrated from GEMINIpkg to standardize workflow for pharmacy mapping validation following rxnorm_query.
-  * To support broader use cases, the migrated function now takes uses the `lookup_pharmacy_mapping` table in database versions `drm_cleandb_v4_1_1`/`h4h_template_v5_0_1` and newer. Alternatively, a custom lookup table can be provided.
-  * `covid_surge_index()` function that calculates the COVID surge index for hospitals in the database.
+* **Other new functions**:
+  * `covid_surge_index()` function that calculates the COVID surge index by hospital-month
   * `cci_group()` to derive grouping of intervention codes into CCI sections and subsections
   * `cci_search()` to identify CCI codes for interventions of interest
 
-**Rxnorm migration**
-* added `GEMINIpkg::gemini_rxnorm_query()` as `rxnorm_query()`, with the following changes
-  * improved documentation
-  * changed the `db_con` parameter to `dbcon`
-  * changed `drug_input` argument name to `drug_name` and `class_input` to `drug_class`
-  * changed the `genc_ids` parameter to `cohort`
-  * removed the `sites` parameter
-  * added `detailed_search` and `return_drug_list` as explicit parameters
-  * applied `find_db_tablename` to query `pharmacy_subset` on H4H
-* Added `normalize_text()` utility function
- 
-**Other changes**
-* Fixed `render_cell_suppression.strat()` to be compatible with table1 version 1.5.0
-* Removed age exclusion in `episodes_of_care()` to accommodate paeds cohort
-* Small bug fix in `daily_census` to return all hospital ID variables provided in `cohort` input
-* Added hex sticker
-* Small fix in `data_coverage` for `hospital_num` class
-* Removed repeated warning messages in `loop_mlaps`
-* Integration of issues with Jira
-* Updated readmission vignette to clarify use of restricted cohort in derived readmission
-* Improved function documentation
-* Refactored `disability()` and `frailty_score()` to remove dependency on `fuzzyjoin` package
 * **Testing improvements:**
   * Unit tests are now also run in Python via rpy2 to ensure cross-language compatibility
 
-* **Miscellanous:**
+* **Bug fixes**
+  * Fixed `render_cell_suppression.strat()` to be compatible with table1 version 1.5.0
+  * Small bug fix in `daily_census()` to return all hospital ID variables provided in `cohort` input
+  * Small fix in `data_coverage()` for `hospital_num` class
+  * Removed repeated warning messages in `loop_mlaps()`
+
+* **Miscellaneous**:
+  * Removed age exclusion in `episodes_of_care()` to accommodate paeds cohort
+  * Updated readmission vignette to clarify use of restricted cohort (all-Med & ICU) in derived readmission flags
+  * Refactored `disability()` and `frailty_score()` to remove dependency on `fuzzyjoin` package
   * Added hex sticker
-  * Small fix in `data_coverage` for `hospital_num` class
-  * Removed repeated warning messages in `loop_mlaps`
   * Integration of issues with Jira
-  * Improved function documentation
 
 
 # Rgemini `1.1.0`
