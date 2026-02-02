@@ -2,63 +2,88 @@
 % Please edit documentation in R/cci_search.R
 \name{cci_search}
 \alias{cci_search}
-\title{Filtering and Identify CCI intervention codes}
+\title{Identify relevant CCI codes for interventions of interest}
 \usage{
 cci_search(dbcon)
 }
 \arguments{
-\item{user_table}{(\code{data.frame} | \code{data.table})
-Table containing all interventions of interest, where one corresponds to
-CCI codes of patients. Please make sure the table contains a column named
-\code{intervention_code} (\code{character}).}
+\item{dbcon}{(\code{DBIConnection})\cr
+A \code{DBI} database connection to any GEMINI database.
+The function will query the \code{lookup_cci} table to identify all
+unique CCI codes, which will then be filtered for the relevant codes
+based on the step-by-step search criteria provided by the user via
+the terminal.}
 }
 \value{
 \code{data.table}
-This function returns a table containing the CCI codes of interest, together
-with their corresponding definitions.
-For each row in the output table, the following variables are returned:
+This function returns a table containing the filtered CCI codes
+matching the user's search criteria. For each row in the output table,
+the following variables are returned:
 \itemize{
-\item \code{intervention_code}: CCI code that matches the filtration criteria
+\item \code{intervention_code}: CCI code matching the search criteria
 \item \code{CCI_description}: description of the CCI code
 }
 }
 \description{
-The \href{https://www.cihi.ca/en/cci-coding-structure}{Canadian Classification of Health Interventions (CCI) codes}
-provide detailed documentation of all in-patient interventions in Canada.
-CCI codes are alphanumeric codes with 5-10 characters, where a given character
-defines the following features:
+The \href{https://www.cihi.ca/sites/default/files/document/guide-for-users-of-cci-manual-en.pdf}{Canadian Classification of Health Interventions (CCI) codes} provide a
+detailed classification of all inpatient interventions in Canada,
+with more than 17,000 unique, alphanumeric codes.
+
+\code{cci_search()} faciliates the process of indentifying relevant CCI
+codes for interventions of interest. For example, researchers may want
+to identify all CCI codes related to diagnostic imaging performed on a
+specific body region. The function enables this by breaking down
+all existing CCI codes into their underlying components (see
+hierarchical coding structure
+\href{https://www.cihi.ca/en/cci-coding-structure}{here}, and providing a
+step-by-step filtering approach allowing researchers to identify
+CCI codes of interest.
+}
+\details{
+CCI codes contain 5-10 alphanumeric characters defining the following
+features:
 \enumerate{
-\item Section (1 character): Broad realm of interventions (e.g., 1 = physical/physiological therapeutic interventions)
-\item Group (2 characters): Subgroups within each Section, e.g., based on anatomy site (e.g., SC = spinal vertebrae)
-\item Intervention (2 characters): Procedure/intervention types within a given Section (e.g., 75 = fusion)
-\item Qualifier 1 (2 characters): Optional details, such as approach/technique used (e.g., LL = using open anterior approach)
-\item Qualifier 2 (2 characters): Optional details, such as devices used/implanted (e.g., KD = fixation device)
-\item Qualifier 3 (1 character): Optional details, such as tissues used (e.g., A = autograft)
+\item Section (1 character): Broad realm of interventions (e.g., 1 =
+"physical/physiological therapeutic interventions")
+\item Group (2 characters): Target region or area of focus. In Sections 1-3,
+this refers to anatomy site (e.g., SC = "spinal vertebrae") while in
+others, it refers to stage of pregnancy (Section 5), mental/sensory
+function (Section 6), intervention type (Section 7), or target
+disease/organism (Section 8)
+\item Intervention (2 characters): Procedure/intervention types within a
+given Section (e.g., 75 = "fusion")
+\item Qualifier 1 (2 characters): Optional details defining how (or why) the
+intervention was performed. In Sections 3/4/7, Qualifier 1 is all that is
+required to complete the CCI code. In other Sections (e.g., 1), it
+represents only a part of the qualifier - the approach and technique
+portion (e.g., LL = "using open anterior approach").
+\item Qualifier 2 (2 characters): Optional details, such as the tools, agents
+or modalities used (e.g., KD = "fixation device")
+\item Qualifier 3 (1 character): Optional details defining the type of tissue
+(e.g., A = "autograft") or group/strain of
+an organism/antigen used during the intervention.
 }
 
-The codes are structured hierarchically and the specific groups, interventions, and qualifiers vary across Sections.
+The \code{cci_search()} function provides a step-by-step search allowing
+users to extract a subset of CCI codes matching the Section, Group(s)
+Intervention(s), and/or Qualifier(s) that are of interest for a
+particular study.
 
-The \code{cci_search()} function provides a step-by-step search allowing users to extract a
-subset of CCI codes matching the Section, Group(s), Intervention(s), and/or Qualifier(s)
-that are of interest for a particular study.
-
-At each step, the user is shown available categories and their corresponding descriptions,
-which can be searched and sorted in the viewer pane. The user is then prompted to provide
-the entries they want to include in the terminal. In some cases, broader drop-down menus are
-shown allowing users to select multiple categories at once (e.g., all interventions targeting
-the nervous system).
+At each step, the user is shown available categories and their
+corresponding descriptions, which can be searched and sorted in the
+viewer pane. The user is then prompted to provide the entries they want
+to include via the terminal. In some cases, broader drop-down menus are
+shown allowing users to select multiple categories at once (e.g., all
+interventions targeting the nervous system).
 }
-\section{User Input}{
+\section{Warning}{
 
-This function prompts the user to input IDs through the R console. For all
-prompts except Section:
-\itemize{
-\item Enter one or more IDs separated by commas (e.g., \code{"AA, AB, AC"}).
-\item Press \code{Enter} without typing anything to select ALL available IDs.
-\item Type \code{"none"} to exclude all IDs for that category. This input will lead to
-an empty output table unless selecting for Qualifiers 2 or 3.
-\item Type \code{"quit"} to exit the filtering process early.
-}
+Note that CCI codes are structured in a nested hierarchy, where the
+specific Groups, Interventions, and Qualifiers vary across Sections
+(1st digit of CCI codes). The function therefore only allows users to
+select a single Section during the first step of the filtering process.
+If users want to search codes across different Sections, they need to run
+this function multiple times - once per Section.
 }
 
 \examples{
@@ -72,6 +97,9 @@ dbcon <- DBI::dbConnect(drv,
   password = getPass("password")
 )
 }
-a <- cci_search(cci_lookup)
-
+cci_filtered <- cci_search(dbcon)
+}
+\references{
+https://www.cihi.ca/sites/default/files/document/guide-for-users-of-cci-manual-en.pdf
+https://www.cihi.ca/en/cci-coding-structure
 }

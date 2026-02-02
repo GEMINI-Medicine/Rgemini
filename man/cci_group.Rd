@@ -23,9 +23,9 @@ corresponding groupings as follows:
 }
 }
 \description{
-The Canadian Classification of Health Interventions (CCI) codes provide a
-detailed classification of all in-patient interventions in Canada with more
-than 17,000 unique codes.
+The \href{https://www.cihi.ca/sites/default/files/document/guide-for-users-of-cci-manual-en.pdf}{Canadian Classification of Health Interventions (CCI) codes} provide a
+detailed classification of all inpatient interventions in Canada,
+with more than 17,000 unique, alphanumeric codes.
 
 The \code{cci_group()} function categorizes CCI codes into broader, clinically
 meaningful intervention categories based on each code's first 3 characters.

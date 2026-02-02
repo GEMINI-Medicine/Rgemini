@@ -2,9 +2,9 @@
 #' Grouping CCI intervention codes
 #'
 #' @description
-#' The Canadian Classification of Health Interventions (CCI) codes provide a
-#' detailed classification of all in-patient interventions in Canada with more
-#' than 17,000 unique codes.
+#' The [Canadian Classification of Health Interventions (CCI) codes](https://www.cihi.ca/sites/default/files/document/guide-for-users-of-cci-manual-en.pdf) provide a
+#' detailed classification of all inpatient interventions in Canada,
+#' with more than 17,000 unique, alphanumeric codes.
 #'
 #' The `cci_group()` function categorizes CCI codes into broader, clinically
 #' meaningful intervention categories based on each code's first 3 characters.
@@ -65,7 +65,7 @@ cci_group <- function(cci_codes) {
   # remove any special characters from intervention_codes
   cci_grouped[, intervention_code := gsub("[^A-Za-z0-9]", "", intervention_code)]
 
-  # read mapping file
+  # read mapping data
   mapping_cci <- Rgemini::mapping_cci %>%
     data.table()
   # remove any leading or trailing white spaces

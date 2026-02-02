@@ -9,6 +9,7 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports:
+    cli,
     comorbidity, 
     data.table, 
     DBI, 
@@ -16,6 +17,8 @@ Imports:
 	ggplot2,
 	ggpubr,
 	ggthemes,
+    htmltools,
+    htmlwidgets,
     httr,
     janitor,
     jsonlite,
@@ -28,6 +31,7 @@ Imports:
     reshape2,
     RCurl,
     RPostgreSQL,
+    rstudioapi,
 	scales,
     stddiff, 
     stringi, 

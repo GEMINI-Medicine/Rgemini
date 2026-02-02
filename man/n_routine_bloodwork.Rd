@@ -8,8 +8,7 @@ n_routine_bloodwork(dbcon, cohort, exclude_ed = FALSE)
 }
 \arguments{
 \item{dbcon}{(\code{DBIConnection})\cr
-A database connection to any GEMINI database. Only \code{DBI} connection is
-accepted as \code{odbc} connection may cause connection issues in certain environment.}
+A \code{DBI} database connection to any GEMINI database.}
 
 \item{cohort}{(\code{data.frame} or \code{data.table})
 Cohort table with all relevant encounters of interest, where each row
