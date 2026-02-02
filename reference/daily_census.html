@@ -17,7 +17,7 @@ whether the number of hospitalized patients on a particular day was above (&amp;
 (or max occupancy) during the time period of interest. By default, capacity is estimated as median(census)
 but users can specify other measures of typical/max capacity (see capacity_func input). Note that if cohorts
 are filtered/grouped based on patient characteristics (e.g., diagnosis, age etc.), this indicator simply reflects
-a standardized measure of patient counts, rather than a measure of true capacity limitations of medical wards."></head><body>
+a standardized measure of patient counts, rather than a measure of true capacity limitations of medical wards."><meta property="og:image" content="https://gemini-medicine.github.io/Rgemini/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -25,7 +25,7 @@ a standardized measure of patient counts, rather than a measure of true capacity
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,6 +41,7 @@ a standardized measure of patient counts, rather than a measure of true capacity
     <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
+    <li><a class="dropdown-item" href="../articles/pharmacy_mapping.html">RxNorm and Pharmacy Mapping</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_theme.html">Plotting Functions - Themes &amp; Colors</a></li>
   </ul></li>
@@ -54,8 +55,7 @@ a standardized measure of patient counts, rather than a measure of true capacity
 </nav><div class="container template-reference-topic">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Compute daily census</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Compute daily census</h1>
 
       <div class="d-none name"><code>daily_census.Rd</code></div>
     </div>
@@ -182,15 +182,16 @@ or as numeric input (e.g., <code>14</code> for 2pm).</p></dd>
 
 <dt id="arg-include-zero">include_zero<a class="anchor" aria-label="anchor" href="#arg-include-zero"></a></dt>
 <dd><p>(<code>logical</code>)
-Flag indicating whether days with census counts of <code>0</code> should be treated as real 0s or whether they should be returned
-as <code>census = NA</code>. Note that this is only relevant for edge cases where this function is applied to small cohorts or if
-users specify a <code>group_var</code> with small samples resulting in counts of 0 on some days. In those cases,
-the decision on whether or not to include 0s can affect the estimated typical capacity (and thus, the <code>capacity_ratio</code>
-output).</p>
-<p>By default (<code>include_zero = TRUE</code>), the function will return days where no <code>genc_ids</code> were hospitalized as <code>census = 0</code>.
-This is the desired behavior in cases where counts of 0 patients are conceptually meaningful. For example, when users
-want to analyze how many patients with a rare condition are in hospital on a typical day, days where <code>census = 0</code>
-represent true counts of 0 patients (assuming the cohort provides sufficient coverage of all hospitalized patients).
+Flag indicating whether days with census counts of <code>0</code> should be treated as real 0s or whether they should be
+returned as <code>census = NA</code>. Note that this is only relevant for edge cases where this function is applied to small
+cohorts or if users specify a <code>group_var</code> with small samples resulting in counts of 0 on some days. In those cases,
+the decision on whether or not to include 0s can affect the estimated typical capacity (and thus, the
+<code>capacity_ratio</code> output).</p>
+<p>By default (<code>include_zero = TRUE</code>), the function will return days where no <code>genc_ids</code> were hospitalized as
+<code>census = 0</code>. This is the desired behavior in cases where counts of 0 patients are conceptually meaningful.
+For example, when users want to analyze how many patients with a rare condition are in hospital on a typical
+day, days where <code>census = 0</code> represent true counts of 0 patients (assuming the cohort provides sufficient coverage
+of all hospitalized patients).
 Note: If data availability periods differ between hospitals, <code>census</code> counts will only be set to 0 for dates
 that fall within the min-max date range for that particular site.</p>
 <p>In other scenarios, users may want to disregard days where <code>census = 0</code> by specifying <code>include_zero = FALSE</code>.
@@ -238,11 +239,11 @@ For any dates inside the buffer period, <code>census</code> and <code>capacity_r
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by GEMINIdata.</p>
+  <p>Developed by GEMINI.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>

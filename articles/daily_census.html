@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,6 +38,7 @@
     <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
+    <li><a class="dropdown-item" href="../articles/pharmacy_mapping.html">RxNorm and Pharmacy Mapping</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_theme.html">Plotting Functions - Themes &amp; Colors</a></li>
   </ul>
@@ -60,8 +61,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Daily Census</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Daily Census</h1>
             
       
 
@@ -123,8 +123,8 @@ database. It needs to contain the columns <code>genc_id</code>,
 <span></span>
 <span><span class="co"># Establish database connection</span></span>
 <span><span class="va">db</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="va">drv</span>,</span>
-<span>  dbname <span class="op">=</span> <span class="st">"DB_name"</span>,</span>
-<span>  host <span class="op">=</span> <span class="st">"172.XX.XX.XXX"</span>,</span>
+<span>  dbname <span class="op">=</span> <span class="st">"db_name"</span>,</span>
+<span>  host <span class="op">=</span> <span class="st">"domain_name.ca"</span>,</span>
 <span>  port <span class="op">=</span> <span class="fl">1234</span>,</span>
 <span>  user <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter user:"</span><span class="op">)</span>,</span>
 <span>  password <span class="op">=</span> <span class="fu">getPass</span><span class="op">(</span><span class="st">"Enter Password:"</span><span class="op">)</span></span>
@@ -225,7 +225,7 @@ the median daily census at each hospital during the study period:</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-datatable.com" class="external-link">data.table</a></span><span class="op">)</span> <span class="co">#  we are using data.table operations below, but users could also use tidyverse to analyze the function output</span></span>
 <span></span>
 <span><span class="co"># Compute median census at each site</span></span>
-<span><span class="va">median_census</span> <span class="op">&lt;-</span> <span class="va">census_output</span><span class="op">[</span>, <span class="fu">.</span><span class="op">(</span>median_census <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">census</span><span class="op">)</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">hospital_num</span><span class="op">]</span></span></code></pre></div>
+<span><span class="va">median_census</span> <span class="op">&lt;-</span> <span class="va">census_output</span><span class="op">[</span>, <span class="fu">.</span><span class="op">(</span>median_census <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">census</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">hospital_num</span><span class="op">]</span></span></code></pre></div>
 <table class="table">
 <thead><tr class="header">
 <th align="center">hospital_num</th>
@@ -259,14 +259,26 @@ the median daily census at each hospital during the study period:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># for plotting purposes, treat hospital_num (numeric) as a factor</span></span>
+<span><span class="va">census_output</span><span class="op">$</span><span class="va">hospital_num</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">census_output</span><span class="op">$</span><span class="va">hospital_num</span><span class="op">)</span></span>
+<span></span>
 <span><span class="co"># Plot census over time</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">census_output</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="va">date_time</span><span class="op">)</span>, y <span class="op">=</span> <span class="va">census</span>, group <span class="op">=</span> <span class="va">hospital_num</span>, color <span class="op">=</span> <span class="va">hospital_num</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">1.5</span>, show.legend <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_date.html" class="external-link">scale_x_date</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Date"</span>, breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="va">census_output</span><span class="op">$</span><span class="va">date_time</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="va">census_output</span><span class="op">$</span><span class="va">date_time</span><span class="op">)</span><span class="op">)</span>, by <span class="op">=</span> <span class="st">"1 months"</span><span class="op">)</span>, date_labels <span class="op">=</span> <span class="st">"%b\n%Y"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Mock figure: Daily census by hospital"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_classic</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="daily_census_files/figure-html/unnamed-chunk-5-1.png" width="80%" style="display: block; margin: auto;"></p>
+<p><img src="daily_census_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" alt="" width="80%" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="co">## Or alternatively, use Rgemini::plot_over_time</span></span>
+<span><span class="co"># e.g., this will plot the average census per hospital per month</span></span>
+<span><span class="co"># Rgemini::plot_over_time(</span></span>
+<span><span class="co">#     census_output,</span></span>
+<span><span class="co">#     plot_var = "census",</span></span>
+<span><span class="co">#     time_var = "date_time"</span></span>
+<span><span class="co"># )</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot capacity ratio over time</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">census_output</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="va">date_time</span><span class="op">)</span>, y <span class="op">=</span> <span class="va">capacity_ratio</span>, group <span class="op">=</span> <span class="va">hospital_num</span>, color <span class="op">=</span> <span class="va">hospital_num</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">1.5</span>, show.legend <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
@@ -274,7 +286,7 @@ the median daily census at each hospital during the study period:</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Mock figure: Daily capacity ratio by hospital"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_classic</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<p><img src="daily_census_files/figure-html/unnamed-chunk-6-1.png" width="80%" style="display: block; margin: auto;"></p>
+<p><img src="daily_census_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="80%" style="display: block; margin: auto;"></p>
 <p>Note that <code>capacity_ratio</code> fluctuates around 1 (= typical
 occupancy) where values &gt; 1 correspond to days with higher occupancy
 than usual.</p>
@@ -295,7 +307,7 @@ overall cohort, they can provide an optional <code>time_period</code>
 input specifying a start and end date.</p>
 <p>For example, to calculate the census from June 1, 2016 - Dec 31,
 2016:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Compute census for specific time period</span></span>
 <span><span class="va">census_output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/daily_census.html">daily_census</a></span><span class="op">(</span><span class="va">admdad</span>, time_period <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2016-06-01"</span>, <span class="st">"2016-12-31"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>Note that in this case, the <code>capacity_ratio</code> is calculated
@@ -329,7 +341,7 @@ Availability of these variables is low for certain cohorts and SCU
 units. Therefore, users are advised to carefully inspect the SCU table
 to make an informed decision about whether to exclude SCU encounters,
 and if yes, which SCU entries to exclude.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># exclude SCU encounters from census</span></span>
 <span><span class="va">scu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbGetQuery.html" class="external-link">dbGetQuery</a></span><span class="op">(</span><span class="va">db</span>, <span class="st">"SELECT * FROM ipscu;"</span><span class="op">)</span></span>
 <span></span>
@@ -346,7 +358,7 @@ variables to obtain patient counts (and capacity ratios) for subgroups
 of interest, such as different medical subservices or physicians.</p>
 <p>Here is a simple example where census is grouped by patients’ gender
 and age (&lt;65 vs. 65+):</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create age category</span></span>
 <span><span class="va">admdad</span><span class="op">$</span><span class="va">age_cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">admdad</span><span class="op">$</span><span class="va">age</span> <span class="op">&lt;=</span> <span class="fl">65</span>, <span class="st">"&lt;=65"</span>, <span class="st">"&gt;65"</span><span class="op">)</span></span>
 <span></span>
@@ -452,7 +464,7 @@ Alternatively, users can specify other measures of central tendency to
 obtain typical occupancy (“<code>mean</code>”, “<code>mode</code>”) or
 estimate capacity based on the maximum occupancy
 (“<code>max</code>”).</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get occupancy relative to max capacity (estimated based on max(census))</span></span>
 <span><span class="va">census_output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/daily_census.html">daily_census</a></span><span class="op">(</span><span class="va">admdad</span>, capacity_func <span class="op">=</span> <span class="st">"max"</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -467,7 +479,7 @@ the function counts all patients with
 <code>discharge_date_time &gt;= '2015-04-01 08:00:00'</code>. Users can
 specify a different reference time by providing an optional
 <code>time_of_day</code> input:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calculate census at 2.30pm each day</span></span>
 <span><span class="va">census_output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/daily_census.html">daily_census</a></span><span class="op">(</span><span class="va">admdad</span>, time_of_day <span class="op">=</span> <span class="st">"14:30:00"</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -479,7 +491,7 @@ specify a different reference time by providing an optional
 timeline of a given hospital, users may observe a pattern similar to
 this, where census counts suddenly drop at the end of the specified time
 period:</p>
-<p><img src="daily_census_files/figure-html/unnamed-chunk-13-1.png" width="80%" style="display: block; margin: auto;"></p>
+<p><img src="daily_census_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" alt="" width="80%" style="display: block; margin: auto;"></p>
 <p>This effect is due to a truncation bias that can occur if the end of
 the specified time period (here April 2018) is close to the last
 available date in the overall cohort (e.g., the cohort only contains
@@ -507,12 +519,12 @@ in the cohort).</p>
 following output, which removes the truncation bias shown in the
 previous figure by setting the last 30 days of the time period to
 <code>NA</code>:</p>
-<p><img src="daily_census_files/figure-html/unnamed-chunk-14-1.png" width="80%" style="display: block; margin: auto;"></p>
+<p><img src="daily_census_files/figure-html/unnamed-chunk-14-1.png" class="r-plt" alt="" width="80%" style="display: block; margin: auto;"></p>
 <p>Users can specify other buffer periods (in full days) based on their
 cohort (and the typical length of stay observed in that cohort). For
 example, to set the buffer period to 10 days, run the following
 code:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># specify buffer of 10 days at end of time period</span></span>
 <span><span class="va">census_output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/daily_census.html">daily_census</a></span><span class="op">(</span><span class="va">admdad</span>, buffer <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
 <p>Note: In this example, if users specify a <code>time_period</code>
@@ -560,10 +572,10 @@ either run the <code><a href="../reference/daily_census.html">daily_census()</a>
 study year, or they could run the function on the whole time period and
 calculate a year-over-year <code>capacity_ratio</code> based on the raw
 <code>census</code> output provided by the function, e.g.:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># calculate capacity_ratio based on median census *per year*</span></span>
-<span><span class="va">census_output</span><span class="op">[</span>, <span class="va">year</span> <span class="op">:=</span> <span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/IDateTime.html" class="external-link">year</a></span><span class="op">(</span><span class="va">census_output</span><span class="op">$</span><span class="va">date_time</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="va">census_output</span><span class="op">[</span>, <span class="va">capacity_ratio_yoy</span> <span class="op">:=</span> <span class="va">census</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">census</span><span class="op">)</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"hospital_num"</span>, <span class="st">"year"</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
+<span><span class="va">census_output</span><span class="op">[</span>, <span class="va">year</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/IDateTime.html" class="external-link">year</a></span><span class="op">(</span><span class="va">census_output</span><span class="op">$</span><span class="va">date_time</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">census_output</span><span class="op">[</span>, <span class="va">capacity_ratio_yoy</span> <span class="op">:=</span> <span class="va">census</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">census</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"hospital_num"</span>, <span class="st">"year"</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
 <p>Similarly, users could define other indicators of typical occupancy
 that are currently not supported by the function (e.g., trimmed
 means).</p>
@@ -575,11 +587,11 @@ means).</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by GEMINIdata.</p>
+  <p>Developed by GEMINI.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

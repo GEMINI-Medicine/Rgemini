@@ -3,7 +3,7 @@
 summary statistics (e.g., median [Q1, Q3], % missing etc.) for multiple
 variables."><meta property="og:description" content="This function plots distributions (histograms/barplots) and shows basic
 summary statistics (e.g., median [Q1, Q3], % missing etc.) for multiple
-variables."></head><body>
+variables."><meta property="og:image" content="https://gemini-medicine.github.io/Rgemini/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -11,7 +11,7 @@ variables."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -27,6 +27,7 @@ variables."></head><body>
     <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
+    <li><a class="dropdown-item" href="../articles/pharmacy_mapping.html">RxNorm and Pharmacy Mapping</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_theme.html">Plotting Functions - Themes &amp; Colors</a></li>
   </ul></li>
@@ -40,8 +41,7 @@ variables."></head><body>
 </nav><div class="container template-reference-topic">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Plot descriptive summary statistics of multiple variables</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Plot descriptive summary statistics of multiple variables</h1>
 
       <div class="d-none name"><code>plot_summary.Rd</code></div>
     </div>
@@ -167,10 +167,16 @@ distribution (will show mean [SD] if <code>show_stats = TRUE</code>)</p></li>
 <span class="r-in"><span>  data <span class="op">=</span> <span class="va">admdad</span>,</span></span>
 <span class="r-in"><span>  plot_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"gender"</span>, <span class="st">"discharge_disposition"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The `margin` argument should be constructed using the `margin()` function.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The `margin` argument should be constructed using the `margin()` function.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> `stat_bin()` using `bins = 30`. Pick better value `binwidth`.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The `margin` argument should be constructed using the `margin()` function.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The `margin` argument should be constructed using the `margin()` function.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The `margin` argument should be constructed using the `margin()` function.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The `margin` argument should be constructed using the `margin()` function.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> `stat_bin()` using `bins = 30`. Pick better value `binwidth`.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> `stat_bin()` using `bins = 30`. Pick better value `binwidth`.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> `stat_bin()` using `bins = 30`. Pick better value `binwidth`.</span>
 <span class="r-plt img"><img src="plot_summary-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Providing plot_vars as a list input</span></span></span>
@@ -189,6 +195,10 @@ distribution (will show mean [SD] if <code>show_stats = TRUE</code>)</p></li>
 <span class="r-in"><span>    <span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The `margin` argument should be constructed using the `margin()` function.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The `margin` argument should be constructed using the `margin()` function.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The `margin` argument should be constructed using the `margin()` function.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The `margin` argument should be constructed using the `margin()` function.</span>
 <span class="r-plt img"><img src="plot_summary-2.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
@@ -198,11 +208,11 @@ distribution (will show mean [SD] if <code>show_stats = TRUE</code>)</p></li>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by GEMINIdata.</p>
+  <p>Developed by GEMINI.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>

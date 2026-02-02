@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,6 +38,7 @@
     <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
+    <li><a class="dropdown-item" href="../articles/pharmacy_mapping.html">RxNorm and Pharmacy Mapping</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_theme.html">Plotting Functions - Themes &amp; Colors</a></li>
   </ul>
@@ -60,8 +61,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Data Coverage</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Data Coverage</h1>
             
       
 
@@ -152,7 +152,7 @@ in a given table:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lookup_data_coverage</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbGetQuery.html" class="external-link">dbGetQuery</a></span><span class="op">(</span></span>
 <span>  <span class="va">db</span>, <span class="st">"SELECT * from lookup_data_coverage;"</span></span>
-<span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/data.table.html" class="external-link">data.table</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <blockquote>
 <p>This is an example (dummy version) of the
 <code>lookup_data_coverage</code> table showing the min-max coverage
@@ -692,7 +692,7 @@ for encounters discharged since April 2017:</p>
 <span>  plot_timeline <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  plot_coverage <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="figures%2Fdata_coverage%2Fcoverage_timeline_plot.png" width="60%"></p>
+<p><img src="figures/data_coverage/coverage_timeline_plot.png" class="r-plt" alt="" width="60%"></p>
 <p><br></p>
 <p><strong>Let’s inspect this plot. What should you look out
 for?</strong></p>
@@ -1256,7 +1256,7 @@ since April 2017:</p>
 <span>  plot_timeline <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  plot_coverage <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="figures%2Fdata_coverage%2Fcoverage_plot.png" width="60%"></p>
+<p><img src="figures/data_coverage/coverage_plot.png" class="r-plt" alt="" width="60%"></p>
 <p><br></p>
 <p>The expected percentage of <code>genc_ids</code> with an entry in a
 given table depends on the clinical context &amp; differences in
@@ -1586,7 +1586,7 @@ the color scheme by providing a <code>colors</code> input:</p>
 <span>  hospital_group <span class="op">=</span> <span class="st">"hosp_type"</span>,</span>
 <span>  colors <span class="op">=</span> <span class="fu"><a href="../reference/gemini_colors.html">gemini_colors</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="figures%2Fdata_coverage%2Fcoverage_custom_plot1.png" width="60%"></p>
+<p><img src="figures/data_coverage/coverage_custom_plot1.png" class="r-plt" alt="" width="60%"></p>
 <p><br></p>
 </div>
 <div class="section level3">
@@ -1608,7 +1608,7 @@ the user-specified dates. Note that the coverage plot (see <a href="#coverage_pl
 <code>custom_dates</code> input.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># define customized dates</span></span>
-<span><span class="va">custom_dates</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/data.table.html" class="external-link">data.table</a></span><span class="op">(</span></span>
+<span><span class="va">custom_dates</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lab"</span><span class="op">)</span>,</span>
 <span>  hospital_num <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span>,</span>
 <span>  min_date <span class="op">=</span> <span class="st">"2019-04-01"</span>,</span>
@@ -1623,7 +1623,7 @@ the user-specified dates. Note that the coverage plot (see <a href="#coverage_pl
 <span>  plot_coverage <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  custom_dates <span class="op">=</span> <span class="va">custom_dates</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="figures%2Fdata_coverage%2Fcoverage_custom_plot2.png" width="60%"></p>
+<p><img src="figures/data_coverage/coverage_custom_plot2.png" class="r-plt" alt="" width="60%"></p>
 <p><br></p>
 </div>
 <div class="section level3">
@@ -1645,11 +1645,11 @@ supported on HPC4Health due to vulnerabilities associated with the
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by GEMINIdata.</p>
+  <p>Developed by GEMINI.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

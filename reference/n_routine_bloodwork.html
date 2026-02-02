@@ -3,7 +3,7 @@
 Hemoglobin tests) for each hospital admission. Sodium and Hemoglobin tests
 are defined by OMOP codes. Sodium is the code 3019550. Hemoglobin is 3000963."><meta property="og:description" content="n_routine_bloodwork returns the number of routine bloodwork (Sodium and
 Hemoglobin tests) for each hospital admission. Sodium and Hemoglobin tests
-are defined by OMOP codes. Sodium is the code 3019550. Hemoglobin is 3000963."></head><body>
+are defined by OMOP codes. Sodium is the code 3019550. Hemoglobin is 3000963."><meta property="og:image" content="https://gemini-medicine.github.io/Rgemini/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -11,7 +11,7 @@ are defined by OMOP codes. Sodium is the code 3019550. Hemoglobin is 3000963."><
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -27,6 +27,7 @@ are defined by OMOP codes. Sodium is the code 3019550. Hemoglobin is 3000963."><
     <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
+    <li><a class="dropdown-item" href="../articles/pharmacy_mapping.html">RxNorm and Pharmacy Mapping</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_theme.html">Plotting Functions - Themes &amp; Colors</a></li>
   </ul></li>
@@ -40,8 +41,7 @@ are defined by OMOP codes. Sodium is the code 3019550. Hemoglobin is 3000963."><
 </nav><div class="container template-reference-topic">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Compute the number of routine bloodwork tests per encounter</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Compute the number of routine bloodwork tests per encounter</h1>
 
       <div class="d-none name"><code>n_routine_bloodwork.Rd</code></div>
     </div>
@@ -63,8 +63,7 @@ are defined by OMOP codes. Sodium is the code 3019550. Hemoglobin is 3000963.</p
 
 <dl><dt id="arg-dbcon">dbcon<a class="anchor" aria-label="anchor" href="#arg-dbcon"></a></dt>
 <dd><p>(<code>DBIConnection</code>)<br>
-A database connection to any GEMINI database. Only <code>DBI</code> connection is
-accepted as <code>odbc</code> connection may cause connection issues in certain environment.</p></dd>
+A <code>DBI</code> database connection to any GEMINI database.</p></dd>
 
 
 <dt id="arg-cohort">cohort<a class="anchor" aria-label="anchor" href="#arg-cohort"></a></dt>
@@ -130,11 +129,11 @@ tests are mapped to
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by GEMINIdata.</p>
+  <p>Developed by GEMINI.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>

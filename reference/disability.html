@@ -27,7 +27,7 @@ encounters for a given patient.
 By setting component_wise to TRUE, users can choose to return all
 identified diagnosis codes for encounters with a disability, together with
 the disability category each code was matched with (e.g., physical/sensory/
-developmental disability - see below)."></head><body>
+developmental disability - see below)."><meta property="og:image" content="https://gemini-medicine.github.io/Rgemini/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -35,7 +35,7 @@ developmental disability - see below)."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,6 +51,7 @@ developmental disability - see below)."></head><body>
     <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
+    <li><a class="dropdown-item" href="../articles/pharmacy_mapping.html">RxNorm and Pharmacy Mapping</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_theme.html">Plotting Functions - Themes &amp; Colors</a></li>
   </ul></li>
@@ -64,8 +65,7 @@ developmental disability - see below)."></head><body>
 </nav><div class="container template-reference-topic">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Identify encounters with disability</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Identify encounters with disability</h1>
 
       <div class="d-none name"><code>disability.Rd</code></div>
     </div>
@@ -187,7 +187,7 @@ more details, see <a href="https://www.cihi.ca/sites/default/files/document/diag
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">ipadmdad</span> <span class="op">&lt;-</span> <span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">dbcon</span>, <span class="st">"select * from admdad"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">ipdiagnosis</span> <span class="op">&lt;-</span> <span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">dbcon</span>, <span class="st">"select * from ipdiagnosis"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">erdiagnosis</span> <span class="op">&lt;-</span> <span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">db</span>, <span class="st">"select * from erdiagnosis"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">erdiagnosis</span> <span class="op">&lt;-</span> <span class="fu">dbGetQuery</span><span class="op">(</span><span class="va">dbcon</span>, <span class="st">"select * from erdiagnosis"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># including ER diagnosis codes</span></span></span>
 <span class="r-in"><span><span class="fu">disability</span><span class="op">(</span>cohort <span class="op">=</span> <span class="va">ipadmdad</span>, ipdiag <span class="op">=</span> <span class="va">ipdiagnosis</span>, erdiag <span class="op">=</span> <span class="va">erdiagnosis</span><span class="op">)</span></span></span>
@@ -206,11 +206,11 @@ more details, see <a href="https://www.cihi.ca/sites/default/files/document/diag
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by GEMINIdata.</p>
+  <p>Developed by GEMINI.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>

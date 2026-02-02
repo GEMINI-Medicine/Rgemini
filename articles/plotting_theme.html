@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,6 +38,7 @@
     <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
+    <li><a class="dropdown-item" href="../articles/pharmacy_mapping.html">RxNorm and Pharmacy Mapping</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_theme.html">Plotting Functions - Themes &amp; Colors</a></li>
   </ul>
@@ -60,8 +61,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Plotting Functions - Themes &amp; Colors</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Plotting Functions - Themes &amp; Colors</h1>
             
       
 
@@ -113,12 +113,12 @@ Palettes</a> for more details):</p>
 <span></span>
 <span><span class="co"># original ggplot theme</span></span>
 <span><span class="va">my_plot</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Original plot"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="plotting_theme_files/figure-html/unnamed-chunk-1-1.png" width="336" style="display: block; margin: auto auto auto 0;"></p>
+<p><img src="plotting_theme_files/figure-html/unnamed-chunk-1-1.png" class="r-plt" alt="" width="336" style="display: block; margin: auto auto auto 0;"></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">my_plot</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/plot_theme.html">plot_theme</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="co"># add Rgemini plot_theme</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Plot with default GEMINI theme"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="plotting_theme_files/figure-html/unnamed-chunk-2-1.png" width="336" style="display: block; margin: auto auto auto 0;"></p>
+<p><img src="plotting_theme_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="" width="336" style="display: block; margin: auto auto auto 0;"></p>
 <p> </p>
 <div class="section level3">
 <h3 id="additional-inputs-for-plot_theme">Additional inputs for <code>plot_theme()</code><a class="anchor" aria-label="anchor" href="#additional-inputs-for-plot_theme"></a>
@@ -131,7 +131,7 @@ whether to show major/minor grid lines. For example:</p>
 <code class="sourceCode R"><span><span class="va">my_plot</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/plot_theme.html">plot_theme</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">15</span>, base_family <span class="op">=</span> <span class="st">"mono"</span>, show_grid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"major"</span>, <span class="st">"minor"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Mono plot with grid lines"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="plotting_theme_files/figure-html/unnamed-chunk-3-1.png" width="336" style="display: block; margin: auto auto auto 0;"></p>
+<p><img src="plotting_theme_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="336" style="display: block; margin: auto auto auto 0;"></p>
 <p> </p>
 <p>Additionally, <code><a href="../reference/plot_theme.html">plot_theme()</a></code> accepts inputs that can be
 passed to <code><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">ggplot2::theme()</a></code>, which allows for further
@@ -145,7 +145,7 @@ labels:</p>
 <span>    axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">45</span>, hjust <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Tall plot with tilted x-tick labels"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="plotting_theme_files/figure-html/unnamed-chunk-4-1.png" width="336" style="display: block; margin: auto auto auto 0;"></p>
+<p><img src="plotting_theme_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" alt="" width="336" style="display: block; margin: auto auto auto 0;"></p>
 <p> </p>
 </div>
 <div class="section level3">
@@ -174,7 +174,7 @@ characteristics specified by <code><a href="../reference/plot_theme.html">plot_t
 <span>  <span class="fu"><a href="../reference/plot_theme.html">plot_theme</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>plot.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>face <span class="op">=</span> <span class="st">"italic"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Plot with italicized title"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="plotting_theme_files/figure-html/unnamed-chunk-6-1.png" width="336" style="display: block; margin: auto auto auto 0;"></p>
+<p><img src="plotting_theme_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="336" style="display: block; margin: auto auto auto 0;"></p>
 <hr>
 </div>
 </div>
@@ -185,7 +185,7 @@ characteristics specified by <code><a href="../reference/plot_theme.html">plot_t
 applied to any figures. To view all color palettes, you can run:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_color_palettes.html">plot_color_palettes</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="plotting_theme_files/figure-html/unnamed-chunk-7-1.png" width="480" style="display: block; margin: auto auto auto 0;"></p>
+<p><img src="plotting_theme_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="480" style="display: block; margin: auto auto auto 0;"></p>
 <p>“GEMINI Glow” (palette #1) is used as the default color palette.</p>
 <div class="section level3">
 <h3 id="colorblind-accessibility">Colorblind Accessibility<a class="anchor" aria-label="anchor" href="#colorblind-accessibility"></a>
@@ -216,10 +216,10 @@ palette (#1) would be perceived by a colorblind person:</p>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="va">fig</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Original"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="plotting_theme_files/figure-html/unnamed-chunk-8-1.png" width="230.4" style="display: block; margin: auto auto auto 0;"></p>
+<p><img src="plotting_theme_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="230.4" style="display: block; margin: auto auto auto 0;"></p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">colorBlindness</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/colorBlindness/man/cvdPlot.html" class="external-link">cvdPlot</a></span><span class="op">(</span><span class="va">fig</span>, layout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"deuteranope"</span>, <span class="st">"protanope"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="plotting_theme_files/figure-html/unnamed-chunk-9-1.png" width="480" style="display: block; margin: auto auto auto 0;"></p>
+<p><img src="plotting_theme_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="" width="480" style="display: block; margin: auto auto auto 0;"></p>
 </div>
 <div class="section level3">
 <h3 id="selecting-gemini-palettesindividual-colors">Selecting GEMINI palettes/individual colors<a class="anchor" aria-label="anchor" href="#selecting-gemini-palettesindividual-colors"></a>
@@ -242,7 +242,7 @@ input that matches the starting character(s) of a given palette (e.g.,
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/plot_theme.html">plot_theme</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="../reference/gemini_colors.html">gemini_colors</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span> <span class="co"># = gemini_colors("S")</span></span></code></pre></div>
-<p><img src="plotting_theme_files/figure-html/unnamed-chunk-10-1.png" width="336" style="display: block; margin: auto auto auto 0;"></p>
+<p><img src="plotting_theme_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="336" style="display: block; margin: auto auto auto 0;"></p>
 <p> </p>
 <p>This approach works for figures generated with any R package.</p>
 <p> </p>
@@ -258,7 +258,7 @@ apply the color palettes. For example:</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/plot_theme.html">plot_theme</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/scale_color_gemini.html">scale_color_gemini</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span> <span class="co"># = gemini_colors("L")</span></span></code></pre></div>
-<p><img src="plotting_theme_files/figure-html/unnamed-chunk-11-1.png" width="336" style="display: block; margin: auto auto auto 0;"></p>
+<p><img src="plotting_theme_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" alt="" width="336" style="display: block; margin: auto auto auto 0;"></p>
 <p> </p>
 </div>
 <div class="section level3">
@@ -283,12 +283,12 @@ uneven brightness or discontinuities in hue. For more details, see <a href="http
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://sjmgarnier.github.io/viridis/" class="external-link">viridis</a></span><span class="op">)</span></span>
 <span><span class="va">fig</span> <span class="op">+</span> <span class="fu"><a href="https://sjmgarnier.github.io/viridis/reference/scale_viridis.html" class="external-link">scale_fill_viridis</a></span><span class="op">(</span>discrete <span class="op">=</span> <span class="cn">TRUE</span>, option <span class="op">=</span> <span class="st">"viridis"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="plotting_theme_files/figure-html/unnamed-chunk-13-1.png" width="336" style="display: block; margin: auto auto auto 0;"></p>
+<p><img src="plotting_theme_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" alt="" width="336" style="display: block; margin: auto auto auto 0;"></p>
 <p> </p>
 <p>… or viridis’ <strong>“Magma”</strong> palette:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fig</span> <span class="op">+</span> <span class="fu"><a href="https://sjmgarnier.github.io/viridis/reference/scale_viridis.html" class="external-link">scale_fill_viridis</a></span><span class="op">(</span>discrete <span class="op">=</span> <span class="cn">TRUE</span>, option <span class="op">=</span> <span class="st">"magma"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="plotting_theme_files/figure-html/unnamed-chunk-14-1.png" width="336" style="display: block; margin: auto auto auto 0;"></p>
+<p><img src="plotting_theme_files/figure-html/unnamed-chunk-14-1.png" class="r-plt" alt="" width="336" style="display: block; margin: auto auto auto 0;"></p>
 <p> </p>
 </div>
 <div class="section level4">
@@ -305,15 +305,15 @@ include:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://nanx.me/ggsci/" class="external-link">ggsci</a></span><span class="op">)</span></span>
 <span><span class="va">fig</span> <span class="op">+</span> <span class="fu"><a href="https://nanx.me/ggsci/reference/scale_jama.html" class="external-link">scale_fill_jama</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="plotting_theme_files/figure-html/unnamed-chunk-15-1.png" width="336" style="display: block; margin: auto auto auto 0;"></p>
+<p><img src="plotting_theme_files/figure-html/unnamed-chunk-15-1.png" class="r-plt" alt="" width="336" style="display: block; margin: auto auto auto 0;"></p>
 <p><strong>Lancet palette:</strong></p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fig</span> <span class="op">+</span> <span class="fu"><a href="https://nanx.me/ggsci/reference/scale_lancet.html" class="external-link">scale_fill_lancet</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="plotting_theme_files/figure-html/unnamed-chunk-16-1.png" width="336" style="display: block; margin: auto auto auto 0;"></p>
+<p><img src="plotting_theme_files/figure-html/unnamed-chunk-16-1.png" class="r-plt" alt="" width="336" style="display: block; margin: auto auto auto 0;"></p>
 <p><strong>JCO palette:</strong></p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fig</span> <span class="op">+</span> <span class="fu"><a href="https://nanx.me/ggsci/reference/scale_jco.html" class="external-link">scale_fill_jco</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="plotting_theme_files/figure-html/unnamed-chunk-17-1.png" width="336" style="display: block; margin: auto auto auto 0;"></p>
+<p><img src="plotting_theme_files/figure-html/unnamed-chunk-17-1.png" class="r-plt" alt="" width="336" style="display: block; margin: auto auto auto 0;"></p>
 <p> </p>
 </div>
 <div class="section level4">
@@ -330,13 +330,13 @@ palette</strong>:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">RColorBrewer</span><span class="op">)</span></span>
 <span><span class="va">fig</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_brewer.html" class="external-link">scale_fill_brewer</a></span><span class="op">(</span>palette <span class="op">=</span> <span class="st">"PRGn"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="plotting_theme_files/figure-html/unnamed-chunk-18-1.png" width="336" style="display: block; margin: auto auto auto 0;"></p>
+<p><img src="plotting_theme_files/figure-html/unnamed-chunk-18-1.png" class="r-plt" alt="" width="336" style="display: block; margin: auto auto auto 0;"></p>
 <p> </p>
 <p>You can explore all colorblind friendly ColorBrewer palettes by
 running:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/RColorBrewer/man/ColorBrewer.html" class="external-link">display.brewer.all</a></span><span class="op">(</span>colorblindFriendly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="plotting_theme_files/figure-html/unnamed-chunk-19-1.png" width="336" style="display: block; margin: auto auto auto 0;"></p>
+<p><img src="plotting_theme_files/figure-html/unnamed-chunk-19-1.png" class="r-plt" alt="" width="336" style="display: block; margin: auto auto auto 0;"></p>
 <hr>
 </div>
 </div>
@@ -370,11 +370,11 @@ border: 0;
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by GEMINIdata.</p>
+  <p>Developed by GEMINI.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

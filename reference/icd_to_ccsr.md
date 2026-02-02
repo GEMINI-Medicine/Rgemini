@@ -1,0 +1,198 @@
+# Identify CCSR categories for ICD-10-CA diagnosis codes
+
+CCSR [Clinical Classifications Software
+Refined](https://hcup-us.ahrq.gov/toolssoftware/ccsr/ccs_refined.jsp)
+provides a grouping of individual ICD-10 diagnosis codes into broader,
+clinically meaningful disease categories. The original CCSR grouping was
+developed based on US ICD-10-CM codes. GEMINI developed an algorithm
+mapping Canadian diagnosis codes (ICD-10-CA) to CCSR categories. The
+full mapping procedure is described
+[here](https://www.medrxiv.org/content/10.1101/2022.11.29.22282888v1).
+
+This function returns the GEMINI-derived CCSR mapping for each ICD-10-CA
+diagnosis in the `diagnosis_table` input.
+
+By default, the function will only return the CCSR category(s) for the
+most responsible discharge diagnosis (MRDx). This typically refers to
+type-M diagnoses, unless a patient has a type-6 diagnosis (see [CIHI
+definition of
+MRDx](https://www.cihi.ca/sites/default/files/document/hospital-standardized-mortality-ratio-meth-notes-en.pdf)
+page 13). Users can choose to obtain CCSR categories for all diagnosis
+types by setting `type_mrdx` to `FALSE`.
+
+## Usage
+
+``` r
+icd_to_ccsr(
+  dbcon,
+  dxtable,
+  type_mrdx = TRUE,
+  unique_mrdx = FALSE,
+  replace_invalidpdx = TRUE
+)
+```
+
+## Arguments
+
+- dbcon:
+
+  (`DBIConnection`)  
+  A database connection to any GEMINI database.
+
+- dxtable:
+
+  (`data.frame` \| `data.table`) Table containing ICD-10-CA diagnosis
+  codes of interest. Typically, this refers to the `ipdiagnosis` table,
+  which contains the CIHI in-patient diagnoses for each encounter (see
+  [GEMINI database
+  schema](https://geminimedicine.ca/the-gemini-database/)).
+
+  If a different type of diagnosis table is provided as input (e.g.,
+  `erdiagnosis`), please make sure the table contains a column named
+  `diagnosis_code` (`character`) where each row refers to a single,
+  alphanumeric diagnosis code consisting of 3-7 characters. If
+  `type_mrdx` is set to `TRUE`, the following additional columns are
+  required:
+
+  - `genc_id` (`integer`): GEMINI encounter ID
+
+  - `diagnosis_type` (`character`): Type of each diagnosis code
+    according to [CIHI diagnosis type
+    definitions](https://www.cihi.ca/sites/default/files/document/diagnosis-type-definitions-en.pdf).
+
+  Note, each encounter may have multiple rows, referring to diagnosis
+  codes of different types. However, typically, each encounter should
+  only have a single MRDx. In case `type_mrdx` is set to `TRUE`, the
+  function will return a warning if any encounters have multiple `MRDx`
+  codes. By default, those encounters will be returned with multiple
+  rows (one per MRDx). However, users may specify `unique_mrdx = TRUE`
+  (see below), which will cause the function to quit in case multiple
+  `MRDx` codes were found.
+
+- type_mrdx:
+
+  (`logical`) Flag indicating whether to filter by most responsible
+  discharge diagnosis. If `TRUE` (default), only MRDx codes (type 6 if
+  present, otherwise, type M) will be returned. This option is
+  recommended and should typically return a single diagnosis code per
+  encounter. If multiple `MRDx` codes are found, a warning message will
+  be shown (and if `unique_mrdx = TRUE`, the function will stop).
+  Additionally, the function will show a warning if there are any
+  encounters with missing MRDx code. If `type_mrdx = FALSE`, the
+  function Will return all diagnosis codes (of any diagnosis type) that
+  are present in `dxtable`. In that case, any customized filtering for
+  specific diagnosis types should be applied by the user outside of this
+  function. When using this option, please refer to the function's
+  vignette to find out more about potential issues when interpreting
+  default CCSR categories for non-MRDx diagnosis types.
+
+- unique_mrdx:
+
+  (`logical`) Flag indicating whether the requirement for a unique MRDx
+  code per encounter is strict. This is only relevant when
+  `type_mrdx = TRUE`. If `FALSE` (default), multiple MRDx
+  codes/encounter will only result in a warning to inform the user. The
+  function will finish running and will return multiple rows per
+  encounter. If `TRUE`, the function will quit if any `genc_ids` with
+  multiple MRDx codes are found and the user is advised to investigate
+  the cause of multiple MRDx codes.
+
+- replace_invalidpdx:
+
+  (`logical`) Flag indicating whether to replace invalid default CCSR
+  categories (default = `TRUE`). If set to `FALSE`, the function will
+  return the CCSR default categories as derived based on the original US
+  CCSR tool, which may include some ICD-10-CA codes where
+  `ccsr_default = 'XXX000'` ("invalid PDX"; see below for details). If
+  set to `TRUE` (default), `XXX000` values will be replaced with one of
+  the other (valid) CCSR categories 1-6 that have been mapped to a given
+  code. Specifically, if a given ICD-10-CA code has been mapped to a
+  single CCSR category (`ccsr_1`), `XXX000` will be replaced with that
+  category. Otherwise, if a code has been mapped to multiple CCSR 1-6
+  categories, the function will check which one of those is the most
+  frequent CCSR default category among ICD-10-CA codes that start with
+  the same first 3 characters (same ICD-10 chapter). If other codes from
+  the same ICD-10 chapter don't share the same CCSR default category (or
+  default is `XXX000` for all of them), `ccsr_1` is used as default.
+
+## Value
+
+`data.table` This function returns a table containing the ICD-10-CA
+diagnosis codes of interest, together with their corresponding
+(GEMINI-derived) CCSR category(s). For each row in the output table, the
+following variables are returned:
+
+- `diagnosis_code`: ICD-10-CA code
+
+- `diagnosis_code_desc`: description of the ICD-10-CA code
+
+- `ccsr_default`: default CCSR category, which is the main disease group
+  that was assigned to each diagnosis code and is typically the main
+  category of interest to be used in further analyses.
+
+- `ccsr_default_desc`: description of the CCSR default category
+
+- `ccsr_1` through `ccsr_6`: All 1-6 CCSR categories that were mapped to
+  a given code. Although `ccsr_default` is typically the main category
+  of interest, some ICD-10-CA codes are mapped to more than 1 (up to 6)
+  CCSR categories. In some circumstances, it may be of interest to
+  analyse all 1-6 CCSR categories, instead of only analyzing the default
+  CCSR. If required, the descriptions for CCSR 1-6 categories can be
+  obtained from the `lookup_ccsr` table.
+
+## Note
+
+The GEMINI-derived CCSR mappings were validated by clinical experts;
+however, users are advised to spot-check the mappings to ensure
+accuracy. Please notify the GEMINI team if you encounter any issues.
+Some mappings were derived based on an older version of CCSR (v2020.3)
+and may be subject to change with future updates.
+
+For some diagnosis codes, `ccsr_default` will be `NA`
+(`ccsr_default_desc = 'Unmapped'`), which indicates that the diagnosis
+code has not been mapped to any CCSR category yet. This is less likely
+to happen if `type_mrdx` is set to `TRUE` (default) since the vast
+majority of MRDx codes have been mapped by GEMINI. Note: Type-4
+morphology codes will always be returned as `'Unmapped'` since they are
+numeric codes based on ICD-0 (oncology) diagnoses, which are not meant
+to be mapped to CCSR categories.
+
+Some diagnosis codes will be returned with `ccsr_default = 'XXX000'`,
+which indicates that the diagnosis code is not a valid in-patient
+principal diagnosis (PDX) according to US diagnostic coding following
+Medicare Code Edits guidelines (see
+[here](https://hcup-us.ahrq.gov/toolssoftware/ccsr/DXCCSR-User-Guide-v2023-1.pdf).
+Due to mapping ambiguity and differences in coding between the US and
+Canada, you may find that some ICD-10-CA MRDx codes are returned as
+`'XXX000'`(invalid PDX). Additionally, for most clinical research
+projects, the distinction between valid vs. invalid principle diagnosis
+coding may not be relevant. Similarly, if users are interested in CCSR
+groups for all diagnosis types (`type_mrdx = FALSE`), the definition of
+CCSR default categories as valid vs. invalid PDX categories might not be
+meaningful. Therefore, by default, `replace_invalidpdx` is set to
+`TRUE`. However, please carefully read the documentation to understand
+how exactly invalid PDX categories are replaced within this function.
+
+## See also
+
+[`vignette("icd_to_ccsr", package = "Rgemini")`](https://gemini-medicine.github.io/Rgemini/articles/icd_to_ccsr.md)
+The vignette provides further context and some example code illustrating
+how to use CCSR categories in analyses.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+drv <- dbDriver("PostgreSQL")
+dbcon <- DBI::dbConnect(drv,
+  dbname = "db",
+  host = "domain_name.ca",
+  port = 1234,
+  user = getPass("Enter user:"),
+  password = getPass("password")
+)
+
+dxtable <- dbGetQuery(dbcon, "select * from ipdiagnosis") %>% data.table()
+icd_to_ccsr(dbcon, dxtable)
+} # }
+```

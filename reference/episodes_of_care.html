@@ -31,7 +31,7 @@ is calculated based on all available GEMINI encounters, and therefore, provides 
 of episodes of care. By contrast, datacuts or cohorts that have been pre-filtered may miss certain encounters,
 resulting in a loss of information. However, in certain situations, users may still find this function useful 1)
 to understand how the derived variable is calculated and 2) in case users need to re-calculate episodes of care
-or readmission rates for a restricted cohort (see below)."></head><body>
+or readmission rates for a restricted cohort (see below)."><meta property="og:image" content="https://gemini-medicine.github.io/Rgemini/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -39,7 +39,7 @@ or readmission rates for a restricted cohort (see below)."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -55,6 +55,7 @@ or readmission rates for a restricted cohort (see below)."></head><body>
     <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
+    <li><a class="dropdown-item" href="../articles/pharmacy_mapping.html">RxNorm and Pharmacy Mapping</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_theme.html">Plotting Functions - Themes &amp; Colors</a></li>
   </ul></li>
@@ -68,8 +69,7 @@ or readmission rates for a restricted cohort (see below)."></head><body>
 </nav><div class="container template-reference-topic">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Identify episodes of care</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Identify episodes of care</h1>
 
       <div class="d-none name"><code>episodes_of_care.Rd</code></div>
     </div>
@@ -119,7 +119,7 @@ table in the user-provided database (recommended approach).</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>(<code>data.frame</code>)<br>
-This function returns a <code>data.table</code> excluding records with invalid <code>patient_id_hashed</code>, <code>age &lt; 18</code>, or
+This function returns a <code>data.table</code> excluding records with invalid <code>patient_id_hashed</code> or
 <code>admit_category</code> of cadaveric donors in line with CIHI guidelines.
 Nine columns are returned: <code>genc_id</code>, <code>patient_id_hashed</code>, <code>time_to_next_admission</code> (<code>numeric</code>),
 <code>time_since_last_admission</code> (<code>numeric</code>), <code>AT_in_coded</code> (<code>TRUE</code>/<code>FALSE</code>), <code>AT_out_coded</code> (<code>TRUE</code>/<code>FALSE</code>),
@@ -186,11 +186,11 @@ concepts is needed for proper use of the function: transfer coded vs. transfer o
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by GEMINIdata.</p>
+  <p>Developed by GEMINI.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>

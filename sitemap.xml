@@ -9,11 +9,14 @@
 <url><loc>https://gemini-medicine.github.io/Rgemini/articles/epicare_and_readmission.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/articles/icd_to_ccsr.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/articles/index.html</loc></url>
+<url><loc>https://gemini-medicine.github.io/Rgemini/articles/pharmacy_mapping.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/articles/plotting_data_exploration.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/articles/plotting_theme.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/authors.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/index.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/news/index.html</loc></url>
+<url><loc>https://gemini-medicine.github.io/Rgemini/reference/cci_group.html</loc></url>
+<url><loc>https://gemini-medicine.github.io/Rgemini/reference/cci_search.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/charlson_comorbidity_index.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/check_input.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/coerce_to_datatable.html</loc></url>
@@ -26,6 +29,7 @@
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/coverage_message.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/coverage_timeline.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/covid_flag.html</loc></url>
+<url><loc>https://gemini-medicine.github.io/Rgemini/reference/covid_surge_index.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/create_ntiles.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/daily_census.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/data_coverage.html</loc></url>
@@ -59,6 +63,7 @@
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/length_of_stay.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/loop_mlaps.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/lunique.html</loc></url>
+<url><loc>https://gemini-medicine.github.io/Rgemini/reference/mapping_cci.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/mapping_cihi_frailty.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/mapping_disability.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/mapping_message.html</loc></url>
@@ -71,10 +76,12 @@
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/n_rbc_transfusions.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/n_routine_bloodwork.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/neighbourhood_ses.html</loc></url>
+<url><loc>https://gemini-medicine.github.io/Rgemini/reference/normalize_text.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/plot_color_palettes.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/plot_over_time.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/plot_summary.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/plot_theme.html</loc></url>
+<url><loc>https://gemini-medicine.github.io/Rgemini/reference/prepare_pharm_for_validation.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/quiet.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/readmission.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/render_cell_suppression.categorical.html</loc></url>
@@ -88,6 +95,7 @@
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/render_median.continuous.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/render_strict_cell_suppression.categorical.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/return_hospital_field.html</loc></url>
+<url><loc>https://gemini-medicine.github.io/Rgemini/reference/rxnorm_query.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/sample_icd.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/scale_color_gemini.html</loc></url>
 <url><loc>https://gemini-medicine.github.io/Rgemini/reference/scale_fill_gemini.html</loc></url>

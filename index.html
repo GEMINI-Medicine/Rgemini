@@ -13,6 +13,7 @@
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="R Functions for GEMINI Data">
 <meta name="description" content="Common functions for GEMINI data analyses.">
 <meta property="og:description" content="Common functions for GEMINI data analyses.">
+<meta property="og:image" content="https://gemini-medicine.github.io/Rgemini/logo.png">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -22,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,6 +41,7 @@
     <li><a class="dropdown-item" href="articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="articles/icd_to_ccsr.html">ICD to CCSR</a></li>
+    <li><a class="dropdown-item" href="articles/pharmacy_mapping.html">RxNorm and Pharmacy Mapping</a></li>
     <li><a class="dropdown-item" href="articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
     <li><a class="dropdown-item" href="articles/plotting_theme.html">Plotting Functions - Themes &amp; Colors</a></li>
   </ul>
@@ -58,13 +60,15 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="rgemini">Rgemini<a class="anchor" aria-label="anchor" href="#rgemini"></a>
-</h1></div>
+<div class="page-header">
+<img src="logo.png" class="logo" alt=""><h1 id="rgemini-">Rgemini 
+<a class="anchor" aria-label="anchor" href="#rgemini-"></a>
+</h1>
+</div>
 <!-- badges: start -->
 
 <!-- badges: end -->
-<p><code>Rgemini</code> (Our GEMINI) is a custom R package that provides a variety of functions to perform data analyses with <a href="https://www.geminimedicine.ca/" class="external-link">GEMINI</a> data.</p>
-<p>All functions have been developed by the GEMINI team and were tested on the current version of the <a href="https://geminimedicine.ca/the-gemini-database/" class="external-link">GEMINI database</a>.</p>
+<p><code>Rgemini</code> (“Our GEMINI”) is a custom R package that provides a variety of functions to perform data analyses with <a href="https://www.geminimedicine.ca/" class="external-link">GEMINI</a> data. All functions have been developed by the GEMINI team and were tested on the current version of the <a href="https://geminimedicine.ca/the-gemini-database/#data-dictionary" class="external-link">GEMINI database</a>.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -124,6 +128,41 @@
 <p>Please review the extensive <a href="https://gemini-medicine.github.io/Rgemini/">package documentation</a> and vignettes for detailed examples and sample code.</p>
 </div>
 <div class="section level2">
+<h2 id="using-rgemini-in-python">Using Rgemini in Python<a class="anchor" aria-label="anchor" href="#using-rgemini-in-python"></a>
+</h2>
+<p><code>Rgemini</code> can be used in Python via the <code>rpy2</code> package, which provides an interface to R from Python. This allows Python users to access Rgemini functions while working in their preferred environment.</p>
+<div class="section level3">
+<h3 id="installation-and-setup">Installation and Setup<a class="anchor" aria-label="anchor" href="#installation-and-setup"></a>
+</h3>
+<p>First, install <code>rpy2</code> in your Python environment:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="ex">pip</span> install rpy2</span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="example-usage">Example Usage<a class="anchor" aria-label="anchor" href="#example-usage"></a>
+</h3>
+<p>Here’s how to use Rgemini functions in Python:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="im">import</span> rpy2.robjects <span class="im">as</span> robjects</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="im">from</span> rpy2.robjects.packages <span class="im">import</span> importr</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co"># Import R packages</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>base <span class="op">=</span> importr(<span class="st">'base'</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>rgemini <span class="op">=</span> importr(<span class="st">'Rgemini'</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co"># Example: Using the lunique function</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>r_vector <span class="op">=</span> robjects.IntVector([<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">3</span>])</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>result <span class="op">=</span> rgemini.lunique(r_vector)</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Number of unique values: </span><span class="sc">{</span>result[<span class="dv">0</span>]<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div>
+<p><a href="https://github.com/GEMINI-Medicine/Rgemini/discussions/200" class="external-link">Here</a> is how to use Rgemini functions in R snippets in Python.</p>
+</div>
+<div class="section level3">
+<h3 id="important-limitations-and-disclaimers">Important Limitations and Disclaimers<a class="anchor" aria-label="anchor" href="#important-limitations-and-disclaimers"></a>
+</h3>
+<p><strong>Testing Coverage</strong>: Python compatibility has only been tested for functions that have unit tests in the R package. To check which functions have test coverage, review the test files in the <a href="https://github.com/GEMINI-Medicine/Rgemini/tree/main/tests/testthat" class="external-link"><code>tests/testthat/</code></a> directory.</p>
+<p><strong>Use with Caution</strong>: Even for functions where unit tests exist, users should exercise caution when running Rgemini in Python. The unit tests may not cover all possible use cases or edge conditions. We strongly recommend performing additional validation checks to ensure function outputs are correct for your specific data and use case.</p>
+<p><strong>Data Type Considerations</strong>: Be aware that data types may behave differently between R and Python. Pay special attention to how dates, factors, and missing values are handled when transferring data between the two environments.</p>
+</div>
+</div>
+<div class="section level2">
 <h2 id="contributing">Contributing<a class="anchor" aria-label="anchor" href="#contributing"></a>
 </h2>
 <p>Currently, only GEMINI team members can directly contribute to this package. However, we invite all users to share their feedback and suggestions with us so we can continue to improve <code>Rgemini</code>.</p>
@@ -179,7 +218,7 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li> GEMINIdata <br><small class="roles"> Maintainer </small>  </li>
+<li> GEMINI <br><small class="roles"> Maintainer </small>   </li>
 </ul>
 </div>
 
@@ -195,11 +234,11 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by GEMINIdata.</p>
+  <p>Developed by GEMINI.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

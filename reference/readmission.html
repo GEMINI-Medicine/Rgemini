@@ -7,9 +7,9 @@ episodes_of_care()). Specifically, an episode of care refers to all contiguous i
 any medical or intensive care service within the GEMINI network. Episodes involving inter-facility transfers are
 linked regardless of diagnosis. An acute care transfer is assumed to have occurred if either of the following
 criteria are met:
-An admission to a medical or intensive care service at a GEMINI hospital within 7 hours after discharge
+An admission to a GEMINI hospital within 7 hours after discharge
 from another GEMINI hospital, regardless of whether the transfer is coded
-An admission to a medical or intensive care service at a GEMINI hospital within 7-12 hours after discharge
+An admission to a GEMINI hospital within 7-12 hours after discharge
 from another GEMINI hospital, and at least 1 hospital has coded the transfer: Coded transfers are based on the
 DAD Institution From and Institution To fields
 For episodes of care involving acute care transfers, readmissions are attributed to the last hospital from which
@@ -21,13 +21,13 @@ episodes_of_care()). Specifically, an episode of care refers to all contiguous i
 any medical or intensive care service within the GEMINI network. Episodes involving inter-facility transfers are
 linked regardless of diagnosis. An acute care transfer is assumed to have occurred if either of the following
 criteria are met:
-An admission to a medical or intensive care service at a GEMINI hospital within 7 hours after discharge
+An admission to a GEMINI hospital within 7 hours after discharge
 from another GEMINI hospital, regardless of whether the transfer is coded
-An admission to a medical or intensive care service at a GEMINI hospital within 7-12 hours after discharge
+An admission to a GEMINI hospital within 7-12 hours after discharge
 from another GEMINI hospital, and at least 1 hospital has coded the transfer: Coded transfers are based on the
 DAD Institution From and Institution To fields
 For episodes of care involving acute care transfers, readmissions are attributed to the last hospital from which
-the patient was discharged before readmission."></head><body>
+the patient was discharged before readmission."><meta property="og:image" content="https://gemini-medicine.github.io/Rgemini/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -35,7 +35,7 @@ the patient was discharged before readmission."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,6 +51,7 @@ the patient was discharged before readmission."></head><body>
     <li><a class="dropdown-item" href="../articles/data_coverage.html">Data Coverage</a></li>
     <li><a class="dropdown-item" href="../articles/epicare_and_readmission.html">Episodes of care and Readmission</a></li>
     <li><a class="dropdown-item" href="../articles/icd_to_ccsr.html">ICD to CCSR</a></li>
+    <li><a class="dropdown-item" href="../articles/pharmacy_mapping.html">RxNorm and Pharmacy Mapping</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_data_exploration.html">Plotting Functions - Easy Plots for Data Exploration</a></li>
     <li><a class="dropdown-item" href="../articles/plotting_theme.html">Plotting Functions - Themes &amp; Colors</a></li>
   </ul></li>
@@ -64,8 +65,7 @@ the patient was discharged before readmission."></head><body>
 </nav><div class="container template-reference-topic">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Compute readmission and episodes of care.</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Compute readmission and episodes of care.</h1>
 
       <div class="d-none name"><code>readmission.Rd</code></div>
     </div>
@@ -78,9 +78,9 @@ encounters in order to avoid that linked transfers are counted as readmissions (
 <code><a href="episodes_of_care.html">episodes_of_care()</a></code>). Specifically, an episode of care refers to all contiguous inpatient hospitalizations to
 any medical or intensive care service within the GEMINI network. Episodes involving inter-facility transfers are
 linked regardless of diagnosis. An acute care transfer is assumed to have occurred if either of the following
-criteria are met:</p><ul><li><p>An admission to a medical or intensive care service at a GEMINI hospital within 7 hours after discharge
+criteria are met:</p><ul><li><p>An admission to a GEMINI hospital within 7 hours after discharge
 from another GEMINI hospital, regardless of whether the transfer is coded</p></li>
-<li><p>An admission to a medical or intensive care service at a GEMINI hospital within 7-12 hours after discharge
+<li><p>An admission to a GEMINI hospital within 7-12 hours after discharge
 from another GEMINI hospital, and at least 1 hospital has coded the transfer: Coded transfers are based on the
 DAD Institution From and Institution To fields</p></li>
 </ul><p>For episodes of care involving acute care transfers, readmissions are attributed to the last hospital from which
@@ -269,11 +269,11 @@ the CIHI definition of readmission by setting any of the CIHI flags (see above) 
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by GEMINIdata.</p>
+  <p>Developed by GEMINI.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>
