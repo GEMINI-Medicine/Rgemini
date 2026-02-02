@@ -8,7 +8,8 @@ cci_group(cci_codes)
 }
 \arguments{
 \item{cci_codes}{(\code{data.frame} | \code{data.table})
-Table containing \code{intervention_code} column that lists all CCI intervention
+Table containing \code{intervention_code} column that lists all CCI
+intervention
 codes of interest (e.g., from the \code{ipintervention} or \code{erintervention} table).}
 }
 \value{
