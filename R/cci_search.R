@@ -52,12 +52,19 @@
 #' interventions targeting the nervous system).
 #'
 #' @section Warning:
-#' Note that CCI codes are structured in a nested hierarchy, where the
-#' specific Groups, Interventions, and Qualifiers vary across Sections
-#' (1st digit of CCI codes). The function therefore only allows users to
-#' select a single Section during the first step of the filtering process.
-#' If users want to search codes across different Sections, they need to run
-#' this function multiple times - once per Section.
+#' This function can only search CCI codes that exist in the `lookup_cci`
+#' table. Some older, deprecated CCI codes may not be present in that table,
+#' and hence, can't be identified using `cci_search()`. We therefore recommend
+#' using this function as a starting point only, and complement it with an
+#' additional search (e.g., using regex) to make sure all relevant codes have
+#' been identified.
+#' 
+#' Additionally, please note that CCI codes are structured in a nested
+#' hierarchy, where the specific Groups, Interventions, and Qualifiers
+#' vary across Sections (1st digit of CCI codes). The function therefore
+#' only allows users to select a single Section during the first step of
+#' the filtering process. If users want to search codes across different
+#' Sections, they need to run this function multiple times - once per Section.
 #'
 #' @param dbcon (`DBIConnection`)\cr
 #' A `DBI` database connection to any GEMINI database.
@@ -97,6 +104,11 @@
 cci_search <- function(dbcon) {
   # check input type and column name
   Rgemini:::check_input(dbcon, argtype = "DBI")
+
+  message(paste(
+    "Searching CCI codes based on `lookup_cci` table.",
+    "Codes that don't exist in the `lookup_cci` table cannot be identified using this function."
+  ))
 
   ## CCI codes
   # Query lookup table to identify all unique CCI codes
