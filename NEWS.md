@@ -7,10 +7,10 @@
   * Rxnorm vignette with step-by-step instructions for pharmacy mapping workflow
     * *Changes for internal GEMINI staff:* Compared to the previous GEMINIpkg version of RxNorm, the following changes have been made
       * improved documentation
-      * `rxnorm_query()`: Changes to input arguments
+      * `rxnorm_query()`: Changes to input arguments and improved query speed
       * `prepare_pharm_for_validation()`:
         * DB connection to `drm_cleandb_v4_1_1` required to query `lookup_pharmacy_mapping` table with previously validated mappings
-        * Pharmacy mapping DB no longer queried, but can be provided as `custom_lookup`
+        * Pharmacy mapping DB no longer queried, but can be provided as `custom_lookup` input
 
 * **Other new functions**:
   * `covid_surge_index()` function that calculates the COVID surge index by hospital-month
