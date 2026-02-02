@@ -179,7 +179,9 @@ cci_search <- function(dbcon) {
       input_all[["numeric"]] <- as.numeric(input[grepl("^[-+]?(\\d+\\.?\\d*|\\.\\d+)([eE][-+]?\\d+)?$", input)])
 
       # extract alphabetic inputs
-      input_all[["character"]] <- input[grepl("^(?=.*[A-Za-z])[A-Za-z0-9_-]+$", input, perl = TRUE)]
+      input_all[["character"]] <- input[
+        grepl("^(?=.*[A-Za-z])[A-Za-z0-9_-]+$", input, perl = TRUE)
+      ]
 
       input <- input_all
     }
