@@ -58,7 +58,7 @@
 #' using this function as a starting point only, and complement it with an
 #' additional search (e.g., using regex) to make sure all relevant codes have
 #' been identified.
-#' 
+#'
 #' Additionally, please note that CCI codes are structured in a nested
 #' hierarchy, where the specific Groups, Interventions, and Qualifiers
 #' vary across Sections (1st digit of CCI codes). The function therefore

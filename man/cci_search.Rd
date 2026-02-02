@@ -78,12 +78,19 @@ interventions targeting the nervous system).
 }
 \section{Warning}{
 
-Note that CCI codes are structured in a nested hierarchy, where the
-specific Groups, Interventions, and Qualifiers vary across Sections
-(1st digit of CCI codes). The function therefore only allows users to
-select a single Section during the first step of the filtering process.
-If users want to search codes across different Sections, they need to run
-this function multiple times - once per Section.
+This function can only search CCI codes that exist in the \code{lookup_cci}
+table. Some older, deprecated CCI codes may not be present in that table,
+and hence, can't be identified using \code{cci_search()}. We therefore recommend
+using this function as a starting point only, and complement it with an
+additional search (e.g., using regex) to make sure all relevant codes have
+been identified.
+
+Additionally, please note that CCI codes are structured in a nested
+hierarchy, where the specific Groups, Interventions, and Qualifiers
+vary across Sections (1st digit of CCI codes). The function therefore
+only allows users to select a single Section during the first step of
+the filtering process. If users want to search codes across different
+Sections, they need to run this function multiple times - once per Section.
 }
 
 \examples{
