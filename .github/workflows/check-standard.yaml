@@ -26,6 +26,7 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
       _R_CHECK_CODETOOLS_PROFILE_: 'suppressUndefined=TRUE'
+      _R_CHECK_CRAN_INCOMING_REMOTE_: false
 
     steps:
       - uses: actions/checkout@v2
