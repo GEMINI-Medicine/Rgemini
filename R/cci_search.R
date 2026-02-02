@@ -145,11 +145,10 @@ cci_search <- function(dbcon) {
 
   ####### Utility functions #######
   ## get user input via terminal
-  get_user_input <- function(
-      category,
-      numeric = FALSE,
-      max_length = NULL,
-      valid_inputs = NULL) {
+  get_user_input <- function(category,
+                             numeric = FALSE,
+                             max_length = NULL,
+                             valid_inputs = NULL) {
     if (is.null(max_length) || max_length > 1) {
       cat("If providing multiple values, separate IDs with a comma, or press ENTER to select all IDs.\n")
       prompt <- paste0("Enter ", toTitleCase(category), " ID(s): ")
