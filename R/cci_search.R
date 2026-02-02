@@ -5,7 +5,7 @@
 #' The [Canadian Classification of Health Interventions (CCI) codes](https://www.cihi.ca/sites/default/files/document/guide-for-users-of-cci-manual-en.pdf) provide a
 #' detailed classification of all inpatient interventions in Canada,
 #' with more than 17,000 unique, alphanumeric codes.
-#' 
+#'
 #' `cci_search()` faciliates the process of indentifying relevant CCI
 #' codes for interventions of interest. For example, researchers may want
 #' to identify all CCI codes related to diagnostic imaging performed on a
@@ -15,10 +15,10 @@
 #' [here](https://www.cihi.ca/en/cci-coding-structure), and providing a
 #' step-by-step filtering approach allowing researchers to identify
 #' CCI codes of interest.
-#' 
+#'
 #' @details
 #' CCI codes contain 5-10 alphanumeric characters defining the following
-#' features: 
+#' features:
 #' 1) Section (1 character): Broad realm of interventions (e.g., 1 =
 #' "physical/physiological therapeutic interventions")
 #' 2) Group (2 characters): Target region or area of focus. In Sections 1-3,
@@ -50,7 +50,7 @@
 #' to include via the terminal. In some cases, broader drop-down menus are
 #' shown allowing users to select multiple categories at once (e.g., all
 #' interventions targeting the nervous system).
-#' 
+#'
 #' @section Warning:
 #' Note that CCI codes are structured in a nested hierarchy, where the
 #' specific Groups, Interventions, and Qualifiers vary across Sections
@@ -58,7 +58,7 @@
 #' select a single Section during the first step of the filtering process.
 #' If users want to search codes across different Sections, they need to run
 #' this function multiple times - once per Section.
-#' 
+#'
 #' @param dbcon (`DBIConnection`)\cr
 #' A `DBI` database connection to any GEMINI database.
 #' The function will query the `lookup_cci` table to identify all
@@ -88,16 +88,15 @@
 #' @references
 #' https://www.cihi.ca/sites/default/files/document/guide-for-users-of-cci-manual-en.pdf
 #' https://www.cihi.ca/en/cci-coding-structure
-#' 
+#'
 #' @import htmlwidgets htmltools cli reactable
 #' @importFrom tools toTitleCase
 #' @importFrom rstudioapi sendToConsole
 #' @export
 cci_search <- function(dbcon) {
-  
   # check input type and column name
   Rgemini:::check_input(dbcon, argtype = "DBI")
-  
+
   ## CCI codes
   # Query lookup table to identify all unique CCI codes
   cci_codes <- dbGetQuery(dbcon, "SELECT intervention_code, cci_long_title FROM lookup_cci;") %>%
@@ -106,7 +105,7 @@ cci_search <- function(dbcon) {
   cci_codes[, intervention_code := gsub("[^A-Za-z0-9]", "", intervention_code)]
   # remove CANCELLED code
   cci_codes <- cci_codes[!grepl("cancel", intervention_code, ignore.case = TRUE)]
-  
+
   # Separate codes into their component fields
   cci_codes$section <- as.numeric(substr(cci_codes$intervention_code, 1, 1))
   cci_codes$group <- substr(cci_codes$intervention_code, 2, 3)
@@ -114,7 +113,7 @@ cci_search <- function(dbcon) {
   cci_codes$qualifier1 <- substr(cci_codes$intervention_code, 6, 7)
   cci_codes$qualifier2 <- substr(cci_codes$intervention_code, 8, 9)
   cci_codes$qualifier3 <- substr(cci_codes$intervention_code, 10, 10)
-  
+
   ## Read mapping data
   mapping_cci <- Rgemini::mapping_cci %>%
     data.table()
@@ -124,13 +123,13 @@ cci_search <- function(dbcon) {
   })
   mapping_cci[, field := tolower(field)]
   mapping_cci[mapping_cci == ""] <- NA
-  
+
   # get sections
   list_sections <- mapping_cci %>%
     filter(field == "section") %>%
     mutate(ID = as.integer(as.character(idx))) %>%
     select(ID, description)
-  
+
   ####### Utility functions #######
   ## get user input via terminal
   get_user_input <- function(
@@ -139,16 +138,15 @@ cci_search <- function(dbcon) {
     max_length = NULL,
     valid_inputs = NULL
   ) {
-    
     if (is.null(max_length) || max_length > 1) {
       cat("If providing multiple values, separate IDs with a comma, or press ENTER to select all IDs.\n")
       prompt <- paste0("Enter ", toTitleCase(category), " ID(s): ")
     } else {
       prompt <- paste0("Enter ", toTitleCase(category), " ID: ")
     }
-    
+
     input <- NULL
-    Sys.sleep(0.1)  # Brief pause to make sure table is printed first
+    Sys.sleep(0.1) # Brief pause to make sure table is printed first
 
     while (is.null(input)) {
       rstudioapi::sendToConsole("", execute = FALSE, focus = TRUE) # Returns focus to console
@@ -158,36 +156,36 @@ cci_search <- function(dbcon) {
         stop("Function exited by user.", call. = FALSE)
       } else {
         input <- trimws(strsplit(input_raw, ",")[[1]])
-        
+
         if (numeric == TRUE) {
           input <- suppressWarnings(as.integer(input))
         }
-        
-        if ((!is.null(max_length) && max_length == 1 && all(is.na(input))) || 
-            (!is.null(max_length) && length(input) > max_length) || 
-            (!all(is.na(input)) && !is.null(valid_inputs) && !any(input %in% valid_inputs))) {
+
+        if ((!is.null(max_length) && max_length == 1 && all(is.na(input))) ||
+          (!is.null(max_length) && length(input) > max_length) ||
+          (!all(is.na(input)) && !is.null(valid_inputs) && !any(input %in% valid_inputs))) {
           input <- NULL
           warning(paste0(
-            "User input not valid. Please enter a valid ", toTitleCase(category), " ID or type 'quit' to exit."), immediate. = TRUE
-          )
+            "User input not valid. Please enter a valid ", toTitleCase(category), " ID or type 'quit' to exit."
+          ), immediate. = TRUE)
         }
       }
     }
-        
-        # if both numeric and non-numeric inputs are allowed, separate them
-        if (numeric == FALSE) {
-          input_all <- list()
-          # extract numeric inputs
-          input_all[["numeric"]] <- as.numeric(input[grepl("^[-+]?(\\d+\\.?\\d*|\\.\\d+)([eE][-+]?\\d+)?$", input)])
-          
-          # extract alphabetic inputs
-          input_all[["character"]] <- input[grepl("^(?=.*[A-Za-z])[A-Za-z0-9_-]+$", input, perl = TRUE)] 
-          
-          input <- input_all
+
+    # if both numeric and non-numeric inputs are allowed, separate them
+    if (numeric == FALSE) {
+      input_all <- list()
+      # extract numeric inputs
+      input_all[["numeric"]] <- as.numeric(input[grepl("^[-+]?(\\d+\\.?\\d*|\\.\\d+)([eE][-+]?\\d+)?$", input)])
+
+      # extract alphabetic inputs
+      input_all[["character"]] <- input[grepl("^(?=.*[A-Za-z])[A-Za-z0-9_-]+$", input, perl = TRUE)]
+
+      input <- input_all
     }
     return(input)
   }
-  
+
   ####### Step 1: Filter by Section #######
   cli_h1("CCI Filtering")
   cli_h2("Select SECTION")
@@ -199,7 +197,7 @@ cci_search <- function(dbcon) {
           name = "ID",
           width = 50,
           defaultSortOrder = "asc"
-        ), 
+        ),
         description = colDef(name = "Description", width = 300)
       ),
       searchable = TRUE,
@@ -213,24 +211,24 @@ cci_search <- function(dbcon) {
     htmltools::tags$h3("CCI Sections define the broad realm of interventions."),
     htmltools::tags$p("Only", htmltools::tags$strong("a single Section"), " can be selected since the subsequent filtering steps vary across Sections due to the nested hierarchical structure of CCI codes.")
   ))
-  
+
   section_input <- get_user_input(
     category = "Section", numeric = TRUE,
     valid_input = list_sections$ID, max_length = 1
   )
-  
+
   # remove any mappings/codes that are not in section of interest
   mapping_cci <- mapping_cci[section == section_input]
   cci_codes <- cci_codes[section == section_input]
-  
+
   ####### Step 2-5: Filter by subsequent categories #######
   categories <- c(
     "group", "intervention",
     "qualifier1", "qualifier2", "qualifier3"
   )
-  
+
   for (category in categories) {
-    #category <- "qualifier3"
+    # category <- "qualifier3"
     definition <- paste(
       "CCI", category, "defines", case_when(
         category == "group" ~ "the region or area of focus.
@@ -244,15 +242,15 @@ cci_search <- function(dbcon) {
     )
 
     idx_vals <- NULL
-    
+
     cli_h1(paste("Select ", toupper(category)))
-    
+
     # get all unique IDs for current options
     relevant_ids <- mapping_cci[
       field == category,
       .(idx, description, include, subsection_descr, atc_codes)
     ]
-    
+
     # check if current category expects numeric or alphabetic inputs
     if (class(cci_codes[[category]]) == "numeric") {
       numeric <- TRUE
@@ -264,17 +262,15 @@ cci_search <- function(dbcon) {
       numeric <- FALSE
       relevant_ids <- relevant_ids[idx %in% cci_codes[[category]]]
     }
-    
+
     relevant_ids <- relevant_ids[order(idx)]
-    
+
     if (nrow(relevant_ids) > 0) {
-      
       # Reactable table for dropdown table
       if ((section_input < 6 && category == "group") || (section_input == 1 && category == "qualifier2")) {
-        
         # add placeholder ID (grouping ID for each broader category)
         relevant_ids[, placeholder := .GRP, by = subsection_descr]
-        
+
         ####### Dropdown menu for the IDs and Descriptions #######
         broad_groups <- relevant_ids %>%
           group_by(subsection_descr) %>%
@@ -286,7 +282,7 @@ cci_search <- function(dbcon) {
           arrange(idx) %>%
           select(idx, range, subsection_descr) %>%
           data.table()
-        
+
         # Reactable broad groupings
         print(htmlwidgets::prependContent(
           reactable(
@@ -310,11 +306,11 @@ cci_search <- function(dbcon) {
             # Reactable Dropdown menus
             details = function(index) {
               selected <- broad_groups$idx[index]
-              
+
               sub_data <- relevant_ids[
                 subsection_descr == broad_groups[idx == index]$subsection_descr, .(idx, description, include)
               ]
-              
+
               relevant_cols <- list(
                 idx = colDef(
                   name = "ID",
@@ -327,12 +323,12 @@ cci_search <- function(dbcon) {
                 ),
                 include = colDef(name = "Definition/Inclusion")
               )
-              
+
               if (all(is.na(sub_data$include))) {
                 sub_data <- sub_data %>% select(-include)
                 relevant_cols$include <- NULL
-              }    
-              
+              }
+
               reactable(
                 sub_data,
                 searchable = TRUE,
@@ -350,7 +346,7 @@ cci_search <- function(dbcon) {
           htmltools::tags$h3("Please select the relevant ID(s). You can either provide numeric inputs for the broader categories OR alphabetic inputs to choose the more detailed subcategories."),
           htmltools::tags$p("Click on the arrow on the left to view all subcategories under a given category.")
         ))
-        
+
         input <- get_user_input(
           category = category,
           valid_inputs = unique(c(
@@ -358,11 +354,9 @@ cci_search <- function(dbcon) {
             relevant_ids$placeholder
           ))
         )
-        
       } else {
-        
         relevant_ids[, placeholder := NA]
-        
+
         table <- relevant_ids %>% select(idx, description, include)
         relevant_cols <- list(
           idx = colDef(
@@ -376,12 +370,12 @@ cci_search <- function(dbcon) {
           ),
           include = colDef(name = "Definition/Inclusion")
         )
-        
+
         if (all(is.na(relevant_ids$include))) {
           table <- table %>% select(-include)
           relevant_cols$include <- NULL
         }
-        
+
         # Non drop down Reactable Tables
         print(htmlwidgets::prependContent(
           reactable(
@@ -398,7 +392,7 @@ cci_search <- function(dbcon) {
           htmltools::tags$h3(definition),
           htmltools::tags$h3("Please select the relevant IDs:")
         ))
-        
+
         input <- get_user_input(
           category = category,
           valid_inputs = unique(c(
@@ -406,41 +400,36 @@ cci_search <- function(dbcon) {
           )),
           numeric = numeric
         )
-        
       }
-      
+
       # get all idx values based on user's input (if any)
       if (numeric == TRUE) {
         idx_vals <- unique(sort(c(
           relevant_ids[idx %in% input]$idx
         )))
       } else {
-
-        if (section_input == 8) { 
+        if (section_input == 8) {
           # in section 8, can have either numeric or alphabetic idx
-        idx_vals <- unique(sort(c(
-          relevant_ids[idx %in% input$character]$idx,
-          relevant_ids[idx %in% input$numeric]$idx
-        )))
+          idx_vals <- unique(sort(c(
+            relevant_ids[idx %in% input$character]$idx,
+            relevant_ids[idx %in% input$numeric]$idx
+          )))
         } else {
-        idx_vals <- unique(sort(c(
-          relevant_ids[idx %in% input$character]$idx,
-          relevant_ids[placeholder %in% input$numeric]$idx
-        )))
+          idx_vals <- unique(sort(c(
+            relevant_ids[idx %in% input$character]$idx,
+            relevant_ids[placeholder %in% input$numeric]$idx
+          )))
         }
       }
-      
+
       # filter CCI table by corresponding entries
       if (!all(is.na(idx_vals)) && !all(is.null(idx_vals))) {
         cci_codes <- cci_codes[get(category) %in% idx_vals]
       }
-      
     } else {
       cat(paste(toTitleCase(category), "not applicable. Skipping...\n"))
     }
-    
-    
   } # close loop for categories
-  
+
   return(cci_codes)
 }
