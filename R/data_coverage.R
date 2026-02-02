@@ -230,7 +230,7 @@ data_coverage <- function(dbcon,
     )
   )
   # make copy of cohort so we don't overwrite anything
-  cohort <- copy(cohort)
+  cohort <- copy(cohort) %>% data.table()
 
   # make sure hospital_group (if any) has 1-1 relationship
   # with hospital ID/num
@@ -306,6 +306,10 @@ data_coverage <- function(dbcon,
       ))
     }
   )
+  if (hosp_var == "hospital_num") {
+    # make sure hospital_num is of class integer (in line with data dictionary)
+    data_coverage_lookup[, hospital_num := as.integer(hospital_num)]
+  }
 
 
   ## Preprocess lookup table

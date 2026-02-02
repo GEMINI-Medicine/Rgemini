@@ -9,6 +9,7 @@ reference:
   - charlson_comorbidity_index
   - comorbidity_index
   - covid_flag
+  - covid_surge_index
   - daily_census
   - day_time_of_admission
   - disability
@@ -37,6 +38,8 @@ reference:
 - title: Data Transformation
   desc: These functions aid in querying the data, either by applying filters or mapping values.
 - contents:
+  - cci_group
+  - cci_search
   - diagnoses_at_admission
   - icd_to_ccsr
   - max_result_value
@@ -72,6 +75,7 @@ reference:
 - title: Mapping files
   desc: Files containing variable mappings.
 - contents:
+  - mapping_cci
   - mapping_cihi_frailty
   - mapping_disability
 - title: Utility Functions
@@ -87,5 +91,6 @@ reference:
   - lunique
   - mapping_message
   - matches("ni")
+  - normalize_text
   - return_hospital_field
   - quiet

@@ -161,15 +161,28 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
 
   hospital_years <- admdad %>%
     select(hospital_id, year) %>%
-    unique()
+    arrange(hospital_id, year) %>%
+    unique() %>%
+    group_by(hospital_id) %>%
+    mutate(index = row_number()) %>%
+    ungroup()
+
 
   # find table corresponding to lab
   lab_table <- find_db_tablename(db, "lab", verbose = FALSE)
+  mapping_message("lab tests")
 
-  res <- purrr::map2_df(
-    hospital_years$hospital_id,
-    hospital_years$year,
-    function(hospital_id, year) {
+  res <- purrr::pmap_df(
+    list(
+      hospital_years$hospital_id,
+      hospital_years$year,
+      hospital_years$index
+    ),
+    function(hospital_id, year, index) {
+      if (index == 1) {
+        cat(paste0("\nCalculating mlaps for ", hospital_id))
+      }
+
       lab <- DBI::dbGetQuery(
         db,
         paste(
@@ -192,12 +205,12 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
       ) %>%
         as.data.table()
 
-      res <- mlaps(
+      res <- quiet(mlaps(
         admdad %>% dplyr::filter(hospital_id == hospital_id, year == year),
         lab,
         hours_after_admission = hours_after_admission,
         component_wise = component_wise
-      )
+      ))
     }
   )
 

@@ -1,13 +1,11 @@
-# Rgemini
+# Rgemini <a href="https://gemini-medicine.github.io/Rgemini/"><img src="man/figures/logo.png" align="right" height="180" /></a>
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/GEMINI-Medicine/Rgemini/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/GEMINI-Medicine/Rgemini/actions/workflows/check-standard.yaml)
 
 <!-- badges: end -->
 
-`Rgemini` (Our GEMINI) is a custom R package that provides a variety of functions to perform data analyses with [GEMINI](https://www.geminimedicine.ca/) data.
-
-All functions have been developed by the GEMINI team and were tested on the current version of the [GEMINI database](https://geminimedicine.ca/the-gemini-database/).
+`Rgemini` ("Our GEMINI") is a custom R package that provides a variety of functions to perform data analyses with [GEMINI](https://www.geminimedicine.ca/) data. All functions have been developed by the GEMINI team and were tested on the current version of the [GEMINI database](https://geminimedicine.ca/the-gemini-database/#data-dictionary).
 
 ## Installation
 
@@ -68,6 +66,46 @@ readm <- readmission(
 ```
 
 Please review the extensive [package documentation](https://gemini-medicine.github.io/Rgemini/) and vignettes for detailed examples and sample code.
+
+## Using Rgemini in Python
+
+`Rgemini` can be used in Python via the `rpy2` package, which provides an interface to R from Python. This allows Python users to access Rgemini functions while working in their preferred environment.
+
+### Installation and Setup
+
+First, install `rpy2` in your Python environment:
+
+```bash
+pip install rpy2
+```
+
+### Example Usage
+
+Here's how to use Rgemini functions in Python:
+
+```python
+import rpy2.robjects as robjects
+from rpy2.robjects.packages import importr
+
+# Import R packages
+base = importr('base')
+rgemini = importr('Rgemini')
+
+# Example: Using the lunique function
+r_vector = robjects.IntVector([1, 1, 2, 2, 2, 3])
+result = rgemini.lunique(r_vector)
+print(f"Number of unique values: {result[0]}")
+```
+
+[Here](https://github.com/GEMINI-Medicine/Rgemini/discussions/200) is how to use Rgemini functions in R snippets in Python.
+
+### Important Limitations and Disclaimers
+
+**Testing Coverage**: Python compatibility has only been tested for functions that have unit tests in the R package. To check which functions have test coverage, review the test files in the [`tests/testthat/`](https://github.com/GEMINI-Medicine/Rgemini/tree/main/tests/testthat) directory.
+
+**Use with Caution**: Even for functions where unit tests exist, users should exercise caution when running Rgemini in Python. The unit tests may not cover all possible use cases or edge conditions. We strongly recommend performing additional validation checks to ensure function outputs are correct for your specific data and use case.
+
+**Data Type Considerations**: Be aware that data types may behave differently between R and Python. Pay special attention to how dates, factors, and missing values are handled when transferring data between the two environments.
 
 ## Contributing
 

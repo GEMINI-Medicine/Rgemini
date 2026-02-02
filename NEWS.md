@@ -1,3 +1,39 @@
+# Rgemini `2.0.0`
+
+* **Addition of RxNorm functions**:
+  * `rxnorm_query()` to identify drugs of interest from pharmacy table
+  * `prepare_pharm_for_validation()` to standardize RxNorm mapping validation
+  * `normalize_text()` utility function to standardize medication names
+  * Rxnorm vignette with step-by-step instructions for pharmacy mapping workflow
+    * *Changes for internal GEMINI staff:* Compared to the previous GEMINIpkg version of RxNorm, the following changes have been made
+      * improved documentation
+      * `rxnorm_query()`: Changes to input arguments and improved query speed
+      * `prepare_pharm_for_validation()`:
+        * DB connection to `drm_cleandb_v4_1_1` required to query `lookup_pharmacy_mapping` table with previously validated mappings
+        * Pharmacy mapping DB no longer queried, but can be provided as `custom_lookup` input
+
+* **Other new functions**:
+  * `covid_surge_index()` function that calculates the COVID surge index by hospital-month
+  * `cci_group()` to derive grouping of intervention codes into CCI sections and subsections
+  * `cci_search()` to identify CCI codes for interventions of interest
+
+* **Testing improvements:**
+  * Unit tests are now also run in Python via rpy2 to ensure cross-language compatibility
+
+* **Bug fixes**
+  * Fixed `render_cell_suppression.strat()` to be compatible with table1 version 1.5.0
+  * Small bug fix in `daily_census()` to return all hospital ID variables provided in `cohort` input
+  * Small fix in `data_coverage()` for `hospital_num` class
+  * Removed repeated warning messages in `loop_mlaps()`
+
+* **Miscellaneous**:
+  * Removed age exclusion in `episodes_of_care()` to accommodate paeds cohort
+  * Updated readmission vignette to clarify use of restricted cohort (all-Med & ICU) in derived readmission flags
+  * Refactored `disability()` and `frailty_score()` to remove dependency on `fuzzyjoin` package
+  * Added hex sticker
+  * Integration of issues with Jira
+
+
 # Rgemini `1.1.0`
 
 * **New functions:**

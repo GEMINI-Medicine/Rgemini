@@ -6,31 +6,33 @@ To submit suggestions for bug fixes/enhancements, please create a [new issue](ht
 
 ## Code development 
 
-To make changes to the `Rgemini` codebase/documentation, please follow these steps:
+To make changes to the `Rgemini` codebase/documentation, please follow these steps and guidelines:
 
 1. Create a new issue or assign yourself to an existing issue you want to work on.
 
 2. Create a new branch off `develop`. The branch name should contain the issue number. 
 
 3. Commit all changes to this newly created branch and include the issue number in each commit message. 
-
-4. Once you finish code development, add a new item at the top of `NEWS.md` concisely describing what's changed.
   
-6. Run a styler and linter on any new code using `styler:::style_active_file()` and `lintr::lint("path/to/file.R")`. Make sure you are using `lintr` version 3.0.0 or newer for compatibility with the package `.lintr` file.
+4. Run a styler and linter on any new code using `styler:::style_active_file()` and `lintr::lint("path/to/file.R")`. Make sure you are using `lintr` version 3.0.0 or newer for compatibility with the package `.lintr` file.
 
-7. If appropriate, add unit tests in the `tests/testthat/` directory. For bug fixes, it's usually helpful to include a unit test for the identified bug.
+5. If appropriate, add unit tests in the `tests/testthat/` directory. For bug fixes, it's usually helpful to include a unit test for the identified bug. Note that the CI/CD workflow automatically runs all unit tests in both R and Python (via rpy2) to ensure cross-language compatibility. For Python-specific debugging during development, see the [Python Testing Workflow guide](https://github.com/GEMINI-Medicine/Rgemini/discussions/201).
+   
+6. If adding new functions, update the `_pkgdown.yml` file by adding the new function to the appropriate reference section. Documentation of all functions is generated automatically during the CI/CD workflow, but `devtools::document()` can also be run during development to debug locally. 
+   
+7. If adding new package dependencies: First check whether existing dependencies listed in (DESCRIPTION.md)[https://github.com/GEMINI-Medicine/Rgemini/blob/main/DESCRIPTION] could achieve a similar task (we want to try and minimize package dependencies where possible). If you do require a new library, please add it under the `Imports` section in (DESCRIPTION.md)[https://github.com/GEMINI-Medicine/Rgemini/blob/main/DESCRIPTION]. If a package is not strictly necessary to run `Rgemini` functions, but is used for illustration purposes in vignettes, please list it under `Suggests`.
+   
+8. Functions derived based on published articles (e.g. clinical scores) should include a `references` section in `roxygen`. The citation format is: `1st_author_last_name 1st_author_initial, et al. Journal Abbreviation, Year. https://doi.org/xxxx.`. URLs should be presented as-is without hyperlinking and DOI URLs should be used whenever possible. Note that commonly known online resources (e.g. linked CIHI documentation, data dictionary) might not require a `references` section and can be included as hyperlinks in any `roxygen` section.
 
-8. If adding new functions with new documentation, update the `_pkgdown.yml` file by adding the new function to the appropriate reference section. Note that the `Rgemini` repository currently has a CI/CD workflow to generate and commit documentation on any pushed commit, but `devtools::document()` can also be run during development to debug locally. 
+9. Any new package data should be saved as an `.rda` file in the `data/` directory, and should be documented with `roxygen` in `data.R`.
 
-9. Note that any new package data should be saved as a `.rda` file in the `data/` directory, and should be documented with `roxygen` in `data.R`.
+10. Once you finish code development and all relevant documentation, add a new item at the top of `NEWS.md` concisely describing what's changed.
 
-10. Functions derived based on published articles (e.g. clinical scores) should include a `references` section in `roxygen`. The citation format is: `1st_author_last_name 1st_author_initial, et al. Journal Abbreviation, Year. https://doi.org/xxxx.`. URLs should be presented as-is without hyperlinking and DOI URLs should be used whenever possible. Note that commonly known online resources (e.g. links CIHI documentations, data dictionary) might not require a `references` section and can be included as hyperlinks in any `roxygen` section.
+11. Submit a [pull request (PR)](https://help.github.com/articles/using-pull-requests) into the `develop` branch. This will trigger a CI/CD pipeline that a) styles all code files and generates roxygen documentation in the `man` folder, b) runs pre-commit hooks to check for `browser()` statements and large files, c) checks all unit tests (in R and Python), and d) runs full R-CMD package checks (i.e., `devtools::check()`). Note that we run cross-platform R-CMD checks for Windos, macOS, and Ubuntu since users might use certain functions (especially utility functions/functions that don't require a database connection) on different operating systems. Code developers are responsible for resolving any CI/CD errors before merging their code. 
 
-11. Submit a [pull request (PR)](https://help.github.com/articles/using-pull-requests) into the `develop` branch.
+12. Ask a team member to review the pull request (see guidelines for reviewers below) and implement additional changes based on the reviewer's feedback.
 
-12. Ask a team member to review the changes (see guidelines for reviewers below) and implement additional changes based on the reviewer's feedback.
-
-13. Once the reviewer has approved the pull request, resolve any merge conflicts and CI/CD errors.
+13. Once the reviewer has approved the pull request, resolve any merge conflicts and double check the CI/CD workflow to make sure it any runs without errors.
 
 14. Finally, squash all commits (confirm the PR # is referenced in the squash commit message) and merge the branch into `develop`, close the issue, and delete the branch you developed on.
 
@@ -61,9 +63,9 @@ Briefly, when reviewing code:
 
 ## Merging into `main`
 
-We typically accumulate multiple changes on the `develop` branch before merging all changes into `main` and updating the package version number.
+We typically accumulate multiple changes on the `develop` branch. The package owner will then merge all changes into `main` and update the package version number.
 
-At least one person should review the pull request into `main` and should run the following final checks before approval:
+The package owner should always review the pull request into `main` and should run the following final checks before approval:
 
 1. Check whether there are any changes on `main` that are not yet on `develop`. If yes, merge `main` into `develop`. 
 
@@ -75,14 +77,12 @@ At least one person should review the pull request into `main` and should run th
 
 5. Update the version number in the `NEWS.md` and `DESCRIPTION` files.
 
-6. Run `devtools::document()` in R to make sure all documentation is up to date.
+6. Running `devtools::document()` and `rcmdcheck::rcmdcheck()` is optional since this is already done as part of the CI/CD workflow. 
 
-7. Run `rcmdcheck::rcmdcheck()` or `devtools::check()` and make sure no errors or warnings are returned.    
+7. If everything looks good, approve the pull request and merge `develop` into `main` (without squashing commits).
 
-8. If everything looks good, approve the pull request and merge `develop` into `main` (without squashing commits).
+8. Add a new tag to the repository corresponding to the updated version number. 
 
-9. Add a new tag to the repository corresponding to the updated version number. 
+9. Notify the team about the updated version. Ideally, all members should immediately update to the newest version of `Rgemini`.
 
-10. Notify the team about the updated version. Ideally, all members should immediately update to the newest version of `Rgemini`.
-
-11. Update for HPC4Health users: Download the `tar.gz` file of the newest package version and save it in `R:/GEMINI/HPC4Health/Rgemini versions/`. Submit a request on the [HPC4Health File Transfer Log](https://app.smartsheet.com/sheets/p7P77qF97wcxgr2V4Cr6Vjqw3vjhCpRMQQH3Jwm1) for the package file to be transferred to `/mnt/nfs/pkgs/GEMINI/`. Ask the systems team to send out an email to all HPC4Health users announcing the new release. 
+10. Update for HPC4Health users: Download the `tar.gz` file of the newest package version and save it in `R:/GEMINI/HPC4Health/Rgemini versions/`. Submit a request on the [HPC4Health File Transfer Log](https://app.smartsheet.com/sheets/p7P77qF97wcxgr2V4Cr6Vjqw3vjhCpRMQQH3Jwm1) for the package file to be transferred to `/mnt/nfs/pkgs/GEMINI/`. Ask the systems team to install the updated package globally for all users and send out an email to all HPC4Health users announcing the new release. 
