@@ -56,7 +56,7 @@ For a complete list of all subsections, see
 \href{https://www.cihi.ca/en/overview-of-cci-sections-and-code-ranges}{CIHI CCI sections and code ranges}.
 }
 \examples{
-cci_codes <- data.table(intervention_code = c(
+cci_codes <- data.frame(intervention_code = c(
   "1MA52HA", "2PB70DA", "3SC10KM", "5LB08ZZ", "6KA02ME", "8AA70BABA"
 ))
 res <- cci_group(cci_codes)
