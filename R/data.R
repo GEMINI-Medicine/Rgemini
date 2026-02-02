@@ -73,6 +73,12 @@ NULL
 NULL
 
 
+#' Mapping data for `cci_group` and `cci_filter` functions
+#'
+#' @name mapping_cci
+#' @docType data
+NULL
+
 #' Mapping data for `frailty_score` function
 #'
 #' @name mapping_cihi_frailty
