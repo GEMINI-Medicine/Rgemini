@@ -1,3 +1,7 @@
+# `develop`
+
+* Update `check_input()` to accommodate DB connections to dummy DB
+
 # Rgemini `2.0.0`
 
 * **Addition of RxNorm functions**:
