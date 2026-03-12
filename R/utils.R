@@ -470,8 +470,8 @@ check_input <- function(arginput, argtype,
           ),
           call. = FALSE
         )
-      } else if (!RPostgreSQL::isPostgresqlIdCurrent(arginput)) {
-        # if PostgreSQL connection, make sure it's still active
+      } else if (!dbIsValid(arginput)) {
+        # if DB connection, make sure it's still active
         stop(
           paste0(
             "Please make sure your database connection is still active.\n",
