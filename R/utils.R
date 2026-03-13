@@ -470,7 +470,13 @@ check_input <- function(arginput, argtype,
           ),
           call. = FALSE
         )
-      } else if (!dbIsValid(arginput)) {
+      } else if (!tryCatch( # check if DB connection is still active and can be queried
+        {
+          DBI::dbGetQuery(arginput, "SELECT 1") # minimal query as test
+          TRUE
+        },
+        error = function(e) FALSE
+      )) {
         # if DB connection, make sure it's still active
         stop(
           paste0(
