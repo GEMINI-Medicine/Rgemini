@@ -251,6 +251,16 @@ covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
     time_period = c("2019-01-01 00:00", "2019-12-31 23:59")
   ))
 
+  ## collect sites missing from cohort, include them in warning
+  missing_hospitals <- unique(cohort[[hospital_var]])[
+    which(unique(cohort[[hospital_var]]) %ni% unique(census[[hospital_var]]))
+  ]
+
+  warning(paste(
+    "Due to data availability, a surge index could not be calculated for the following sites:",
+    paste(missing_hospitals, collapse = ", ")
+  ))
+
   #### if gim only get 95th percentile as-is
   if (gim_only == TRUE) {
     daily_census_data <- census %>%
