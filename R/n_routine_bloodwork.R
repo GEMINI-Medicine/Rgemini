@@ -86,9 +86,7 @@ n_routine_bloodwork <- function(dbcon,
   lab_table <- find_db_tablename(dbcon, "lab", verbose = FALSE)
 
   # speed up query by using temp table with analyze
-  DBI::dbSendQuery(dbcon, "Drop table if exists cohort_data;")
-  DBI::dbWriteTable(dbcon, c("pg_temp", "cohort_data"), cohort[, .(genc_id)], row.names = FALSE, overwrite = TRUE)
-  DBI::dbSendQuery(dbcon, "Analyze cohort_data")
+  temp_table(dbcon, cohort[, .(genc_id)])
 
   # load lab from db
   lab <- dbGetQuery(
@@ -101,14 +99,14 @@ n_routine_bloodwork <- function(dbcon,
            a.admission_date_time
            from", lab_table, "l
            left join", admdad_table, "a
-           on l.genc_id = a.genc_id where exists (select 1 from cohort_data c where c.genc_id=a.genc_id)
+           on l.genc_id = a.genc_id where exists (select 1 from temp_table c where c.genc_id=a.genc_id)
            and l.test_type_mapped_omop in ('3000963', '3019550') and
            l.collection_date_time >= a.admission_date_time"
       ),
       # no filter on collection date time
       paste(
         "select l.genc_id, l.result_value
-           from", lab_table, "l where exists (select 1 from cohort_data c where c.genc_id=l.genc_id)",
+           from", lab_table, "l where exists (select 1 from temp_table c where c.genc_id=l.genc_id)",
         "and l.test_type_mapped_omop in ('3000963', '3019550')"
       )
     )

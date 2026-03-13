@@ -73,7 +73,7 @@ laps_assign_test <- function(x, breaks, points) {
 #' large number of encounters by hospital-year. This avoids memory issues that can be caused
 #' by loading large chunks of the lab table.
 #'
-#' @param db (`DBIConnection`)\cr
+#' @param dbcon (`DBIConnection`)\cr
 #' RPostgres DB connection.
 #'
 #' @param cohort (`data.frame` or `data.table`)\cr
@@ -106,7 +106,7 @@ laps_assign_test <- function(x, breaks, points) {
 #' @examples
 #' \dontrun{
 #' drv <- DBI::dbDriver("PostgreSQL")
-#' db <- DBI::dbConnect(
+#' dbcon <- DBI::dbConnect(
 #'   drv,
 #'   dbname = "db_name",
 #'   host = "domain_name.ca",
@@ -115,9 +115,9 @@ laps_assign_test <- function(x, breaks, points) {
 #'   password = getPass::getPass("Enter Password")
 #' )
 #'
-#' cohort <- DBI::dbGetQuery(db, "SELECT genc_id FROM public.admdad LIMIT 200;")
+#' cohort <- DBI::dbGetQuery(dbcon, "SELECT genc_id FROM public.admdad LIMIT 200;")
 #'
-#' laps <- loop_laps(db, cohort = cohort)
+#' laps <- loop_laps(dbcon, cohort = cohort)
 #' }
 #'
 #' @references
@@ -126,10 +126,10 @@ laps_assign_test <- function(x, breaks, points) {
 #' https://doi.org/10.1007/s11606-023-08245-w
 #' https://doi.org/10.1101/2023.01.06.23284273
 #'
-loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_wise = FALSE) {
-  hospital_field <- return_hospital_field(db)
+loop_mlaps <- function(dbcon, cohort = NULL, hours_after_admission = 0, component_wise = FALSE) {
+  hospital_field <- return_hospital_field(dbcon)
   # find table corresponding to admdad
-  admdad_table <- find_db_tablename(db, "admdad", verbose = FALSE)
+  admdad_table <- find_db_tablename(dbcon, "admdad", verbose = FALSE)
 
   # Ensure cohort is a data.table/data.frame with genc_id and
   # write a temp table if cohort is not NULL
@@ -137,14 +137,11 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
     check_input(cohort, c("data.table", "data.frame"),
       colnames = "genc_id"
     )
-    DBI::dbSendQuery(db, "Drop table if exists cohort_data;")
-    DBI::dbWriteTable(db, c("pg_temp", "cohort_data"), cohort[, .(genc_id)], row.names = F, overwrite = T)
-    # Analyze speed up the use of temp table
-    DBI::dbSendQuery(db, "Analyze cohort_data")
+    temp_table(dbcon, cohort[, .(genc_id)])
   }
 
   admdad <- DBI::dbGetQuery(
-    db,
+    dbcon,
     paste(
       "SELECT
         genc_id,
@@ -153,7 +150,7 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
       hospital_field, "AS hospital_id",
       "FROM ", admdad_table,
       if (!is.null(cohort)) {
-        paste("a WHERE exists (select 1 from cohort_data c where c.genc_id=a.genc_id) ")
+        paste("a WHERE exists (select 1 from temp_table c where c.genc_id=a.genc_id) ")
       }
     )
   ) %>%
@@ -169,7 +166,7 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
 
 
   # find table corresponding to lab
-  lab_table <- find_db_tablename(db, "lab", verbose = FALSE)
+  lab_table <- find_db_tablename(dbcon, "lab", verbose = FALSE)
   mapping_message("lab tests")
 
   res <- purrr::pmap_df(
@@ -184,7 +181,7 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
       }
 
       lab <- DBI::dbGetQuery(
-        db,
+        dbcon,
         paste(
           "SELECT
             l.genc_id,
@@ -199,7 +196,7 @@ loop_mlaps <- function(db, cohort = NULL, hours_after_admission = 0, component_w
           paste0("AND l.", hospital_field, " = '", hospital_id, "'"),
           "AND EXTRACT(YEAR FROM a.discharge_date_time::DATE) = ", year,
           if (!is.null(cohort)) {
-            paste("and exists (select 1 from cohort_data c where c.genc_id=l.genc_id)")
+            paste("and exists (select 1 from temp_table c where c.genc_id=l.genc_id)")
           }
         )
       ) %>%

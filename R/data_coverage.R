@@ -752,14 +752,7 @@ data_coverage <- function(dbcon,
     cat("*** Plotting data coverage. This may take a while... ***\n")
 
     # write temp table to make query below more efficient
-    dbExecute(dbcon, "SET client_min_messages TO WARNING;") # suppress notice
-    DBI::dbSendQuery(dbcon, "Drop table if exists temp_data;")
-    DBI::dbWriteTable(
-      dbcon, c("pg_temp", "temp_data"), cohort[, .(genc_id)],
-      row.names = FALSE, overwrite = TRUE
-    )
-    # Analyze speeds up the use of temp table
-    DBI::dbSendQuery(dbcon, "Analyze temp_data")
+    temp_table(dbcon, cohort[, .(genc_id)])
 
     get_coverage <- function(table, cohort, ...) {
       # reset coverage flag, just in case
@@ -775,7 +768,7 @@ data_coverage <- function(dbcon,
           # than using EXIST
           data_hosp <- DBI::dbGetQuery(
             dbcon, paste("SELECT DISTINCT t.genc_id FROM ", table_name, " t
-                        INNER JOIN temp_data temp ON t.genc_id = temp.genc_id
+                        INNER JOIN temp_table temp ON t.genc_id = temp.genc_id
                         WHERE", paste0("t.", hosp_var, " = '", h, "';"))
           ) %>%
             as.data.table()

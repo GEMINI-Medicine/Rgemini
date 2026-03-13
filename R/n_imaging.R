@@ -84,9 +84,7 @@ n_imaging <- function(dbcon,
   radiology_table <- find_db_tablename(dbcon, "radiology", verbose = FALSE)
 
   # speed up query by using temp table with analyze
-  DBI::dbSendQuery(dbcon, "Drop table if exists cohort_data;")
-  DBI::dbWriteTable(dbcon, c("pg_temp", "cohort_data"), cohort[, .(genc_id)], row.names = FALSE, overwrite = TRUE)
-  DBI::dbSendQuery(dbcon, "Analyze cohort_data")
+  temp_table(dbcon, cohort[, .(genc_id)])
 
   # query db to pull imaging data
   imaging <- dbGetQuery(
@@ -99,14 +97,14 @@ n_imaging <- function(dbcon,
               r.ordered_date_time = ' ' then r.performed_date_time >= a.admission_date_time
               else r.ordered_date_time >= a.admission_date_time end as case_result
               from", radiology_table, "r
-              left join", admdad_table, "a on r.genc_id = a.genc_id where exists (select 1 from cohort_data c where c.genc_id=a.genc_id)
+              left join", admdad_table, "a on r.genc_id = a.genc_id where exists (select 1 from temp_table c where c.genc_id=a.genc_id)
             ) select genc_id, modality_mapped
             from temp
             where case_result = 'true'"),
 
       # not filter by admission date time
       paste("select genc_id, modality_mapped from", radiology_table, "r
-                  where exists (select 1 from cohort_data c where c.genc_id=r.genc_id)")
+                  where exists (select 1 from temp_table c where c.genc_id=r.genc_id)")
     )
   ) %>% as.data.table()
 

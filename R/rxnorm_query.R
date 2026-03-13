@@ -397,9 +397,7 @@ rxnorm_query <- function(dbcon,
   # Should create a genc_id temp table if user-defined cohort is provided
   if (!is.null(cohort)) {
     cohort <- data.table(cohort)
-    dbSendQuery(dbcon, "Drop table if exists genc_temp;") # Drop if exists
-    dbWriteTable(dbcon, c("pg_temp", "genc_temp"), cohort[, .(genc_id)], temporary = TRUE, row.names = FALSE)
-    dbSendQuery(dbcon, "Analyze genc_temp;")
+    temp_table(dbcon, cohort[, .(genc_id)])
   }
 
   query_str <- paste0(
@@ -414,7 +412,7 @@ rxnorm_query <- function(dbcon,
     "  FROM ", pharmacy_table, " p",
     ifelse(
       !is.null(cohort),
-      "  WHERE EXISTS (SELECT 1 FROM genc_temp t WHERE t.genc_id = p.genc_id)",
+      "  WHERE EXISTS (SELECT 1 FROM temp_table t WHERE t.genc_id = p.genc_id)",
       ""
     ),
     ") ",
@@ -485,7 +483,7 @@ rxnorm_query <- function(dbcon,
     query_str_unmat <- paste0(
       "select genc_id,med_id_generic_name_raw,med_id_brand_name_raw, med_id_din, med_id_ndc,
       med_id_hospital_code_raw,iv_component_type, row_num",
-      " from ", pharmacy_table, " p where exists (select 1 from genc_temp t where t.genc_id=p.genc_id)",
+      " from ", pharmacy_table, " p where exists (select 1 from temp_table t where t.genc_id=p.genc_id)",
       " and not exists (select 1 from matched_rows m where m.search_type='med_id_generic_name_raw' and
        p.med_id_generic_name_raw=m.raw_input)",
       "and not exists (select 1 from matched_rows m where m.search_type='med_id_brand_name_raw' and

@@ -103,48 +103,51 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
     )
   }
 
-  ############ Load lookup_transfer ############
-  lookup_transfer_name <- find_db_tablename(dbcon, "lookup_transfer", verbose = FALSE)
-  lookup_transfer <- DBI::dbGetQuery(dbcon, paste0("select * from ", lookup_transfer_name, ";")) %>% as.data.table()
+  ############ Load admdad & lookup_transfer table ############
+  ## find relevant DB table names
+  admdad_name <- find_db_tablename(dbcon, "admdad")
+  lookup_transfer_name <- find_db_tablename(dbcon, "lookup_transfer")
 
-  ############ Load whole admdad table (default) ############
-  ## find relevant table name corresponding to admdad
-  admdad_name <- find_db_tablename(dbcon, "admdad", verbose = FALSE)
+  ## only query encounters in restricted cohort?
   if (!is.null(restricted_cohort)) {
     restricted_cohort <- coerce_to_datatable(restricted_cohort)
-    if (!"genc_id" %in% names(restricted_cohort)) {
-      stop("genc_id is required in user specified cohort")
-    } else {
-      warning(
-        "Note: Based on the user input, epicares will be computed solely based on the user specified cohort,
+    warning(
+      "Note: Based on the user input, epicares will be computed solely based on the user specified cohort,
         instead of the default method. The default method computes epicares based on all available data in the
         GEMINI database and is recommended.\n ",
-        immediate. = TRUE
-      )
+      immediate. = TRUE
+    )
 
-      ## write a temp table to improve querying efficiency
-      DBI::dbSendQuery(dbcon, "Drop table if exists temp_data;")
-      DBI::dbWriteTable(
-        dbcon, c("pg_temp", "temp_data"), restricted_cohort[, .(genc_id)],
-        row.names = FALSE, overwrite = TRUE
-      )
+    # write temp table to improve query efficiency
+    temp_table(dbcon, restricted_cohort[, .(genc_id)])
 
-      # Analyze speed up the use of temp table
-      DBI::dbSendQuery(dbcon, "Analyze temp_data")
+    admdad <- DBI::dbGetQuery(
+      dbcon, paste0("select genc_id, patient_id_hashed,
+        admit_category, admission_date_time, discharge_date_time
+        from ", admdad_name,
+      " a where exists (select 1 from temp_table t where t.genc_id=a.genc_id);"
+    )) %>%
+      as.data.table()
 
-      admdad <- DBI::dbGetQuery(dbcon, paste0(
-        "select genc_id, patient_id_hashed, admit_category, admission_date_time,
-                                            discharge_date_time
-                                            from ", admdad_name,
-        " a where exists (select 1 from temp_data t where t.genc_id=a.genc_id); "
-      )) %>% as.data.table()
-    }
+    lookup_transfer <- DBI::dbGetQuery(
+      dbcon, paste0("select * from ", lookup_transfer_name, " l where exists (select 1 from temp_table t where t.genc_id=l.genc_id);;")
+    ) %>%
+      as.data.table()
+    
   } else {
-    admdad <- DBI::dbGetQuery(dbcon, paste0(
-      "select genc_id, patient_id_hashed, admit_category, admission_date_time,
-                                            discharge_date_time
+    admdad <- DBI::dbGetQuery(
+      dbcon, paste0(
+        "select genc_id, patient_id_hashed, admit_category,
+      admission_date_time, discharge_date_time
       from ", admdad_name
-    )) %>% as.data.table()
+      )
+    ) %>%
+      as.data.table()
+
+    lookup_transfer <- DBI::dbGetQuery(
+      dbcon, paste0("select * from ", lookup_transfer_name, ";")
+    ) %>%
+      as.data.table()
   }
 
   ############ Prepare data for epicare computation ############
