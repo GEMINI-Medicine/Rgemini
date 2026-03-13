@@ -1074,7 +1074,6 @@ normalize_text <- function(x, lemma = FALSE) {
 }
 
 
-
 #' @title
 #' Write temp tables
 #'
