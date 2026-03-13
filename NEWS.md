@@ -1,6 +1,12 @@
 # `develop`
 
-* Update `check_input()` to accommodate DB connections to dummy DB
+**New functions**:
+* Added `temp_table()` utility function that writes temporary tables to improve query efficiency
+
+**Miscellaneous**:
+* Updated `check_input()` to accommodate DB connections to dummy DB
+* Changed DB input argument name in `loop_mlaps` from `db` to `dbcon`
+
 
 # Rgemini `2.0.0`
 

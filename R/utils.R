@@ -202,7 +202,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
   # error if no table found
   if (length(table_name) == 0) {
     stop(paste0(
-      "No table corresponding to '", drm_table, " under schema '", schema_name,
+      "No table corresponding to '", drm_table, "' under schema '", schema_name,
       "' identified in database '", db_name, "'.
       Please make sure your database contains the relevant table/view."
     ))
@@ -1037,8 +1037,10 @@ create_ntiles <- function(x, n) {
 }
 
 
+#' @title
 #' Normalize string values
 #'
+#' @description
 #' This function performs a series of text cleaning and normalization on text data.
 #' For example, it is used in `prepare_pharm_for_validation()` to clean up RxNorm outputs for validation.
 #' The operations include:
@@ -1069,4 +1071,73 @@ normalize_text <- function(x, lemma = FALSE) {
     x <- textstem::lemmatize_words(x)
   }
   return(x)
+}
+
+
+
+#' @title
+#' Write temp tables
+#'
+#' @description
+#' This function writes temporary tables to the database to improve query
+#' efficiency.
+#' Temporary tables are automatically removed once the user disconnects from the
+#' database.
+#'
+#' @param dbcon (`DBIConnection`)\cr
+#' A database connection to any GEMINI database.
+#'
+#' @param data (`data.table` or `data.frame`)\cr
+#' Data table to be written to DB as temp table.
+#'
+#' @param table_name (`data.table` or `data.frame`)\cr
+#' Name of temporary table in DB (default = "temp_table").
+#'
+#' @param analyze (`logical`)\cr
+#' Whether or not to use SQL Analyze statement to further improve
+#' query efficiency (recommended).
+#'
+#' @import DBI
+#' @export
+#' @examples
+#' \dontrun{
+#' temp_table(dbcon, data.table(genc_id = c(1, 2, 3)))
+#' }
+temp_table <- function(dbcon, data, table_name = "temp_table", analyze = TRUE) {
+  # check inputs
+  check_input(dbcon, "DBI")
+  check_input(data, c("data.table", "data.frame"))
+  check_input(table_name, "character", length = 1)
+
+  # suppress notice message about temp table
+  quiet(dbExecute(dbcon, "SET client_min_messages TO WARNING"))
+
+  # drop temp table if it already exists
+  quiet(dbExecute(dbcon, paste("Drop table if exists", table_name, ";")))
+
+  if (grepl("PostgreSQL", class(dbcon), ignore.case = TRUE)) {
+    dbWriteTable(
+      dbcon,
+      name = c("pg_temp", table_name),
+      value = data,
+      row.names = FALSE,
+      overwrite = TRUE,
+      temporary = TRUE
+    )
+  } else {
+    dbWriteTable(
+      dbcon,
+      name = table_name,
+      value = data,
+      row.names = FALSE,
+      overwrite = TRUE,
+      temporary = TRUE
+    )
+  }
+
+  # reset messages being printed
+  quiet(dbExecute(dbcon, "RESET client_min_messages"))
+
+  # run analyze
+  quiet(dbExecute(dbcon, paste("Analyze ", table_name)))
 }
