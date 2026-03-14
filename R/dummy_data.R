@@ -61,7 +61,7 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
     },
     icd_lookup = {
       if (!is.null(dbcon)) {
-        lookup <- RPostgreSQL::dbGetQuery(dbcon, "SELECT diagnosis_code  FROM lookup_icd10_ca_description where type != 'category'") %>% as.data.table()
+        lookup <- dbGetQuery(dbcon, "SELECT diagnosis_code FROM lookup_icd10_ca_description where type != 'category'") %>% as.data.table()
 
         if (!is.null(pattern)) {
           lookup <- lookup[grepl(toupper(pattern), diagnosis_code)]

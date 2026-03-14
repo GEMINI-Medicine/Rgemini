@@ -118,7 +118,15 @@ test_that("incorrect inputs fail check", {
                                       genc_id = as.integer(5),
                                       discharge_date_time = "2020-01-01 00:00"
                                     ),
-                                    input7 = dbDriver("PostgreSQL"), # DB connection
+                                    input7 = dbConnect(
+                                      RPostgres::Postgres(),
+                                      host = "gemini-db-dummy.j.aivencloud.com",
+                                      port = 10571,
+                                      dbname = "dummy_db_v1_0_0", # most recent version
+                                      user = "gemini_user",
+                                      password = "gemini",
+                                      sslmode = "require"
+                                    ), # DB connection
                                     input8 = list(1, 2) # list inputs
   ) {
     # wrong type

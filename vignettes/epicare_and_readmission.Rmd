@@ -96,6 +96,7 @@ library(DBI)
 library(getPass)
 
 # Establish database connection
+drv <- dbDriver("PostgreSQL")
 db <- DBI::dbConnect(drv,
   dbname = "db",
   host = "domain_name.ca",
