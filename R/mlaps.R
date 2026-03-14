@@ -99,7 +99,7 @@ laps_assign_test <- function(x, breaks, points) {
 #'     `genc_id` (`numeric`),\cr
 #'     `mlaps` (`numeric`) sum of max scores for each relevant test for this encounter.
 #'
-#' @import DBI RPostgreSQL
+#' @import DBI
 #' @importFrom purrr map2_df
 #' @export
 #'

@@ -56,7 +56,7 @@
 #' `admission_date_time`. Tests with missing `collection_date_time` will be
 #' excluded when `exclude_ed` is set to `TRUE`.
 #'
-#' @import RPostgreSQL dplyr
+#' @import dplyr
 #'
 #' @return
 #' data.table object with the same number of rows as input "cohort", with

@@ -57,7 +57,7 @@
 #' `0` in result columns. User should check transfusion and lab data coverage and
 #' decide whether the imputed `0`s are appropriate or not.
 #'
-#' @import RPostgreSQL lubridate
+#' @import lubridate
 #'
 #' @export
 #'

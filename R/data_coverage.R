@@ -138,7 +138,7 @@
 #' - `scales`: Passed to facet wrap to control if y-scales are `"fixed"`
 #' (default) or `"free"` (only works if no `ylimits` specified)
 #'
-#' @import RPostgreSQL ggplot2
+#' @import ggplot2
 #'
 #' @return
 #' If the plotting flags are set to `FALSE`, this function will return a single

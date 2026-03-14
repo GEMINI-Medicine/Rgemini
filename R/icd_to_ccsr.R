@@ -109,7 +109,7 @@
 #' The vignette provides further context and some example code illustrating how to use CCSR categories in analyses.
 #'
 #'
-#' @import DBI RPostgreSQL
+#' @import DBI
 #' @importFrom stringr str_sub
 #'
 #' @export
