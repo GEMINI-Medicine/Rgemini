@@ -4,7 +4,7 @@
 \alias{temp_table}
 \title{Write temp tables}
 \usage{
-temp_table(dbcon, data, table_name = "temp_table", analyze = TRUE)
+temp_table(dbcon, data, table_name = "rgemini_temp_table", analyze = TRUE)
 }
 \arguments{
 \item{dbcon}{(\code{DBIConnection})\cr
@@ -14,7 +14,7 @@ A database connection to any GEMINI database.}
 Data table to be written to DB as temp table.}
 
 \item{table_name}{(\code{data.table} or \code{data.frame})\cr
-Name of temporary table in DB (default = "temp_table").}
+Name of temporary table in DB (default = "rgemini_temp_table").}
 
 \item{analyze}{(\code{logical})\cr
 Whether or not to use SQL Analyze statement to further improve
