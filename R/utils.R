@@ -1090,7 +1090,7 @@ normalize_text <- function(x, lemma = FALSE) {
 #' Data table to be written to DB as temp table.
 #'
 #' @param table_name (`data.table` or `data.frame`)\cr
-#' Name of temporary table in DB (default = "temp_table").
+#' Name of temporary table in DB (default = "rgemini_temp_table").
 #'
 #' @param analyze (`logical`)\cr
 #' Whether or not to use SQL Analyze statement to further improve
@@ -1102,7 +1102,7 @@ normalize_text <- function(x, lemma = FALSE) {
 #' \dontrun{
 #' temp_table(dbcon, data.table(genc_id = c(1, 2, 3)))
 #' }
-temp_table <- function(dbcon, data, table_name = "temp_table", analyze = TRUE) {
+temp_table <- function(dbcon, data, table_name = "rgemini_temp_table", analyze = TRUE) {
   # check inputs
   check_input(dbcon, "DBI")
   check_input(data, c("data.table", "data.frame"))

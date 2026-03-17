@@ -126,13 +126,13 @@ episodes_of_care <- function(dbcon, restricted_cohort = NULL) {
         "select genc_id, patient_id_hashed,
         admit_category, admission_date_time, discharge_date_time
         from ", admdad_name,
-        " a where exists (select 1 from temp_table t where t.genc_id=a.genc_id);"
+        " a where exists (select 1 from rgemini_temp_table t where t.genc_id=a.genc_id);"
       )
     ) %>%
       as.data.table()
 
     lookup_transfer <- DBI::dbGetQuery(
-      dbcon, paste0("select * from ", lookup_transfer_name, " l where exists (select 1 from temp_table t where t.genc_id=l.genc_id);;")
+      dbcon, paste0("select * from ", lookup_transfer_name, " l where exists (select 1 from rgemini_temp_table t where t.genc_id=l.genc_id);;")
     ) %>%
       as.data.table()
   } else {

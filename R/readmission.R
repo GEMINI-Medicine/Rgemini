@@ -204,7 +204,7 @@ readmission <- function(dbcon,
   admdad <- DBI::dbGetQuery(dbcon, paste0(
     "select genc_id, ", hospital_var, ", admission_date_time, discharge_date_time, admit_category, discharge_disposition
     from ", find_db_tablename(dbcon, "admdad", verbose = FALSE),
-    " a where exists (select 1 from temp_table t where t.genc_id=a.genc_id) ;"
+    " a where exists (select 1 from rgemini_temp_table t where t.genc_id=a.genc_id) ;"
   )) %>% as.data.table()
   data <- merge(admdad, epicares, by = "genc_id") %>% as.data.table()
 
@@ -213,7 +213,7 @@ readmission <- function(dbcon,
     ipdiagnosis <- DBI::dbGetQuery(dbcon, paste0(
       "select genc_id, diagnosis_code, diagnosis_type
       from ", find_db_tablename(dbcon, "ipdiagnosis", verbose = FALSE),
-      " i where exists (select 1 from temp_table t where t.genc_id=i.genc_id);"
+      " i where exists (select 1 from rgemini_temp_table t where t.genc_id=i.genc_id);"
     )) %>% as.data.table()
   }
 
@@ -223,7 +223,7 @@ readmission <- function(dbcon,
       "select genc_id, intervention_code
       from ", find_db_tablename(dbcon, "ipintervention", verbose = FALSE),
       " i where intervention_code in ('1ZZ35HAP7','1ZZ35HAP1','1ZZ35HAN3') AND
-                                      exists (select 1 from temp_table t where t.genc_id=i.genc_id);"
+                                      exists (select 1 from rgemini_temp_table t where t.genc_id=i.genc_id);"
     )) %>% as.data.table()
   }
 
@@ -232,7 +232,7 @@ readmission <- function(dbcon,
     ipcmg <- DBI::dbGetQuery(dbcon, paste0(
       "select  genc_id, cmg
       from ", find_db_tablename(dbcon, "ipcmg", verbose = FALSE),
-      " i where exists (select 1 from temp_table t where t.genc_id=i.genc_id)"
+      " i where exists (select 1 from rgemini_temp_table t where t.genc_id=i.genc_id)"
     )) %>% as.data.table()
   }
 

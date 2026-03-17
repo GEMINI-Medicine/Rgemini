@@ -150,7 +150,7 @@ loop_mlaps <- function(dbcon, cohort = NULL, hours_after_admission = 0, componen
       hospital_field, "AS hospital_id",
       "FROM ", admdad_table,
       if (!is.null(cohort)) {
-        paste("a WHERE exists (select 1 from temp_table c where c.genc_id=a.genc_id) ")
+        paste("a WHERE exists (select 1 from rgemini_temp_table c where c.genc_id=a.genc_id) ")
       }
     )
   ) %>%
@@ -196,7 +196,7 @@ loop_mlaps <- function(dbcon, cohort = NULL, hours_after_admission = 0, componen
           paste0("AND l.", hospital_field, " = '", hospital_id, "'"),
           "AND EXTRACT(YEAR FROM a.discharge_date_time::DATE) = ", year,
           if (!is.null(cohort)) {
-            paste("and exists (select 1 from temp_table c where c.genc_id=l.genc_id)")
+            paste("and exists (select 1 from rgemini_temp_table c where c.genc_id=l.genc_id)")
           }
         )
       ) %>%

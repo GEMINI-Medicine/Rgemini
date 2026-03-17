@@ -99,14 +99,14 @@ n_routine_bloodwork <- function(dbcon,
            a.admission_date_time
            from", lab_table, "l
            left join", admdad_table, "a
-           on l.genc_id = a.genc_id where exists (select 1 from temp_table c where c.genc_id=a.genc_id)
+           on l.genc_id = a.genc_id where exists (select 1 from rgemini_temp_table c where c.genc_id=a.genc_id)
            and l.test_type_mapped_omop in ('3000963', '3019550') and
            l.collection_date_time >= a.admission_date_time"
       ),
       # no filter on collection date time
       paste(
         "select l.genc_id, l.result_value
-           from", lab_table, "l where exists (select 1 from temp_table c where c.genc_id=l.genc_id)",
+           from", lab_table, "l where exists (select 1 from rgemini_temp_table c where c.genc_id=l.genc_id)",
         "and l.test_type_mapped_omop in ('3000963', '3019550')"
       )
     )

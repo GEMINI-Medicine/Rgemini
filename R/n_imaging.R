@@ -97,14 +97,14 @@ n_imaging <- function(dbcon,
               r.ordered_date_time = ' ' then r.performed_date_time >= a.admission_date_time
               else r.ordered_date_time >= a.admission_date_time end as case_result
               from", radiology_table, "r
-              left join", admdad_table, "a on r.genc_id = a.genc_id where exists (select 1 from temp_table c where c.genc_id=a.genc_id)
+              left join", admdad_table, "a on r.genc_id = a.genc_id where exists (select 1 from rgemini_temp_table c where c.genc_id=a.genc_id)
             ) select genc_id, modality_mapped
             from temp
             where case_result = 'true'"),
 
       # not filter by admission date time
       paste("select genc_id, modality_mapped from", radiology_table, "r
-                  where exists (select 1 from temp_table c where c.genc_id=r.genc_id)")
+                  where exists (select 1 from rgemini_temp_table c where c.genc_id=r.genc_id)")
     )
   ) %>% as.data.table()
 

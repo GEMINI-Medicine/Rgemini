@@ -768,7 +768,7 @@ data_coverage <- function(dbcon,
           # than using EXIST
           data_hosp <- DBI::dbGetQuery(
             dbcon, paste("SELECT DISTINCT t.genc_id FROM ", table_name, " t
-                        INNER JOIN temp_table temp ON t.genc_id = temp.genc_id
+                        INNER JOIN rgemini_temp_table temp ON t.genc_id = temp.genc_id
                         WHERE", paste0("t.", hosp_var, " = '", h, "';"))
           ) %>%
             as.data.table()
