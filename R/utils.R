@@ -454,7 +454,7 @@ check_input <- function(arginput, argtype,
     ###### CHECK 1 (for all input types): Check if type is correct
     ## For DB connections
     if (any(grepl("dbi|con|posgre|sql", argtype, ignore.case = TRUE))) {
-      if (inherits(arginput, "OdbcConnection") || !grepl("PostgreSQL|PqConnection", class(arginput)[1])) {
+      if (!grepl("PostgreSQL|PqConnection", class(arginput)[1])) {
         stop(
           paste0(
             "Invalid user input in '",
