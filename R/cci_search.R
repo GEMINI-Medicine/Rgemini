@@ -103,7 +103,7 @@
 #' @export
 cci_search <- function(dbcon) {
   # check input type and column name
-  Rgemini:::check_input(dbcon, argtype = "DBI")
+  check_input(dbcon, argtype = "DBI")
 
   message(paste(
     "Searching CCI codes based on `lookup_cci` table.",
