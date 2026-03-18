@@ -1115,12 +1115,15 @@ temp_table <- function(dbcon, data, table_name = "rgemini_temp_table", analyze =
   quiet(dbExecute(dbcon, "SET client_min_messages TO WARNING"))
 
   # show custom note if temp table already exists
+  # (unless default Rgemini temp table name is used to avoid repeat warnings
+  # when running Rgemini functions)
   if (dbGetQuery(dbcon, paste0("
     SELECT EXISTS (
       SELECT 1
       FROM pg_tables
       WHERE schemaname LIKE 'pg_temp_%'
-      AND tablename = '", table_name, "');")) == TRUE) {
+      AND tablename = '", table_name, "');")) == TRUE &&
+      table_name != "rgemini_temp_table") {
     cat(paste0(
       "\nNote: Temporary table '", table_name,
       "' already exists and will be overwritten.\n"
