@@ -167,7 +167,10 @@ find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
   # if there is schema_name is public that means no materialized view
   if (schema_name == "public") {
     ## Find all table names and run search as defined above
-    tables <- dbListTables(dbcon)
+    tables <- dbGetQuery(
+      dbcon, "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public'"
+    )[[1]]
+
     table_name <- search_fn(tables)
 
     ## If none found, might be due to DB versions with foreign data wrappers
@@ -177,7 +180,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
         dbcon,
         "SELECT table_name from information_schema.tables
       WHERE table_type='FOREIGN' and table_schema='public';"
-      )$table_name
+      )[[1]]
       table_name <- search_fn(tables)
     }
   } else { # This is when there are materialized views under a given schema
@@ -188,7 +191,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
       "SELECT matviewname AS table_name,
        schemaname AS schema_name
     FROM pg_matviews;"
-    )$table_name
+    )[[1]]
     table_name <- search_fn(tables)
   }
 
@@ -212,7 +215,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
   if (length(table_name) > 1) {
     stop(paste0(
       "Multiple tables/views corresponding to '", drm_table, "' under schema '", schema_name,
-      "' identified in database '", db_name, ": ",
+      "' identified in database '", db_name, "': ",
       paste0(table_name, collapse = ", "), ".
       Please ensure that the searched table/view name results in a unique match."
     ))
@@ -489,14 +492,14 @@ check_input <- function(arginput, argtype,
 
       ## For all other inputs
     } else if ((any(argtype == "integer") && !all(is_integer(arginput))) ||
-      (!any(argtype == "integer") && !any(class(arginput) %in% argtype) &&
-        (!(any(argtype == "numeric") &&
-          all(is_integer(arginput)))))) { # in case argtype is "numeric" and provided input is "integer", don't show error
+               (!any(argtype == "integer") && !any(class(arginput) %in% argtype) &&
+                (!(any(argtype == "numeric") &&
+                   all(is_integer(arginput)))))) { # in case argtype is "numeric" and provided input is "integer", don't show error
       stop(
         paste0(
           "Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
           argname, "' needs to be of type '", paste(argtype,
-            collapse = "' or '"
+                                                    collapse = "' or '"
           ), "'.",
           "\nPlease refer to the function documentation for more details."
         ),
@@ -595,8 +598,8 @@ check_input <- function(arginput, argtype,
       # ignore coltypes without specification ("")
       check_col_type <- function(col, coltype) {
         if (coltype != "" && !any(grepl(coltype,
-          class(as.data.table(arginput)[[col]]),
-          ignore.case = TRUE
+                                        class(as.data.table(arginput)[[col]]),
+                                        ignore.case = TRUE
         ))) {
           stop(
             paste0(
@@ -879,13 +882,13 @@ convert_dt <- function(dt_var,
     if (is.null(addtl_msg) || !addtl_msg %in% c("", " ", "\n")) {
       warning(
         ifelse(is.null(addtl_msg),
-          paste0(
-            "Please carefully consider how to deal with missing/invalid date-time",
-            " entries and perform any additional pre-processing prior to running",
-            " the function `", as.character(sys.calls()[[1]])[1],
-            "` (e.g., impute missing dates/timestamps etc.).\n"
-          ),
-          addtl_msg
+               paste0(
+                 "Please carefully consider how to deal with missing/invalid date-time",
+                 " entries and perform any additional pre-processing prior to running",
+                 " the function `", as.character(sys.calls()[[1]])[1],
+                 "` (e.g., impute missing dates/timestamps etc.).\n"
+               ),
+               addtl_msg
         ),
         immediate. = TRUE, call. = FALSE
       )
