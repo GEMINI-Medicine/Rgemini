@@ -6,6 +6,7 @@
 **Miscellaneous**:
 * Updated `check_input()` to accommodate DB connections to dummy DB
 * Changed DB input argument name in `loop_mlaps` from `db` to `dbcon`
+* Enhanced `find_db_tablename` to only search public schema
 
 
 # Rgemini `2.0.0`
