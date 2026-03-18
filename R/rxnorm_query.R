@@ -100,7 +100,7 @@ rxnorm_query <- function(dbcon,
   }
 
   # Find the correct pharmacy table to query in the current database connection
-  pharmacy_table <- Rgemini:::find_db_tablename(dbcon, "pharmacy")
+  pharmacy_table <- find_db_tablename(dbcon, "pharmacy")
 
 
   # If cohort is NULL, return_unmatched can not be TRUE
