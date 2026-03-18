@@ -1111,8 +1111,21 @@ temp_table <- function(dbcon, data, table_name = "rgemini_temp_table", analyze =
   # suppress notice message about temp table
   quiet(dbExecute(dbcon, "SET client_min_messages TO WARNING"))
 
-  # drop temp table if it already exists
-  quiet(dbExecute(dbcon, paste("Drop table if exists", table_name, ";")))
+  # show custom note if temp table already exists
+  if (dbGetQuery(dbcon, paste0("
+    SELECT EXISTS (
+      SELECT 1
+      FROM pg_tables
+      WHERE schemaname LIKE 'pg_temp_%'
+      AND tablename = '", table_name, "');")) == TRUE) {
+    cat(paste0(
+      "\nNote: Temporary table '", table_name,
+      "' already exists and will be overwritten.\n"
+    ))
+  }
+
+  # drop temp table if it already exists (under temp tables)
+  quiet(dbExecute(dbcon, paste("Drop table if exists pg_temp.", table_name, ";")))
 
   if (grepl("PostgreSQL", class(dbcon), ignore.case = TRUE) && !inherits(dbcon, "OdbcConnection")) {
     dbWriteTable(
@@ -1126,7 +1139,7 @@ temp_table <- function(dbcon, data, table_name = "rgemini_temp_table", analyze =
   } else {
     dbWriteTable(
       dbcon,
-      name = table_name,
+      name = DBI::Id(schema = "pg_temp", table = table_name),
       value = data,
       row.names = FALSE,
       overwrite = TRUE,
