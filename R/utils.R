@@ -184,7 +184,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
       table_name <- search_fn(tables)
     }
   } else { # This is when there are materialized views under a given schema
-    dbSendQuery(dbcon, paste0("Set schema '", schema_name, "';")) # Set the right schema
+    dbExecute(dbcon, paste0("Set schema '", schema_name, "';")) # Set the right schema
 
     tables <- dbGetQuery(
       dbcon,
@@ -492,14 +492,14 @@ check_input <- function(arginput, argtype,
 
       ## For all other inputs
     } else if ((any(argtype == "integer") && !all(is_integer(arginput))) ||
-      (!any(argtype == "integer") && !any(class(arginput) %in% argtype) &&
-        (!(any(argtype == "numeric") &&
-          all(is_integer(arginput)))))) { # in case argtype is "numeric" and provided input is "integer", don't show error
+               (!any(argtype == "integer") && !any(class(arginput) %in% argtype) &&
+                (!(any(argtype == "numeric") &&
+                   all(is_integer(arginput)))))) { # in case argtype is "numeric" and provided input is "integer", don't show error
       stop(
         paste0(
           "Invalid user input in '", as.character(sys.calls()[[1]])[1], "': '",
           argname, "' needs to be of type '", paste(argtype,
-            collapse = "' or '"
+                                                    collapse = "' or '"
           ), "'.",
           "\nPlease refer to the function documentation for more details."
         ),
@@ -598,8 +598,8 @@ check_input <- function(arginput, argtype,
       # ignore coltypes without specification ("")
       check_col_type <- function(col, coltype) {
         if (coltype != "" && !any(grepl(coltype,
-          class(as.data.table(arginput)[[col]]),
-          ignore.case = TRUE
+                                        class(as.data.table(arginput)[[col]]),
+                                        ignore.case = TRUE
         ))) {
           stop(
             paste0(
@@ -882,13 +882,13 @@ convert_dt <- function(dt_var,
     if (is.null(addtl_msg) || !addtl_msg %in% c("", " ", "\n")) {
       warning(
         ifelse(is.null(addtl_msg),
-          paste0(
-            "Please carefully consider how to deal with missing/invalid date-time",
-            " entries and perform any additional pre-processing prior to running",
-            " the function `", as.character(sys.calls()[[1]])[1],
-            "` (e.g., impute missing dates/timestamps etc.).\n"
-          ),
-          addtl_msg
+               paste0(
+                 "Please carefully consider how to deal with missing/invalid date-time",
+                 " entries and perform any additional pre-processing prior to running",
+                 " the function `", as.character(sys.calls()[[1]])[1],
+                 "` (e.g., impute missing dates/timestamps etc.).\n"
+               ),
+               addtl_msg
         ),
         immediate. = TRUE, call. = FALSE
       )
@@ -1117,13 +1117,13 @@ temp_table <- function(dbcon, data, table_name = "rgemini_temp_table", analyze =
   # show custom note if temp table already exists
   # (unless default Rgemini temp table name is used to avoid repeat warnings
   # when running Rgemini functions)
-  if (dbGetQuery(dbcon, paste0("
+  tbl_exist <- dbGetQuery(dbcon, paste0("
     SELECT EXISTS (
       SELECT 1
       FROM pg_tables
       WHERE schemaname LIKE 'pg_temp_%'
-      AND tablename = '", table_name, "');")) == TRUE &&
-    table_name != "rgemini_temp_table") {
+      AND tablename = '", table_name, "');")) == TRUE
+  if (tbl_exist && table_name != "rgemini_temp_table") {
     cat(paste0(
       "\nNote: Temporary table '", table_name,
       "' already exists and will be overwritten.\n"
