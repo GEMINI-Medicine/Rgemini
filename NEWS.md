@@ -4,7 +4,7 @@
 * Added `temp_table()` utility function that writes temporary tables to improve query efficiency
 
 **Miscellaneous**:
-* Updated `check_input()` to accommodate DB connections to dummy DB
+* Updated `check_input()` and functions with `dbcon` input to accommodate `RPostgres`, `PostgreSQL`, and `odbc` connections
 * Changed DB input argument name in `loop_mlaps` from `db` to `dbcon`
 * Enhanced `find_db_tablename` to only search public schema
 
