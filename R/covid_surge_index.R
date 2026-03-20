@@ -18,6 +18,9 @@
 #' The index looks at overall COVID admissions, as well as COVID
 #' admissions who entered the ICU and underwent mechanical ventilation.
 #'
+#' The pre-COVID baseline is created using data from 2019-01-01 -
+#' 2019-12-31. Sites that do not have data in this period will not
+#' have a surge index.
 #' @param dbcon (`DBIConnection`)\cr
 #' RPostgres DB connection.
 #'
@@ -256,10 +259,39 @@ covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
     which(unique(cohort[[hospital_var]]) %ni% unique(census[[hospital_var]]))
   ]
 
-  warning(paste(
-    "Due to data availability, a surge index could not be calculated for the following sites:",
-    paste(missing_hospitals, collapse = ", ")
-  ))
+  if (length(missing_hospitals) > 0) {
+    # Get date ranges for missing hospitals
+    ## set up query
+    missing_data_query <- paste0(
+      "select ", hospital_var,
+      ", min(discharge_date_time),
+      max(discharge_date_time) from admdad where ",
+      hospital_var, " in ('",
+      paste(missing_hospitals, collapse = "', '"), "') group by ",
+      hospital_var
+    )
+    missing_hosp_data <- dbGetQuery(db, missing_data_query) %>%
+      data.table()
+
+    # Calculate min and max discharge dates for each missing hospital
+    date_ranges <- missing_hosp_data[, .(
+      min_discharge = substr(as.character(min), 1, 10),
+      max_discharge = substr(as.character(max), 1, 10)
+    ), by = hospital_var]
+
+    # Create warning message with one line per site
+    missing_lines <- sprintf(
+      "  - %s: data available from %s to %s",
+      missing_hospitals,
+      date_ranges$min_discharge[match(missing_hospitals, date_ranges[[hospital_var]])],
+      date_ranges$max_discharge[match(missing_hospitals, date_ranges[[hospital_var]])]
+    )
+
+    warning(paste0(
+      "Due to data availability, a surge index could not be calculated for the following sites:\n",
+      paste(missing_lines, collapse = "\n")
+    ))
+  }
 
   #### if gim only get 95th percentile as-is
   if (gim_only == TRUE) {
