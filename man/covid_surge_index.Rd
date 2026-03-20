@@ -39,6 +39,10 @@ The COVID surge index is a "severity-weighted measure of COVID-19
 caseload relative to pre-COVID-19 bed capacity" (Kadri et al, 2021)
 The index looks at overall COVID admissions, as well as COVID
 admissions who entered the ICU and underwent mechanical ventilation.
+
+The pre-COVID baseline is created using data from 2019-01-01 -
+2019-12-31. Sites that do not have data in this period will not
+have a surge index.
 }
 \examples{
 \dontrun{
