@@ -265,7 +265,7 @@ covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
     missing_data_query <- paste0(
       "select ", hospital_var,
       ", min(discharge_date_time),
-      max(discharge_date_time) from admdad where ",
+      max(discharge_date_time) from ", admdad_name, " where ",
       hospital_var, " in ('",
       paste(missing_hospitals, collapse = "', '"), "') group by ",
       hospital_var
