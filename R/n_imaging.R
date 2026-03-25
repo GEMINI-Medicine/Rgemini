@@ -34,8 +34,7 @@
 #' the left), make sure list of admissions (or patient) aligns in both tables.
 #'
 #' @param dbcon (`DBIConnection`)\cr
-#' A database connection to any GEMINI database. Only `DBI` connection is
-#' accepted as `odbc` connection may cause connection issues in certain environment.
+#' A `DBI` database connection to any GEMINI database.
 #'
 #' @param cohort (`data.frame` or `data.table`)
 #' Cohort table with all relevant encounters of interest, where each row
