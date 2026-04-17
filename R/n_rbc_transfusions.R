@@ -57,7 +57,7 @@
 #' `0` in result columns. User should check transfusion and lab data coverage and
 #' decide whether the imputed `0`s are appropriate or not.
 #'
-#' @import RPostgreSQL lubridate
+#' @import lubridate
 #'
 #' @export
 #'
@@ -97,9 +97,7 @@ n_rbc_transfusions <- function(dbcon,
   transfusion_table <- find_db_tablename(dbcon, "transfusion", verbose = FALSE)
 
   # speed up query by using temp table with analyze
-  DBI::dbSendQuery(dbcon, "Drop table if exists cohort_data;")
-  DBI::dbWriteTable(dbcon, c("pg_temp", "cohort_data"), cohort_subset[, .(genc_id)], row.names = FALSE, overwrite = TRUE)
-  DBI::dbSendQuery(dbcon, "Analyze cohort_data")
+  temp_table(dbcon, cohort_subset[, .(genc_id)])
 
   # load transfusion from db
   transfusion <- dbGetQuery(
@@ -111,14 +109,14 @@ n_rbc_transfusions <- function(dbcon,
         "select t.genc_id, t.issue_date_time, a.admission_date_time
            from", transfusion_table, "t
            left join", admdad_table, "a
-           on t.genc_id = a.genc_id where exists (select 1 from cohort_data c where c.genc_id=a.genc_id)
+           on t.genc_id = a.genc_id where exists (select 1 from rgemini_temp_table c where c.genc_id=a.genc_id)
            and t.blood_product_mapped_omop in ('4022173','4137859','4144461') and
            t.issue_date_time >= a.admission_date_time"
       ),
       # no filter on collection date time
       paste(
         "select t.genc_id, t.issue_date_time, t.blood_product_mapped_omop
-           from", transfusion_table, "t where exists (select 1 from cohort_data c where c.genc_id=t.genc_id)",
+           from", transfusion_table, "t where exists (select 1 from rgemini_temp_table c where c.genc_id=t.genc_id)",
         "and t.blood_product_mapped_omop in ('4022173','4137859','4144461')"
       )
     )
@@ -131,7 +129,7 @@ n_rbc_transfusions <- function(dbcon,
       "select l.genc_id, l.collection_date_time, l.result_value
       from", lab_table, "l",
       "where test_type_mapped_omop = '3000963'
-      and exists (select 1 from cohort_data c where c.genc_id=l.genc_id);"
+      and exists (select 1 from rgemini_temp_table c where c.genc_id=l.genc_id);"
     )
   ) %>% as.data.table()
 
