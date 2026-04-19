@@ -1,0 +1,41 @@
+# this connects to the public dummy DB every Thursday 12am UTC, to keep the connection alive
+name: Weekly dummy DB connect
+
+on:
+  schedule:
+    - cron: '0 0 * * 4' # Thursday 12am UTC
+  workflow_dispatch:
+
+jobs:
+  dummy-connect:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+
+      - name: Install packages
+        run: |
+          Rscript -e 'install.packages(c("DBI","RPostgres"), repos="https://cloud.r-project.org")'
+
+      - name: Connect to dummy DB
+        run: |
+          Rscript - <<'EOF'
+          library(DBI)
+          library(RPostgres)
+
+          con <- dbConnect(
+            RPostgres::Postgres(),
+            host     = "gemini-db-dummy.j.aivencloud.com",
+            port     = 10571,
+            dbname   = "dummy_db_v1_0_0",
+            user     = "gemini_user",
+            password = "gemini",
+            sslmode  = "require"
+          )
+
+          print(dbGetQuery(con, "SELECT 1;"))
+
+          dbDisconnect(con)
+          EOF
