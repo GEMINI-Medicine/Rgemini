@@ -1,19 +1,18 @@
 LAPS_OMOP_CONCEPTS <- c(
-  3019550, # Sodium
-  3024641, # Blood Urea Nitrogen (BUN)
-  3020564, # Creatinine
-  3024561, # Albumin
-  3009542, # Hematocrit
-  3010813, # White Blood Cell Count
+  3019550, # Sodium, mmol/L
+  3024641, # Blood Urea Nitrogen (BUN), mmol/L
+  3020564, # Creatinine, umol/L
+  3024561, # Albumin, g/L
+  3009542, # Hematocrit, proportion
+  3010813, # White Blood Cell Count, x10^9/L
   3019977, # Arterial pH
-  3027946, # Arterial paCO2
-  3027801, # Arterial paO2
-  3013826, # Glucose Random
-  3040151, # Glucose Random
-  3018251, # Glucose Random
-  3006140 # Bilirubin
+  3027946, # Arterial paCO2, mmHg
+  3027801, # Arterial paO2, mmHg
+  3013826, # Glucose Random, mmol/L
+  3040151, # Glucose Random, mmol/L
+  3018251, # Glucose Random, mmol/L
+  3006140 # Bilirubin, umol/L
 )
-
 
 #' @title
 #' Assign score to LAPS component
