@@ -270,7 +270,7 @@ covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
       paste(missing_hospitals, collapse = "', '"), "') group by ",
       hospital_var
     )
-    missing_hosp_data <- dbGetQuery(db, missing_data_query) %>%
+    missing_hosp_data <- dbGetQuery(dbcon, missing_data_query) %>%
       data.table()
 
     # Calculate min and max discharge dates for each missing hospital
