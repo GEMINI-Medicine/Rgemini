@@ -7,6 +7,7 @@
 * Updated `check_input()` and functions with `dbcon` input to accommodate `RPostgres`, `PostgreSQL`, and `odbc` connections
 * Changed DB input argument name in `loop_mlaps` from `db` to `dbcon`
 * Enhanced `find_db_tablename` to only search public schema
+* Updated `n_rbc_transfusions()` to include validated data from sites 105 & 106 in calculations.
 
 
 # Rgemini `2.0.0`
