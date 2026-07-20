@@ -58,10 +58,12 @@ prior to the transfusion are excluded. These scenarios are rare, typically
 occurring in approximately 2\% of blood transfusions in GEMINI data.
 }
 \note{
-Transfusion data from two hospitals with known data quality issues are
-automatically removed by this function. Any \code{genc_ids} from those sites are
-not included in the returned output. When merging the output of this function
-with another table, those \code{genc_ids} should have a value of \code{NA}.
+Transfusion data from two hospitals (105 and 106) with known historical
+data quality issues is automatically excluded for encounters with a
+\code{discharge_date_time} before 2021-01-01 00:00. Any \code{genc_ids} from those
+sites meeting this criterion are not included in the returned output.
+When merging the output of this function with another table, those
+\code{genc_ids} should have a value of \code{NA}.
 
 Currently, the function does not take \code{transfusion} or \code{lab} data coverage
 into account. For patients without RBC transfusion, the function will return
