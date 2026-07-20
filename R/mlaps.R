@@ -194,6 +194,7 @@ loop_mlaps <- function(dbcon, cohort = NULL, hours_after_admission = 0, componen
           WHERE l.test_type_mapped_omop IN (", paste(LAPS_OMOP_CONCEPTS, collapse = ", "), ")",
           paste0("AND l.", hospital_field, " = '", hospital_id, "'"),
           "AND EXTRACT(YEAR FROM a.discharge_date_time::DATE) = ", year,
+          " AND NOT (test_type_mapped_omop in (3019977, 3027946, 3027801) and test_name_raw ~* 'POC|point of care')",
           if (!is.null(cohort)) {
             paste("and exists (select 1 from rgemini_temp_table c where c.genc_id=l.genc_id)")
           }
@@ -257,6 +258,7 @@ loop_mlaps <- function(dbcon, cohort = NULL, hours_after_admission = 0, componen
 #' For those encounters which were not returned, it may be reasonable to impute their LAPS score with zero
 #' if lab data was in principle available for their site and time period.
 #' If lab data was unavailable, it might be more accurate to assign the LAPS score for these encounters as `NA`.
+#' Arterial blood gas point-of-care tests are not used in mlaps calculation.
 #' In general it is recommended to take care and be intentional when imputing LAPS scores.
 #'
 #' @importFrom lubridate hours
