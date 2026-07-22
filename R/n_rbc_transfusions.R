@@ -89,7 +89,6 @@ n_rbc_transfusions <- function(dbcon,
 
 
   ## If relevant: Show warning notifying user of hospital exclusion
-  ## If relevant: Show warning notifying user of hospital exclusion
   if (any(c(105, 106) %in% unique(cohort$hospital_num))) {
     # Get discharge dates for hospitals 105/106 to determine exclusion
     genc_ids_105_106 <- cohort[hospital_num %in% c(105, 106), genc_id]
