@@ -47,10 +47,12 @@
 #' all RBC transfusions). Encounters without any transfusion will get a 0.
 #'
 #' @note
-#' Transfusion data from two hospitals with known data quality issues are
-#' automatically removed by this function. Any `genc_ids` from those sites are
-#' not included in the returned output. When merging the output of this function
-#' with another table, those `genc_ids` should have a value of `NA`.
+#' Transfusion data from two hospitals (105 and 106) with known historical
+#' data quality issues is automatically excluded for encounters with a
+#' `discharge_date_time` before 2021-01-01 00:00. Any `genc_ids` from those
+#' sites meeting this criterion are not included in the returned output.
+#' When merging the output of this function with another table, those
+#' `genc_ids` should have a value of `NA`.
 #'
 #' Currently, the function does not take `transfusion` or `lab` data coverage
 #' into account. For patients without RBC transfusion, the function will return
@@ -80,21 +82,43 @@ n_rbc_transfusions <- function(dbcon,
   check_input(exclude_ed, argtype = "logical")
   cohort <- coerce_to_datatable(cohort)
 
-  ## If relevant: Show warning notifying user of hospital exclusion
-  if (any(c(105, 106) %in% unique(cohort$hospital_num))) {
-    cat(paste0(
-      "Excluding hospitals with known transfusion data quality issues. ",
-      "Please refer to the function documentation for more details.\n",
-      nrow(cohort[hospital_num %in% c(105, 106)]), " genc_ids in the input cohort ",
-      "are from these hospitals, and they are excluded from the output table.\n\n"
-    ))
-  }
-  cohort_subset <- cohort[hospital_num %ni% c(105, 106)]
-
   # find table names for all relevant tables (admdad/lab/transfusion)
   admdad_table <- find_db_tablename(dbcon, "admdad", verbose = FALSE)
   lab_table <- find_db_tablename(dbcon, "lab", verbose = FALSE)
   transfusion_table <- find_db_tablename(dbcon, "transfusion", verbose = FALSE)
+
+
+  ## If relevant: Show warning notifying user of hospital exclusion
+  if (any(c(105, 106) %in% unique(cohort$hospital_num))) {
+    # Get discharge dates for hospitals 105/106 to determine exclusion
+    genc_ids_105_106 <- cohort[hospital_num %in% c(105, 106), genc_id]
+
+    discharge_dates <- dbGetQuery(
+      dbcon,
+      paste(
+        "select genc_id, discharge_date_time from", admdad_table,
+        "where genc_id in (", paste(genc_ids_105_106, collapse = ","), ")"
+      )
+    ) %>% as.data.table()
+
+    excluded_genc_ids <- discharge_dates[
+      convert_dt(discharge_date_time) < convert_dt("2021-01-01 00:00"),
+      genc_id
+    ]
+
+    if (length(excluded_genc_ids) > 0) {
+      cat(paste0(
+        "Excluding encounters from hospitals with known historical transfusion",
+        " data quality issues. ",
+        "Please refer to the function documentation for more details.\n",
+        length(excluded_genc_ids), " genc_ids in the input cohort ",
+        "are excluded from the output table.\n\n"
+      ))
+    }
+    cohort_subset <- cohort[!genc_id %in% excluded_genc_ids]
+  } else {
+    cohort_subset <- cohort
+  }
 
   # speed up query by using temp table with analyze
   temp_table(dbcon, cohort_subset[, .(genc_id)])
