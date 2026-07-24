@@ -51,8 +51,8 @@ Patients without entries in the lab table within \code{hours_of_admission} are n
 For those encounters which were not returned, it may be reasonable to impute their LAPS score with zero
 if lab data was in principle available for their site and time period.
 If lab data was unavailable, it might be more accurate to assign the LAPS score for these encounters as \code{NA}.
-Arterial blood gas point-of-care tests are not used in mlaps calculation.
 In general it is recommended to take care and be intentional when imputing LAPS scores.
+Arterial blood gas point-of-care tests are not used in mlaps calculation.
 }
 \references{
 When the function is used, please cite the following:
