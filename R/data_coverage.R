@@ -241,8 +241,16 @@ data_coverage <- function(dbcon,
         "SELECT genc_id, ", hosp_var,
         # for internal users:
         # also query hospital_num as optional hospital_label variable
-        if (hosp_var == "hospital_id" & hospital_label == "hospital_num") {
-          ", hospital_num"
+        if (hosp_var == "hospital_id" && !is.null(hospital_label)) {
+          if (hospital_label == "hospital_num") {
+            ", hospital_num"
+          } else {
+            stop(paste0(
+              "Hospital_label ", hospital_label,
+              " does not exist in the `admdad` table.\n",
+              "Please provide a `cohort` input that includes", hospital_label
+            ))
+          }
         },
         ", discharge_date_time FROM ", find_db_tablename(dbcon, "admdad")
       )
