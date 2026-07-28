@@ -87,7 +87,9 @@
 #' Optional: Name of variable in `cohort` table that corresponds to custom
 #' label for hospitals (e.g., letters A-E instead of hospital_num 101-105).
 #' Will be used for plotting purposes. Only works if the user provides a
-#' `cohort` input containing the variable corresponding to `hospital_label`.
+#' `cohort` input containing the variable corresponding to `hospital_label`
+#' (or for internal users: "hospital_num" can be provided as `hospital_label`
+#' even when no `cohort` input is specified).
 #'
 #' @param hospital_group (`character`)
 #' Optional: Name of variable in `cohort` table that corresponds to grouping
@@ -179,11 +181,18 @@
 #'   password = getPass("password")
 #' )
 #'
-#' cohort <- dbGetQuery(db, "SELECT genc_id FROM admdad;")
 #'
-#' ## run function with default flags to create all plots
+#' ## run function on full cohort, with default flags to create all plots
 #' # Note: This might take a while to run...
-#' coverage <- data_coverage(dbcon, cohort, table = c("admdad", "radiology"))
+#' coverage <- data_coverage(dbcon, table = c("admdad", "radiology"))
+#'
+#' # restrict outputs to certain hospitals/time periods
+#' cohort <- dbGetQuery(db, "SELECT genc_id FROM admdad;")
+#' coverage <- data_coverage(
+#'  dbcon,
+#'  cohort = cohort,
+#'  table = c("admdad", "radiology")
+#' )
 #'
 #' # get flags per encounter based on encounter's discharge date
 #' enc_flag <- coverage[["data"]][1] # coverage[["data"]]$coverage_flag_enc
@@ -228,7 +237,15 @@ data_coverage <- function(dbcon,
   if (is.null(cohort)) {
     cohort <- dbGetQuery(
       dbcon,
-      paste0("SELECT genc_id, ", hosp_var, ", discharge_date_time FROM ", find_db_tablename(dbcon, "admdad"))
+      paste0(
+        "SELECT genc_id, ", hosp_var,
+        # for internal users:
+        # also query hospital_num as optional hospital_label variable
+        if (hosp_var == "hospital_id" & hospital_label == "hospital_num") {
+          ", hospital_num"
+        },
+        ", discharge_date_time FROM ", find_db_tablename(dbcon, "admdad")
+      )
     ) %>% data.table()
   } else {
     # if cohort input is povided, make sure it contains all relevant columns
