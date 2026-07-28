@@ -6,7 +6,7 @@
 \usage{
 data_coverage(
   dbcon,
-  cohort,
+  cohort = NULL,
   table,
   plot_timeline = TRUE,
   plot_coverage = TRUE,
@@ -65,12 +65,14 @@ have an entry in \code{admdad}).}
 \item{hospital_label}{(\code{character})
 Optional: Name of variable in \code{cohort} table that corresponds to custom
 label for hospitals (e.g., letters A-E instead of hospital_num 101-105).
-Will be used for plotting purposes.}
+Will be used for plotting purposes. Only works if the user provides a
+\code{cohort} input containing the variable corresponding to \code{hospital_label}.}
 
 \item{hospital_group}{(\code{character})
 Optional: Name of variable in \code{cohort} table that corresponds to grouping
 of hospitals (e.g., Teaching vs. Non-teaching). Hospitals will be grouped
-accordingly in all plots/output tables.}
+accordingly in all plots/output tables. Only works if the user provides a
+\code{cohort} input containing the variable corresponding to \code{hospital_group}.}
 
 \item{custom_dates}{(\code{data.frame}|\code{data.table})
 Optional input allowing users to specify a customized timeline
