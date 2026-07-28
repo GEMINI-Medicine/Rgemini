@@ -45,7 +45,8 @@
 #'
 #' @param cohort (`data.frame` or `data.table`)
 #' Optional cohort table with encounters of interest, where each row
-#' corresponds to a single encounter. Must contain the following columns:
+#' corresponds to a single encounter. If provided, it must contain the
+#' following columns:
 #' - `genc_id`: GEMINI Encounter ID
 #' - `hospital_num` | `hospital_id`: Hospital identifier
 #' - `discharge_date_time`
