@@ -13,7 +13,7 @@
 #' separately).
 #'
 #' @details
-#' `data_coverage` provides analysts with a tool to inform their decisions
+#' `data_coverage()` provides analysts with a tool to inform their decisions
 #' about which hospitals/time periods to include in their analyses,
 #' depending on the data tables of interest. For example, if a project relies on
 #' lab data (e.g., `mlaps` variable), users should carefully inspect lab data
@@ -26,31 +26,32 @@
 #'
 #' @section Warning!:
 #'
-#' \itemize{
-#'    \item{Data coverage checks should generally be performed on the whole
-#' dataset, prior to applying any additional cohort inclusions/exclusions.}
-#'    \item{If you are an HPC4Health user and your datacut has been pre-filtered
-#'    based on certain inclusion/exclusion criteria (e.g., diagnosis codes),
-#'    please keep in mind that the coverage plots (see `plot_coverage`) may be
-#'    skewed in smaller/pre-filtered samples. Please reach out to the GEMINI
-#'    team if you need additional support.}
-#'    \item{Data coverage checks are particularly relevant for clinical data
-#'    tables (e.g., lab, pharmacy, radiology, transfusions, vitals, clinical
-#'    notes etc.).}
-#'    \item{This function should be used as a starting point for data coverage
-#'    checks, but users are advised to perform additional checks based on their
-#'    specific needs.}
-#' }
+#' - Data coverage checks should generally be performed on the whole
+#' dataset, prior to applying any additional cohort inclusions/exclusions.
+#' - If you are an HPC4Health user and your datacut has been pre-filtered
+#' based on certain inclusion/exclusion criteria (e.g., diagnosis codes),
+#' please keep in mind that the coverage plots (see `plot_coverage`) may be
+#' skewed in smaller/pre-filtered samples. Please reach out to the GEMINI
+#' team if you need additional support.
+#' - Data coverage checks are particularly relevant for clinical data
+#' tables (e.g., lab, pharmacy, radiology, transfusions, vitals, clinical
+#' notes etc.).
+#' - This function should be used as a starting point for data coverage
+#' checks, but users are advised to perform additional checks based on their
+#' specific needs.
 #'
 #' @param dbcon (`DBIConnection`)\cr
 #' A database connection to any GEMINI database.
 #'
 #' @param cohort (`data.frame` or `data.table`)
-#' Cohort table with all relevant encounters of interest, where each row
+#' Optional cohort table with encounters of interest, where each row
 #' corresponds to a single encounter. Must contain the following columns:
 #' - `genc_id`: GEMINI Encounter ID
 #' - `hospital_num` | `hospital_id`: Hospital identifier
 #' - `discharge_date_time`
+#'
+#' If no `cohort` input is provided, the function will internally query
+#' all `genc_ids` from the `admdad` table.
 #'
 #' @param table (`character`)
 #' Which table(s) to include. If multiple, specify a character vector
@@ -97,15 +98,16 @@
 #' The flag will be ignored if the `plotly` package is not installed.
 #'
 #' @param custom_dates (`data.frame`|`data.table`)
-#' Optional input allowing users to specify a customized timeline (in 'yyyy-mm-dd'
-#' format) to be included for a given hospital*table combination. The user-provided
-#' input overwrites the corresponding row(s) in the `lookup_data_coverage` table.
+#' Optional input allowing users to specify a customized timeline
+#' (in 'yyyy-mm-dd' format) to be included for a given hospital*table
+#' combination. The user-provided input overwrites the corresponding
+#' row(s) in the `lookup_data_coverage` table.
 #' This can be used to exclude time periods (e.g., due to data quality
 #' issues) and generate customized timeline plots.
 #' For example, let's say you identified a data quality issue in the
 #' transfusion table at hospital 104 for discharge dates < 2019-01-01.
-#' To only include transfusion data for encounters discharged after this
-#' time period, specify:
+#' To only include transfusion data for encounters discharged *after*
+#' this time period, specify:
 #' `custom_dates <- data.frame(
 #'      data = "transfusion",
 #'      hospital_num = 104,
@@ -119,17 +121,13 @@
 #' flags by `genc_id` (in returned `coverage_flag_enc`) and timeline plot (see
 #' `plot_timeline`) will be adjusted according to the user-provided dates.
 #' The coverage plot (see `plot_coverage`) is not affected by the user-specified
-#' the `custom_dates` input.
+#' `custom_dates` input.
 #'
 #' @param ...
 #' Additional inputs that can be passed to control plot aesthetics in
 #' `plot_timeline` or `plot_coverage` plots, such as:
 #' - `base_size`: Font size (default = 12)
 #' - `colors`: Plot color(s) (default = gemini_colors(1))
-#' - `hospital_group`: Name of variable in cohort specifying color grouping of
-#' hospitals (e.g., Teaching/Non-teaching); for the timeline plot, this is
-#' only applied when plotting a single table (otherwise, color grouping is
-#' applied to different table names by default)
 #'
 #' For coverage plots only (inputs are passed to `plot_over_time()`):
 #' - `time_int`: Time interval used to aggregate data (e.g., by `"month"`
@@ -138,19 +136,19 @@
 #' - `scales`: Passed to facet wrap to control if y-scales are `"fixed"`
 #' (default) or `"free"` (only works if no `ylimits` specified)
 #'
-#' @import ggplot2
+#' @import DBI lubridate ggplot2
 #'
 #' @return
 #' If the plotting flags are set to `FALSE`, this function will return a single
 #' `data.table` object with a flag for each `genc_id` indicating whether the
 #' encounter was discharged during a time period in which data for a given
-#' table (e.g., `"lab"`) were *in principle* available. If the flag is `FALSE`,
-#' the `genc_id` was dicharged during a time period where GEMINI did not receive
-#' any data for the table of interest. If the flag is `TRUE`, the `genc_id` was
-#' discharged during a time period where GEMINI received *some* data from a
-#' given hospital (however, coverage may still be low, so users are advised to
-#' perform additional coverage checks, e.g., by using the plotting features of
-#' this function).
+#' table (e.g., `"lab"`) were *in principle* available. If the encounter-level
+#' flag is `FALSE`, the `genc_id` was dicharged during a time period where
+#' GEMINI did not receive any data for the table of interest. If the flag is
+#' `TRUE`, the `genc_id` was discharged during a time period where GEMINI
+#' received *some* data from a given hospital (however, coverage may still be
+#' low, so users are advised to perform additional coverage checks, e.g., by
+#' using the plotting features of this function).
 #'
 #' When the plotting flags are set to `TRUE` (default), the function will
 #' return additional data tables (`output[["data"]]`) and plots
@@ -194,7 +192,7 @@
 #' prct_coverage <- coverage[["data"]][3] # coverage[["data"]]$coverage_data
 #'
 #'
-#' ## run function without any plots
+#' ## run function without any plots (not recommended)
 #' # (will only return data.table with encounter-level flag)
 #' coverage <- data_coverage(
 #'   dbcon,
