@@ -23,7 +23,8 @@ A database connection to any GEMINI database.}
 
 \item{cohort}{(\code{data.frame} or \code{data.table})
 Optional cohort table with encounters of interest, where each row
-corresponds to a single encounter. Must contain the following columns:
+corresponds to a single encounter. If provided, it must contain the
+following columns:
 \itemize{
 \item \code{genc_id}: GEMINI Encounter ID
 \item \code{hospital_num} | \code{hospital_id}: Hospital identifier
