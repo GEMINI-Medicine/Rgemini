@@ -85,12 +85,14 @@
 #' @param hospital_label (`character`)
 #' Optional: Name of variable in `cohort` table that corresponds to custom
 #' label for hospitals (e.g., letters A-E instead of hospital_num 101-105).
-#' Will be used for plotting purposes.
+#' Will be used for plotting purposes. Only works if the user provides a
+#' `cohort` input containing the variable corresponding to `hospital_label`.
 #'
 #' @param hospital_group (`character`)
 #' Optional: Name of variable in `cohort` table that corresponds to grouping
 #' of hospitals (e.g., Teaching vs. Non-teaching). Hospitals will be grouped
-#' accordingly in all plots/output tables.
+#' accordingly in all plots/output tables. Only works if the user provides a
+#' `cohort` input containing the variable corresponding to `hospital_group`.
 #'
 #' @param as_plotly (`logical`)
 #' Will return any figures as interactive plots using `plotly`. Note that this
@@ -205,7 +207,7 @@
 #'
 #' @export
 data_coverage <- function(dbcon,
-                          cohort,
+                          cohort = NULL,
                           table,
                           plot_timeline = TRUE,
                           plot_coverage = TRUE,
@@ -220,15 +222,25 @@ data_coverage <- function(dbcon,
 
   # check which variable to use as hospital identifier
   hosp_var <- return_hospital_field(dbcon)
-  check_input(cohort,
-    argtype = c("data.table", "data.frame"),
-    colnames = c(
-      "genc_id", hosp_var, "discharge_date_time",
-      hospital_label, hospital_group
+
+  # if no cohort input is provided, query from DB
+  if (is.null(cohort)) {
+    cohort <- dbGetQuery(
+      dbcon,
+      paste0("SELECT genc_id, ", hosp_var, ", discharge_date_time FROM ", find_db_tablename(dbcon, "admdad"))
+    ) %>% data.table()
+  } else {
+    # if cohort input is povided, make sure it contains all relevant columns
+    check_input(cohort,
+      argtype = c("data.table", "data.frame"),
+      colnames = c(
+        "genc_id", hosp_var, "discharge_date_time",
+        hospital_label, hospital_group
+      )
     )
-  )
-  # make copy of cohort so we don't overwrite anything
-  cohort <- copy(cohort) %>% data.table()
+    # make copy of cohort so we don't overwrite anything
+    cohort <- copy(cohort) %>% data.table()
+  }
 
   # make sure hospital_group (if any) has 1-1 relationship
   # with hospital ID/num
@@ -818,8 +830,8 @@ data_coverage <- function(dbcon,
             ...
           ) +
             labs(
-              title = paste0("Data volume - ", table),
-              y = paste0("N genc_ids in ", table, " table")
+              title = paste0("Data Volume - ", fix_var_str(table)),
+              y = paste0("N genc_ids in ", fix_var_str(table), " Table")
             ) +
             theme(strip.text.y = element_text(margin = margin(b = 10, t = 10)))
         )
@@ -843,8 +855,8 @@ data_coverage <- function(dbcon,
               expand = expansion(0.025)
             ) +
             labs(
-              title = paste0("Data coverage - ", table),
-              y = paste0("% genc_ids in ", table, " table")
+              title = paste0("Data Coverage - ", fix_var_str(table)),
+              y = paste0("% genc_ids in ", fix_var_str(table), " Table")
             ) +
             theme(strip.text.y = element_text(margin = margin(b = 10, t = 10)))
         )
