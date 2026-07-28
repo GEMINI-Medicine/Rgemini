@@ -189,9 +189,9 @@
 #' # restrict outputs to certain hospitals/time periods
 #' cohort <- dbGetQuery(db, "SELECT genc_id FROM admdad;")
 #' coverage <- data_coverage(
-#'  dbcon,
-#'  cohort = cohort,
-#'  table = c("admdad", "radiology")
+#'   dbcon,
+#'   cohort = cohort,
+#'   table = c("admdad", "radiology")
 #' )
 #'
 #' # get flags per encounter based on encounter's discharge date

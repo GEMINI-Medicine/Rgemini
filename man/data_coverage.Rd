@@ -67,7 +67,9 @@ have an entry in \code{admdad}).}
 Optional: Name of variable in \code{cohort} table that corresponds to custom
 label for hospitals (e.g., letters A-E instead of hospital_num 101-105).
 Will be used for plotting purposes. Only works if the user provides a
-\code{cohort} input containing the variable corresponding to \code{hospital_label}.}
+\code{cohort} input containing the variable corresponding to \code{hospital_label}
+(or for internal users: "hospital_num" can be provided as \code{hospital_label}
+even when no \code{cohort} input is specified).}
 
 \item{hospital_group}{(\code{character})
 Optional: Name of variable in \code{cohort} table that corresponds to grouping
@@ -197,11 +199,18 @@ dbcon <- DBI::dbConnect(drv,
   password = getPass("password")
 )
 
-cohort <- dbGetQuery(db, "SELECT genc_id FROM admdad;")
 
-## run function with default flags to create all plots
+## run function on full cohort, with default flags to create all plots
 # Note: This might take a while to run...
-coverage <- data_coverage(dbcon, cohort, table = c("admdad", "radiology"))
+coverage <- data_coverage(dbcon, table = c("admdad", "radiology"))
+
+# restrict outputs to certain hospitals/time periods
+cohort <- dbGetQuery(db, "SELECT genc_id FROM admdad;")
+coverage <- data_coverage(
+  dbcon,
+  cohort = cohort,
+  table = c("admdad", "radiology")
+)
 
 # get flags per encounter based on encounter's discharge date
 enc_flag <- coverage[["data"]][1] # coverage[["data"]]$coverage_flag_enc
