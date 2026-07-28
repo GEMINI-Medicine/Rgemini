@@ -159,7 +159,9 @@ source("~/GitHub/Rgemini/R/plot_over_time.R")
 ##############################
 ## for encounter-level flag example
 coverage_enc <- data_coverage(
-  dbcon, cohort, c("lab", "transfusion", "radiology"),
+  dbcon, 
+  cohort = cohort, 
+  table = c("lab", "transfusion", "radiology"),
   plot_timeline = FALSE, plot_coverage = FALSE,
   custom_dates = custom_dates,
   hospital_label = "hosp"
@@ -187,7 +189,9 @@ setnames(coverage_enc, "hosp", "hospital_num")
 ##############################
 ## for timeline_plot example
 coverage_timeline <- data_coverage(
-  dbcon, cohort, c("admdad", "ipscu", "lab"),
+  dbcon, 
+  cohort = cohort, 
+  table = c("admdad", "ipscu", "lab"),
   plot_timeline = TRUE, plot_coverage = FALSE,
   custom_dates = custom_dates,
   hospital_label = "hosp"
@@ -262,7 +266,8 @@ cohort[, excl := hospital_id == "LHSCU" & genc_id %in% transf$genc_id & as.numer
 cohort <- cohort[excl == FALSE, ]
 
 coverage <- data_coverage(
-  dbcon, cohort,
+  dbcon, 
+  cohort = cohort,
   table = c("transfusion"),
   plot_timeline = FALSE,
   plot_coverage = TRUE,
@@ -297,7 +302,8 @@ cohort[, hospital_type := sample(
 ), by = hospital_id]
 
 coverage_cust1 <- data_coverage(
-  dbcon, cohort,
+  dbcon, 
+  cohort = cohort,
   table = c("admdad"),
   plot_timeline = TRUE,
   plot_coverage = FALSE,
@@ -321,7 +327,8 @@ custom_dates2 <- data.table(
 custom_dates <- rbind(custom_dates, custom_dates2, fill = TRUE)
 
 coverage_cust2 <- data_coverage(
-  dbcon, cohort,
+  dbcon, 
+  cohort = cohort,
   table = c("lab"),
   plot_timeline = TRUE,
   plot_coverage = FALSE,
