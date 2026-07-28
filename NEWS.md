@@ -1,19 +1,22 @@
 # `develop`
 
 **New functions**:
+
 * Added `temp_table()` utility function that writes temporary tables to improve query efficiency
 
 **Miscellaneous**:
+
 * Updated `check_input()` and functions with `dbcon` input to accommodate `RPostgres`, `PostgreSQL`, and `odbc` connections
 * Changed DB input argument name in `loop_mlaps` from `db` to `dbcon`
 * Enhanced `find_db_tablename` to only search public schema
 * Updated `mlaps` calculation to exclude arterial blood gas point-of-care tests
 * Updated `n_rbc_transfusions()` to include validated data from sites 105 & 106 in calculations.
-
+* Updated `data_coverage()` to make `cohort` input optional
 
 # Rgemini `2.0.0`
 
 * **Addition of RxNorm functions**:
+
   * `rxnorm_query()` to identify drugs of interest from pharmacy table
   * `prepare_pharm_for_validation()` to standardize RxNorm mapping validation
   * `normalize_text()` utility function to standardize medication names
@@ -24,32 +27,32 @@
       * `prepare_pharm_for_validation()`:
         * DB connection to `drm_cleandb_v4_1_1` required to query `lookup_pharmacy_mapping` table with previously validated mappings
         * Pharmacy mapping DB no longer queried, but can be provided as `custom_lookup` input
-
 * **Other new functions**:
+
   * `covid_surge_index()` function that calculates the COVID surge index by hospital-month
   * `cci_group()` to derive grouping of intervention codes into CCI sections and subsections
   * `cci_search()` to identify CCI codes for interventions of interest
-
 * **Testing improvements:**
-  * Unit tests are now also run in Python via rpy2 to ensure cross-language compatibility
 
+  * Unit tests are now also run in Python via rpy2 to ensure cross-language compatibility
 * **Bug fixes**
+
   * Fixed `render_cell_suppression.strat()` to be compatible with table1 version 1.5.0
   * Small bug fix in `daily_census()` to return all hospital ID variables provided in `cohort` input
   * Small fix in `data_coverage()` for `hospital_num` class
   * Removed repeated warning messages in `loop_mlaps()`
-
 * **Miscellaneous**:
+
   * Removed age exclusion in `episodes_of_care()` to accommodate paeds cohort
   * Updated readmission vignette to clarify use of restricted cohort (all-Med & ICU) in derived readmission flags
   * Refactored `disability()` and `frailty_score()` to remove dependency on `fuzzyjoin` package
   * Added hex sticker
   * Integration of issues with Jira
 
-
 # Rgemini `1.1.0`
 
 * **New functions:**
+
   * `data_coverage()` function to facilitate data coverage checks
   * `cohort_creation()` to generate cohort and show number (%) of entries at each inclusion/exclusion step
   * `neighbourhood_ses()` deriving neighbourhood-level variables from the Statistics Canada Census & Ontario Marginalization Index
@@ -57,19 +60,18 @@
     * `quiet()` to run any functions without warning/error/print messages
     * `compare_sets()` to find the number of unique and common elements in two sets
     * `create_ntiles()` to bin numeric variables into user-specified quantiles
-
 * **Function enhancements:**
+
   * Added option to return readmission `genc_id` in `readmission()` function
-  * Aligned `n_routine_bloodwork()` with DRM by only returning lab tests with valid numeric results 
+  * Aligned `n_routine_bloodwork()` with DRM by only returning lab tests with valid numeric results
   * Removed redundant check for acute-care transfers in `episodes_of_care()` (only use mapped institution types from `lookup_transfer`)
   * Enabled custom line color without specifying color grouping variable in `plot_over_time()`
-
 * **Documentation updates:**
+
   * Added pre-commit hooks: Run `styler` and check for `browser()` statements & large files
   * Improved documentation in `readmission()` vignette
   * Updated all links referencing the data dictionary
   * Improved organization of figures for vignettes
-
 
 # Rgemini `1.0.2`
 
