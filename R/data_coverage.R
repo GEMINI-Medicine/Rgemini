@@ -577,10 +577,20 @@ data_coverage <- function(dbcon,
     # make sure data & hospital are factors
     timeline_data[, data := factor(data, levels = unique(table))]
     if (!"factor" %in% class(timeline_data[, get(hosp_var)])) {
-      timeline_data[, paste(hosp_var) := factor(
-        get(hosp_var),
-        levels = sort(unique(get(hosp_var)))
-      )]
+      if (is.null(hospital_label)) {
+        timeline_data[, paste(hosp_var) := factor(
+          get(hosp_var),
+          levels = sort(unique(get(hosp_var)))
+        )]
+      } else { # if hospital label is provided, sort by that
+        timeline_data[, (hosp_var) := factor(
+          get(hosp_var),
+          levels = timeline_data[
+            order(get(hospital_label)),
+            unique(get(hosp_var))
+          ]
+        )]
+      }
     }
 
     # offset y based on number of hospitals & tables to be plotted
