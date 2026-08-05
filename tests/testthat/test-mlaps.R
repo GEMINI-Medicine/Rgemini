@@ -1,33 +1,44 @@
 ####### test 1
 testthat::test_that("Scoring scheme for each test is correct", {
-  id <- 1
-  omop <- c(3006140, 3009542, 3010813, 3019550, 3019977, 3020564, 3024561, 3024641, 3027801, 3027946, 3013826)
-  value <- c(70, 0.5, 6, 128, 8, 353.7, 19, 6.4, 120.1, 45, 3)
-  unit <- "mmol/L"
-  mintime <- "2023-01-01 00:00"
-  admtime <- "2023-01-02 00:00"
+  admdad <- data.table(
+    genc_id = 1,
+    admission_date_time = ymd_hm("2023-01-02 00:00")
+  )
+  lab <- data.table(
+    genc_id = 1,
+    test_type_mapped_omop = c(3006140, 3009542, 3010813, 3019550, 3019977, 3020564, 3024561, 3024641, 3027801, 3027946, 3013826),
+    result_value = c(70, 0.5, 6, 128, 8, 353.7, 19, 6.4, 120.1, 45, 3),
+    result_unit = "mmol/L",
+    collection_date_time = "2023-01-01 00:00"
+  )
 
-  admdad <- dummy_admdad(id, admtime)
-  lab <- dummy_lab(id, omop, value, unit, mintime)
-
-  res <- mlaps(admdad, lab, hours_after_admission = 0, component_wise = TRUE)
-  testthat::expect_equal(res$score, c(16, 6, 0, 10, 14, 5, 23, 0, 18, 10, 12, 0))
+  res <- mlaps(
+    admdad, lab, hours_after_admission = 0, component_wise = TRUE
+  )
+  testthat::expect_equal(
+    res$score, 
+    c(16, 6, 0, 10, 14, 5, 23, 0, 18, 10, 12, 0)
+  )
 })
 
 ####### test 2
 testthat::test_that("Only the max value within specified time window is taken", {
-  id <- 1
-  omop <- 3024641
-  value <- c(7, 8, 15, 30)
-  unit <- "mmol/L"
-  mintime <- "2023-01-02 08:00" # some taken within some after 24 hours
-  admtime <- "2023-01-02 00:00"
   set.seed(1) # ensure reproducibility
 
-  admdad <- dummy_admdad(id, admtime)
-  lab <- dummy_lab(id, omop, value, unit, mintime)
+  admdad <- data.table(
+    genc_id = 1,
+    admission_date_time = ymd_hm("2023-01-02 00:00")
+  )
 
-  # pre-admission: hours_offset=0
+  lab <- data.table(
+    genc_id = 1,
+    test_type_mapped_omop = 3024641,
+    result_value = c(7, 8, 15, 30),
+    result_unit = "mmol/L",
+    collection_date_time = ymd_hm("2023-01-02 08:00", tz = "UTC") + sample(0:(24 * 60 * 60 - 1), size = 4, replace = TRUE) # all tests taken after admission
+  )
+
+  # pre-admission: hours_offset=0 [no tests -> mlaps = 0]
   res <- mlaps(admdad, lab, hours_after_admission = 0, component_wise = FALSE)
   testthat::expect_equal(nrow(res), 0)
 
@@ -40,17 +51,22 @@ testthat::test_that("Only the max value within specified time window is taken", 
   testthat::expect_equal(res$mlaps, 24)
 })
 
+
 ####### test 3
 testthat::test_that("Only the max is taken for multiple glucose random tests", {
-  id <- 1
-  omop <- c(3013826, 3040151, 3018251)
-  value <- c(3, 1, 12)
-  unit <- "mmol/L"
-  mintime <- "2023-01-01 00:00"
-  admtime <- "2023-01-02 00:00"
+  
+  admdad <- data.table(
+    genc_id = 1,
+    admission_date_time = ymd_hm("2023-01-02 00:00")
+  )
 
-  admdad <- dummy_admdad(id, admtime)
-  lab <- dummy_lab(id, omop, value, unit, mintime)
+  lab <- data.table(
+    genc_id = 1,
+    test_type_mapped_omop = c(3013826, 3040151, 3018251),
+    result_value = c(3, 1, 12),
+    result_unit = "mmol/L",
+    collection_date_time = ymd_hm("2023-01-01 00:00", tz = "UTC") + sample(0:(24 * 60 * 60 - 1), size = 3, replace = TRUE) # all tests taken before admission
+  )
 
   res <- mlaps(admdad, lab, hours_after_admission = 0, component_wise = TRUE)
   testthat::expect_equal(res$score, 16)
@@ -58,43 +74,43 @@ testthat::test_that("Only the max is taken for multiple glucose random tests", {
 
 ####### test 4
 testthat::test_that("BUN/creatinine is added", {
-  id <- 1
-  omop <- c(3024641, 3020564)
-  value <- c(21, 200)
-  unit <- "mmol/L"
-  mintime <- "2023-01-01 00:00"
-  admtime <- "2023-01-02 00:00"
 
-  admdad <- dummy_admdad(id, admtime)
-  lab <- dummy_lab(id, omop, value, unit, mintime)
+  admdad <- data.table(
+    genc_id = 1,
+    admission_date_time = ymd_hm("2023-01-02 00:00")
+  )
+  
+  lab <- data.table(
+    genc_id = 1,
+    test_type_mapped_omop = c(3024641, 3020564),
+    result_value = c(21, 200),
+    result_unit = "mmol/L",
+    collection_date_time = ymd_hm("2023-01-01 00:00", tz = "UTC") + sample(0:(24 * 60 * 60 - 1), size = 2, replace = TRUE) # all tests taken before admission
+  )
 
   res <- mlaps(admdad, lab, hours_after_admission = 0, component_wise = TRUE)
   testthat::expect_equal(res$score, c(7, 19, 6))
 
   ## only one of the two tests is present
-  id <- 1
-  omop <- 3024641
-  value <- 21
-  unit <- "mmol/L"
-  mintime <- "2023-01-01 00:00"
-  admtime <- "2023-01-02 00:00"
-
-  admdad <- dummy_admdad(id, admtime)
-  lab <- dummy_lab(id, omop, value, unit, mintime)
+  lab <- data.table(
+    genc_id = 1,
+    test_type_mapped_omop = c(3024641),
+    result_value = c(21),
+    result_unit = "mmol/L",
+    collection_date_time = ymd_hm("2023-01-01 00:00", tz = "UTC") + sample(0:(24 * 60 * 60 - 1), size = 1, replace = TRUE) # all tests taken before admission
+  )
 
   res <- mlaps(admdad, lab, hours_after_admission = 0, component_wise = FALSE)
   testthat::expect_equal(res$mlaps, 19)
 
   ##
-  id <- 1
-  omop <- 3020564
-  value <- 200
-  unit <- "mmol/L"
-  mintime <- "2023-01-01 00:00"
-  admtime <- "2023-01-02 00:00"
-
-  admdad <- dummy_admdad(id, admtime)
-  lab <- dummy_lab(id, omop, value, unit, mintime)
+  lab <- data.table(
+    genc_id = 1,
+    test_type_mapped_omop = c(3020564),
+    result_value = c(200),
+    result_unit = "mmol/L",
+    collection_date_time = ymd_hm("2023-01-01 00:00", tz = "UTC") + sample(0:(24 * 60 * 60 - 1), size = 1, replace = TRUE) # all tests taken before admission
+  )
 
   res <- mlaps(admdad, lab, hours_after_admission = 0, component_wise = FALSE)
   testthat::expect_equal(res$mlaps, 7)
@@ -102,28 +118,30 @@ testthat::test_that("BUN/creatinine is added", {
 
 ####### test 5
 testthat::test_that("Special unit for Hematocrit is converted into percentages", {
-  id <- 1
-  omop <- c(3009542)
-  value <- c(10, 0.5)
-  unit <- c(NA, "L/L")
-  mintime <- "2023-01-01 00:00"
-  admtime <- "2023-01-02 00:00"
 
-  admdad <- dummy_admdad(id, admtime)
-  lab <- dummy_lab(id, omop, value, unit, mintime)
+  admdad <- data.table(
+    genc_id = 1,
+    admission_date_time = ymd_hm("2023-01-02 00:00")
+  )
+
+  lab <- data.table(
+    genc_id = 1,
+    test_type_mapped_omop = c(3009542),
+    result_value = c(10, 0.5),
+    result_unit = c(NA, "L/L"),
+    collection_date_time = ymd_hm("2023-01-01 00:00", tz = "UTC") + sample(0:(24 * 60 * 60 - 1), size = 2, replace = TRUE) # all tests taken before admission
+  )
 
   res <- mlaps(admdad, lab, hours_after_admission = 0, component_wise = TRUE)
   testthat::expect_equal(res$score, 7)
 
-  id <- 1
-  omop <- c(3009542)
-  value <- c(55, 0.3)
-  unit <- c("%", "L/L")
-  mintime <- "2023-01-01 00:00"
-  admtime <- "2023-01-02 00:00"
-
-  admdad <- dummy_admdad(id, admtime)
-  lab <- dummy_lab(id, omop, value, unit, mintime)
+  lab <- data.table(
+    genc_id = 1,
+    test_type_mapped_omop = c(3009542),
+    result_value = c(55, 0.3),
+    result_unit = c("%", "L/L"),
+    collection_date_time = ymd_hm("2023-01-01 00:00", tz = "UTC") + sample(0:(24 * 60 * 60 - 1), size = 2, replace = TRUE) # all tests taken before admission
+  )
 
   res <- mlaps(admdad, lab, hours_after_admission = 0, component_wise = TRUE)
   testthat::expect_equal(res$score, 6)
@@ -131,16 +149,19 @@ testthat::test_that("Special unit for Hematocrit is converted into percentages",
 
 ####### test 6
 testthat::test_that("Special cases in result_value are properly handled", {
-  # special cases being tested: NAs, </> signs in results, non-numeric
-  id <- 1
-  omop <- c(3019550, 3020564, 3024561, 3024641, 3040151)
-  value <- c(NA, ">400", "FINAL", "<2", "")
-  unit <- "mmol/L"
-  mintime <- "2023-01-01 00:00"
-  admtime <- "2023-01-02 00:00"
 
-  admdad <- dummy_admdad(id, admtime)
-  lab <- dummy_lab(id, omop, value, unit, mintime)
+  admdad <- data.table(
+    genc_id = 1,
+    admission_date_time = ymd_hm("2023-01-02 00:00")
+  )
+
+  lab <- data.table(
+    genc_id = 1,
+    test_type_mapped_omop = c(3019550, 3020564, 3024561, 3024641, 3040151),
+    result_value = c(NA, ">400", "FINAL", "<2", ""), # special cases being tested: NAs, </> signs in results, non-numeric
+    result_unit = "mmol/L",
+    collection_date_time = ymd_hm("2023-01-01 00:00", tz = "UTC") + sample(0:(24 * 60 * 60 - 1), size = 5, replace = TRUE) # all tests taken before admission
+  )
 
   res <- mlaps(admdad, lab, hours_after_admission = 0, component_wise = TRUE)
   testthat::expect_equal(res$score, c(NA, 5, NA, 0, NA, 0))
