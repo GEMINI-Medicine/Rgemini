@@ -42,7 +42,7 @@ test_that("returned with disability = TRUE", {
   ## Check 2: Unit test for some diagnosis codes that should have disability = TRUE
   set.seed(2)
   ipdiag <- gemSim::dummy_diag(
-    nid = 5, ipdiagnosis = TRUE, 
+    nid = 5, ipdiagnosis = TRUE,
     pattern = "^F840|^S07|^M05|^Q66|^H90|^H30|^G25"
   )
   check2 <- disability(
@@ -55,7 +55,7 @@ test_that("returned with disability = TRUE", {
 
   # check number of returned rows per genc_id
   expect_equal(
-    c(nrow(check2[genc_id == 1]), nrow(check2[genc_id == 2]), nrow(check2[genc_id == 3]), nrow(check2[genc_id == 4]), nrow(check2[genc_id == 5])), 
+    c(nrow(check2[genc_id == 1]), nrow(check2[genc_id == 2]), nrow(check2[genc_id == 3]), nrow(check2[genc_id == 4]), nrow(check2[genc_id == 5])),
     c(12, 9, 9, 9, 7)
   )
 
