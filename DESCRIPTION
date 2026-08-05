@@ -14,6 +14,7 @@ Imports:
     data.table, 
     DBI, 
     dplyr,
+    gemSim,
     ggplot2,
     ggpubr,
     ggthemes,
@@ -23,9 +24,9 @@ Imports:
     janitor,
     jsonlite,
     lemon,
+    lifecycle,
     lubridate,
     openxlsx,
-    MCMCpack,
     purrr,
     reactable,
     reshape2,
@@ -38,10 +39,10 @@ Imports:
     table1,
     textstem, 
     tidyr, 
-    timeDate,
-    sn
+    timeDate
 Suggests: 
     colorBlindness,
+    gemSim,
     ggsci,
     kableExtra,
     knitr,
@@ -51,6 +52,8 @@ Suggests:
     RPostgres,
     testthat (>= 3.0.0),
     viridis
+Remotes:
+    GEMINI-Medicine/gemSim
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr
@@ -58,3 +61,4 @@ Depends:
     R (>= 3.5.0)
 URL: https://gemini-medicine.github.io/Rgemini/
 Config/roxygen2/version: 8.0.0
+RoxygenNote: 7.3.3

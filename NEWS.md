@@ -9,7 +9,7 @@
 * Enhanced `find_db_tablename` to only search public schema
 * Updated `mlaps` calculation to exclude arterial blood gas point-of-care tests
 * Updated `n_rbc_transfusions()` to include validated data from sites 105 & 106 in calculations.
-
+* Deprecated dummy functions that have been migrated to [`gemSim`](https://github.com/GEMINI-Medicine/gemSim): `sample_icd`
 
 # Rgemini `2.0.0`
 
