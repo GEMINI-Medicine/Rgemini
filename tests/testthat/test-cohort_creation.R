@@ -1,6 +1,6 @@
 test_that("cohort_creation inclusions/exclusions are applied correctly", {
   set.seed(1)
-  dummy_data <- dummy_admdad(300, n_hospitals = 2) %>%
+  dummy_data <- gemSim::dummy_admdad(300, n_hospitals = 2) %>%
     data.table()
 
   cohort <- cohort_creation(
@@ -27,7 +27,7 @@ test_that("cohort_creation inclusions/exclusions are applied correctly", {
 
 test_that("grouping works as expected", {
   set.seed(1)
-  dummy_data <- dummy_admdad(300, n_hospitals = 2) %>%
+  dummy_data <- gemSim::dummy_admdad(300, n_hospitals = 2) %>%
     data.table()
 
   # apply grouping by hospital_num
@@ -61,7 +61,7 @@ test_that("grouping works as expected", {
 
 test_that("cell suppression works as expected", {
   set.seed(1)
-  dummy_data <- dummy_admdad(300, n_hospitals = 2) %>%
+  dummy_data <- gemSim::dummy_admdad(300, n_hospitals = 2) %>%
     data.table()
 
   expect_warning( # should produce warning
@@ -92,7 +92,7 @@ test_that("cell suppression works as expected", {
 
 test_that("show_prct works as expected", {
   set.seed(1)
-  dummy_data <- dummy_admdad(300, n_hospitals = 2) %>%
+  dummy_data <- gemSim::dummy_admdad(300, n_hospitals = 2) %>%
     data.table()
 
   cohort <- cohort_creation(
