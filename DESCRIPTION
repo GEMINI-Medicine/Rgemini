@@ -14,7 +14,6 @@ Imports:
     data.table, 
     DBI, 
     dplyr,
-    gemSim,
     ggplot2,
     ggpubr,
     ggthemes,
