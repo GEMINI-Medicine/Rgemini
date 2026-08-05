@@ -14,6 +14,7 @@ jobs:
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true # Prevents remotes::install_deps from failing on warnings
       R_LIBS_USER: ${{ github.workspace }}/.Rlibs # Install R packages locally to cache them
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: Checkout repository
