@@ -2,8 +2,8 @@ test_that("global and component-wise outputs align", {
   ## Check 1: Make sure that global & component-wise flags don't contradict each other
   # create dummy data
   set.seed(1)
-  ipdiagnosis <- dummy_diag(nid = 100, nrow = 400)
-  erdiagnosis <- dummy_diag(nid = 80, nrow = 200, ipdiagnosis = FALSE)
+  ipdiagnosis <- gemSim::dummy_diag(nid = 100, nrow = 400)
+  erdiagnosis <- gemSim::dummy_diag(nid = 80, nrow = 200, ipdiagnosis = FALSE)
   cohort <- data.table(genc_id = c(unique(ipdiagnosis$genc_id)[1:(length(unique(ipdiagnosis$genc_id)) - 1)], 888, 999)) # add some genc_ids with no diagnosis entries, remove one genc_id to test component_wise = TRUE bug
 
   check1_no_cat <- disability(cohort, ipdiag = ipdiagnosis, erdiag = erdiagnosis, component_wise = FALSE)
@@ -27,7 +27,7 @@ test_that("global and component-wise outputs align", {
 test_that("returned with disability = TRUE", {
   ## Check 2: Unit test for some diagnosis codes that should have disability = TRUE
   set.seed(2)
-  ipdiag <- dummy_diag(nid = 5, nrow = 20, ipdiagnosis = T, pattern = "^F840|^S07|^M05|^Q66|^H90|^H30|^G25")
+  ipdiag <- gemSim::dummy_diag(nid = 5, nrow = 20, ipdiagnosis = T, pattern = "^F840|^S07|^M05|^Q66|^H90|^H30|^G25")
   check2 <- disability(
     cohort = data.table(genc_id = unique(ipdiag$genc_id)),
     ipdiag,
@@ -53,7 +53,7 @@ test_that("returned with disability = TRUE", {
 test_that("returned with disability = FALSE", {
   ## Check 3: Unit test for some diagnosis codes that should have disability = FALSE
   set.seed(3)
-  ipdiag <- dummy_diag(nid = 5, nrow = 5, ipdiagnosis = T, pattern = "^I4|^A0|^B92|^K8|^Q2|^G65|^H92|^F83|^Z994|^H92|^E12|^Z88")
+  ipdiag <- gemSim::dummy_diag(nid = 5, nrow = 5, ipdiagnosis = T, pattern = "^I4|^A0|^B92|^K8|^Q2|^G65|^H92|^F83|^Z994|^H92|^E12|^Z88")
 
   check3 <- disability(
     cohort = data.table(genc_id = unique(ipdiag$genc_id)),
