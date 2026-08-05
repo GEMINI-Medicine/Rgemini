@@ -44,7 +44,7 @@ test_that("function quits when missing important column", {
   ## Check 1: Make sure function quits if it is missing genc_id or patient_id_hashed
   # create dummy admdad
   set.seed(1)
-  cohort <- data.table(dummy_admdad())
+  cohort <- data.table(gemSim::dummy_admdad())
 
   # add in patient_id_hashed
   set.seed(1)
@@ -74,7 +74,7 @@ test_that("function quits when missing important column", {
 test_that("function returns same number of rows as input cohort", {
   # create dummy admdad
   set.seed(1)
-  cohort <- data.table(dummy_admdad())
+  cohort <- data.table(gemSim::dummy_admdad())
 
   # add in patient_id_hashed
   set.seed(1)
@@ -92,7 +92,7 @@ test_that("function returns same number of rows as input cohort", {
 test_that("function runs as expected when input date is not named admission_date_time or discharge_date_time", {
   # create dummy admdad
   set.seed(1)
-  cohort <- data.table(dummy_admdad())
+  cohort <- data.table(gemSim::dummy_admdad())
 
   # add in patient_id_hashed
   set.seed(1)
