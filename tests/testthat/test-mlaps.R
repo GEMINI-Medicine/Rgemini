@@ -13,10 +13,11 @@ testthat::test_that("Scoring scheme for each test is correct", {
   )
 
   res <- mlaps(
-    admdad, lab, hours_after_admission = 0, component_wise = TRUE
+    admdad, lab,
+    hours_after_admission = 0, component_wise = TRUE
   )
   testthat::expect_equal(
-    res$score, 
+    res$score,
     c(16, 6, 0, 10, 14, 5, 23, 0, 18, 10, 12, 0)
   )
 })
@@ -54,7 +55,6 @@ testthat::test_that("Only the max value within specified time window is taken", 
 
 ####### test 3
 testthat::test_that("Only the max is taken for multiple glucose random tests", {
-  
   admdad <- data.table(
     genc_id = 1,
     admission_date_time = ymd_hm("2023-01-02 00:00")
@@ -74,12 +74,11 @@ testthat::test_that("Only the max is taken for multiple glucose random tests", {
 
 ####### test 4
 testthat::test_that("BUN/creatinine is added", {
-
   admdad <- data.table(
     genc_id = 1,
     admission_date_time = ymd_hm("2023-01-02 00:00")
   )
-  
+
   lab <- data.table(
     genc_id = 1,
     test_type_mapped_omop = c(3024641, 3020564),
@@ -118,7 +117,6 @@ testthat::test_that("BUN/creatinine is added", {
 
 ####### test 5
 testthat::test_that("Special unit for Hematocrit is converted into percentages", {
-
   admdad <- data.table(
     genc_id = 1,
     admission_date_time = ymd_hm("2023-01-02 00:00")
@@ -149,7 +147,6 @@ testthat::test_that("Special unit for Hematocrit is converted into percentages",
 
 ####### test 6
 testthat::test_that("Special cases in result_value are properly handled", {
-
   admdad <- data.table(
     genc_id = 1,
     admission_date_time = ymd_hm("2023-01-02 00:00")

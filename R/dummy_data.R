@@ -17,7 +17,7 @@ sample_icd <- function(n = 1, source = "comorbidity", dbcon = NULL, pattern = NU
 #' Deprecated in Rgemini version 3.0.0.
 #' @export
 dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = NULL, ...) {
- lifecycle::deprecate_stop(
+  lifecycle::deprecate_stop(
     "3.0.0", "dummy_diag()", "gemSim::dummy_diag()"
   )
 }
@@ -32,7 +32,7 @@ dummy_diag <- function(nid = 5, nrow = 50, ipdiagnosis = TRUE, diagnosis_type = 
 dummy_ipadmdad <- function(n = 1000,
                            n_hospitals = 10,
                            time_period = c(2015, 2023)) {
-   lifecycle::deprecate_stop(
+  lifecycle::deprecate_stop(
     "3.0.0", "dummy_ipadmdad()", "gemSim::dummy_admdad()"
   )
 }
@@ -46,7 +46,7 @@ dummy_ipadmdad <- function(n = 1000,
 #' Deprecated in Rgemini version 3.0.0.
 #'
 dummy_lab <- function(id, omop, value, unit, mintime) {
-   lifecycle::deprecate_stop(
+  lifecycle::deprecate_stop(
     "3.0.0", "dummy_lab()"
   )
 }

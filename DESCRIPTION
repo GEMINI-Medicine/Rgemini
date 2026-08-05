@@ -59,5 +59,4 @@ VignetteBuilder: knitr
 Depends: 
     R (>= 3.5.0)
 URL: https://gemini-medicine.github.io/Rgemini/
-Config/roxygen2/version: 8.0.0
-RoxygenNote: 7.3.3
+Config/roxygen2/version: 8.1.0
