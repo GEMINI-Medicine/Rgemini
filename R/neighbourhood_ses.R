@@ -163,12 +163,7 @@ neighbourhood_ses <- function(dbcon, cohort, census_year) {
   cohort <- coerce_to_datatable(cohort)
 
   ## write a temp table to improve querying efficiency
-  DBI::dbExecute(dbcon, "SET client_min_messages TO WARNING;") # suppress SQL notices
-  DBI::dbSendQuery(dbcon, "Drop table if exists temp_data;")
-  DBI::dbWriteTable(
-    dbcon, c("pg_temp", "temp_data"), cohort[, .(genc_id)],
-    row.names = FALSE, overwrite = TRUE
-  )
+  temp_table(dbcon, cohort[, .(genc_id)])
 
   ## identify table name for locality variables (DAs)
   locality_table <- find_db_tablename(dbcon, "locality_variables")
@@ -198,7 +193,7 @@ neighbourhood_ses <- function(dbcon, cohort, census_year) {
       \"material_resources_DA21\", \"age_labourforce_DA21\", \"racialized_NC_pop_DA21\",
       \"households_dwellings_q_DA21\", \"material_resources_q_DA21\", \"age_labourforce_q_DA21\",
       \"racialized_NC_pop_q_DA21\"
-      FROM temp_data tmp
+      FROM rgemini_temp_table tmp
       left join ", locality_table, " l on l.genc_id = tmp.genc_id
       left join ", statcan_table, " s on l.da21uid = s.da21uid;"
       )
@@ -224,7 +219,7 @@ neighbourhood_ses <- function(dbcon, cohort, census_year) {
       s.c16_ed_15over_postsec, s.c16_ed_15over, s.c16_ed_25to64_postsec, s.c16_ed_25to64,
       s.instability_da16, s.deprivation_da16, s.dependency_da16, s.ethniccon_da16,
       s.instability_q_da16, s.deprivation_q_da16, s.dependency_q_da16, s.ethniccon_q_da16
-      FROM temp_data tmp
+      FROM rgemini_temp_table tmp
       left join ", locality_table, " l on l.genc_id = tmp.genc_id
       left join ", statcan_table, " s on l.da16uid = s.da16uid; ")
     ) %>%

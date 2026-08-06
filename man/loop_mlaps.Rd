@@ -5,14 +5,14 @@
 \title{Loop mLAPS}
 \usage{
 loop_mlaps(
-  db,
+  dbcon,
   cohort = NULL,
   hours_after_admission = 0,
   component_wise = FALSE
 )
 }
 \arguments{
-\item{db}{(\code{DBIConnection})\cr
+\item{dbcon}{(\code{DBIConnection})\cr
 RPostgres DB connection.}
 
 \item{cohort}{(\code{data.frame} or \code{data.table})\cr
@@ -47,7 +47,7 @@ by loading large chunks of the lab table.
 \examples{
 \dontrun{
 drv <- DBI::dbDriver("PostgreSQL")
-db <- DBI::dbConnect(
+dbcon <- DBI::dbConnect(
   drv,
   dbname = "db_name",
   host = "domain_name.ca",
@@ -56,9 +56,9 @@ db <- DBI::dbConnect(
   password = getPass::getPass("Enter Password")
 )
 
-cohort <- DBI::dbGetQuery(db, "SELECT genc_id FROM public.admdad LIMIT 200;")
+cohort <- DBI::dbGetQuery(dbcon, "SELECT genc_id FROM public.admdad LIMIT 200;")
 
-laps <- loop_laps(db, cohort = cohort)
+laps <- loop_laps(dbcon, cohort = cohort)
 }
 
 }

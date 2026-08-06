@@ -36,7 +36,7 @@
 #' A data.table containing each hospital and the COVID surge index for the given
 #' month year.
 #'
-#' @import DBI RPostgreSQL dplyr
+#' @import DBI dplyr
 #' @importFrom lubridate ymd_hm floor_date
 #' @importFrom tidyr replace_na
 #' @export

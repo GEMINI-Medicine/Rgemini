@@ -100,7 +100,7 @@ rxnorm_query <- function(dbcon,
   }
 
   # Find the correct pharmacy table to query in the current database connection
-  pharmacy_table <- Rgemini:::find_db_tablename(dbcon, "pharmacy")
+  pharmacy_table <- find_db_tablename(dbcon, "pharmacy")
 
 
   # If cohort is NULL, return_unmatched can not be TRUE
@@ -397,9 +397,7 @@ rxnorm_query <- function(dbcon,
   # Should create a genc_id temp table if user-defined cohort is provided
   if (!is.null(cohort)) {
     cohort <- data.table(cohort)
-    dbSendQuery(dbcon, "Drop table if exists genc_temp;") # Drop if exists
-    dbWriteTable(dbcon, c("pg_temp", "genc_temp"), cohort[, .(genc_id)], temporary = TRUE, row.names = FALSE)
-    dbSendQuery(dbcon, "Analyze genc_temp;")
+    temp_table(dbcon, cohort[, .(genc_id)])
   }
 
   query_str <- paste0(
@@ -414,7 +412,7 @@ rxnorm_query <- function(dbcon,
     "  FROM ", pharmacy_table, " p",
     ifelse(
       !is.null(cohort),
-      "  WHERE EXISTS (SELECT 1 FROM genc_temp t WHERE t.genc_id = p.genc_id)",
+      "  WHERE EXISTS (SELECT 1 FROM rgemini_temp_table t WHERE t.genc_id = p.genc_id)",
       ""
     ),
     ") ",
@@ -479,13 +477,12 @@ rxnorm_query <- function(dbcon,
     Warning: If you have too many genc_ids in your input this part may crash your R session due to memory issue\n")
 
     # Write into a temp table of all the matched rows
-    dbSendQuery(dbcon, "Drop table if exists matched_rows")
-    dbWriteTable(dbcon, c("pg_temp", "matched_rows"), final_matches, temporary = TRUE, row.names = FALSE)
+    temp_table(dbcon, final_matches, "matched_rows")
 
     query_str_unmat <- paste0(
       "select genc_id,med_id_generic_name_raw,med_id_brand_name_raw, med_id_din, med_id_ndc,
       med_id_hospital_code_raw,iv_component_type, row_num",
-      " from ", pharmacy_table, " p where exists (select 1 from genc_temp t where t.genc_id=p.genc_id)",
+      " from ", pharmacy_table, " p where exists (select 1 from rgemini_temp_table t where t.genc_id=p.genc_id)",
       " and not exists (select 1 from matched_rows m where m.search_type='med_id_generic_name_raw' and
        p.med_id_generic_name_raw=m.raw_input)",
       "and not exists (select 1 from matched_rows m where m.search_type='med_id_brand_name_raw' and

@@ -52,6 +52,7 @@ For those encounters which were not returned, it may be reasonable to impute the
 if lab data was in principle available for their site and time period.
 If lab data was unavailable, it might be more accurate to assign the LAPS score for these encounters as \code{NA}.
 In general it is recommended to take care and be intentional when imputing LAPS scores.
+Arterial blood gas point-of-care tests are not used in mlaps calculation.
 }
 \references{
 When the function is used, please cite the following:
