@@ -72,7 +72,6 @@ covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
   ### pull adult all-med + ICU encounters from 2019 onwards
   ## get admdad table name
   admdad_name <- find_db_tablename(dbcon, "admdad", verbose = FALSE)
-  er_name <- find_db_tablename(dbcon, "er", verbose = FALSE)
   derived_variables_name <- find_db_tablename(dbcon, "derived_variables", verbose = FALSE)
   ipscu_name <- find_db_tablename(dbcon, "ipscu", verbose = FALSE)
   ipintervention_name <- find_db_tablename(dbcon, "ipintervention", verbose = FALSE)
