@@ -91,12 +91,12 @@ Users interested in the UK version should refer to the original publications for
 cohort_dum <- data.table(
   genc_id = c(1, 2, 3), age = c(64, 65, 80)
 )
-ipdiag_dum <- dummy_diag(
+ipdiag_dum <- gemSim::dummy_diag(
   nid = 3, nrow = 10,
   ipdiagnosis = TRUE,
   pattern = "C20$|R460$" # frailty conditions
 )
-erdiag_dum <- dummy_diag(
+erdiag_dum <- gemSim::dummy_diag(
   nid = 3, nrow = 5,
   ipdiagnosis = FALSE,
   pattern = "M121$" # not a frailty condition

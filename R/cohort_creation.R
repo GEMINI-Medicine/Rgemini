@@ -59,7 +59,7 @@
 #'
 #' @examples
 #' # create dummy data
-#' my_data <- Rgemini::dummy_ipadmdad(10000, n_hospitals = 5)
+#' my_data <- gemSim::dummy_admdad(10000, n_hospitals = 5)
 #'
 #' # convert to data.table for easy filtering
 #' my_data <- data.table::setDT(my_data)
