@@ -1,3 +1,17 @@
+# `develop`
+
+**New functions**:
+* Added `temp_table()` utility function that writes temporary tables to improve query efficiency
+
+**Miscellaneous**:
+* Updated `check_input()` and functions with `dbcon` input to accommodate `RPostgres`, `PostgreSQL`, and `odbc` connections
+* Changed DB input argument name in `loop_mlaps` from `db` to `dbcon`
+* Enhanced `find_db_tablename` to only search public schema
+* Updated `mlaps` calculation to exclude arterial blood gas point-of-care tests
+* Updated `n_rbc_transfusions()` to include validated data from sites 105 & 106 in calculations.
+* Deprecated dummy functions that have been migrated to [`gemSim`](https://github.com/GEMINI-Medicine/gemSim)
+* Minor bug fixes for `covid_surge_index()`
+
 # Rgemini `2.0.0`
 
 * **Addition of RxNorm functions**:
