@@ -6,7 +6,7 @@
 \usage{
 data_coverage(
   dbcon,
-  cohort,
+  cohort = NULL,
   table,
   plot_timeline = TRUE,
   plot_coverage = TRUE,
@@ -22,13 +22,17 @@ data_coverage(
 A database connection to any GEMINI database.}
 
 \item{cohort}{(\code{data.frame} or \code{data.table})
-Cohort table with all relevant encounters of interest, where each row
-corresponds to a single encounter. Must contain the following columns:
+Optional cohort table with encounters of interest, where each row
+corresponds to a single encounter. If provided, it must contain the
+following columns:
 \itemize{
 \item \code{genc_id}: GEMINI Encounter ID
 \item \code{hospital_num} | \code{hospital_id}: Hospital identifier
 \item \code{discharge_date_time}
-}}
+}
+
+If no \code{cohort} input is provided, the function will internally query
+all \code{genc_ids} from the \code{admdad} table.}
 
 \item{table}{(\code{character})
 Which table(s) to include. If multiple, specify a character vector
@@ -62,23 +66,28 @@ have an entry in \code{admdad}).}
 \item{hospital_label}{(\code{character})
 Optional: Name of variable in \code{cohort} table that corresponds to custom
 label for hospitals (e.g., letters A-E instead of hospital_num 101-105).
-Will be used for plotting purposes.}
+Will be used for plotting purposes. Only works if the user provides a
+\code{cohort} input containing the variable corresponding to \code{hospital_label}
+(or for internal users: "hospital_num" can be provided as \code{hospital_label}
+even when no \code{cohort} input is specified).}
 
 \item{hospital_group}{(\code{character})
 Optional: Name of variable in \code{cohort} table that corresponds to grouping
 of hospitals (e.g., Teaching vs. Non-teaching). Hospitals will be grouped
-accordingly in all plots/output tables.}
+accordingly in all plots/output tables. Only works if the user provides a
+\code{cohort} input containing the variable corresponding to \code{hospital_group}.}
 
 \item{custom_dates}{(\code{data.frame}|\code{data.table})
-Optional input allowing users to specify a customized timeline (in 'yyyy-mm-dd'
-format) to be included for a given hospital*table combination. The user-provided
-input overwrites the corresponding row(s) in the \code{lookup_data_coverage} table.
+Optional input allowing users to specify a customized timeline
+(in 'yyyy-mm-dd' format) to be included for a given hospital*table
+combination. The user-provided input overwrites the corresponding
+row(s) in the \code{lookup_data_coverage} table.
 This can be used to exclude time periods (e.g., due to data quality
 issues) and generate customized timeline plots.
 For example, let's say you identified a data quality issue in the
 transfusion table at hospital 104 for discharge dates < 2019-01-01.
-To only include transfusion data for encounters discharged after this
-time period, specify:
+To only include transfusion data for encounters discharged \emph{after}
+this time period, specify:
 \code{custom_dates <- data.frame( data = "transfusion", hospital_num = 104, min_date = "2019-01-01", max_date = "2022-06-30" )}
 
 This will overwrite the \code{min_date}/\code{max_date} values for site 104
@@ -87,7 +96,7 @@ hospital*table combinations will remain the same). Additionally, the coverage
 flags by \code{genc_id} (in returned \code{coverage_flag_enc}) and timeline plot (see
 \code{plot_timeline}) will be adjusted according to the user-provided dates.
 The coverage plot (see \code{plot_coverage}) is not affected by the user-specified
-the \code{custom_dates} input.}
+\code{custom_dates} input.}
 
 \item{as_plotly}{(\code{logical})
 Will return any figures as interactive plots using \code{plotly}. Note that this
@@ -99,10 +108,6 @@ The flag will be ignored if the \code{plotly} package is not installed.}
 \itemize{
 \item \code{base_size}: Font size (default = 12)
 \item \code{colors}: Plot color(s) (default = gemini_colors(1))
-\item \code{hospital_group}: Name of variable in cohort specifying color grouping of
-hospitals (e.g., Teaching/Non-teaching); for the timeline plot, this is
-only applied when plotting a single table (otherwise, color grouping is
-applied to different table names by default)
 }
 
 For coverage plots only (inputs are passed to \code{plot_over_time()}):
@@ -118,13 +123,13 @@ For coverage plots only (inputs are passed to \code{plot_over_time()}):
 If the plotting flags are set to \code{FALSE}, this function will return a single
 \code{data.table} object with a flag for each \code{genc_id} indicating whether the
 encounter was discharged during a time period in which data for a given
-table (e.g., \code{"lab"}) were \emph{in principle} available. If the flag is \code{FALSE},
-the \code{genc_id} was dicharged during a time period where GEMINI did not receive
-any data for the table of interest. If the flag is \code{TRUE}, the \code{genc_id} was
-discharged during a time period where GEMINI received \emph{some} data from a
-given hospital (however, coverage may still be low, so users are advised to
-perform additional coverage checks, e.g., by using the plotting features of
-this function).
+table (e.g., \code{"lab"}) were \emph{in principle} available. If the encounter-level
+flag is \code{FALSE}, the \code{genc_id} was dicharged during a time period where
+GEMINI did not receive any data for the table of interest. If the flag is
+\code{TRUE}, the \code{genc_id} was discharged during a time period where GEMINI
+received \emph{some} data from a given hospital (however, coverage may still be
+low, so users are advised to perform additional coverage checks, e.g., by
+using the plotting features of this function).
 
 When the plotting flags are set to \code{TRUE} (default), the function will
 return additional data tables (\code{output[["data"]]}) and plots
@@ -153,7 +158,7 @@ missing values in individual columns are not considered and should be checked
 separately).
 }
 \details{
-\code{data_coverage} provides analysts with a tool to inform their decisions
+\code{data_coverage()} provides analysts with a tool to inform their decisions
 about which hospitals/time periods to include in their analyses,
 depending on the data tables of interest. For example, if a project relies on
 lab data (e.g., \code{mlaps} variable), users should carefully inspect lab data
@@ -166,21 +171,20 @@ context of their analyses.
 }
 \section{Warning!}{
 
-
 \itemize{
-\item{Data coverage checks should generally be performed on the whole
-dataset, prior to applying any additional cohort inclusions/exclusions.}
-\item{If you are an HPC4Health user and your datacut has been pre-filtered
+\item Data coverage checks should generally be performed on the whole
+dataset, prior to applying any additional cohort inclusions/exclusions.
+\item If you are an HPC4Health user and your datacut has been pre-filtered
 based on certain inclusion/exclusion criteria (e.g., diagnosis codes),
 please keep in mind that the coverage plots (see \code{plot_coverage}) may be
 skewed in smaller/pre-filtered samples. Please reach out to the GEMINI
-team if you need additional support.}
-\item{Data coverage checks are particularly relevant for clinical data
+team if you need additional support.
+\item Data coverage checks are particularly relevant for clinical data
 tables (e.g., lab, pharmacy, radiology, transfusions, vitals, clinical
-notes etc.).}
-\item{This function should be used as a starting point for data coverage
+notes etc.).
+\item This function should be used as a starting point for data coverage
 checks, but users are advised to perform additional checks based on their
-specific needs.}
+specific needs.
 }
 }
 
@@ -195,11 +199,18 @@ dbcon <- DBI::dbConnect(drv,
   password = getPass("password")
 )
 
-cohort <- dbGetQuery(db, "SELECT genc_id FROM admdad;")
 
-## run function with default flags to create all plots
+## run function on full cohort, with default flags to create all plots
 # Note: This might take a while to run...
-coverage <- data_coverage(dbcon, cohort, table = c("admdad", "radiology"))
+coverage <- data_coverage(dbcon, table = c("admdad", "radiology"))
+
+# restrict outputs to certain hospitals/time periods
+cohort <- dbGetQuery(db, "SELECT genc_id FROM admdad;")
+coverage <- data_coverage(
+  dbcon,
+  cohort = cohort,
+  table = c("admdad", "radiology")
+)
 
 # get flags per encounter based on encounter's discharge date
 enc_flag <- coverage[["data"]][1] # coverage[["data"]]$coverage_flag_enc
@@ -211,7 +222,7 @@ data_timeline <- coverage[["data"]][2] # coverage[["data"]]$timeline_data
 prct_coverage <- coverage[["data"]][3] # coverage[["data"]]$coverage_data
 
 
-## run function without any plots
+## run function without any plots (not recommended)
 # (will only return data.table with encounter-level flag)
 coverage <- data_coverage(
   dbcon,

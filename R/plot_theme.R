@@ -55,8 +55,8 @@ plot_theme <- function(
           vjust = rel(8),
           margin = unit(c(0, 0, 0, 0), "lines")
         ),
-        panel.background = element_rect(colour = NA),
-        plot.background = element_rect(colour = NA),
+        panel.background = element_rect(fill = "white", colour = NA),
+        plot.background = element_rect(fill = "white", colour = NA),
         panel.border = element_rect(colour = NA),
         axis.title = element_text(face = "bold", size = rel(1)),
         axis.text = element_text(size = rel(0.8), colour = "grey30"),
