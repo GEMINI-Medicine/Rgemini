@@ -13,6 +13,8 @@
 * Updated `n_rbc_transfusions()` to include validated data from sites 105 & 106 in calculations.
 * Updated `data_coverage()` to make `cohort` input optional
 * Minor fix to `plot_theme()` to ensure white plot background
+* Deprecated dummy functions that have been migrated to [`gemSim`](https://github.com/GEMINI-Medicine/gemSim)
+
 
 # Rgemini `2.0.0`
 
