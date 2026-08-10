@@ -136,6 +136,7 @@ loop_mlaps <- function(dbcon, cohort = NULL, hours_after_admission = 0, componen
     check_input(cohort, c("data.table", "data.frame"),
       colnames = "genc_id"
     )
+    cohort <- coerce_to_datatable(cohort)
     temp_table(dbcon, cohort[, .(genc_id)])
   }
 
