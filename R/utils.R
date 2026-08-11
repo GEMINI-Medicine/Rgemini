@@ -1144,7 +1144,7 @@ temp_table <- function(dbcon, data, table_name = "rgemini_temp_table", analyze =
   } else {
     dbWriteTable(
       dbcon,
-      name = DBI::Id(schema = "pg_temp", table = table_name),
+      name = table_name,
       value = data,
       row.names = FALSE,
       overwrite = TRUE,
