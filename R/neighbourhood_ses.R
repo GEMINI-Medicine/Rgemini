@@ -183,19 +183,41 @@ neighbourhood_ses <- function(dbcon, cohort, census_year) {
       }
     )
 
-    # query relevant columns
-    # note: columns with capital letters need "" to maintain column name
+    # detect column names: v4 uses uppercase, v5 uses lowercase
+    is_updated <- nrow(DBI::dbGetQuery(
+      dbcon, paste0(
+        "SELECT column_name FROM information_schema.columns ",
+        "WHERE table_name = '", statcan_table, "' ",
+        "AND column_name = 'age_labourforce_da21';"
+      )
+    )) > 0
+    # set up query for updated versions
+    changed_cols <- if (is_updated) {
+      paste0(
+        "s.age_labourforce_da21, s.age_labourforce_q_da21, ",
+        "s.households_dwellings_da21, s.households_dwellings_q_da21, ",
+        "s.material_resources_da21, s.material_resources_q_da21, ",
+        "s.racialized_nc_pop_da21, s.racialized_nc_pop_q_da21"
+      )
+    } else { # set up query for previous versions
+      paste0(
+        's."age_labourforce_DA21", s."age_labourforce_q_DA21", ',
+        's."households_dwellings_DA21", s."households_dwellings_q_DA21", ',
+        's."material_resources_DA21", s."material_resources_q_DA21", ',
+        's."racialized_NC_pop_DA21", s."racialized_NC_pop_q_DA21"'
+      )
+    }
+
+    ## query database using correct columm casing
     nbhd_data <- DBI::dbGetQuery(
       dbcon, paste(
-        "SELECT tmp.genc_id, l.da21uid, s.c21_vismin, s.c21_vismin_not, s.qnatippe, s.qnbtippe, s.qaatippe,
-      s.qabtippe, s.atippe, s.btippe, s.c21_immsta, s.c21_immsta_imm, s.c21_ed_15over_postsec,
-      s.c21_ed_15over, s.c21_ed_25to64_postsec, s.c21_ed_25to64, \"households_dwellings_DA21\",
-      \"material_resources_DA21\", \"age_labourforce_DA21\", \"racialized_NC_pop_DA21\",
-      \"households_dwellings_q_DA21\", \"material_resources_q_DA21\", \"age_labourforce_q_DA21\",
-      \"racialized_NC_pop_q_DA21\"
-      FROM rgemini_temp_table tmp
-      left join ", locality_table, " l on l.genc_id = tmp.genc_id
-      left join ", statcan_table, " s on l.da21uid = s.da21uid;"
+        "SELECT tmp.genc_id, l.da21uid, s.c21_vismin, s.c21_vismin_not, s.qnatippe,
+      s.qnbtippe, s.qaatippe, s.qabtippe, s.atippe, s.btippe, s.c21_immsta, s.c21_immsta_imm,
+      s.c21_ed_15over_postsec, s.c21_ed_15over, s.c21_ed_25to64_postsec, s.c21_ed_25to64, ",
+        changed_cols,
+        " FROM rgemini_temp_table tmp ",
+        "left join ", locality_table, " l on l.genc_id = tmp.genc_id ",
+        "left join ", statcan_table, " s on l.da21uid = s.da21uid;"
       )
     ) %>%
       as.data.table()
