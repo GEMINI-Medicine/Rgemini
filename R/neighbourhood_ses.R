@@ -183,7 +183,7 @@ neighbourhood_ses <- function(dbcon, cohort, census_year) {
       }
     )
 
-    # detect column names: v4 uses uppercase, v5 uses lowercase
+    # detect column casing: older has uppercase, newer uses lowercase
     is_updated <- nrow(DBI::dbGetQuery(
       dbcon, paste0(
         "SELECT column_name FROM information_schema.columns ",
