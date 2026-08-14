@@ -115,7 +115,7 @@
 #'  - Only including respondents between 25-64 years: `ed_25to64_postsec_pct`
 #' - Ontario Marginalization Index (continuous):
 #'  - If `census_year` = 2021: `households_dwellings`, `material_resources`,
-#' `age_labourforce`, `racialized_NC_pop`
+#' `age_labourforce`, `racialized_nc_pop`
 #'  - If `census_year` = 2016: `instability`, `deprivation`, `dependency`,
 #' `ethniccon`
 #' - Ontario Marginalization Index (quintiles):
