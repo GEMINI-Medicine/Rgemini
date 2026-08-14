@@ -14,6 +14,7 @@
 * Updated `data_coverage()` to make `cohort` input optional
 * Minor fix to `plot_theme()` to ensure white plot background
 * Deprecated dummy functions that have been migrated to [`gemSim`](https://github.com/GEMINI-Medicine/gemSim)
+* Minor bug fixes for `covid_surge_index()`
 * Updated `neighbourhood_ses()` to handle updated database versions
 
 
