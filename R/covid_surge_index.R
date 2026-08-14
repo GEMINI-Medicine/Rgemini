@@ -3,10 +3,11 @@
 #'
 #' @description
 #' A function that derives the COVID-19 surge index for sites.
-#' For time periods before 2020, or where COVID-19 was not yet diagnosed, the surge index will be 0.
-#' The function filters for the All-Medicine + ICU cohort. This includes any
-#' encounter admitted/discharged from a medical service or encounters who
-#' entered the ICU at any point (specialized or stepdown unit).
+#' For time periods before 2020, or where COVID-19 was not yet
+#' diagnosed, the surge index will be 0. The function filters
+#' for the adult All-Medicine + ICU cohort. This includes any
+#' encounter admitted/discharged from a medical service or
+#' encounters who entered the ICU at any point (specialized or stepdown unit).
 #'
 #' The function needs to be run on the entire cohort to create accurate values.
 #' If users have pre-filtered cohorts, please reach out to the GEMINI team to
@@ -92,7 +93,7 @@ covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
       " where genc_id in ((select genc_id from ",
       derived_variables_name, " where all_med is TRUE) union
   (select genc_id from ", ipscu_name, ")) and age >= 18
-  and discharge_date_time >= '2019-01-01 00:00' and l.hospital_num != '134'"
+  and discharge_date_time >= '2019-01-01 00:00'"
     ))
   } else {
     cohort <- dbGetQuery(dbcon, paste0(
@@ -101,7 +102,7 @@ covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
       admdad_name, " where genc_id in ((select genc_id from ",
       derived_variables_name, " where all_med is TRUE) union
   (select genc_id from ", ipscu_name, ")) and age >= 18
-  and discharge_date_time >= '2019-01-01 00:00' and hospital_num != '134'"
+  and discharge_date_time >= '2019-01-01 00:00'"
     )) %>% data.table()
   }
 
@@ -260,15 +261,18 @@ covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
 
   if (length(missing_hospitals) > 0) {
     # Get date ranges for missing hospitals
-    ## set up query
+    # make temp table with cohort
+    temp_table(dbcon, data = cohort, table_name = "covid_gencs")
+    # set up query
     missing_data_query <- paste0(
       "select ", hospital_var,
       ", min(discharge_date_time),
       max(discharge_date_time) from ", admdad_name, " where ",
       hospital_var, " in ('",
-      paste(missing_hospitals, collapse = "', '"), "') group by ",
+      paste(missing_hospitals, collapse = "', '"), "') and genc_id in (select genc_id from covid_gencs) group by ",
       hospital_var
     )
+    # query database
     missing_hosp_data <- dbGetQuery(dbcon, missing_data_query) %>%
       data.table()
 
