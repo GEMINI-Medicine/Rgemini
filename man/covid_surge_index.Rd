@@ -25,10 +25,11 @@ month year.
 }
 \description{
 A function that derives the COVID-19 surge index for sites.
-For time periods before 2020, or where COVID-19 was not yet diagnosed, the surge index will be 0.
-The function filters for the All-Medicine + ICU cohort. This includes any
-encounter admitted/discharged from a medical service or encounters who
-entered the ICU at any point (specialized or stepdown unit).
+For time periods before 2020, or where COVID-19 was not yet
+diagnosed, the surge index will be 0. The function filters
+for the adult All-Medicine + ICU cohort. This includes any
+encounter admitted/discharged from a medical service or
+encounters who entered the ICU at any point (specialized or stepdown unit).
 
 The function needs to be run on the entire cohort to create accurate values.
 If users have pre-filtered cohorts, please reach out to the GEMINI team to
