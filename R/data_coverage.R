@@ -54,6 +54,11 @@
 #' If no `cohort` input is provided, the function will internally query
 #' all `genc_ids` from the `admdad` table.
 #'
+#' @param cohort_type (`character`)
+#' Specifies whether to include adult or paediatric encounters.
+#' Must be one of `"adult"` or `"paeds"`. If not specified, will default
+#' to adult encounters.
+#'
 #' @param table (`character`)
 #' Which table(s) to include. If multiple, specify a character vector
 #' (e.g., `table = c("lab", "pharmacy", "radiology")`).
@@ -218,6 +223,7 @@
 #' @export
 data_coverage <- function(dbcon,
                           cohort = NULL,
+                          cohort_type = "adult",
                           table,
                           plot_timeline = TRUE,
                           plot_coverage = TRUE,
@@ -230,33 +236,77 @@ data_coverage <- function(dbcon,
   # check input type and column name
   check_input(dbcon, argtype = "DBI")
 
+  check_input(cohort_type,
+    argtype = "character",
+    categories = c("adult", "paeds", "peds")
+  )
+
   # check which variable to use as hospital identifier
   hosp_var <- return_hospital_field(dbcon)
+
+  # check if db type is old or new
+  db_type <- if (isTRUE(DBI::dbGetQuery(
+    dbcon,
+    "SELECT EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_name = 'lookup_data_coverage'
+    AND column_name = 'cohort_type'
+    ) AS exists"
+  )$exists)) {
+    "new"
+  } else {
+    "old"
+  }
+
+  # standardize cohort type
+  cohort_type <- ifelse(
+    cohort_type %in% c("paeds", "peds"),
+    "paeds",
+    "adult"
+  )
 
   # if no cohort input is provided, query from DB
   if (is.null(cohort)) {
     cohort <- dbGetQuery(
       dbcon,
       paste0(
-        "SELECT genc_id, ", hosp_var,
-        # for internal users:
-        # also query hospital_num as optional hospital_label variable
+        "SELECT a.genc_id, a.", hosp_var,
         if (hosp_var == "hospital_id" && !is.null(hospital_label)) {
           if (hospital_label == "hospital_num") {
-            ", hospital_num"
+            ", a.hospital_num"
           } else {
             stop(paste0(
-              "Hospital_label ", hospital_label,
-              " does not exist in the `admdad` table.\n",
-              "Please provide a `cohort` input that includes", hospital_label
+              "Hospital_label ", hospital_label, " does not
+              exist in the `admdad` table.\n",
+              "Please provide a `cohort` input that includes ",
+              hospital_label
             ))
           }
         },
-        ", discharge_date_time FROM ", find_db_tablename(dbcon, "admdad")
+        ", a.discharge_date_time",
+        if (db_type == "new") {
+          paste0(
+            ", d.paeds ",
+            "FROM ", find_db_tablename(dbcon, "admdad"), " a ",
+            "LEFT JOIN ", find_db_tablename(dbcon, "derived_variables"), "
+              d ",
+            "ON a.genc_id = d.genc_id "
+          )
+        } else {
+          paste0(
+            " FROM ", find_db_tablename(dbcon, "admdad"), " a "
+          )
+        },
+        if (db_type == "new" && cohort_type == "paeds") {
+          "WHERE d.paeds = TRUE "
+        } else if (db_type == "new" && cohort_type == "adult") {
+          "WHERE d.paeds = FALSE "
+        }
       )
     ) %>% data.table()
   } else {
-    # if cohort input is povided, make sure it contains all relevant columns
+    # if cohort input is provided, make sure it contains all relevant columns
     check_input(cohort,
       argtype = c("data.table", "data.frame"),
       colnames = c(
@@ -264,10 +314,71 @@ data_coverage <- function(dbcon,
         hospital_label, hospital_group
       )
     )
+
     # make copy of cohort so we don't overwrite anything
     cohort <- copy(cohort) %>% data.table()
-  }
 
+    # filter by cohort type for new dbs
+    if (db_type == "new") {
+      # write cohort genc_ids to temp table
+      temp_table(dbcon, cohort[, .(genc_id)])
+
+      # query paeds flag for cohort genc_ids
+      paeds_flag <- DBI::dbGetQuery(
+        dbcon,
+        paste0(
+          "SELECT d.genc_id, d.paeds ",
+          "FROM ", find_db_tablename(dbcon, "derived_variables"), " d ",
+          "INNER JOIN rgemini_temp_table t ",
+          "ON d.genc_id = t.genc_id"
+        )
+      ) %>% data.table()
+
+      # merge paeds flag into cohort
+      cohort <- merge(
+        cohort,
+        paeds_flag,
+        by = "genc_id",
+        all.x = TRUE
+      )
+       paeds_present <- any(cohort$paeds == TRUE, na.rm = TRUE)
+       adults_present <- any(cohort$paeds == FALSE, na.rm = TRUE)
+
+       # error if cohort contains no encounters matching cohort_type
+       if (cohort_type == "paeds" && !paeds_present) {
+         stop(
+           paste0(
+             "The provided `cohort` table contains no paediatric encounters. ",
+             " Please provide a cohort containing paediatric encounters ",
+             "or set `cohort_type` = \"adult\"."
+           ),     call. = FALSE)
+       }
+       if (cohort_type == "adult" && !adults_present) {
+         stop(
+           paste0(
+             "The provided `cohort` table contains no adult encounters.",
+             " Please provide a cohort containing adult encounters ",
+             "or set `cohort_type = \"paeds\"`."
+           ),     call. = FALSE)
+       }
+       # warning if cohort contains both adult and paeds encounters
+      if (adults_present && paeds_present) {
+        warning(
+          paste0(
+            "The provided `cohort` table contains both adult and paediatric ",
+            "encounters. As `cohort_type = \"", cohort_type, "\"`, ",
+            "encounters that do not match `cohort_type = \"", cohort_type, "\"` will be filtered out."
+          ),     call. = FALSE
+)
+      }
+      # filter based on cohort type
+      if (cohort_type == "paeds") {
+        cohort <- cohort[paeds == TRUE]
+      } else {
+        cohort <- cohort[paeds == FALSE]
+      }
+    }
+  }
   # make sure hospital_group (if any) has 1-1 relationship
   # with hospital ID/num
   if (!is.null(hospital_group)) {
@@ -285,7 +396,6 @@ data_coverage <- function(dbcon,
       ))
     }
   }
-
   # check that custom_dates has correct format
   if (!is.null(custom_dates)) {
     check_input(custom_dates,
@@ -330,7 +440,11 @@ data_coverage <- function(dbcon,
           "SELECT * FROM ", lookup_table_name,
           " WHERE ", hosp_var, " in ('",
           paste(unique(cohort[, get(hosp_var)]), collapse = "', '"),
-          "');"
+          "')",
+          if (db_type == "new") {
+            paste0(" AND cohort_type = '", cohort_type, "'")
+          },
+          ";"
         )
       ) %>% data.table()
     },
@@ -405,6 +519,7 @@ data_coverage <- function(dbcon,
     data_coverage_lookup <- data_coverage_lookup[, -c("hospital_num")]
   }
 
+
   # merge in hospital labels (if any) from cohort table
   if (!is.null(hospital_label)) {
     data_coverage_lookup <- merge(data_coverage_lookup,
@@ -452,6 +567,7 @@ data_coverage <- function(dbcon,
 
   # Apply this to all relevant tables
   lapply(table, get_coverage_flag)
+
 
   if (all(grepl("admdad", table))) {
     # in case user runs function with "admdad" as the only table of interest
