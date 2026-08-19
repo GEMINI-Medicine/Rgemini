@@ -36,6 +36,8 @@ library(lubridate)
 
 The `data_coverage()` function facilitates commonly performed data coverage checks and is meant as a **starting point** for data coverage exploration.
 
+Coverage is assessed separately for adult cohorts (adult encounters only) and paediatric cohorts (paediatric encounters only). By default, `data_coverage()` uses the adult cohort; paediatric coverage checks are relevant only for databases containing paediatric data.
+
 Although GEMINI aims to achieve high coverage of all data elements, it is possible that some tables could not be fully extracted from certain hospitals/time periods. This is especially true for clinical variables, such as lab, transfusion, radiology, or pharmacy data.
 
 Therefore, one of the first steps of any analysis with GEMINI data should be to carefully check data coverage for all relevant tables. Depending on the research question, this may inform study feasibility, cohort creation, decisions about imputation of missing values, and/or modelling choices. 
@@ -76,12 +78,14 @@ lookup_data_coverage <- dbGetQuery(
 
 ```{r echo = FALSE, results = 'asis'}
 lookup_data_coverage <- data.table(
-  data = c("admdad", "er", "pharmacy", "radiology", "transfusion", "ipscu", "ipdiagnosis", "lab", "lab", "lab", "physicians"),
-  hospital_num = c(1, 2, 3, 4, 5, 6, 7, 8, 8, 8, 9),
-  hospital_id = c("GRH", "LHSCU", "LHSCV", "HHCO", "HHSH", "HHSJ", "HRH", "PMH", "PMH", "PMH", "MKHR"), # just adding this to ensure consistency with plots created below (based on hospital_id)
-  min_date = c("2018-02-01", "2015-04-01", "2019-07-01", "2017-01-01", "2015-04-01", "", "2015-04-01", "2017-04-01", "2018-12-10", "2022-03-30", "2016-04-01"),
-  max_date = c("2023-03-31", "2023-06-30", "2023-03-31", "2023-06-30", "2022-05-31", "", "2023-06-30", "2018-04-07", "2021-10-15", "2023-03-20", "2023-03-31"),
-  additional_info = c("Hospital opened in February 2018.", "", "", "", "", "Hospital does not have an ICU.", "", "Hospital provides specialized care.", "Hospital provides specialized care.", "Hospital provides specialized care.", "")
+  data = c("admdad", "er", "er", "pharmacy", "pharmacy", "radiology", "transfusion", "ipscu", "ipdiagnosis", "lab", "lab", "lab", "physicians"),
+  hospital_num = c(1, 2, 2, 3, 3, 4, 5, 6, 7, 8, 8, 8, 9),
+  hospital_id = c("GRH", "LHSCU", "LHSCU", "LHSCV","LHSCV", "HHCO", "HHSH", "HHSJ", "HRH", "PMH", "PMH", "PMH", "MKHR"), # just adding this to ensure consistency with plots created below (based on hospital_id)
+  min_date = c("2018-02-01", "2015-04-01", "2022-04-01", "2019-07-01", "2022-04-01", "2017-01-01", "2015-04-01", "", "2015-04-01", "2017-04-01", "2018-12-10", "2022-03-30", "2016-04-01"),
+  max_date = c("2023-03-31", "2023-06-30",  "2024-06-30", "2023-03-31", "2023-08-31", "2023-06-30", "2022-05-31", "", "2023-06-30", "2018-04-07", "2021-10-15", "2023-03-20", "2023-03-31"),
+  cohort_type = c("adult", "adult", "paeds", "adult", "paeds", "adult", 
+  "adult", "adult", "paeds", "adult", "adult", "adult", "adult"),
+  additional_info = c("Hospital opened in February 2018.", "", "","","", "", "", "Hospital does not have an ICU.", "", "Hospital provides specialized care.", "Hospital provides specialized care.", "Hospital provides specialized care.", "")
 )
 lookup_data_coverage[, min_date := as.Date(min_date)]
 lookup_data_coverage[, max_date := as.Date(max_date)]
@@ -268,6 +272,7 @@ cohort <- cohort[excl == FALSE, ]
 coverage <- data_coverage(
   dbcon,
   cohort = cohort,
+  cohort_type = "adult",
   table = c("transfusion"),
   plot_timeline = FALSE,
   plot_coverage = TRUE,
@@ -357,6 +362,7 @@ The `data_coverage()` function converts the `lookup_data_coverage` table to an e
 # Get encounter-level coverage flags
 coverage <- data_coverage(
   dbcon = db,
+  cohort_type="adult",
   table = c("lab", "transfusion", "radiology"),
   plot_timeline = FALSE,
   plot_coverage = FALSE
@@ -400,6 +406,7 @@ cohort_subset <- dbGetQuery(
 coverage <- data_coverage(
   dbcon = db,
   cohort = cohort_subset, # specify cohort to be included in coverage checks
+  cohort_type = "adult",
   table = c("admdad", "lab", "ipscu"),
   plot_timeline = TRUE,
   plot_coverage = FALSE
@@ -491,6 +498,7 @@ Let's plot coverage for the transfusion table for all encounters in the medicine
 coverage <- data_coverage(
   dbcon = db,
   cohort = cohort_subset, # optional: only include encounters since Apr 2017
+  cohort_type = "adult", # ensure cohort_type aligns with cohort input if provided
   table = c("transfusion"),
   plot_timeline = FALSE,
   plot_coverage = TRUE
@@ -568,6 +576,7 @@ For example, let's say our `admdad_subset` table contains a user-created label (
 coverage <- data_coverage(
   dbcon = db,
   cohort = admdad_subset,
+  cohort_type = "adult",
   table = c("admdad"),
   plot_timeline = TRUE,
   plot_coverage = FALSE,
@@ -599,6 +608,7 @@ custom_dates <- data.table(
 coverage <- data_coverage(
   db = dbcon,
   cohort = admdad_subset,
+  cohort_type = "adult",
   table = c("lab"),
   plot_timeline = TRUE,
   plot_coverage = FALSE,
