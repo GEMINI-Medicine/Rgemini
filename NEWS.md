@@ -1,4 +1,11 @@
-# `develop`
+# Rgemini `3.0.0`
+
+**Enhancements for `drm_cleandb_v5`/`gemini_h4h_template_v6`**
+
+* Updated `neighbourhood_ses()` to handle updated database versions
+* Updated `n_rbc_transfusions()` to include validated data from sites 105 & 106 in calculations
+* Updated `data_coverage()` to support cohort specific coverage checks for adult and paediatric cohorts
+* Updated `mlaps()` calculation to exclude arterial blood gas point-of-care tests
 
 **New functions**:
 
@@ -7,14 +14,13 @@
 **Miscellaneous**:
 
 * Updated `check_input()` and functions with `dbcon` input to accommodate `RPostgres`, `PostgreSQL`, and `odbc` connections
-* Changed DB input argument name in `loop_mlaps` from `db` to `dbcon`
-* Enhanced `find_db_tablename` to only search public schema
-* Updated `mlaps` calculation to exclude arterial blood gas point-of-care tests
-* Updated `n_rbc_transfusions()` to include validated data from sites 105 & 106 in calculations.
+* Changed DB input argument name in `loop_mlaps()` from `db` to `dbcon`
+* Enhanced `find_db_tablename()` to only search public schema
 * Updated `data_coverage()` to make `cohort` input optional
 * Minor fix to `plot_theme()` to ensure white plot background
 * Deprecated dummy functions that have been migrated to [`gemSim`](https://github.com/GEMINI-Medicine/gemSim)
-* Updated `data_coverage()` to support cohort specific coverage checks for adult and paediatric cohorts
+* Minor bug fixes for `covid_surge_index()`
+
 
 # Rgemini `2.0.0`
 

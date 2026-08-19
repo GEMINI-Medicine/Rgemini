@@ -44,7 +44,7 @@ area, census agglomeration, or residual area within each province).
 \item Only including respondents between 25-64 years: \code{ed_25to64_postsec_pct}
 \item Ontario Marginalization Index (continuous):
 \item If \code{census_year} = 2021: \code{households_dwellings}, \code{material_resources},
-\code{age_labourforce}, \code{racialized_NC_pop}
+\code{age_labourforce}, \code{racialized_nc_pop}
 \item If \code{census_year} = 2016: \code{instability}, \code{deprivation}, \code{dependency},
 \code{ethniccon}
 \item Ontario Marginalization Index (quintiles):
