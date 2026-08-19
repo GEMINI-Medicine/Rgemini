@@ -14,7 +14,7 @@
 * Updated `data_coverage()` to make `cohort` input optional
 * Minor fix to `plot_theme()` to ensure white plot background
 * Deprecated dummy functions that have been migrated to [`gemSim`](https://github.com/GEMINI-Medicine/gemSim)
-
+* Updated `data_coverage()` to support cohort specific coverage checks for adult and paediatric cohorts
 
 # Rgemini `2.0.0`
 
