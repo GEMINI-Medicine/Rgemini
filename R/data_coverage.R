@@ -341,35 +341,40 @@ data_coverage <- function(dbcon,
         by = "genc_id",
         all.x = TRUE
       )
-       paeds_present <- any(cohort$paeds == TRUE, na.rm = TRUE)
-       adults_present <- any(cohort$paeds == FALSE, na.rm = TRUE)
+      paeds_present <- any(cohort$paeds == TRUE, na.rm = TRUE)
+      adults_present <- any(cohort$paeds == FALSE, na.rm = TRUE)
 
-       # error if cohort contains no encounters matching cohort_type
-       if (cohort_type == "paeds" && !paeds_present) {
-         stop(
-           paste0(
-             "The provided `cohort` table contains no paediatric encounters. ",
-             " Please provide a cohort containing paediatric encounters ",
-             "or set `cohort_type` = \"adult\"."
-           ),     call. = FALSE)
-       }
-       if (cohort_type == "adult" && !adults_present) {
-         stop(
-           paste0(
-             "The provided `cohort` table contains no adult encounters.",
-             " Please provide a cohort containing adult encounters ",
-             "or set `cohort_type = \"paeds\"`."
-           ),     call. = FALSE)
-       }
-       # warning if cohort contains both adult and paeds encounters
+      # error if cohort contains no encounters matching cohort_type
+      if (cohort_type == "paeds" && !paeds_present) {
+        stop(
+          paste0(
+            "The provided `cohort` table contains no paediatric encounters. ",
+            " Please provide a cohort containing paediatric encounters ",
+            "or set `cohort_type` = \"adult\"."
+          ),
+          call. = FALSE
+        )
+      }
+      if (cohort_type == "adult" && !adults_present) {
+        stop(
+          paste0(
+            "The provided `cohort` table contains no adult encounters.",
+            " Please provide a cohort containing adult encounters ",
+            "or set `cohort_type = \"paeds\"`."
+          ),
+          call. = FALSE
+        )
+      }
+      # warning if cohort contains both adult and paeds encounters
       if (adults_present && paeds_present) {
         warning(
           paste0(
             "The provided `cohort` table contains both adult and paediatric ",
             "encounters. As `cohort_type = \"", cohort_type, "\"`, ",
             "encounters that do not match `cohort_type = \"", cohort_type, "\"` will be filtered out."
-          ),     call. = FALSE
-)
+          ),
+          call. = FALSE
+        )
       }
       # filter based on cohort type
       if (cohort_type == "paeds") {

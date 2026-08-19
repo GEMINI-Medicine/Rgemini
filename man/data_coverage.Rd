@@ -7,6 +7,7 @@
 data_coverage(
   dbcon,
   cohort = NULL,
+  cohort_type = "adult",
   table,
   plot_timeline = TRUE,
   plot_coverage = TRUE,
@@ -33,6 +34,11 @@ following columns:
 
 If no \code{cohort} input is provided, the function will internally query
 all \code{genc_ids} from the \code{admdad} table.}
+
+\item{cohort_type}{(\code{character})
+Specifies whether to include adult or paediatric encounters.
+Must be one of \code{"adult"} or \code{"paeds"}. If not specified, will default
+to adult encounters.}
 
 \item{table}{(\code{character})
 Which table(s) to include. If multiple, specify a character vector
