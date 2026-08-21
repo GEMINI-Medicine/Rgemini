@@ -236,22 +236,30 @@ data_coverage <- function(dbcon,
   # check input type and column name
   check_input(dbcon, argtype = "DBI")
 
+  # Clean up cohort_type input
+  cohort_type <- case_when(
+    grepl("^adult", cohort_type, ignore.case = TRUE) ~ "adult",
+    grepl("^paed|^ped", cohort_type, ignore.case = TRUE) ~ "paeds",
+    TRUE ~ NA
+  )
+
   check_input(cohort_type,
     argtype = "character",
-    categories = c("adult", "paeds", "peds")
+    categories = c("adult", "paeds")
   )
 
   # check which variable to use as hospital identifier
   hosp_var <- return_hospital_field(dbcon)
 
   # check if db type is old or new
+  # paeds column was added in drm_cleandb_v5/h4h_template_v6
   db_type <- if (isTRUE(DBI::dbGetQuery(
     dbcon,
     "SELECT EXISTS (
     SELECT 1
     FROM information_schema.columns
-    WHERE table_name = 'lookup_data_coverage'
-    AND column_name = 'cohort_type'
+    WHERE table_name LIKE 'derived_variables%'
+    AND column_name = 'paeds'
     ) AS exists"
   )$exists)) {
     "new"
@@ -259,15 +267,17 @@ data_coverage <- function(dbcon,
     "old"
   }
 
-  # standardize cohort type
-  cohort_type <- ifelse(
-    cohort_type %in% c("paeds", "peds"),
-    "paeds",
-    "adult"
+  # error for paeds cohort type with old databases
+if (db_type == "old" && cohort_type == "paeds") {
+  stop(
+    "No paeds-specific data coverage information available for this version of the database. ",
+    "Please use `cohort_type = \"adult\"` instead."
   )
+}
 
   # if no cohort input is provided, query from DB
   if (is.null(cohort)) {
+    source <- "Database"
     cohort <- dbGetQuery(
       dbcon,
       paste0(
@@ -277,10 +287,10 @@ data_coverage <- function(dbcon,
             ", a.hospital_num"
           } else {
             stop(paste0(
-              "Hospital_label ", hospital_label, " does not
+              "Hospital_label `", hospital_label, "` does not
               exist in the `admdad` table.\n",
-              "Please provide a `cohort` input that includes ",
-              hospital_label
+              "Please provide a `cohort` input that includes `",
+              hospital_label, "`"
             ))
           }
         },
@@ -320,6 +330,9 @@ data_coverage <- function(dbcon,
 
     # filter by cohort type for new dbs
     if (db_type == "new") {
+
+      source <- "The `cohort` table"
+
       # write cohort genc_ids to temp table
       temp_table(dbcon, cohort[, .(genc_id)])
 
@@ -365,17 +378,7 @@ data_coverage <- function(dbcon,
           call. = FALSE
         )
       }
-      # warning if cohort contains both adult and paeds encounters
-      if (adults_present && paeds_present) {
-        warning(
-          paste0(
-            "The provided `cohort` table contains both adult and paediatric ",
-            "encounters. As `cohort_type = \"", cohort_type, "\"`, ",
-            "encounters that do not match `cohort_type = \"", cohort_type, "\"` will be filtered out."
-          ),
-          call. = FALSE
-        )
-      }
+
       # filter based on cohort type
       if (cohort_type == "paeds") {
         cohort <- cohort[paeds == TRUE]
@@ -384,6 +387,22 @@ data_coverage <- function(dbcon,
       }
     }
   }
+
+# warning if cohort/database contains both adult and paeds encounters
+  if (
+  db_type == "new" &&
+  (source=="Database" || (adults_present && paeds_present))
+) {
+  warning(
+    paste0(
+      source, " contains both adult and paediatric encounters. ",
+      "As `cohort_type = \"", cohort_type, "\"`, ",
+      "only ", cohort_type, " encounters will be included."
+    ),
+    call. = FALSE
+  )
+}
+
   # make sure hospital_group (if any) has 1-1 relationship
   # with hospital ID/num
   if (!is.null(hospital_group)) {
