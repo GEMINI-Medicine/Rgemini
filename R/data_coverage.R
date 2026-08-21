@@ -268,12 +268,12 @@ data_coverage <- function(dbcon,
   }
 
   # error for paeds cohort type with old databases
-if (db_type == "old" && cohort_type == "paeds") {
-  stop(
-    "No paeds-specific data coverage information available for this version of the database. ",
-    "Please use `cohort_type = \"adult\"` instead."
-  )
-}
+  if (db_type == "old" && cohort_type == "paeds") {
+    stop(
+      "No paeds-specific data coverage information available for this version of the database. ",
+      "Please use `cohort_type = \"adult\"` instead."
+    )
+  }
 
   # if no cohort input is provided, query from DB
   if (is.null(cohort)) {
@@ -330,7 +330,6 @@ if (db_type == "old" && cohort_type == "paeds") {
 
     # filter by cohort type for new dbs
     if (db_type == "new") {
-
       source <- "The `cohort` table"
 
       # write cohort genc_ids to temp table
@@ -388,20 +387,20 @@ if (db_type == "old" && cohort_type == "paeds") {
     }
   }
 
-# warning if cohort/database contains both adult and paeds encounters
+  # warning if cohort/database contains both adult and paeds encounters
   if (
-  db_type == "new" &&
-  (source=="Database" || (adults_present && paeds_present))
-) {
-  warning(
-    paste0(
-      source, " contains both adult and paediatric encounters. ",
-      "As `cohort_type = \"", cohort_type, "\"`, ",
-      "only ", cohort_type, " encounters will be included."
-    ),
-    call. = FALSE
-  )
-}
+    db_type == "new" &&
+      (source == "Database" || (adults_present && paeds_present))
+  ) {
+    warning(
+      paste0(
+        source, " contains both adult and paediatric encounters. ",
+        "As `cohort_type = \"", cohort_type, "\"`, ",
+        "only ", cohort_type, " encounters will be included."
+      ),
+      call. = FALSE
+    )
+  }
 
   # make sure hospital_group (if any) has 1-1 relationship
   # with hospital ID/num
