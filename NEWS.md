@@ -4,6 +4,7 @@
 
 * Updated `neighbourhood_ses()` to handle updated database versions
 * Updated `n_rbc_transfusions()` to include validated data from sites 105 & 106 in calculations
+* Updated `data_coverage()` to support cohort specific coverage checks for adult and paediatric cohorts
 * Updated `mlaps()` calculation to exclude arterial blood gas point-of-care tests
 
 **New functions**:
