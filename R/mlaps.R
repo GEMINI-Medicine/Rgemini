@@ -185,6 +185,7 @@ loop_mlaps <- function(dbcon, cohort = NULL, hours_after_admission = 0, componen
         paste(
           "SELECT
             l.genc_id,
+            l.test_name_raw,
             l.collection_date_time,
             l.test_type_mapped_omop,
             l.result_value,
@@ -195,7 +196,6 @@ loop_mlaps <- function(dbcon, cohort = NULL, hours_after_admission = 0, componen
           WHERE l.test_type_mapped_omop IN (", paste(LAPS_OMOP_CONCEPTS, collapse = ", "), ")",
           paste0("AND l.", hospital_field, " = '", hospital_id, "'"),
           "AND EXTRACT(YEAR FROM a.discharge_date_time::DATE) = ", year,
-          " AND NOT (test_type_mapped_omop in (3019977, 3027946, 3027801) and test_name_raw ~* 'POC|point of care')",
           if (!is.null(cohort)) {
             paste("and exists (select 1 from rgemini_temp_table c where c.genc_id=l.genc_id)")
           }
@@ -277,6 +277,7 @@ mlaps <- function(ipadmdad, lab, hours_after_admission = 0, component_wise = FAL
   mapping_message("lab tests")
 
   lab <- lab %>%
+    filter(!(test_type_mapped_omop %in% c('3019977', '3027946', '3027801') & grepl("POC|point of care", test_name_raw,ignore.case = TRUE))) %>% 
     select(test_type_mapped_omop, genc_id, result_value, result_unit, collection_date_time) %>%
     filter(test_type_mapped_omop %in% LAPS_OMOP_CONCEPTS) %>%
     left_join(
