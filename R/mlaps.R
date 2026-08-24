@@ -277,7 +277,7 @@ mlaps <- function(ipadmdad, lab, hours_after_admission = 0, component_wise = FAL
   mapping_message("lab tests")
 
   lab <- lab %>%
-    filter(!(test_type_mapped_omop %in% c('3019977', '3027946', '3027801') & grepl("POC|point of care", test_name_raw,ignore.case = TRUE))) %>% 
+    filter(!(test_type_mapped_omop %in% c("3019977", "3027946", "3027801") & grepl("POC|point of care", test_name_raw, ignore.case = TRUE))) %>%
     select(test_type_mapped_omop, genc_id, result_value, result_unit, collection_date_time) %>%
     filter(test_type_mapped_omop %in% LAPS_OMOP_CONCEPTS) %>%
     left_join(
