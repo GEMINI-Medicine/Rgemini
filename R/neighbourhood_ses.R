@@ -290,18 +290,18 @@ neighbourhood_ses <- function(dbcon, cohort, census_year) {
 
   ## rurality
   if ("csize" %in% names(nbhd_data)) {
-  nbhd_data <- nbhd_data |>
-    mutate(
-      rurality = case_when(
-        census_year != 2021 ~ NA,
-        csize == 5 ~ TRUE,
-        csize != 5 ~ FALSE
+    nbhd_data <- nbhd_data |>
+      mutate(
+        rurality = case_when(
+          census_year != 2021 ~ NA,
+          csize == 5 ~ TRUE,
+          csize != 5 ~ FALSE
+        )
       )
-    )
-} else {
-  nbhd_data <- nbhd_data |>
-    mutate(rurality = NA)
-}
+  } else {
+    nbhd_data <- nbhd_data |>
+      mutate(rurality = NA)
+  }
 
   ## warning about % missing/invalid DA
   # all valid DAs should be 8-digit numerical codes
