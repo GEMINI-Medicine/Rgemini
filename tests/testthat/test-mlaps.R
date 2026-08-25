@@ -32,7 +32,7 @@ testthat::test_that("Only the max value within specified time window is taken", 
     admission_date_time = ymd_hm("2023-01-02 00:00")
   )
 
-  lab <- data.table(
+  .table(
     genc_id = 1,
     test_name_raw = "lab_test_name",
     test_type_mapped_omop = 3024641,
@@ -142,6 +142,7 @@ testthat::test_that("Special unit for Hematocrit is converted into percentages",
 
   lab <- data.table(
     genc_id = 1,
+    test_name_raw = "lab_test_name",
     test_type_mapped_omop = c(3009542),
     result_value = c(55, 0.3),
     result_unit = c("%", "L/L"),
