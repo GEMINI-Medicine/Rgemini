@@ -176,7 +176,7 @@ testthat::test_that("Special cases in result_value are properly handled", {
   testthat::expect_equal(res$mlaps, 5)
 })
 
-####### test 7 
+####### test 7
 testthat::test_that("POC names are filtered out", {
   admdad <- data.table(
     genc_id = 1,
@@ -185,7 +185,7 @@ testthat::test_that("POC names are filtered out", {
 
   lab <- data.table(
     genc_id = 1,
-    test_name_raw = c(rep("arterial_blood_gas",8),rep("POC arterial_blood_gas",3)),
+    test_name_raw = c(rep("arterial_blood_gas", 8), rep("POC arterial_blood_gas", 3)),
     test_type_mapped_omop = c(3006140, 3009542, 3010813, 3019550, 3013826, 3020564, 3024561, 3024641, 3027801, 3019977, 3027946),
     result_value = c(70, 0.5, 6, 128, 8, 353.7, 19, 6.4, 120.1, 45, 3),
     result_unit = "mmol/L",
