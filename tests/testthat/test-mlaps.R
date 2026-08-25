@@ -32,7 +32,7 @@ testthat::test_that("Only the max value within specified time window is taken", 
     admission_date_time = ymd_hm("2023-01-02 00:00")
   )
 
-  .table(
+  lab <- data.table(
     genc_id = 1,
     test_name_raw = "lab_test_name",
     test_type_mapped_omop = 3024641,
