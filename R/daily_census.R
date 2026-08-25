@@ -381,10 +381,14 @@ daily_census <- function(cohort,
       ## create time series with relevant dates to search for (according to site's data avilability)
       # beginning of time period: either earliest discharge date of site or time_period_start, whichever is later
       # end of time period: either latest discharge date of site or time_period_end, whichever is earlier
-      ts <- seq(max(min_date, time_period_start),
-        min(max_date, time_period_end),
-        by = "day"
-      ) + hms(time_of_day) # add time of day (8am by default)
+      ts_start <- max(min_date, time_period_start)
+      ts_end <- min(max_date, time_period_end)
+
+      if (ts_start > ts_end) {
+        return(NULL) # skip this hospital group
+      }
+
+      ts <- seq(ts_start, ts_end, by = "day") + hms(time_of_day)
 
 
       ## foverlaps (below) checks for overlaps between intervals

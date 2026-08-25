@@ -3,10 +3,11 @@
 #'
 #' @description
 #' A function that derives the COVID-19 surge index for sites.
-#' For time periods before 2020, or where COVID-19 was not yet diagnosed, the surge index will be 0.
-#' The function filters for the All-Medicine + ICU cohort. This includes any
-#' encounter admitted/discharged from a medical service or encounters who
-#' entered the ICU at any point (specialized or stepdown unit).
+#' For time periods before 2020, or where COVID-19 was not yet
+#' diagnosed, the surge index will be 0. The function filters
+#' for the adult All-Medicine + ICU cohort. This includes any
+#' encounter admitted/discharged from a medical service or
+#' encounters who entered the ICU at any point (specialized or stepdown unit).
 #'
 #' The function needs to be run on the entire cohort to create accurate values.
 #' If users have pre-filtered cohorts, please reach out to the GEMINI team to
@@ -18,6 +19,9 @@
 #' The index looks at overall COVID admissions, as well as COVID
 #' admissions who entered the ICU and underwent mechanical ventilation.
 #'
+#' The pre-COVID baseline is created using data from 2019-01-01 -
+#' 2019-12-31. Sites that do not have data in this period will not
+#' have a surge index.
 #' @param dbcon (`DBIConnection`)\cr
 #' RPostgres DB connection.
 #'
@@ -33,7 +37,7 @@
 #' A data.table containing each hospital and the COVID surge index for the given
 #' month year.
 #'
-#' @import DBI RPostgreSQL dplyr
+#' @import DBI dplyr
 #' @importFrom lubridate ymd_hm floor_date
 #' @importFrom tidyr replace_na
 #' @export
@@ -69,7 +73,6 @@ covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
   ### pull adult all-med + ICU encounters from 2019 onwards
   ## get admdad table name
   admdad_name <- find_db_tablename(dbcon, "admdad", verbose = FALSE)
-  er_name <- find_db_tablename(dbcon, "er", verbose = FALSE)
   derived_variables_name <- find_db_tablename(dbcon, "derived_variables", verbose = FALSE)
   ipscu_name <- find_db_tablename(dbcon, "ipscu", verbose = FALSE)
   ipintervention_name <- find_db_tablename(dbcon, "ipintervention", verbose = FALSE)
@@ -90,7 +93,7 @@ covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
       " where genc_id in ((select genc_id from ",
       derived_variables_name, " where all_med is TRUE) union
   (select genc_id from ", ipscu_name, ")) and age >= 18
-  and discharge_date_time >= '2019-01-01 00:00' and l.hospital_num != '134'"
+  and discharge_date_time >= '2019-01-01 00:00'"
     ))
   } else {
     cohort <- dbGetQuery(dbcon, paste0(
@@ -99,7 +102,7 @@ covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
       admdad_name, " where genc_id in ((select genc_id from ",
       derived_variables_name, " where all_med is TRUE) union
   (select genc_id from ", ipscu_name, ")) and age >= 18
-  and discharge_date_time >= '2019-01-01 00:00' and hospital_num != '134'"
+  and discharge_date_time >= '2019-01-01 00:00'"
     )) %>% data.table()
   }
 
@@ -250,6 +253,48 @@ covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
   census <- quiet(daily_census(cohort,
     time_period = c("2019-01-01 00:00", "2019-12-31 23:59")
   ))
+
+  ## collect sites missing from cohort, include them in warning
+  missing_hospitals <- unique(cohort[[hospital_var]])[
+    which(unique(cohort[[hospital_var]]) %ni% unique(census[[hospital_var]]))
+  ]
+
+  if (length(missing_hospitals) > 0) {
+    # Get date ranges for missing hospitals
+    # make temp table with cohort
+    temp_table(dbcon, data = cohort, table_name = "covid_gencs")
+    # set up query
+    missing_data_query <- paste0(
+      "select ", hospital_var,
+      ", min(discharge_date_time),
+      max(discharge_date_time) from ", admdad_name, " where ",
+      hospital_var, " in ('",
+      paste(missing_hospitals, collapse = "', '"), "') and genc_id in (select genc_id from covid_gencs) group by ",
+      hospital_var
+    )
+    # query database
+    missing_hosp_data <- dbGetQuery(dbcon, missing_data_query) %>%
+      data.table()
+
+    # Calculate min and max discharge dates for each missing hospital
+    date_ranges <- missing_hosp_data[, .(
+      min_discharge = substr(as.character(min), 1, 10),
+      max_discharge = substr(as.character(max), 1, 10)
+    ), by = hospital_var]
+
+    # Create warning message with one line per site
+    missing_lines <- sprintf(
+      "  - %s: data available from %s to %s",
+      missing_hospitals,
+      date_ranges$min_discharge[match(missing_hospitals, date_ranges[[hospital_var]])],
+      date_ranges$max_discharge[match(missing_hospitals, date_ranges[[hospital_var]])]
+    )
+
+    warning(paste0(
+      "Due to data availability, a surge index could not be calculated for the following sites:\n",
+      paste(missing_lines, collapse = "\n")
+    ))
+  }
 
   #### if gim only get 95th percentile as-is
   if (gim_only == TRUE) {

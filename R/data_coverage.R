@@ -13,7 +13,7 @@
 #' separately).
 #'
 #' @details
-#' `data_coverage` provides analysts with a tool to inform their decisions
+#' `data_coverage()` provides analysts with a tool to inform their decisions
 #' about which hospitals/time periods to include in their analyses,
 #' depending on the data tables of interest. For example, if a project relies on
 #' lab data (e.g., `mlaps` variable), users should carefully inspect lab data
@@ -26,31 +26,38 @@
 #'
 #' @section Warning!:
 #'
-#' \itemize{
-#'    \item{Data coverage checks should generally be performed on the whole
-#' dataset, prior to applying any additional cohort inclusions/exclusions.}
-#'    \item{If you are an HPC4Health user and your datacut has been pre-filtered
-#'    based on certain inclusion/exclusion criteria (e.g., diagnosis codes),
-#'    please keep in mind that the coverage plots (see `plot_coverage`) may be
-#'    skewed in smaller/pre-filtered samples. Please reach out to the GEMINI
-#'    team if you need additional support.}
-#'    \item{Data coverage checks are particularly relevant for clinical data
-#'    tables (e.g., lab, pharmacy, radiology, transfusions, vitals, clinical
-#'    notes etc.).}
-#'    \item{This function should be used as a starting point for data coverage
-#'    checks, but users are advised to perform additional checks based on their
-#'    specific needs.}
-#' }
+#' - Data coverage checks should generally be performed on the whole
+#' dataset, prior to applying any additional cohort inclusions/exclusions.
+#' - If you are an HPC4Health user and your datacut has been pre-filtered
+#' based on certain inclusion/exclusion criteria (e.g., diagnosis codes),
+#' please keep in mind that the coverage plots (see `plot_coverage`) may be
+#' skewed in smaller/pre-filtered samples. Please reach out to the GEMINI
+#' team if you need additional support.
+#' - Data coverage checks are particularly relevant for clinical data
+#' tables (e.g., lab, pharmacy, radiology, transfusions, vitals, clinical
+#' notes etc.).
+#' - This function should be used as a starting point for data coverage
+#' checks, but users are advised to perform additional checks based on their
+#' specific needs.
 #'
 #' @param dbcon (`DBIConnection`)\cr
 #' A database connection to any GEMINI database.
 #'
 #' @param cohort (`data.frame` or `data.table`)
-#' Cohort table with all relevant encounters of interest, where each row
-#' corresponds to a single encounter. Must contain the following columns:
+#' Optional cohort table with encounters of interest, where each row
+#' corresponds to a single encounter. If provided, it must contain the
+#' following columns:
 #' - `genc_id`: GEMINI Encounter ID
 #' - `hospital_num` | `hospital_id`: Hospital identifier
 #' - `discharge_date_time`
+#'
+#' If no `cohort` input is provided, the function will internally query
+#' all `genc_ids` from the `admdad` table.
+#'
+#' @param cohort_type (`character`)
+#' Specifies whether to include adult or paediatric encounters.
+#' Must be one of `"adult"` or `"paeds"`. If not specified, will default
+#' to adult encounters.
 #'
 #' @param table (`character`)
 #' Which table(s) to include. If multiple, specify a character vector
@@ -84,12 +91,16 @@
 #' @param hospital_label (`character`)
 #' Optional: Name of variable in `cohort` table that corresponds to custom
 #' label for hospitals (e.g., letters A-E instead of hospital_num 101-105).
-#' Will be used for plotting purposes.
+#' Will be used for plotting purposes. Only works if the user provides a
+#' `cohort` input containing the variable corresponding to `hospital_label`
+#' (or for internal users: "hospital_num" can be provided as `hospital_label`
+#' even when no `cohort` input is specified).
 #'
 #' @param hospital_group (`character`)
 #' Optional: Name of variable in `cohort` table that corresponds to grouping
 #' of hospitals (e.g., Teaching vs. Non-teaching). Hospitals will be grouped
-#' accordingly in all plots/output tables.
+#' accordingly in all plots/output tables. Only works if the user provides a
+#' `cohort` input containing the variable corresponding to `hospital_group`.
 #'
 #' @param as_plotly (`logical`)
 #' Will return any figures as interactive plots using `plotly`. Note that this
@@ -97,15 +108,16 @@
 #' The flag will be ignored if the `plotly` package is not installed.
 #'
 #' @param custom_dates (`data.frame`|`data.table`)
-#' Optional input allowing users to specify a customized timeline (in 'yyyy-mm-dd'
-#' format) to be included for a given hospital*table combination. The user-provided
-#' input overwrites the corresponding row(s) in the `lookup_data_coverage` table.
+#' Optional input allowing users to specify a customized timeline
+#' (in 'yyyy-mm-dd' format) to be included for a given hospital*table
+#' combination. The user-provided input overwrites the corresponding
+#' row(s) in the `lookup_data_coverage` table.
 #' This can be used to exclude time periods (e.g., due to data quality
 #' issues) and generate customized timeline plots.
 #' For example, let's say you identified a data quality issue in the
 #' transfusion table at hospital 104 for discharge dates < 2019-01-01.
-#' To only include transfusion data for encounters discharged after this
-#' time period, specify:
+#' To only include transfusion data for encounters discharged *after*
+#' this time period, specify:
 #' `custom_dates <- data.frame(
 #'      data = "transfusion",
 #'      hospital_num = 104,
@@ -119,17 +131,13 @@
 #' flags by `genc_id` (in returned `coverage_flag_enc`) and timeline plot (see
 #' `plot_timeline`) will be adjusted according to the user-provided dates.
 #' The coverage plot (see `plot_coverage`) is not affected by the user-specified
-#' the `custom_dates` input.
+#' `custom_dates` input.
 #'
 #' @param ...
 #' Additional inputs that can be passed to control plot aesthetics in
 #' `plot_timeline` or `plot_coverage` plots, such as:
 #' - `base_size`: Font size (default = 12)
 #' - `colors`: Plot color(s) (default = gemini_colors(1))
-#' - `hospital_group`: Name of variable in cohort specifying color grouping of
-#' hospitals (e.g., Teaching/Non-teaching); for the timeline plot, this is
-#' only applied when plotting a single table (otherwise, color grouping is
-#' applied to different table names by default)
 #'
 #' For coverage plots only (inputs are passed to `plot_over_time()`):
 #' - `time_int`: Time interval used to aggregate data (e.g., by `"month"`
@@ -138,19 +146,19 @@
 #' - `scales`: Passed to facet wrap to control if y-scales are `"fixed"`
 #' (default) or `"free"` (only works if no `ylimits` specified)
 #'
-#' @import RPostgreSQL ggplot2
+#' @import DBI lubridate ggplot2
 #'
 #' @return
 #' If the plotting flags are set to `FALSE`, this function will return a single
 #' `data.table` object with a flag for each `genc_id` indicating whether the
 #' encounter was discharged during a time period in which data for a given
-#' table (e.g., `"lab"`) were *in principle* available. If the flag is `FALSE`,
-#' the `genc_id` was dicharged during a time period where GEMINI did not receive
-#' any data for the table of interest. If the flag is `TRUE`, the `genc_id` was
-#' discharged during a time period where GEMINI received *some* data from a
-#' given hospital (however, coverage may still be low, so users are advised to
-#' perform additional coverage checks, e.g., by using the plotting features of
-#' this function).
+#' table (e.g., `"lab"`) were *in principle* available. If the encounter-level
+#' flag is `FALSE`, the `genc_id` was dicharged during a time period where
+#' GEMINI did not receive any data for the table of interest. If the flag is
+#' `TRUE`, the `genc_id` was discharged during a time period where GEMINI
+#' received *some* data from a given hospital (however, coverage may still be
+#' low, so users are advised to perform additional coverage checks, e.g., by
+#' using the plotting features of this function).
 #'
 #' When the plotting flags are set to `TRUE` (default), the function will
 #' return additional data tables (`output[["data"]]`) and plots
@@ -178,11 +186,18 @@
 #'   password = getPass("password")
 #' )
 #'
-#' cohort <- dbGetQuery(db, "SELECT genc_id FROM admdad;")
 #'
-#' ## run function with default flags to create all plots
+#' ## run function on full cohort, with default flags to create all plots
 #' # Note: This might take a while to run...
-#' coverage <- data_coverage(dbcon, cohort, table = c("admdad", "radiology"))
+#' coverage <- data_coverage(dbcon, table = c("admdad", "radiology"))
+#'
+#' # restrict outputs to certain hospitals/time periods
+#' cohort <- dbGetQuery(db, "SELECT genc_id FROM admdad;")
+#' coverage <- data_coverage(
+#'   dbcon,
+#'   cohort = cohort,
+#'   table = c("admdad", "radiology")
+#' )
 #'
 #' # get flags per encounter based on encounter's discharge date
 #' enc_flag <- coverage[["data"]][1] # coverage[["data"]]$coverage_flag_enc
@@ -194,7 +209,7 @@
 #' prct_coverage <- coverage[["data"]][3] # coverage[["data"]]$coverage_data
 #'
 #'
-#' ## run function without any plots
+#' ## run function without any plots (not recommended)
 #' # (will only return data.table with encounter-level flag)
 #' coverage <- data_coverage(
 #'   dbcon,
@@ -207,7 +222,8 @@
 #'
 #' @export
 data_coverage <- function(dbcon,
-                          cohort,
+                          cohort = NULL,
+                          cohort_type = "adult",
                           table,
                           plot_timeline = TRUE,
                           plot_coverage = TRUE,
@@ -220,17 +236,171 @@ data_coverage <- function(dbcon,
   # check input type and column name
   check_input(dbcon, argtype = "DBI")
 
+  # Clean up cohort_type input
+  cohort_type <- case_when(
+    grepl("^adult", cohort_type, ignore.case = TRUE) ~ "adult",
+    grepl("^paed|^ped", cohort_type, ignore.case = TRUE) ~ "paeds",
+    TRUE ~ NA
+  )
+
+  check_input(cohort_type,
+    argtype = "character",
+    categories = c("adult", "paeds")
+  )
+
   # check which variable to use as hospital identifier
   hosp_var <- return_hospital_field(dbcon)
-  check_input(cohort,
-    argtype = c("data.table", "data.frame"),
-    colnames = c(
-      "genc_id", hosp_var, "discharge_date_time",
-      hospital_label, hospital_group
+
+  # check if db type is old or new
+  # paeds column was added in drm_cleandb_v5/h4h_template_v6
+  db_type <- if (isTRUE(DBI::dbGetQuery(
+    dbcon,
+    "SELECT EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_name LIKE 'derived_variables%'
+    AND column_name = 'paeds'
+    ) AS exists"
+  )$exists)) {
+    "new"
+  } else {
+    "old"
+  }
+
+  # error for paeds cohort type with old databases
+  if (db_type == "old" && cohort_type == "paeds") {
+    stop(
+      "No paeds-specific data coverage information available for this version of the database. ",
+      "Please use `cohort_type = \"adult\"` instead."
     )
-  )
-  # make copy of cohort so we don't overwrite anything
-  cohort <- copy(cohort) %>% data.table()
+  }
+
+  # if no cohort input is provided, query from DB
+  if (is.null(cohort)) {
+    source <- "Database"
+    cohort <- dbGetQuery(
+      dbcon,
+      paste0(
+        "SELECT a.genc_id, a.", hosp_var,
+        if (hosp_var == "hospital_id" && !is.null(hospital_label)) {
+          if (hospital_label == "hospital_num") {
+            ", a.hospital_num"
+          } else {
+            stop(paste0(
+              "Hospital_label `", hospital_label, "` does not
+              exist in the `admdad` table.\n",
+              "Please provide a `cohort` input that includes `",
+              hospital_label, "`"
+            ))
+          }
+        },
+        ", a.discharge_date_time",
+        if (db_type == "new") {
+          paste0(
+            ", d.paeds ",
+            "FROM ", find_db_tablename(dbcon, "admdad"), " a ",
+            "LEFT JOIN ", find_db_tablename(dbcon, "derived_variables"), "
+              d ",
+            "ON a.genc_id = d.genc_id "
+          )
+        } else {
+          paste0(
+            " FROM ", find_db_tablename(dbcon, "admdad"), " a "
+          )
+        },
+        if (db_type == "new" && cohort_type == "paeds") {
+          "WHERE d.paeds = TRUE "
+        } else if (db_type == "new" && cohort_type == "adult") {
+          "WHERE d.paeds = FALSE "
+        }
+      )
+    ) %>% data.table()
+  } else {
+    # if cohort input is provided, make sure it contains all relevant columns
+    check_input(cohort,
+      argtype = c("data.table", "data.frame"),
+      colnames = c(
+        "genc_id", hosp_var, "discharge_date_time",
+        hospital_label, hospital_group
+      )
+    )
+
+    # make copy of cohort so we don't overwrite anything
+    cohort <- copy(cohort) %>% data.table()
+
+    # filter by cohort type for new dbs
+    if (db_type == "new") {
+      source <- "The `cohort` table"
+
+      # write cohort genc_ids to temp table
+      temp_table(dbcon, cohort[, .(genc_id)])
+
+      # query paeds flag for cohort genc_ids
+      paeds_flag <- DBI::dbGetQuery(
+        dbcon,
+        paste0(
+          "SELECT d.genc_id, d.paeds ",
+          "FROM ", find_db_tablename(dbcon, "derived_variables"), " d ",
+          "INNER JOIN rgemini_temp_table t ",
+          "ON d.genc_id = t.genc_id"
+        )
+      ) %>% data.table()
+
+      # merge paeds flag into cohort
+      cohort <- merge(
+        cohort,
+        paeds_flag,
+        by = "genc_id",
+        all.x = TRUE
+      )
+      paeds_present <- any(cohort$paeds == TRUE, na.rm = TRUE)
+      adults_present <- any(cohort$paeds == FALSE, na.rm = TRUE)
+
+      # error if cohort contains no encounters matching cohort_type
+      if (cohort_type == "paeds" && !paeds_present) {
+        stop(
+          paste0(
+            "The provided `cohort` table contains no paediatric encounters. ",
+            " Please provide a cohort containing paediatric encounters ",
+            "or set `cohort_type` = \"adult\"."
+          ),
+          call. = FALSE
+        )
+      }
+      if (cohort_type == "adult" && !adults_present) {
+        stop(
+          paste0(
+            "The provided `cohort` table contains no adult encounters.",
+            " Please provide a cohort containing adult encounters ",
+            "or set `cohort_type = \"paeds\"`."
+          ),
+          call. = FALSE
+        )
+      }
+
+      # filter based on cohort type
+      if (cohort_type == "paeds") {
+        cohort <- cohort[paeds == TRUE]
+      } else {
+        cohort <- cohort[paeds == FALSE]
+      }
+    }
+  }
+
+  # warning if cohort/database contains both adult and paeds encounters
+  if (
+    db_type == "new" &&
+      (source == "Database" || (adults_present && paeds_present))
+  ) {
+    warning(
+      paste0(
+        source, " contains both adult and paediatric encounters. ",
+        "As `cohort_type = \"", cohort_type, "\"`, ",
+        "only ", cohort_type, " encounters will be included."
+      ),
+      call. = FALSE
+    )
+  }
 
   # make sure hospital_group (if any) has 1-1 relationship
   # with hospital ID/num
@@ -249,7 +419,6 @@ data_coverage <- function(dbcon,
       ))
     }
   }
-
   # check that custom_dates has correct format
   if (!is.null(custom_dates)) {
     check_input(custom_dates,
@@ -294,7 +463,11 @@ data_coverage <- function(dbcon,
           "SELECT * FROM ", lookup_table_name,
           " WHERE ", hosp_var, " in ('",
           paste(unique(cohort[, get(hosp_var)]), collapse = "', '"),
-          "');"
+          "')",
+          if (db_type == "new") {
+            paste0(" AND cohort_type = '", cohort_type, "'")
+          },
+          ";"
         )
       ) %>% data.table()
     },
@@ -369,6 +542,7 @@ data_coverage <- function(dbcon,
     data_coverage_lookup <- data_coverage_lookup[, -c("hospital_num")]
   }
 
+
   # merge in hospital labels (if any) from cohort table
   if (!is.null(hospital_label)) {
     data_coverage_lookup <- merge(data_coverage_lookup,
@@ -416,6 +590,7 @@ data_coverage <- function(dbcon,
 
   # Apply this to all relevant tables
   lapply(table, get_coverage_flag)
+
 
   if (all(grepl("admdad", table))) {
     # in case user runs function with "admdad" as the only table of interest
@@ -541,10 +716,20 @@ data_coverage <- function(dbcon,
     # make sure data & hospital are factors
     timeline_data[, data := factor(data, levels = unique(table))]
     if (!"factor" %in% class(timeline_data[, get(hosp_var)])) {
-      timeline_data[, paste(hosp_var) := factor(
-        get(hosp_var),
-        levels = sort(unique(get(hosp_var)))
-      )]
+      if (is.null(hospital_label)) {
+        timeline_data[, paste(hosp_var) := factor(
+          get(hosp_var),
+          levels = sort(unique(get(hosp_var)))
+        )]
+      } else { # if hospital label is provided, sort by that
+        timeline_data[, (hosp_var) := factor(
+          get(hosp_var),
+          levels = timeline_data[
+            order(get(hospital_label)),
+            unique(get(hosp_var))
+          ]
+        )]
+      }
     }
 
     # offset y based on number of hospitals & tables to be plotted
@@ -752,14 +937,7 @@ data_coverage <- function(dbcon,
     cat("*** Plotting data coverage. This may take a while... ***\n")
 
     # write temp table to make query below more efficient
-    dbExecute(dbcon, "SET client_min_messages TO WARNING;") # suppress notice
-    DBI::dbSendQuery(dbcon, "Drop table if exists temp_data;")
-    DBI::dbWriteTable(
-      dbcon, c("pg_temp", "temp_data"), cohort[, .(genc_id)],
-      row.names = FALSE, overwrite = TRUE
-    )
-    # Analyze speeds up the use of temp table
-    DBI::dbSendQuery(dbcon, "Analyze temp_data")
+    temp_table(dbcon, cohort[, .(genc_id)])
 
     get_coverage <- function(table, cohort, ...) {
       # reset coverage flag, just in case
@@ -775,7 +953,7 @@ data_coverage <- function(dbcon,
           # than using EXIST
           data_hosp <- DBI::dbGetQuery(
             dbcon, paste("SELECT DISTINCT t.genc_id FROM ", table_name, " t
-                        INNER JOIN temp_data temp ON t.genc_id = temp.genc_id
+                        INNER JOIN rgemini_temp_table temp ON t.genc_id = temp.genc_id
                         WHERE", paste0("t.", hosp_var, " = '", h, "';"))
           ) %>%
             as.data.table()
@@ -827,8 +1005,8 @@ data_coverage <- function(dbcon,
             ...
           ) +
             labs(
-              title = paste0("Data volume - ", table),
-              y = paste0("N genc_ids in ", table, " table")
+              title = paste0("Data Volume - ", fix_var_str(table)),
+              y = paste0("N genc_ids in ", fix_var_str(table), " Table")
             ) +
             theme(strip.text.y = element_text(margin = margin(b = 10, t = 10)))
         )
@@ -852,8 +1030,8 @@ data_coverage <- function(dbcon,
               expand = expansion(0.025)
             ) +
             labs(
-              title = paste0("Data coverage - ", table),
-              y = paste0("% genc_ids in ", table, " table")
+              title = paste0("Data Coverage - ", fix_var_str(table)),
+              y = paste0("% genc_ids in ", fix_var_str(table), " Table")
             ) +
             theme(strip.text.y = element_text(margin = margin(b = 10, t = 10)))
         )

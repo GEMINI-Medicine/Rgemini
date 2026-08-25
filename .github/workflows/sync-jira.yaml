@@ -1,3 +1,4 @@
+# workflow that automatically opens an issue on Jira when a new GitHub issue is created
 name: Jira Integration
 on:
   issues:

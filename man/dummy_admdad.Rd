@@ -6,22 +6,7 @@
 \usage{
 dummy_admdad(id, admtime)
 }
-\arguments{
-\item{id}{(\code{numeric})\cr
-A single identifier that is repeated to match the length of \code{value}.}
-
-\item{admtime}{(\code{character})\cr
-In the format yyyy-mm-dd hh:mm. Corresponds to the admission time of the encounter.}
-}
-\value{
-(\code{data.table})\cr
-With the columns \code{id} and \code{admission_date_time} as described above.
-}
 \description{
-Designed to partially mimic the \code{admdad} table as defined in the
-\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
-}
-\examples{
-admdad <- dummy_admdad(1, "2023-01-02 00:00")
-
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+Deprecated in Rgemini version 3.0.0.
 }
