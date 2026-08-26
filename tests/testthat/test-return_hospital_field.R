@@ -11,8 +11,6 @@ con <- DBI::dbConnect(
 
 # Unit test
 test_that("hospital field is returned correctly", {
-  
   hospital_field <- Rgemini:::return_hospital_field(con)
   expect_equal(hospital_field, "hospital_num") # dummy DB only contains hospital_num variable
-  
 })

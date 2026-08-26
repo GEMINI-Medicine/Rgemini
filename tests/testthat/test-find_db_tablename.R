@@ -11,13 +11,9 @@ con <- DBI::dbConnect(
 
 # Unit test
 test_that("db table names are returned correctly", {
-  
   table_name <- Rgemini:::find_db_tablename(con, "admdad")
   expect_equal(table_name, "admdad")
-  
+
   table_name2 <- Rgemini:::find_db_tablename(con, "lab")
   expect_equal(table_name2, "lab")
-  
 })
-
-
