@@ -1,5 +1,3 @@
-`n
-
 # Rgemini `3.0.0`
 
 **Enhancements for `drm_cleandb_v5`/`gemini_h4h_template_v6`**
