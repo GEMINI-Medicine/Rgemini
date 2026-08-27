@@ -202,7 +202,7 @@ neighbourhood_ses <- function(dbcon, cohort, census_year) {
         "s.age_labourforce_da21, s.age_labourforce_q_da21, ",
         "s.households_dwellings_da21, s.households_dwellings_q_da21, ",
         "s.material_resources_da21, s.material_resources_q_da21, ",
-        "s.racialized_nc_pop_da21, s.racialized_nc_pop_q_da21"
+        "s.racialized_nc_pop_da21, s.racialized_nc_pop_q_da21", "csize"
       )
     } else { # set up query for previous versions
       paste0(
@@ -218,7 +218,7 @@ neighbourhood_ses <- function(dbcon, cohort, census_year) {
       dbcon, paste(
         "SELECT tmp.genc_id, l.da21uid, s.c21_vismin, s.c21_vismin_not, s.qnatippe,
       s.qnbtippe, s.qaatippe, s.qabtippe, s.atippe, s.btippe, s.c21_immsta, s.c21_immsta_imm,
-      s.c21_ed_15over_postsec, s.c21_ed_15over, s.c21_ed_25to64_postsec, s.c21_ed_25to64, s.csize, ",
+      s.c21_ed_15over_postsec, s.c21_ed_15over, s.c21_ed_25to64_postsec, s.c21_ed_25to64, ",
         changed_cols,
         " FROM rgemini_temp_table tmp ",
         "left join ", locality_table, " l on l.genc_id = tmp.genc_id ",
