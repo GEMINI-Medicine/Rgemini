@@ -27,24 +27,28 @@
 #' variables:
 #'
 #' - [**Income**](https://www12.statcan.gc.ca/census-recensement/2021/ref/dict/az/definition-eng.cfm?ID=pop123):
-#'  - Statistics Canada sources information about household income from the Canadian Revenue Agency
-#'  - PCCF+ provides an income per person equivalent (IPPE) by adjusting household income by household size
-#'  - Both continuous income and national/community quintiles are returned
+#'    - Statistics Canada sources information about household income from the Canadian Revenue Agency
+#'    - PCCF+ provides an income per person equivalent (IPPE) by adjusting household income by household size
+#'    - Both continuous income and national/community quintiles are returned
 #' - [**Education**](https://www12.statcan.gc.ca/census-recensement/2021/ref/dict/az/Definition-eng.cfm?ID=pop038):
-#'  - Indicates a person's highest level of education: Based on the long-form census questionnaire,
+#'    - Indicates a person's highest level of education: Based on the long-form census questionnaire,
 #' which is only administered to 25% of households
-#'  - The function returns the % of respondents with a post-secondary certificate, diploma, or degree
+#'    - The function returns the % of respondents with a post-secondary certificate, diploma, or degree
 #' - [**Visible minorities**](https://www12.statcan.gc.ca/census-recensement/2021/ref/98-500/006/98-500-x2021006-eng.cfm):
-#'  - Indicates whether a person identifies as a visible minority, defined as follows by
+#'    - Indicates whether a person identifies as a visible minority, defined as follows by
 #' the Employment Equity Act: “persons, other than Aboriginal peoples, who are non-Caucasian in
 #' race or non-white in colour” (e.g., Black, South Asian, Chinese, Latin American etc.)
-#'  - Based on the long-form census questionnaire, which is only administered
+#'    - Based on the long-form census questionnaire, which is only administered
 #' to 25% of households
 #' - [**Immigrant status**](https://www12.statcan.gc.ca/census-recensement/2021/ref/dict/az/Definition-eng.cfm?ID=pop148):
-#'  - Indicates whether a person is, or has ever been, a landed immigrant or permanent resident
+#'    - Indicates whether a person is, or has ever been, a landed immigrant or permanent resident
 #' in Canada. This indludes those who have obtained Canadian citizenship by naturalization.
-#'  - In 2021 census: Sourced from Immigration, Refugees and Citizenship Canada
-#'  - In 2016 census: Based on the long-form questionnaire (25% of households)
+#'    - In 2021 census: Sourced from Immigration, Refugees and Citizenship Canada
+#'    - In 2016 census: Based on the long-form questionnaire (25% of households)
+#' - [**Rurality**](https://publications.gc.ca/collections/Collection/Statcan/21-006-X/21-006-XIE2001003.pdf):
+#'    - Indicates whether a neighbourhood is in a town or municipality outside the commuting zone of urban centres with population 10,000 or more
+#'    - Derived from the community size variable (csize = 5) from Statistics Canada's 2021 PCCF+ linkage
+#'    - Only available for census year 2021
 #'
 #' @section Ontario Marginalization Index (On-Marg):
 #' On-Marg is a neighbourhood-level index measuring marginalization differences
@@ -100,39 +104,40 @@
 #' - The user-provided census year: `census_year` (2016 or 2021)
 #' - DA the encounter resides in (based on PCCF+): `da_uid`
 #' - Neighbourhood-level income (continuous):
-#'  - `atippe` (neighbourhood after tax income per single person equivalent)
-#'  - `btippe` (neighbourhood before tax income per single person equivalent)
+#'    - `atippe` (neighbourhood after tax income per single person equivalent)
+#'    - `btippe` (neighbourhood before tax income per single person equivalent)
 #' - Neighbourhood-level income (quintiles from PCCF+):
-#'  - `qnatippe` and `qnbtippe`: Quintiles of `atippe` and `btippe` calculated
+#'    - `qnatippe` and `qnbtippe`: Quintiles of `atippe` and `btippe` calculated
 #' based on *national* income distribution
-#'  - `qaatippe` and `qabtippe`: Quintiles of `atippe` and `btippe` calculated
+#'    - `qaatippe` and `qabtippe`: Quintiles of `atippe` and `btippe` calculated
 #' based on distribution within a given community (based on census metropolitan
 #' area, census agglomeration, or residual area within each province).
 #' - % visible minorities: `vismin_pct`
 #' - % with immigrant status: `immsta_pct`
 #' - % with post-secondary education:
-#'  - Including all respondents > 15 years of age: `ed_15over_postsec_pct`
-#'  - Only including respondents between 25-64 years: `ed_25to64_postsec_pct`
+#'    - Including all respondents > 15 years of age: `ed_15over_postsec_pct`
+#'    - Only including respondents between 25-64 years: `ed_25to64_postsec_pct`
+#' - `rurality` (based on  PCCF+): TRUE if neighbourhood is classified as rural (i.e. `csize` = 5)
 #' - Ontario Marginalization Index (continuous):
-#'  - If `census_year` = 2021: `households_dwellings`, `material_resources`,
+#'    - If `census_year` = 2021: `households_dwellings`, `material_resources`,
 #' `age_labourforce`, `racialized_nc_pop`
-#'  - If `census_year` = 2016: `instability`, `deprivation`, `dependency`,
+#'    - If `census_year` = 2016: `instability`, `deprivation`, `dependency`,
 #' `ethniccon`
 #' - Ontario Marginalization Index (quintiles):
-#'  - All ON-Marg variables are additionally returned as quintiles, as indicated
+#'    - All ON-Marg variables are additionally returned as quintiles, as indicated
 #' by the suffix `_q` (e.g., `households_dwellings_q`)
 #'
 #' @references
 #' - **Statistics Canada Census**
-#'  - 2021 Census: https://www12.statcan.gc.ca/census-recensement/2021/ref/index-eng.cfm
-#'  - 2016 Census: https://www12.statcan.gc.ca/census-recensement/2016/ref/index-eng.cfm
+#'    - 2021 Census: https://www12.statcan.gc.ca/census-recensement/2021/ref/index-eng.cfm
+#'    - 2016 Census: https://www12.statcan.gc.ca/census-recensement/2016/ref/index-eng.cfm
 #' - **Ontario Maginalization Index**
-#'  - ON-Marg 2021: https://www.publichealthontario.ca/-/media/documents/o/2017/on-marg-userguide.pdf
-#'  - ON-Marg 2016: https://www.publichealthontario.ca/-/media/documents/U/2018/userguide-on-marg.pdf
-#'  - Additional information from Public Health Ontario: https://www.publichealthontario.ca/-/media/Event-Presentations/2023/09/ontario-marginalization-index-updates-products.pdf?rev=07baae2569164c17abaa18464075aa20&sc_lang=en
+#'    - ON-Marg 2021: https://www.publichealthontario.ca/-/media/documents/o/2017/on-marg-userguide.pdf
+#'    - ON-Marg 2016: https://www.publichealthontario.ca/-/media/documents/U/2018/userguide-on-marg.pdf
+#'    - Additional information from Public Health Ontario: https://www.publichealthontario.ca/-/media/Event-Presentations/2023/09/ontario-marginalization-index-updates-products.pdf?rev=07baae2569164c17abaa18464075aa20&sc_lang=en
 #' - **PCCF+**
-#'  - PCCF+ Reference Guide: https://library.carleton.ca/sites/default/files/2023-03/PCCF%2BUserguide-2021.pdf
-#'  - Measuring Health Inequalities - A Toolkit: https://www.cihi.ca/sites/default/files/document/toolkit-area-level-measurement-pccf-en.pdf
+#'    - PCCF+ Reference Guide: https://library.carleton.ca/sites/default/files/2023-03/PCCF%2BUserguide-2021.pdf
+#'    - Measuring Health Inequalities - A Toolkit: https://www.cihi.ca/sites/default/files/document/toolkit-area-level-measurement-pccf-en.pdf
 #'
 #' @export
 #'
@@ -197,7 +202,8 @@ neighbourhood_ses <- function(dbcon, cohort, census_year) {
         "s.age_labourforce_da21, s.age_labourforce_q_da21, ",
         "s.households_dwellings_da21, s.households_dwellings_q_da21, ",
         "s.material_resources_da21, s.material_resources_q_da21, ",
-        "s.racialized_nc_pop_da21, s.racialized_nc_pop_q_da21"
+        "s.racialized_nc_pop_da21, s.racialized_nc_pop_q_da21, ",
+        "s.csize "
       )
     } else { # set up query for previous versions
       paste0(
@@ -283,6 +289,21 @@ neighbourhood_ses <- function(dbcon, cohort, census_year) {
   ## % post-secondary education (25-64)
   nbhd_data[, ed_25to64_postsec_pct := round(100 * ed_25to64_postsec / ed_25to64, 2)]
 
+  ## rurality
+  if ("csize" %in% names(nbhd_data)) {
+    nbhd_data <- nbhd_data |>
+      mutate(
+        rurality = case_when(
+          census_year != 2021 ~ NA,
+          csize == 5 ~ TRUE,
+          csize != 5 ~ FALSE
+        )
+      )
+  } else {
+    nbhd_data <- nbhd_data |>
+      mutate(rurality = NA)
+  }
+
   ## warning about % missing/invalid DA
   # all valid DAs should be 8-digit numerical codes
   # according to PCCF+ documentation, DAs ending with 9999 are invalid (see page 21:
@@ -306,10 +327,15 @@ neighbourhood_ses <- function(dbcon, cohort, census_year) {
   ))
 
   ## remove raw numerator/denominator columns from output
-  nbhd_data <- nbhd_data[, -c(
-    "vismin", "vismin_not", "immsta_imm", "immsta", "ed_15over_postsec",
-    "ed_15over", "ed_25to64_postsec", "ed_25to64"
-  )]
+  nbhd_data <- nbhd_data %>%
+    select(
+      -any_of(
+        c(
+          "vismin", "vismin_not", "immsta_imm", "immsta", "ed_15over_postsec",
+          "ed_15over", "ed_25to64_postsec", "ed_25to64", "csize"
+        )
+      )
+    )
 
   ## Add census year to output & make sure all encounters are returned
   cohort[, census_year := census_year]
