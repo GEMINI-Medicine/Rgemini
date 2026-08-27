@@ -11,6 +11,10 @@
 
 * Added `temp_table()` utility function that writes temporary tables to improve query efficiency
 
+**New unit tests**
+
+* Added new unit tests for `find_db_table_name()`, `return_hospital_field()`, `n_imaging()`, `n_rbc_transfusions`, `n_routine_bloodwork`
+
 **Miscellaneous**:
 
 * Updated `check_input()` and functions with `dbcon` input to accommodate `RPostgres`, `PostgreSQL`, and `odbc` connections
@@ -20,7 +24,6 @@
 * Minor fix to `plot_theme()` to ensure white plot background
 * Deprecated dummy functions that have been migrated to [`gemSim`](https://github.com/GEMINI-Medicine/gemSim)
 * Minor bug fixes for `covid_surge_index()`
-
 
 # Rgemini `2.0.0`
 
