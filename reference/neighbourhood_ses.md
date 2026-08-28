@@ -51,20 +51,21 @@ following columns:
 
 - Neighbourhood-level income (continuous):
 
-- `atippe` (neighbourhood after tax income per single person equivalent)
+  - `atippe` (neighbourhood after tax income per single person
+    equivalent)
 
-- `btippe` (neighbourhood before tax income per single person
-  equivalent)
+  - `btippe` (neighbourhood before tax income per single person
+    equivalent)
 
 - Neighbourhood-level income (quintiles from PCCF+):
 
-- `qnatippe` and `qnbtippe`: Quintiles of `atippe` and `btippe`
-  calculated based on *national* income distribution
+  - `qnatippe` and `qnbtippe`: Quintiles of `atippe` and `btippe`
+    calculated based on *national* income distribution
 
-- `qaatippe` and `qabtippe`: Quintiles of `atippe` and `btippe`
-  calculated based on distribution within a given community (based on
-  census metropolitan area, census agglomeration, or residual area
-  within each province).
+  - `qaatippe` and `qabtippe`: Quintiles of `atippe` and `btippe`
+    calculated based on distribution within a given community (based on
+    census metropolitan area, census agglomeration, or residual area
+    within each province).
 
 - % visible minorities: `vismin_pct`
 
@@ -72,23 +73,27 @@ following columns:
 
 - % with post-secondary education:
 
-- Including all respondents \> 15 years of age: `ed_15over_postsec_pct`
+  - Including all respondents \> 15 years of age:
+    `ed_15over_postsec_pct`
 
-- Only including respondents between 25-64 years:
-  `ed_25to64_postsec_pct`
+  - Only including respondents between 25-64 years:
+    `ed_25to64_postsec_pct`
+
+- `rurality` (based on PCCF+): TRUE if neighbourhood is classified as
+  rural (i.e. `csize` = 5)
 
 - Ontario Marginalization Index (continuous):
 
-- If `census_year` = 2021: `households_dwellings`, `material_resources`,
-  `age_labourforce`, `racialized_NC_pop`
+  - If `census_year` = 2021: `households_dwellings`,
+    `material_resources`, `age_labourforce`, `racialized_nc_pop`
 
-- If `census_year` = 2016: `instability`, `deprivation`, `dependency`,
-  `ethniccon`
+  - If `census_year` = 2016: `instability`, `deprivation`, `dependency`,
+    `ethniccon`
 
 - Ontario Marginalization Index (quintiles):
 
-- All ON-Marg variables are additionally returned as quintiles, as
-  indicated by the suffix `_q` (e.g., `households_dwellings_q`)
+  - All ON-Marg variables are additionally returned as quintiles, as
+    indicated by the suffix `_q` (e.g., `households_dwellings_q`)
 
 ## Statistics Canada Census
 
@@ -108,46 +113,57 @@ census variables:
 
 - [**Income**](https://www12.statcan.gc.ca/census-recensement/2021/ref/dict/az/definition-eng.cfm?ID=pop123):
 
-- Statistics Canada sources information about household income from the
-  Canadian Revenue Agency
+  - Statistics Canada sources information about household income from
+    the Canadian Revenue Agency
 
-- PCCF+ provides an income per person equivalent (IPPE) by adjusting
-  household income by household size
+  - PCCF+ provides an income per person equivalent (IPPE) by adjusting
+    household income by household size
 
-- Both continuous income and national/community quintiles are returned
+  - Both continuous income and national/community quintiles are returned
 
 - [**Education**](https://www12.statcan.gc.ca/census-recensement/2021/ref/dict/az/Definition-eng.cfm?ID=pop038):
 
-- Indicates a person's highest level of education: Based on the
-  long-form census questionnaire, which is only administered to 25% of
-  households
+  - Indicates a person's highest level of education: Based on the
+    long-form census questionnaire, which is only administered to 25% of
+    households
 
-- The function returns the % of respondents with a post-secondary
-  certificate, diploma, or degree
+  - The function returns the % of respondents with a post-secondary
+    certificate, diploma, or degree
 
 - [**Visible
   minorities**](https://www12.statcan.gc.ca/census-recensement/2021/ref/98-500/006/98-500-x2021006-eng.cfm):
 
-- Indicates whether a person identifies as a visible minority, defined
-  as follows by the Employment Equity Act: “persons, other than
-  Aboriginal peoples, who are non-Caucasian in race or non-white in
-  colour” (e.g., Black, South Asian, Chinese, Latin American etc.)
+  - Indicates whether a person identifies as a visible minority, defined
+    as follows by the Employment Equity Act: “persons, other than
+    Aboriginal peoples, who are non-Caucasian in race or non-white in
+    colour” (e.g., Black, South Asian, Chinese, Latin American etc.)
 
-- Based on the long-form census questionnaire, which is only
-  administered to 25% of households
+  - Based on the long-form census questionnaire, which is only
+    administered to 25% of households
 
 - [**Immigrant
   status**](https://www12.statcan.gc.ca/census-recensement/2021/ref/dict/az/Definition-eng.cfm?ID=pop148):
 
-- Indicates whether a person is, or has ever been, a landed immigrant or
-  permanent resident in Canada. This indludes those who have obtained
-  Canadian citizenship by naturalization.
+  - Indicates whether a person is, or has ever been, a landed immigrant
+    or permanent resident in Canada. This indludes those who have
+    obtained Canadian citizenship by naturalization.
 
-- In 2021 census: Sourced from Immigration, Refugees and Citizenship
-  Canada
+  - In 2021 census: Sourced from Immigration, Refugees and Citizenship
+    Canada
 
-- In 2016 census: Based on the long-form questionnaire (25% of
-  households)
+  - In 2016 census: Based on the long-form questionnaire (25% of
+    households)
+
+- [**Rurality**](https://publications.gc.ca/collections/Collection/Statcan/21-006-X/21-006-XIE2001003.pdf):
+
+  - Indicates whether a neighbourhood is in a town or municipality
+    outside the commuting zone of urban centres with population 10,000
+    or more
+
+  - Derived from the community size variable (csize = 5) from Statistics
+    Canada's 2021 PCCF+ linkage
+
+  - Only available for census year 2021
 
 ## Ontario Marginalization Index (On-Marg)
 
@@ -201,30 +217,30 @@ those DAs.
 
 - **Statistics Canada Census**
 
-- 2021 Census:
-  https://www12.statcan.gc.ca/census-recensement/2021/ref/index-eng.cfm
+  - 2021 Census:
+    https://www12.statcan.gc.ca/census-recensement/2021/ref/index-eng.cfm
 
-- 2016 Census:
-  https://www12.statcan.gc.ca/census-recensement/2016/ref/index-eng.cfm
+  - 2016 Census:
+    https://www12.statcan.gc.ca/census-recensement/2016/ref/index-eng.cfm
 
 - **Ontario Maginalization Index**
 
-- ON-Marg 2021:
-  https://www.publichealthontario.ca/-/media/documents/o/2017/on-marg-userguide.pdf
+  - ON-Marg 2021:
+    https://www.publichealthontario.ca/-/media/documents/o/2017/on-marg-userguide.pdf
 
-- ON-Marg 2016:
-  https://www.publichealthontario.ca/-/media/documents/U/2018/userguide-on-marg.pdf
+  - ON-Marg 2016:
+    https://www.publichealthontario.ca/-/media/documents/U/2018/userguide-on-marg.pdf
 
-- Additional information from Public Health Ontario:
-  https://www.publichealthontario.ca/-/media/Event-Presentations/2023/09/ontario-marginalization-index-updates-products.pdf?rev=07baae2569164c17abaa18464075aa20&sc_lang=en
+  - Additional information from Public Health Ontario:
+    https://www.publichealthontario.ca/-/media/Event-Presentations/2023/09/ontario-marginalization-index-updates-products.pdf?rev=07baae2569164c17abaa18464075aa20&sc_lang=en
 
 - **PCCF+**
 
-- PCCF+ Reference Guide:
-  https://library.carleton.ca/sites/default/files/2023-03/PCCF%2BUserguide-2021.pdf
+  - PCCF+ Reference Guide:
+    https://library.carleton.ca/sites/default/files/2023-03/PCCF%2BUserguide-2021.pdf
 
-- Measuring Health Inequalities - A Toolkit:
-  https://www.cihi.ca/sites/default/files/document/toolkit-area-level-measurement-pccf-en.pdf
+  - Measuring Health Inequalities - A Toolkit:
+    https://www.cihi.ca/sites/default/files/document/toolkit-area-level-measurement-pccf-en.pdf
 
 ## Examples
 

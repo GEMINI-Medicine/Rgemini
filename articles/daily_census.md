@@ -44,6 +44,7 @@ Here is an example of how to load the relevant data and run the
 `daily_census` function with default settings:
 
 ``` r
+
 # Load necessary libraries
 library(RPostgreSQL)
 library(DBI)
@@ -94,6 +95,7 @@ Based on this table, users could extract further information, such as
 the median daily census at each hospital during the study period:
 
 ``` r
+
 library(data.table) #  we are using data.table operations below, but users could also use tidyverse to analyze the function output
 
 # Compute median census at each site
@@ -112,6 +114,7 @@ Additionally, users could plot `census` and `capacity_ratio` over time,
 separately for each hospital:
 
 ``` r
+
 library(ggplot2)
 
 # for plotting purposes, treat hospital_num (numeric) as a factor
@@ -129,6 +132,7 @@ ggplot(census_output, aes(x = as.Date(date_time), y = census, group = hospital_n
 
 ``` r
 
+
 ## Or alternatively, use Rgemini::plot_over_time
 # e.g., this will plot the average census per hospital per month
 # Rgemini::plot_over_time(
@@ -139,6 +143,7 @@ ggplot(census_output, aes(x = as.Date(date_time), y = census, group = hospital_n
 ```
 
 ``` r
+
 # Plot capacity ratio over time
 ggplot(census_output, aes(x = as.Date(date_time), y = capacity_ratio, group = hospital_num, color = hospital_num)) +
   geom_line(linewidth = 1.5, show.legend = TRUE) +
@@ -168,6 +173,7 @@ start and end date.
 For example, to calculate the census from June 1, 2016 - Dec 31, 2016:
 
 ``` r
+
 # Compute census for specific time period
 census_output <- daily_census(admdad, time_period = c("2016-06-01", "2016-12-31"))
 ```
@@ -202,6 +208,7 @@ decision about whether to exclude SCU encounters, and if yes, which SCU
 entries to exclude.
 
 ``` r
+
 # exclude SCU encounters from census
 scu <- dbGetQuery(db, "SELECT * FROM ipscu;")
 
@@ -220,6 +227,7 @@ Here is a simple example where census is grouped by patients’ gender and
 age (\<65 vs. 65+):
 
 ``` r
+
 # Create age category
 admdad$age_cat <- ifelse(admdad$age <= 65, "<=65", ">65")
 
@@ -265,6 +273,7 @@ obtain typical occupancy (“`mean`”, “`mode`”) or estimate capacity based
 on the maximum occupancy (“`max`”).
 
 ``` r
+
 # Get occupancy relative to max capacity (estimated based on max(census))
 census_output <- daily_census(admdad, capacity_func = "max")
 ```
@@ -279,6 +288,7 @@ the function counts all patients with
 different reference time by providing an optional `time_of_day` input:
 
 ``` r
+
 # Calculate census at 2.30pm each day
 census_output <- daily_census(admdad, time_of_day = "14:30:00")
 ```
@@ -326,6 +336,7 @@ cohort (and the typical length of stay observed in that cohort). For
 example, to set the buffer period to 10 days, run the following code:
 
 ``` r
+
 # specify buffer of 10 days at end of time period
 census_output <- daily_census(admdad, buffer = 10)
 ```
@@ -372,6 +383,7 @@ on the whole time period and calculate a year-over-year `capacity_ratio`
 based on the raw `census` output provided by the function, e.g.:
 
 ``` r
+
 # calculate capacity_ratio based on median census *per year*
 census_output[, year := year(census_output$date_time)]
 census_output[, capacity_ratio_yoy := census / median(census, na.rm = TRUE), by = c("hospital_num", "year")]

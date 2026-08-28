@@ -15,7 +15,8 @@ are not considered and should be checked separately).
 ``` r
 data_coverage(
   dbcon,
-  cohort,
+  cohort = NULL,
+  cohort_type = "adult",
   table,
   plot_timeline = TRUE,
   plot_coverage = TRUE,
@@ -36,15 +37,24 @@ data_coverage(
 
 - cohort:
 
-  (`data.frame` or `data.table`) Cohort table with all relevant
-  encounters of interest, where each row corresponds to a single
-  encounter. Must contain the following columns:
+  (`data.frame` or `data.table`) Optional cohort table with encounters
+  of interest, where each row corresponds to a single encounter. If
+  provided, it must contain the following columns:
 
   - `genc_id`: GEMINI Encounter ID
 
   - `hospital_num` \| `hospital_id`: Hospital identifier
 
   - `discharge_date_time`
+
+  If no `cohort` input is provided, the function will internally query
+  all `genc_ids` from the `admdad` table.
+
+- cohort_type:
+
+  (`character`) Specifies whether to include adult or paediatric
+  encounters. Must be one of `"adult"` or `"paeds"`. If not specified,
+  will default to adult encounters.
 
 - table:
 
@@ -84,14 +94,19 @@ data_coverage(
 
   (`character`) Optional: Name of variable in `cohort` table that
   corresponds to custom label for hospitals (e.g., letters A-E instead
-  of hospital_num 101-105). Will be used for plotting purposes.
+  of hospital_num 101-105). Will be used for plotting purposes. Only
+  works if the user provides a `cohort` input containing the variable
+  corresponding to `hospital_label` (or for internal users:
+  "hospital_num" can be provided as `hospital_label` even when no
+  `cohort` input is specified).
 
 - hospital_group:
 
   (`character`) Optional: Name of variable in `cohort` table that
   corresponds to grouping of hospitals (e.g., Teaching vs.
   Non-teaching). Hospitals will be grouped accordingly in all
-  plots/output tables.
+  plots/output tables. Only works if the user provides a `cohort` input
+  containing the variable corresponding to `hospital_group`.
 
 - custom_dates:
 
@@ -103,7 +118,7 @@ data_coverage(
   generate customized timeline plots. For example, let's say you
   identified a data quality issue in the transfusion table at hospital
   104 for discharge dates \< 2019-01-01. To only include transfusion
-  data for encounters discharged after this time period, specify:
+  data for encounters discharged *after* this time period, specify:
   `custom_dates <- data.frame( data = "transfusion", hospital_num = 104, min_date = "2019-01-01", max_date = "2022-06-30" )`
 
   This will overwrite the `min_date`/`max_date` values for site 104
@@ -112,8 +127,8 @@ data_coverage(
   Additionally, the coverage flags by `genc_id` (in returned
   `coverage_flag_enc`) and timeline plot (see `plot_timeline`) will be
   adjusted according to the user-provided dates. The coverage plot (see
-  `plot_coverage`) is not affected by the user-specified the
-  `custom_dates` input.
+  `plot_coverage`) is not affected by the user-specified `custom_dates`
+  input.
 
 - as_plotly:
 
@@ -129,12 +144,6 @@ data_coverage(
   - `base_size`: Font size (default = 12)
 
   - `colors`: Plot color(s) (default = gemini_colors(1))
-
-  - `hospital_group`: Name of variable in cohort specifying color
-    grouping of hospitals (e.g., Teaching/Non-teaching); for the
-    timeline plot, this is only applied when plotting a single table
-    (otherwise, color grouping is applied to different table names by
-    default)
 
   For coverage plots only (inputs are passed to
   [`plot_over_time()`](https://gemini-medicine.github.io/Rgemini/reference/plot_over_time.md)):
@@ -153,12 +162,13 @@ If the plotting flags are set to `FALSE`, this function will return a
 single `data.table` object with a flag for each `genc_id` indicating
 whether the encounter was discharged during a time period in which data
 for a given table (e.g., `"lab"`) were *in principle* available. If the
-flag is `FALSE`, the `genc_id` was dicharged during a time period where
-GEMINI did not receive any data for the table of interest. If the flag
-is `TRUE`, the `genc_id` was discharged during a time period where
-GEMINI received *some* data from a given hospital (however, coverage may
-still be low, so users are advised to perform additional coverage
-checks, e.g., by using the plotting features of this function).
+encounter-level flag is `FALSE`, the `genc_id` was dicharged during a
+time period where GEMINI did not receive any data for the table of
+interest. If the flag is `TRUE`, the `genc_id` was discharged during a
+time period where GEMINI received *some* data from a given hospital
+(however, coverage may still be low, so users are advised to perform
+additional coverage checks, e.g., by using the plotting features of this
+function).
 
 When the plotting flags are set to `TRUE` (default), the function will
 return additional data tables (`output[["data"]]`) and plots
@@ -177,13 +187,13 @@ return additional data tables (`output[["data"]]`) and plots
 
 ## Details
 
-`data_coverage` provides analysts with a tool to inform their decisions
-about which hospitals/time periods to include in their analyses,
-depending on the data tables of interest. For example, if a project
-relies on lab data (e.g., `mlaps` variable), users should carefully
-inspect lab data coverage (see `plot_coverage` below). If lab data
-coverage is high (e.g., \\95% of `genc_ids` have an entry in the lab
-table), individual `genc_ids` may still not exist in the lab table
+`data_coverage()` provides analysts with a tool to inform their
+decisions about which hospitals/time periods to include in their
+analyses, depending on the data tables of interest. For example, if a
+project relies on lab data (e.g., `mlaps` variable), users should
+carefully inspect lab data coverage (see `plot_coverage` below). If lab
+data coverage is high (e.g., \\95% of `genc_ids` have an entry in the
+lab table), individual `genc_ids` may still not exist in the lab table
 (e.g., because lab testing was not indicated) and individual lab columns
 might still have missing values. Users should carefully consider how to
 handle these cases depending on the context of their analyses.
@@ -221,11 +231,18 @@ dbcon <- DBI::dbConnect(drv,
   password = getPass("password")
 )
 
-cohort <- dbGetQuery(db, "SELECT genc_id FROM admdad;")
 
-## run function with default flags to create all plots
+## run function on full cohort, with default flags to create all plots
 # Note: This might take a while to run...
-coverage <- data_coverage(dbcon, cohort, table = c("admdad", "radiology"))
+coverage <- data_coverage(dbcon, table = c("admdad", "radiology"))
+
+# restrict outputs to certain hospitals/time periods
+cohort <- dbGetQuery(db, "SELECT genc_id FROM admdad;")
+coverage <- data_coverage(
+  dbcon,
+  cohort = cohort,
+  table = c("admdad", "radiology")
+)
 
 # get flags per encounter based on encounter's discharge date
 enc_flag <- coverage[["data"]][1] # coverage[["data"]]$coverage_flag_enc
@@ -237,7 +254,7 @@ data_timeline <- coverage[["data"]][2] # coverage[["data"]]$timeline_data
 prct_coverage <- coverage[["data"]][3] # coverage[["data"]]$coverage_data
 
 
-## run function without any plots
+## run function without any plots (not recommended)
 # (will only return data.table with encounter-level flag)
 coverage <- data_coverage(
   dbcon,

@@ -69,6 +69,7 @@ Here is an example of how to load the relevant data and run the
 `icd_to_ccsr` function with default settings:
 
 ``` r
+
 # Load required libraries
 library(RPostgreSQL)
 library(DBI)
@@ -95,18 +96,18 @@ head(ipdiagnosis_ccsr, 10)
 > **Mock output table of
 > [`icd_to_ccsr()`](https://gemini-medicine.github.io/Rgemini/reference/icd_to_ccsr.md):**
 
-| genc_id | diagnosis_type | diagnosis_code |                             diagnosis_code_desc                              | ccsr_default |                    ccsr_default_desc                     | ccsr_1 | ccsr_2 | ccsr_3 | ccsr_4 | ccsr_5 | ccsr_6 |
-|:-------:|:--------------:|:--------------:|:----------------------------------------------------------------------------:|:------------:|:--------------------------------------------------------:|:------:|:------:|:------:|:------:|:------:|:------:|
-|    1    |       M        |      I500      |                           Congestive heart failure                           |    CIR019    |                      Heart failure                       | CIR019 |        |        |        |        |        |
-|    2    |       M        |      J159      |                       Bacterial pneumonia, unspecified                       |    RSP002    |      Pneumonia (except that caused by tuberculosis)      | INF003 | RSP002 |        |        |        |        |
-|    3    |       6        |      F009      |                 Dementia in Alzheimer’s disease, unspecified                 |    NVS011    |                 Neurocognitive disorders                 | NVS011 |        |        |        |        |        |
-|    4    |       M        |      N390      |                 Urinary tract infection, site not specified                  |    GEN004    |                 Urinary tract infections                 | GEN004 |        |        |        |        |        |
-|    5    |       M        |      I214      |                  Acute subendocardial myocardial infarction                  |    CIR009    |               Acute myocardial infarction                | CIR009 |        |        |        |        |        |
-|    6    |       M        |      J440      | Chronic obstructive pulmonary disease with acute lower respiratory infection |    RSP008    | Chronic obstructive pulmonary disease and bronchiectasis | RSP008 |        |        |        |        |        |
-|    7    |       M        |      I634      |           Cerebral infarction due to embolism of cerebral arteries           |    CIR020    |                   Cerebral infarction                    | CIR020 |        |        |        |        |        |
-|    8    |       M        |      N179      |                       Acute renal failure, unspecified                       |    GEN002    |           Acute and unspecified renal failure            | GEN002 |        |        |        |        |        |
-|    9    |       M        |     I2510      |           Atherosclerotic heart disease of native coronary artery            |    CIR011    |     Coronary atherosclerosis and other heart disease     | CIR011 |        |        |        |        |        |
-|   10    |       M        |     A4150      |                  Sepsis due to Escherichia coli \[E.coli\]                   |    INF002    |                        Septicemia                        | INF002 | INF003 |        |        |        |        |
+| genc_id | diagnosis_type | diagnosis_code | diagnosis_code_desc | ccsr_default | ccsr_default_desc | ccsr_1 | ccsr_2 | ccsr_3 | ccsr_4 | ccsr_5 | ccsr_6 |
+|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| 1 | M | I500 | Congestive heart failure | CIR019 | Heart failure | CIR019 |  |  |  |  |  |
+| 2 | M | J159 | Bacterial pneumonia, unspecified | RSP002 | Pneumonia (except that caused by tuberculosis) | INF003 | RSP002 |  |  |  |  |
+| 3 | 6 | F009 | Dementia in Alzheimer’s disease, unspecified | NVS011 | Neurocognitive disorders | NVS011 |  |  |  |  |  |
+| 4 | M | N390 | Urinary tract infection, site not specified | GEN004 | Urinary tract infections | GEN004 |  |  |  |  |  |
+| 5 | M | I214 | Acute subendocardial myocardial infarction | CIR009 | Acute myocardial infarction | CIR009 |  |  |  |  |  |
+| 6 | M | J440 | Chronic obstructive pulmonary disease with acute lower respiratory infection | RSP008 | Chronic obstructive pulmonary disease and bronchiectasis | RSP008 |  |  |  |  |  |
+| 7 | M | I634 | Cerebral infarction due to embolism of cerebral arteries | CIR020 | Cerebral infarction | CIR020 |  |  |  |  |  |
+| 8 | M | N179 | Acute renal failure, unspecified | GEN002 | Acute and unspecified renal failure | GEN002 |  |  |  |  |  |
+| 9 | M | I2510 | Atherosclerotic heart disease of native coronary artery | CIR011 | Coronary atherosclerosis and other heart disease | CIR011 |  |  |  |  |  |
+| 10 | M | A4150 | Sepsis due to Escherichia coli \[E.coli\] | INF002 | Septicemia | INF002 | INF003 |  |  |  |  |
 
 The function returns the GEMINI-derived ICD-to-CCSR mappings. Each row
 in the output corresponds to a single ICD-10-CA code (`diagnosis_code`)
@@ -143,6 +144,7 @@ see page 13). If users want to obtain CCSR categories for any diagnosis
 types, the input argument `type_mrdx` can be set to `FALSE`, as follows:
 
 ``` r
+
 ipdiagnosis_ccsr <- icd_to_ccsr(db, ipdiagnosis, `type_mrdx` = FALSE)
 ```
 
@@ -157,18 +159,18 @@ diagnosis type coding, see
 > [`icd_to_ccsr()`](https://gemini-medicine.github.io/Rgemini/reference/icd_to_ccsr.md)
 > with `type_mrdx = FALSE`:**
 
-| genc_id | diagnosis_type | diagnosis_code |                     diagnosis_code_desc                     | ccsr_default |                    ccsr_default_desc                     | ccsr_1 | ccsr_2 | ccsr_3 | ccsr_4 | ccsr_5 | ccsr_6 |
-|:-------:|:--------------:|:--------------:|:-----------------------------------------------------------:|:------------:|:--------------------------------------------------------:|:------:|:------:|:------:|:------:|:------:|:------:|
-|    1    |       1        |      F067      |                   Mild cognitive disorder                   |    MBD013    | Miscellaneous mental and behavioral disorders/conditions | MBD013 |        |        |        |        |        |
-|    1    |       3        |     I4890      |              Atrial fibrillation, unspecified               |    CIR017    |                   Cardiac dysrhythmias                   | CIR017 |        |        |        |        |        |
-|    1    |       M        |      I500      |                  Congestive heart failure                   |    CIR019    |                      Heart failure                       | CIR019 |        |        |        |        |        |
-|    2    |       1        |      C793      | Secondary malignant neoplasm of brain and cerebral meninges |    NEO070    |                  Secondary malignancies                  | NEO070 |        |        |        |        |        |
-|    2    |       3        |     G4731      |                    Sleep apnoea, central                    |    NVS016    |                   Sleep wake disorders                   | NVS016 |        |        |        |        |        |
-|    2    |       M        |      J159      |              Bacterial pneumonia, unspecified               |    RSP002    |      Pneumonia (except that caused by tuberculosis)      | INF003 | RSP002 |        |        |        |        |
-|    3    |       1        |      Z951      |           Presence of aortocoronary bypass graft            |    CIR011    |     Coronary atherosclerosis and other heart disease     | CIR011 | FAC009 |        |        |        |        |
-|    3    |       6        |      F009      |        Dementia in Alzheimer’s disease, unspecified         |    NVS011    |                 Neurocognitive disorders                 | NVS011 |        |        |        |        |        |
-|    4    |       1        |     E1042      |     Type 1 diabetes mellitus with autonomic neuropathy      |    END003    |           Diabetes mellitus with complication            | END003 | END004 | NVS015 |        |        |        |
-|    4    |       M        |      N390      |         Urinary tract infection, site not specified         |    GEN004    |                 Urinary tract infections                 | GEN004 |        |        |        |        |        |
+| genc_id | diagnosis_type | diagnosis_code | diagnosis_code_desc | ccsr_default | ccsr_default_desc | ccsr_1 | ccsr_2 | ccsr_3 | ccsr_4 | ccsr_5 | ccsr_6 |
+|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| 1 | 1 | F067 | Mild cognitive disorder | MBD013 | Miscellaneous mental and behavioral disorders/conditions | MBD013 |  |  |  |  |  |
+| 1 | 3 | I4890 | Atrial fibrillation, unspecified | CIR017 | Cardiac dysrhythmias | CIR017 |  |  |  |  |  |
+| 1 | M | I500 | Congestive heart failure | CIR019 | Heart failure | CIR019 |  |  |  |  |  |
+| 2 | 1 | C793 | Secondary malignant neoplasm of brain and cerebral meninges | NEO070 | Secondary malignancies | NEO070 |  |  |  |  |  |
+| 2 | 3 | G4731 | Sleep apnoea, central | NVS016 | Sleep wake disorders | NVS016 |  |  |  |  |  |
+| 2 | M | J159 | Bacterial pneumonia, unspecified | RSP002 | Pneumonia (except that caused by tuberculosis) | INF003 | RSP002 |  |  |  |  |
+| 3 | 1 | Z951 | Presence of aortocoronary bypass graft | CIR011 | Coronary atherosclerosis and other heart disease | CIR011 | FAC009 |  |  |  |  |
+| 3 | 6 | F009 | Dementia in Alzheimer’s disease, unspecified | NVS011 | Neurocognitive disorders | NVS011 |  |  |  |  |  |
+| 4 | 1 | E1042 | Type 1 diabetes mellitus with autonomic neuropathy | END003 | Diabetes mellitus with complication | END003 | END004 | NVS015 |  |  |  |
+| 4 | M | N390 | Urinary tract infection, site not specified | GEN004 | Urinary tract infections | GEN004 |  |  |  |  |  |
 
 ### `unique_mrdx`
 
@@ -210,13 +212,13 @@ still have valid `ccsr_1` (to `ccsr_6`) categories:
 
 > **Example codes with `ccsr_default = "XXX000"`:**
 
-| genc_id | diagnosis_type | diagnosis_code |                                                                            diagnosis_code_desc                                                                             | ccsr_default |                                      ccsr_default_desc                                       | ccsr_1 | ccsr_2 | ccsr_3 | ccsr_4 | ccsr_5 | ccsr_6 |
-|:-------:|:--------------:|:--------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:------------:|:--------------------------------------------------------------------------------------------:|:------:|:------:|:------:|:------:|:------:|:------:|
-|   11    |       9        |      V180      |                                           Pedal cyclist injured in noncollision transport accident, driver, nontraffic accident                                            |    XXX000    | Code is unacceptable as a principal diagnosis PDX (only used for the inpatient default CCSR) | EXT008 | EXT020 |        |        |        |        |
-|   12    |       9        |      W01       |                                                          Fall on same level from slipping, tripping and stumbling                                                          |    XXX000    | Code is unacceptable as a principal diagnosis PDX (only used for the inpatient default CCSR) | EXT003 | EXT020 |        |        |        |        |
-|   13    |       9        |      Y04       |                                                                          Assault by bodily force                                                                           |    XXX000    | Code is unacceptable as a principal diagnosis PDX (only used for the inpatient default CCSR) | EXT016 | EXT022 |        |        |        |        |
-|   14    |       9        |      Y832      | Surgical operation with anastomosis, bypass or graft as the cause of abnormal reaction or later complication, without mention of misadventure at the time of the procedure |    XXX000    | Code is unacceptable as a principal diagnosis PDX (only used for the inpatient default CCSR) | EXT025 |        |        |        |        |        |
-|   15    |       9        |      Y848      |               Other medical procedures as the cause of abnormal reaction or later complication, without mention of misadventure at the time of the procedure               |    XXX000    | Code is unacceptable as a principal diagnosis PDX (only used for the inpatient default CCSR) | EXT025 |        |        |        |        |        |
+| genc_id | diagnosis_type | diagnosis_code | diagnosis_code_desc | ccsr_default | ccsr_default_desc | ccsr_1 | ccsr_2 | ccsr_3 | ccsr_4 | ccsr_5 | ccsr_6 |
+|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| 11 | 9 | V180 | Pedal cyclist injured in noncollision transport accident, driver, nontraffic accident | XXX000 | Code is unacceptable as a principal diagnosis PDX (only used for the inpatient default CCSR) | EXT008 | EXT020 |  |  |  |  |
+| 12 | 9 | W01 | Fall on same level from slipping, tripping and stumbling | XXX000 | Code is unacceptable as a principal diagnosis PDX (only used for the inpatient default CCSR) | EXT003 | EXT020 |  |  |  |  |
+| 13 | 9 | Y04 | Assault by bodily force | XXX000 | Code is unacceptable as a principal diagnosis PDX (only used for the inpatient default CCSR) | EXT016 | EXT022 |  |  |  |  |
+| 14 | 9 | Y832 | Surgical operation with anastomosis, bypass or graft as the cause of abnormal reaction or later complication, without mention of misadventure at the time of the procedure | XXX000 | Code is unacceptable as a principal diagnosis PDX (only used for the inpatient default CCSR) | EXT025 |  |  |  |  |  |
+| 15 | 9 | Y848 | Other medical procedures as the cause of abnormal reaction or later complication, without mention of misadventure at the time of the procedure | XXX000 | Code is unacceptable as a principal diagnosis PDX (only used for the inpatient default CCSR) | EXT025 |  |  |  |  |  |
 
 When `type_mrdx = TRUE`, invalid PDX categories are typically rare.
 However, due to country-specific differences in coding and mapping
@@ -228,10 +230,10 @@ status/personal history codes:
 
 > **Example MRDx codes with `ccsr_default = "XXX000"`:**
 
-| genc_id | diagnosis_type | diagnosis_code |                                  diagnosis_code_desc                                  | ccsr_default |                                      ccsr_default_desc                                       | ccsr_1 | ccsr_2 | ccsr_3 | ccsr_4 | ccsr_5 | ccsr_6 |
-|:-------:|:--------------:|:--------------:|:-------------------------------------------------------------------------------------:|:------------:|:--------------------------------------------------------------------------------------------:|:------:|:------:|:------:|:------:|:------:|:------:|
-|   16    |       M        |     Z37000     | Single live birth, pregnancy resulting from both spontaneous ovulation and conception |    XXX000    | Code is unacceptable as a principal diagnosis PDX (only used for the inpatient default CCSR) | PRG030 |        |        |        |        |        |
-|   17    |       M        |      Z588      |                    Other problems related to physical environment                     |    XXX000    | Code is unacceptable as a principal diagnosis PDX (only used for the inpatient default CCSR) | EXT011 |        |        |        |        |        |
+| genc_id | diagnosis_type | diagnosis_code | diagnosis_code_desc | ccsr_default | ccsr_default_desc | ccsr_1 | ccsr_2 | ccsr_3 | ccsr_4 | ccsr_5 | ccsr_6 |
+|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| 16 | M | Z37000 | Single live birth, pregnancy resulting from both spontaneous ovulation and conception | XXX000 | Code is unacceptable as a principal diagnosis PDX (only used for the inpatient default CCSR) | PRG030 |  |  |  |  |  |
+| 17 | M | Z588 | Other problems related to physical environment | XXX000 | Code is unacceptable as a principal diagnosis PDX (only used for the inpatient default CCSR) | EXT011 |  |  |  |  |  |
 
 The invalid PDX category is in line with coding for insurance purposes,
 however, it typically is not meaningful in research contexts and can
@@ -258,9 +260,9 @@ As an example, when `replace_invalidpdx` is set to `TRUE` (default),
 
 > **Example output illustrating `replace_invalidpdx = TRUE`:**
 
-| genc_id | diagnosis_type | diagnosis_code |                                  diagnosis_code_desc                                  | ccsr_default |      ccsr_default_desc       | ccsr_1 | ccsr_2 | ccsr_3 | ccsr_4 | ccsr_5 | ccsr_6 |
-|:-------:|:--------------:|:--------------:|:-------------------------------------------------------------------------------------:|:------------:|:----------------------------:|:------:|:------:|:------:|:------:|:------:|:------:|
-|   16    |       M        |     Z37000     | Single live birth, pregnancy resulting from both spontaneous ovulation and conception |    PRG030    | Maternal outcome of delivery | PRG030 |        |        |        |        |        |
+| genc_id | diagnosis_type | diagnosis_code | diagnosis_code_desc | ccsr_default | ccsr_default_desc | ccsr_1 | ccsr_2 | ccsr_3 | ccsr_4 | ccsr_5 | ccsr_6 |
+|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| 16 | M | Z37000 | Single live birth, pregnancy resulting from both spontaneous ovulation and conception | PRG030 | Maternal outcome of delivery | PRG030 |  |  |  |  |  |
 
 ***Note:*** Invalid PDX CCSR categories are replaced as follows: For any
 codes that have only been mapped to a single CCSR category, `"XXX000"`
@@ -290,11 +292,11 @@ example:
 
 > **Mock output table showing missing diagnosis codes:**
 
-| genc_id | diagnosis_type | diagnosis_code | diagnosis_code_desc | ccsr_default |   ccsr_default_desc    | ccsr_1 | ccsr_2 | ccsr_3 | ccsr_4 | ccsr_5 | ccsr_6 |
-|:-------:|:--------------:|:--------------:|:-------------------:|:------------:|:----------------------:|:------:|:------:|:------:|:------:|:------:|:------:|
-|   18    |       M        |       NA       |         NA          |      NA      | Missing diagnosis code |        |        |        |        |        |        |
-|   19    |       3        |       NA       |         NA          |      NA      | Missing diagnosis code |        |        |        |        |        |        |
-|   20    |       1        |       NA       |         NA          |      NA      | Missing diagnosis code |        |        |        |        |        |        |
+| genc_id | diagnosis_type | diagnosis_code | diagnosis_code_desc | ccsr_default | ccsr_default_desc | ccsr_1 | ccsr_2 | ccsr_3 | ccsr_4 | ccsr_5 | ccsr_6 |
+|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| 18 | M | NA | NA | NA | Missing diagnosis code |  |  |  |  |  |  |
+| 19 | 3 | NA | NA | NA | Missing diagnosis code |  |  |  |  |  |  |
+| 20 | 1 | NA | NA | NA | Missing diagnosis code |  |  |  |  |  |  |
 
 This is typically due to data quality issues and should only affect a
 very small number of encounters.
@@ -315,15 +317,15 @@ categories (yet). For example:
 
 > **Mock output table showing unmapped diagnosis codes:**
 
-| genc_id | diagnosis_type | diagnosis_code |                              diagnosis_code_desc                               | ccsr_default | ccsr_default_desc | ccsr_1 | ccsr_2 | ccsr_3 | ccsr_4 | ccsr_5 | ccsr_6 |
-|:-------:|:--------------:|:--------------:|:------------------------------------------------------------------------------:|:------------:|:-----------------:|:------:|:------:|:------:|:------:|:------:|:------:|
-|   21    |       4        |     98633      |                                                                                |              |     Unmapped      |        |        |        |        |        |        |
-|   22    |       1        |      U85       |                       Resistance to antineoplastic drugs                       |              |     Unmapped      |        |        |        |        |        |        |
-|   23    |       9        |      Y466      | Other and unspecified antiepileptics causing adverse effect in therapeutic use |              |     Unmapped      |        |        |        |        |        |        |
-|   24    |       1        |      T062      |               Injuries of nerves involving multiple body regions               |              |     Unmapped      |        |        |        |        |        |        |
-|   25    |       1        |      D302      |                           Benign neoplasm of ureter                            |              |     Unmapped      |        |        |        |        |        |        |
-|   26    |       3        |      U075      |                          Personal history of COVID-19                          |              |     Unmapped      |        |        |        |        |        |        |
-|   27    |       3        |     E1330      |         Other specified diabetes mellitus with background retinopathy          |              |     Unmapped      |        |        |        |        |        |        |
+| genc_id | diagnosis_type | diagnosis_code | diagnosis_code_desc | ccsr_default | ccsr_default_desc | ccsr_1 | ccsr_2 | ccsr_3 | ccsr_4 | ccsr_5 | ccsr_6 |
+|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| 21 | 4 | 98633 |  |  | Unmapped |  |  |  |  |  |  |
+| 22 | 1 | U85 | Resistance to antineoplastic drugs |  | Unmapped |  |  |  |  |  |  |
+| 23 | 9 | Y466 | Other and unspecified antiepileptics causing adverse effect in therapeutic use |  | Unmapped |  |  |  |  |  |  |
+| 24 | 1 | T062 | Injuries of nerves involving multiple body regions |  | Unmapped |  |  |  |  |  |  |
+| 25 | 1 | D302 | Benign neoplasm of ureter |  | Unmapped |  |  |  |  |  |  |
+| 26 | 3 | U075 | Personal history of COVID-19 |  | Unmapped |  |  |  |  |  |  |
+| 27 | 3 | E1330 | Other specified diabetes mellitus with background retinopathy |  | Unmapped |  |  |  |  |  |  |
 
 Type-4 morphology codes (e.g., row 1 in example output above) will
 always be returned as `"Unmapped"` since they are numeric codes based on
@@ -359,6 +361,7 @@ function on MRDx codes of a typical GIM cohort, the 5 most common CCSR
 default categories among GIM patients can be obtained as follows:
 
 ``` r
+
 library(data.table)
 
 ccsr_summary <- ipdiagnosis_ccsr[, .(N = .N, `% patients` = .N / nrow(ipdiagnosis_ccsr) * 100),
@@ -371,13 +374,13 @@ head(ccsr_summary[order(N, decreasing = TRUE)], 5)
 > **Mock output table showing top 5 most frequent CCSR default
 > categories in a GIM cohort:**
 
-| ccsr_default |                    ccsr_default_desc                     |  N   | % patients |
-|:------------:|:--------------------------------------------------------:|:----:|:----------:|
-|    CIR019    |                      Heart failure                       | 4775 |    4.98    |
-|    RSP002    |      Pneumonia (except that caused by tuberculosis)      | 4007 |    4.23    |
-|    RSP008    | Chronic obstructive pulmonary disease and bronchiectasis | 3760 |    3.85    |
-|    GEN004    |                 Urinary tract infections                 | 3561 |    3.51    |
-|    NVS011    |                 Neurocognitive disorders                 | 2981 |    3.23    |
+| ccsr_default | ccsr_default_desc | N | % patients |
+|:--:|:--:|:--:|:--:|
+| CIR019 | Heart failure | 4775 | 4.98 |
+| RSP002 | Pneumonia (except that caused by tuberculosis) | 4007 | 4.23 |
+| RSP008 | Chronic obstructive pulmonary disease and bronchiectasis | 3760 | 3.85 |
+| GEN004 | Urinary tract infections | 3561 | 3.51 |
+| NVS011 | Neurocognitive disorders | 2981 | 3.23 |
 
 Users could additionally analyse the cumulative percentage of patients
 across CCSR categories to determine the number of unique disease
@@ -413,6 +416,7 @@ CCSR category is INF002. Users have 2 options:
 1.  Filter encounters where INF002 is the **CCSR default category**:
 
 ``` r
+
 # option 1: filter by CCSR default category only
 ipdiagnosis_ccsr <- ipdiagnosis_ccsr[ccsr_default == "INF002", ]
 ```
@@ -421,6 +425,7 @@ ipdiagnosis_ccsr <- ipdiagnosis_ccsr[ccsr_default == "INF002", ]
     categories (recommended)**:
 
 ``` r
+
 # option 2: filter by CCSR 1-6 (includes default category)
 ipdiagnosis_ccsr <- ipdiagnosis_ccsr[
   rowSums(ipdiagnosis_ccsr[, c("ccsr_1", "ccsr_2", "ccsr_3", "ccsr_4", "ccsr_5", "ccsr_6")] == "INF002",

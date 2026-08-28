@@ -144,12 +144,14 @@ project-specific definition of readmission rates (also see [*Section
 3.4*](#sectionrecohort)):
 
 ``` r
+
 # Load necessary libraries:
 library(RPostgreSQL)
 library(DBI)
 library(getPass)
 
 # Establish database connection
+drv <- dbDriver("PostgreSQL")
 db <- DBI::dbConnect(drv,
   dbname = "db",
   host = "domain_name.ca",
@@ -303,6 +305,7 @@ readmission_7d_derived <- mean(readm$readmit7, na.rm = T)
   calculations (see details below).
 
 ``` r
+
 # example code illustrating how to obtain readmission rates in line with CIHI definitions
 res <- readmission(db, elective_admit = T, death = T, MAID = T, palliative = T, chemo = T, mental = T, obstetric = T, signout = T)
 readmission_7d_derived_cihi <- mean(res$readmit7, na.rm = T)
@@ -464,6 +467,7 @@ two most commonly used definitions of 7- and 30-day readmission:
 **Example**: 7-day readmission rates of patients at a given hospital:
 
 ``` r
+
 # get derived readmissions for hospital_num 100
 readm <- dbGetQuery(
   db, "SELECT readmission_7d_derived FROM derived_variables WHERE hospital_num = 100;"
@@ -481,6 +485,7 @@ MAID (in addition to excluding elective admissions & death which are set
 to TRUE by default):
 
 ``` r
+
 readmission(db, MAID = T)
 ```
 
@@ -493,6 +498,7 @@ that contains any readmission window(s) of interest (in days).
 **Example:** Get 14-, 90-, and 180- day readmission.
 
 ``` r
+
 # specify readmission windows in days
 readm <- readmission(db, readm_win = c(14, 90, 180))
 ```
@@ -548,6 +554,7 @@ to consider in the epicare/readmission calculations.
 calculations to the GIM cohort:
 
 ``` r
+
 # only consider GIM encounters in readmission calculation
 readm <- readmission(db, restricted_cohort = gim_cohort)
 ```
@@ -571,6 +578,7 @@ we capture linked transfers even if a COVID-19 diagnosis was not coded
 for all encounters associated with that epicare):
 
 ``` r
+
 ## Get all encounters with COVID-19 diagnosis
 COVID_enc <- ipdiagnosis[grepl("^U07", diagnosis_code), "genc_id"]
 

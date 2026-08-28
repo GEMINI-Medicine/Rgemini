@@ -37,6 +37,7 @@ using `fill` here (see section [Color Palettes](#gemini_colors) for more
 details):
 
 ``` r
+
 library(Rgemini)
 library(ggplot2)
 
@@ -55,6 +56,7 @@ my_plot + ggtitle("Original plot")
 ![](plotting_theme_files/figure-html/unnamed-chunk-1-1.png)
 
 ``` r
+
 my_plot +
   plot_theme() + # add Rgemini plot_theme
   ggtitle("Plot with default GEMINI theme")
@@ -73,6 +75,7 @@ Users can also specify whether to show major/minor grid lines. For
 example:
 
 ``` r
+
 my_plot +
   plot_theme(base_size = 15, base_family = "mono", show_grid = c("major", "minor")) +
   ggtitle("Mono plot with grid lines")
@@ -92,6 +95,7 @@ example, to change the aspect ratio of the plot and angle of the x-tick
 labels:
 
 ``` r
+
 my_plot +
   plot_theme(
     aspect.ratio = 1.5,
@@ -116,6 +120,7 @@ already specifies default characteristics for `plot.title`
 italicize the title, you will see an error message saying:
 
 ``` r
+
 my_plot +
   plot_theme(plot.title = element_text(face = "italic")) +
   ggtitle("Plot with additional theme")
@@ -132,6 +137,7 @@ which will overwrite the default characteristics specified by
 [`plot_theme()`](https://gemini-medicine.github.io/Rgemini/reference/plot_theme.md):
 
 ``` r
+
 my_plot +
   plot_theme() +
   theme(plot.title = element_text(face = "italic")) +
@@ -148,6 +154,7 @@ my_plot +
 any figures. To view all color palettes, you can run:
 
 ``` r
+
 plot_color_palettes()
 ```
 
@@ -169,6 +176,7 @@ For example, this simulates how the colors from the “GEMINI Glow”
 palette (#1) would be perceived by a colorblind person:
 
 ``` r
+
 library(colorBlindness)
 
 fig <- ggplot(
@@ -190,6 +198,7 @@ fig + ggtitle("Original")
 ![](plotting_theme_files/figure-html/unnamed-chunk-8-1.png)
 
 ``` r
+
 colorBlindness::cvdPlot(fig, layout = c("deuteranope", "protanope"))
 ```
 
@@ -206,6 +215,7 @@ palette (e.g., `gemini_colors("S")` for “Shadowed Spectrum”).
 For example:
 
 ``` r
+
 set.seed(2)
 data <- data.frame(
   x = rnorm(50),
@@ -236,6 +246,7 @@ or
 to apply the color palettes. For example:
 
 ``` r
+
 ggplot(data, aes(x = x, y = y, color = group)) +
   geom_point() +
   plot_theme() +
@@ -267,6 +278,7 @@ For example, this is a selection of 7 colors from the **“Viridis”**
 palette:
 
 ``` r
+
 library(viridis)
 fig + scale_fill_viridis(discrete = TRUE, option = "viridis")
 ```
@@ -278,6 +290,7 @@ fig + scale_fill_viridis(discrete = TRUE, option = "viridis")
 … or viridis’ **“Magma”** palette:
 
 ``` r
+
 fig + scale_fill_viridis(discrete = TRUE, option = "magma")
 ```
 
@@ -298,6 +311,7 @@ Some examples of commonly used `ggsci` palettes include:
 **JAMA palette:**
 
 ``` r
+
 library(ggsci)
 fig + scale_fill_jama()
 ```
@@ -307,6 +321,7 @@ fig + scale_fill_jama()
 **Lancet palette:**
 
 ``` r
+
 fig + scale_fill_lancet()
 ```
 
@@ -315,6 +330,7 @@ fig + scale_fill_lancet()
 **JCO palette:**
 
 ``` r
+
 fig + scale_fill_jco()
 ```
 
@@ -333,6 +349,7 @@ see [here](https://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3).
 For example, this illustrates the **“PRGn” palette**:
 
 ``` r
+
 library(RColorBrewer)
 fig + scale_fill_brewer(palette = "PRGn")
 ```
@@ -344,6 +361,7 @@ fig + scale_fill_brewer(palette = "PRGn")
 You can explore all colorblind friendly ColorBrewer palettes by running:
 
 ``` r
+
 display.brewer.all(colorblindFriendly = TRUE)
 ```
 

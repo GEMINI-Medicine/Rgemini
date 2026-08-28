@@ -131,15 +131,15 @@ This includes all helper functions associated with producing a Table 1.
 Helper functions designed to produce sample data.
 
 - [`dummy_admdad()`](https://gemini-medicine.github.io/Rgemini/reference/dummy_admdad.md)
-  : Generated simulated administrative data
+  **\[deprecated\]** : Generated simulated administrative data
 - [`dummy_diag()`](https://gemini-medicine.github.io/Rgemini/reference/dummy_diag.md)
-  : Generate Simulated Diagnosis Data Table
+  **\[deprecated\]** : Generate Simulated Diagnosis Data Table
 - [`dummy_ipadmdad()`](https://gemini-medicine.github.io/Rgemini/reference/dummy_ipadmdad.md)
-  : Simulate ipadmdad data
+  **\[deprecated\]** : Simulate ipadmdad data
 - [`dummy_lab()`](https://gemini-medicine.github.io/Rgemini/reference/dummy_lab.md)
-  : Generated simulated lab data
+  **\[deprecated\]** : Generated simulated lab data
 - [`sample_icd()`](https://gemini-medicine.github.io/Rgemini/reference/sample_icd.md)
-  : Simulate ICD-10 Diagnosis Codes
+  **\[deprecated\]** : Simulate ICD-10 Diagnosis Codes
 
 ## Plotting Functions
 
@@ -253,6 +253,9 @@ Files containing variable mappings.
 
 - [`return_hospital_field()`](https://gemini-medicine.github.io/Rgemini/reference/return_hospital_field.md)
   : Return Hospital Field
+
+- [`temp_table()`](https://gemini-medicine.github.io/Rgemini/reference/temp_table.md)
+  : Write temp tables
 
 - [`quiet()`](https://gemini-medicine.github.io/Rgemini/reference/quiet.md)
   : Suppress errors/messages/warnings

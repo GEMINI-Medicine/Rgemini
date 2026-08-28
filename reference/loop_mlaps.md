@@ -10,7 +10,7 @@ caused by loading large chunks of the lab table.
 
 ``` r
 loop_mlaps(
-  db,
+  dbcon,
   cohort = NULL,
   hours_after_admission = 0,
   component_wise = FALSE
@@ -19,7 +19,7 @@ loop_mlaps(
 
 ## Arguments
 
-- db:
+- dbcon:
 
   (`DBIConnection`)  
   RPostgres DB connection.
@@ -72,7 +72,7 @@ https://doi.org/10.1101/2023.01.06.23284273
 ``` r
 if (FALSE) { # \dontrun{
 drv <- DBI::dbDriver("PostgreSQL")
-db <- DBI::dbConnect(
+dbcon <- DBI::dbConnect(
   drv,
   dbname = "db_name",
   host = "domain_name.ca",
@@ -81,8 +81,8 @@ db <- DBI::dbConnect(
   password = getPass::getPass("Enter Password")
 )
 
-cohort <- DBI::dbGetQuery(db, "SELECT genc_id FROM public.admdad LIMIT 200;")
+cohort <- DBI::dbGetQuery(dbcon, "SELECT genc_id FROM public.admdad LIMIT 200;")
 
-laps <- loop_laps(db, cohort = cohort)
+laps <- loop_laps(dbcon, cohort = cohort)
 } # }
 ```

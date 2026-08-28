@@ -50,6 +50,7 @@ the following database versions:
 #### Libraries and Database
 
 ``` r
+
 library(Rgemini)
 library(RPostgreSQL)
 library(DBI)
@@ -82,6 +83,7 @@ applied at different steps of the workflow to address this question:
 hospital stay?**
 
 ``` r
+
 # query genc_ids in cohort of interest
 example_cohort <- dbGetQuery(
   db_con,
@@ -170,6 +172,7 @@ function:
 ### Insulin example
 
 ``` r
+
 # run RxNorm query
 rxnorm_res <- rxnorm_query(
   dbcon = db_con, # DB containing the Pharmacy Data
@@ -228,6 +231,7 @@ website](https://mor.nlm.nih.gov/RxNav/).
   the brand names (see Example 2).
 
 ``` r
+
 # Example 1 Trimethoprim and Sulfamethoxazole
 rxnorm_res_ex1 <- rxnorm_query(
   dbcon = db_con,
@@ -265,6 +269,7 @@ Dummy output of
   searching by brand name.
 
 ``` r
+
 # Example 2 Complera
 rxnorm_res_ex2 <- rxnorm_query(
   dbcon = db_con,
@@ -407,6 +412,7 @@ the second function
 to process the search results into a frequency table for SME validation:
 
 ``` r
+
 prep_res <- prepare_pharm_for_validation(
   dbcon = db_con, # same DB connection used in rxnorm_query()
   rxnorm_res = rxnorm_res, # output of rxnorm_query()
@@ -425,6 +431,7 @@ named ‘sme’ and ‘analyst’:
 validation:
 
 ``` r
+
 prep_res$sme[c(1:5, 40:45), ]
 ```
 
@@ -460,6 +467,7 @@ Expand to understand the table
 **\$analyst** is the frequency table for analyst’s own use:
 
 ``` r
+
 prep_res$analyst[c(1:5), ]
 ```
 
@@ -587,6 +595,7 @@ time-consuming steps `rxnorm-query()` &
 [`prepare_pharm_for_validation()`](https://gemini-medicine.github.io/Rgemini/reference/prepare_pharm_for_validation.md):
 
 ``` r
+
 saved_robject <- readRDS("path/to/output/folder/pharm_res_INTERNAL_USE_ONLY_yyyymmdd.rds")
 summary(saved_robject)
 ```
@@ -597,6 +606,7 @@ summary(saved_robject)
 of pharmacy orders (`pharm_row_num`) of interest to the study.
 
 ``` r
+
 ###################################################
 # Read in cleaned SME validated mapping file from folder
 sme_valid_clean <- read_excel(file.path(getwd(), "your_path_to/pharmacy_mapping_for_SME_validated.xlsx"))
@@ -642,6 +652,7 @@ entry back to the original pharmacy table to identify `genc_ids` with
 **at least one insulin order during their hospitalization**:
 
 ``` r
+
 # Send a list of row_num as a temp table in case the number of row_num is very long,
 # since dbGetQuery has a character limit.
 
@@ -683,6 +694,7 @@ during the first 24 hours of inpatient admission**. The analyst can use
 row number along with order date-time to refine the cohort:
 
 ``` r
+
 ## Pull pharm rows containing validated drugs
 # write the row_num into a temp table to improve query efficiency
 dbWritetable(db_con, c("pg_temp", "temp_row_num"), insulin_pharm_row_num,
@@ -751,6 +763,7 @@ function.
 Insulin example, `hierarchy=T` vs. `hierarchy=F`:
 
 ``` r
+
 prep_res <- prepare_pharm_for_validation(
   dbcon = db_con,
   rxnorm_res = rxnorm_res,
@@ -787,6 +800,7 @@ will automatically process them along with the matched results to
 facilitate SME validation.**
 
 ``` r
+
 rxnorm_res_unmatch <- rxnorm_query(
   dbcon = db_con,
   drug_name = c("insulin"),
@@ -833,6 +847,7 @@ head(prep_res_unmatch$unmatched_rows, 8)
 Expand to see an example
 
 ``` r
+
 ## Step 1. identify entries that have previously been mapped to insulin
 insulin_hist <- prep_res_unmatch$unmatched_rows %>%
   filter(grepl("insulin", historically_mapped_to_drug) | grepl("insulin", historically_mapped_to_drug_group))
@@ -882,6 +897,7 @@ Expand to see an example of how to filter insulin orders based on routes
 of interest
 
 ``` r
+
 ## Run rxnorm as usual
 rxnorm_res <- rxnorm_query(
   dbcon = db_con,
@@ -1035,6 +1051,7 @@ Prepare the SME validated pharmacy mapping file to the format required
 for database integration:
 
 ``` r
+
 # read the SME validated mapping file from the user folder
 pharmacy_mapping <- read_excel(file.path(getwd(), "your_path_to/pharmacy_mapping_for_SME_validated.xlsx"))
 
@@ -1233,6 +1250,7 @@ Run the function on the cleaned file - the file user saved to folder in
 the [preparing step above](#section-db-prep):
 
 ``` r
+
 library(GEMINIpkg) # load required package for the function
 
 add_validated_pharm_map(file.path(getwd(), "your_path_to/pharmacy_mapping_for_SME_validated_updated.csv"))
@@ -1293,6 +1311,7 @@ Here is an example of what happens when there is no `drug_group` in the
 SME validated file, when running the function:
 
 ``` r
+
 ### run the function on the newly updated file
 add_validated_pharm_map(file.path(getwd(), "your_path_to/pharmacy_mapping_for_SME_validated_updated_no_drug_group.csv"))
 ```
@@ -1336,6 +1355,7 @@ database (so that they can be fixed and reappended using
 `add_validated_pharm_map()`) by doing the following:
 
 ``` r
+
 # Connect to the pharmacy_mapping db
 drv <- dbDriver("PostgreSQL")
 map_db_con <- DBI::dbConnect(drv,

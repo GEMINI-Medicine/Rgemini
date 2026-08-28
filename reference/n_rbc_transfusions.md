@@ -69,11 +69,12 @@ without any transfusion will get a 0.
 
 ## Note
 
-Transfusion data from two hospitals with known data quality issues are
-automatically removed by this function. Any `genc_ids` from those sites
-are not included in the returned output. When merging the output of this
-function with another table, those `genc_ids` should have a value of
-`NA`.
+Transfusion data from two hospitals (105 and 106) with known historical
+data quality issues is automatically excluded for encounters with a
+`discharge_date_time` before 2021-01-01 00:00. Any `genc_ids` from those
+sites meeting this criterion are not included in the returned output.
+When merging the output of this function with another table, those
+`genc_ids` should have a value of `NA`.
 
 Currently, the function does not take `transfusion` or `lab` data
 coverage into account. For patients without RBC transfusion, the

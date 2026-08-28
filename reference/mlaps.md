@@ -73,7 +73,8 @@ be reasonable to impute their LAPS score with zero if lab data was in
 principle available for their site and time period. If lab data was
 unavailable, it might be more accurate to assign the LAPS score for
 these encounters as `NA`. In general it is recommended to take care and
-be intentional when imputing LAPS scores.
+be intentional when imputing LAPS scores. Arterial blood gas
+point-of-care tests are not used in mlaps calculation.
 
 ## References
 

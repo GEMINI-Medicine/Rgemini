@@ -37,6 +37,7 @@ described below.
 For this vignette, we will create a dummy dataset to summarize:
 
 ``` r
+
 set.seed(3)
 
 gender <- c(sample(c("M", "F"), size = 95, replace = TRUE), rep(NA, times = 5))
@@ -64,6 +65,7 @@ simple example below. We summarize all available patient
 characteristics, stratifying by the exposure variable:
 
 ``` r
+
 library(table1)
 
 table1(~ gender + age + condition | exposure, data = data)
@@ -88,6 +90,7 @@ exports
 [`render_cell_suppression.default()`](https://gemini-medicine.github.io/Rgemini/reference/render_cell_suppression.default.md).
 
 ``` r
+
 library(Rgemini)
 
 table1(
@@ -139,6 +142,7 @@ We can specify whether to use a median or mean for continuous variables
 by specifying a `continuous_fn`.
 
 ``` r
+
 table1(
   ~ gender + age + condition | exposure,
   data = data,
@@ -155,6 +159,7 @@ Note however that we can render medians without enabling cell
 suppression, if desired.
 
 ``` r
+
 table1(
   ~ gender + age + condition | exposure,
   data = data,
@@ -170,6 +175,7 @@ We can also specify a render function only for a particular variable
 type:
 
 ``` r
+
 table1(
   ~ gender + age + condition | exposure,
   data = data,
@@ -201,6 +207,7 @@ types by supplying these custom renderer functions.
 #### Suppress categorical variables only
 
 ``` r
+
 table1(
   ~ gender + age + condition | exposure,
   data = data,
@@ -217,6 +224,7 @@ We may also want to only display a single level for binary variables
 `single_level_binary` variable.
 
 ``` r
+
 table1(
   ~ gender + age + condition | exposure,
   data = data,
@@ -234,6 +242,7 @@ export a function that will simply suppress those cells with counts
 fewer than six as needed.
 
 ``` r
+
 table1(
   ~ gender + age + condition | exposure,
   data = data,
@@ -252,6 +261,7 @@ Note that to suppress missing values, we use the
 function:
 
 ``` r
+
 table1(
   ~ gender + age + condition | exposure,
   data = data,
@@ -273,6 +283,7 @@ more conservative
 [`render_cell_suppression.categorical()`](https://gemini-medicine.github.io/Rgemini/reference/render_cell_suppression.categorical.md).
 
 ``` r
+
 levels(data$gender) <- c("M", "F", "Not Available")
 data$gender[is.na(data$gender)] <- "Not Available"
 
@@ -300,6 +311,7 @@ example below.
 ##### Set up
 
 ``` r
+
 set.seed(1)
 
 continuous_data <- data.frame(
@@ -321,6 +333,7 @@ We use `render_cell_suppression.continuous` to suppress any summary
 statistics for groups with a size smaller than six.
 
 ``` r
+
 table1(
   ~ age + laps | nobel,
   data = continuous_data,
@@ -339,6 +352,7 @@ the strata as well using `render_cell_suppression.strat`.
 ##### Suppress counts in the strata
 
 ``` r
+
 table1(
   ~ age + laps | nobel,
   data = continuous_data,
@@ -358,6 +372,7 @@ total using the overall count. Therefore in this scenario we could
 consider removing the “Overall” count:
 
 ``` r
+
 table1(
   ~ age + laps | nobel,
   data = continuous_data,
@@ -388,6 +403,7 @@ percentages to using the `digits` argument. Note that `table1` exposes
 this by default through the `digits` argument.
 
 ``` r
+
 table1(
   ~ gender + age + condition | exposure,
   data = data,
@@ -408,6 +424,7 @@ render functions, there will be a mismatch in the way that rounding is
 handled (by default).
 
 ``` r
+
 table1(
   ~ gender + age + condition | exposure,
   data = data,
@@ -432,6 +449,7 @@ will tell the `table1` render functions to use `digits` digits *after
 the decimal place*.
 
 ``` r
+
 table1(
   ~ gender + age + condition | exposure,
   data = data,
@@ -463,6 +481,7 @@ takes a named list of extra columns to append to the table. Usage is as
 follows:
 
 ``` r
+
 table1(~ gender + age + condition | exposure, data = data, extra.col = list("Maximum Standardized Mean Difference" = max_pairwise_smd))
 ```
 
@@ -484,6 +503,7 @@ We change both row labels below. In order to do this, we need to use the
 default (i.e. “non-formula”) interface to `table1`:
 
 ``` r
+
 labels <- list(
   variables = list(age = "Age (years)", gender = "Sex", condition = "MRDx")
 )
@@ -502,6 +522,7 @@ Next we change the strata labels. To change strata labels we change the
 names of the levels of the factor variable corresponding to the strata
 
 ``` r
+
 levels(data$exposure) <- c("Before Pandemic", "During Pandemic", "After Pandemic")
 strata <- split(data, data$exposure)
 
@@ -520,6 +541,7 @@ label over multiple groups in the `table1` call. We also add
 standardized mean differences using `extra.col` to put it all together.
 
 ``` r
+
 labels$groups <- list("", "Since COVID")
 
 extra_col <- list()
@@ -538,6 +560,7 @@ Now we perform custom labeling, cell suppression, and adding a column of
 standardized mean differences as follows:
 
 ``` r
+
 table1(
   strata,
   labels = labels,
@@ -570,6 +593,7 @@ named `character` vector, where the first element is unnamed and always
 `""`. See the examples below for how the output should be formatted:
 
 ``` r
+
 library(dplyr)
 
 x <- mtcars$am %>% as.factor()
@@ -580,6 +604,7 @@ render_cell_suppression.categorical(as.factor(mtcars$am))
     ##           "" "19 (59.4%)" "13 (40.6%)"
 
 ``` r
+
 render_cell_suppression.continuous(1:20)
 ```
 
@@ -587,6 +612,7 @@ render_cell_suppression.continuous(1:20)
     ##                        "" "10.500 (&plusmn; 5.916)"
 
 ``` r
+
 render_cell_suppression.missing(c(1:19, NA))
 ```
 
@@ -601,6 +627,7 @@ list corresponds to a variable in the data split by the stratifying
 variable, such as in the example below:
 
 ``` r
+
 x <- split(mtcars$disp, mtcars$am)
 
 my_max_col <- function(x, ...) {
@@ -617,6 +644,7 @@ my_max_col(x)
 Now this newly defined function can be added as an extra column.
 
 ``` r
+
 table1(~ disp | am, data = mtcars, extra.col = list("My Max" = my_max_col))
 ```
 

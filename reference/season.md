@@ -23,5 +23,5 @@ One of "Spring", "Summer", "Fall", "Winter".
 
 ``` r
 season(as.Date(Sys.Date()))
-#> [1] "Winter"
+#> [1] "Summer"
 ```

@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Data Coverage • Rgemini</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Data Coverage">
 </head>
@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Rgemini</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -77,10 +77,14 @@
 <p>The <code><a href="../reference/data_coverage.html">data_coverage()</a></code> function facilitates commonly
 performed data coverage checks and is meant as a <strong>starting
 point</strong> for data coverage exploration.</p>
+<p>Coverage is assessed separately for adult cohorts (adult encounters
+only) and paediatric cohorts (paediatric encounters only). By default,
+<code><a href="../reference/data_coverage.html">data_coverage()</a></code> uses the adult cohort; paediatric coverage
+checks are relevant only for databases containing paediatric data.</p>
 <p>Although GEMINI aims to achieve high coverage of all data elements,
-it’s possible that some tables could not be fully extracted from certain
-hospitals/time periods. This is especially true for clinical variables,
-such as lab, transfusion, radiology, or pharmacy data.</p>
+it is possible that some tables could not be fully extracted from
+certain hospitals/time periods. This is especially true for clinical
+variables, such as lab, transfusion, radiology, or pharmacy data.</p>
 <p>Therefore, one of the first steps of any analysis with GEMINI data
 should be to carefully check data coverage for all relevant tables.
 Depending on the research question, this may inform study feasibility,
@@ -174,6 +178,9 @@ min_date
 max_date
 </th>
 <th style="text-align:center;">
+cohort_type
+</th>
+<th style="text-align:center;">
 additional_info
 </th>
 </tr></thead>
@@ -190,6 +197,9 @@ admdad
 </td>
 <td style="text-align:center;">
 2023-03-31
+</td>
+<td style="text-align:center;">
+adult
 </td>
 <td style="text-align:center;">
 Hospital opened in February 2018.
@@ -209,6 +219,28 @@ er
 2023-06-30
 </td>
 <td style="text-align:center;">
+adult
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+er
+</td>
+<td style="text-align:center;">
+2
+</td>
+<td style="text-align:center;">
+2022-04-01
+</td>
+<td style="text-align:center;">
+2024-06-30
+</td>
+<td style="text-align:center;">
+paeds
+</td>
+<td style="text-align:center;">
 </td>
 </tr>
 <tr>
@@ -223,6 +255,28 @@ pharmacy
 </td>
 <td style="text-align:center;">
 2023-03-31
+</td>
+<td style="text-align:center;">
+adult
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+pharmacy
+</td>
+<td style="text-align:center;">
+3
+</td>
+<td style="text-align:center;">
+2022-04-01
+</td>
+<td style="text-align:center;">
+2023-08-31
+</td>
+<td style="text-align:center;">
+paeds
 </td>
 <td style="text-align:center;">
 </td>
@@ -241,6 +295,9 @@ radiology
 2023-06-30
 </td>
 <td style="text-align:center;">
+adult
+</td>
+<td style="text-align:center;">
 </td>
 </tr>
 <tr>
@@ -257,6 +314,9 @@ transfusion
 2022-05-31
 </td>
 <td style="text-align:center;">
+adult
+</td>
+<td style="text-align:center;">
 </td>
 </tr>
 <tr>
@@ -271,6 +331,9 @@ NA
 </td>
 <td style="text-align:center;">
 NA
+</td>
+<td style="text-align:center;">
+adult
 </td>
 <td style="text-align:center;">
 Hospital does not have an ICU.
@@ -290,6 +353,9 @@ ipdiagnosis
 2023-06-30
 </td>
 <td style="text-align:center;">
+paeds
+</td>
+<td style="text-align:center;">
 </td>
 </tr>
 <tr>
@@ -304,6 +370,9 @@ lab
 </td>
 <td style="text-align:center;">
 2018-04-07
+</td>
+<td style="text-align:center;">
+adult
 </td>
 <td style="text-align:center;">
 Hospital provides specialized care.
@@ -323,6 +392,9 @@ lab
 2021-10-15
 </td>
 <td style="text-align:center;">
+adult
+</td>
+<td style="text-align:center;">
 Hospital provides specialized care.
 </td>
 </tr>
@@ -338,6 +410,9 @@ lab
 </td>
 <td style="text-align:center;">
 2023-03-20
+</td>
+<td style="text-align:center;">
+adult
 </td>
 <td style="text-align:center;">
 Hospital provides specialized care.
@@ -357,6 +432,9 @@ physicians
 2023-03-31
 </td>
 <td style="text-align:center;">
+adult
+</td>
+<td style="text-align:center;">
 </td>
 </tr>
 </tbody>
@@ -366,16 +444,19 @@ physicians
 <p><strong>Additional notes:</strong></p>
 <ul>
 <li>The min/max dates in each row correspond to the start/end date of a
-single data coverage period by hospital*table.</li>
+single data coverage period by hospital*table (listed separately for
+<code>paeds</code> vs. <code>adult</code> cohorts where
+applicable).</li>
 <li>Hospital*table combinations with interrupted timelines are shown
 across multiple rows (e.g., 3 rows for lab data at site 8).</li>
 <li>Gaps in data coverage are defined as a period of &gt;28 consecutive
 days without any data.</li>
 <li>Rows where the dates are <code>NA</code> indicate hospital*table
 combinations for which GEMINI does not have any data at all. This could
-either mean that the data are not relevant to a given site (e.g.,
-hospital 6 does not have an ICU) or that the data could not be
-successfully extracted.</li>
+either mean that the data are not relevant at a given site (e.g.,
+hospital 6 does not have an ICU, hospital 8 does not offer pediatric
+services etc.) or that the data could not be successfully
+extracted.</li>
 <li>Encounters with a discharge date within the listed min-max periods
 are assumed to have <strong><em>at least some</em></strong> data
 coverage for that table, although coverage may still be low (see <a href="#plot_coverage">plot_coverage</a> below).</li>
@@ -416,7 +497,7 @@ discharged during time periods with any <code>lab</code>,
 <code class="sourceCode R"><span><span class="co"># Get encounter-level coverage flags</span></span>
 <span><span class="va">coverage</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/data_coverage.html">data_coverage</a></span><span class="op">(</span></span>
 <span>  dbcon <span class="op">=</span> <span class="va">db</span>,</span>
-<span>  cohort <span class="op">=</span> <span class="va">admdad</span>,</span>
+<span>  cohort_type <span class="op">=</span> <span class="st">"adult"</span>, <span class="co"># default; function filters for paeds = FALSE (if applicable for DB version)</span></span>
 <span>  table <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lab"</span>, <span class="st">"transfusion"</span>, <span class="st">"radiology"</span><span class="op">)</span>,</span>
 <span>  plot_timeline <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  plot_coverage <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -675,19 +756,24 @@ patients receive a radiology test or blood transfusion).</li>
 the <code>plot_timeline</code> input to <code>TRUE</code>, which will
 result in a plot similar to the “Data Availability” plot in the data
 dictionary. However, the plot returned by this function is customized to
-the input cohort (e.g., time periods/hospitals of interest) and specific
-tables that are relevant for your analyses.</p>
+the specific tables that are relevant for your analyses (i.e.,
+<code>table</code> input argument), and can also include custom time
+periods/hospitals based on an optional <code>cohort</code> input.</p>
 <p>For example, let’s say we are interested in the data timelines for
 the <code>admdad</code>, <code>lab</code>, and <code>ipscu</code> table
 for encounters discharged since April 2017:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get encounters discharged since Apr 2017</span></span>
-<span><span class="va">admdad_subset</span> <span class="op">&lt;-</span> <span class="va">admdad</span><span class="op">[</span><span class="va">discharge_date_time</span> <span class="op">&gt;=</span> <span class="st">"2017-04-01 00:00"</span>, <span class="op">]</span></span>
+<span><span class="va">cohort_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dbi.r-dbi.org/reference/dbGetQuery.html" class="external-link">dbGetQuery</a></span><span class="op">(</span></span>
+<span>  <span class="va">dbcon</span>, <span class="st">"SELECT genc_id, hospital_num, discharge_date_time</span></span>
+<span><span class="st">  FROM admdad WHERE discharge_date_time &gt;= '2017-04-01 00:00'"</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Plot data timelines</span></span>
 <span><span class="va">coverage</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/data_coverage.html">data_coverage</a></span><span class="op">(</span></span>
 <span>  dbcon <span class="op">=</span> <span class="va">db</span>,</span>
-<span>  cohort <span class="op">=</span> <span class="va">admdad_subset</span>,</span>
+<span>  cohort <span class="op">=</span> <span class="va">cohort_subset</span>, <span class="co"># specify cohort to be included in coverage checks</span></span>
+<span>  cohort_type <span class="op">=</span> <span class="st">"adult"</span>,</span>
 <span>  table <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"admdad"</span>, <span class="st">"lab"</span>, <span class="st">"ipscu"</span><span class="op">)</span>,</span>
 <span>  plot_timeline <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  plot_coverage <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -717,8 +803,8 @@ limited data timelines.</li>
 <strong>Within-hospital differences in data timelines</strong>
 <ul>
 <li>Even within the same hospital, data timelines can vary between
-tables. For example at sites 4 and 9, lab data have a shorter coverage
-period compared to <code>admdad</code>/<code>lab</code> data. This is
+tables. For example at sites 4 and 9, lab data cover a shorter time
+period compared to <code>admdad</code>/<code>ipscu</code> data. This is
 typically due to challenges associated with extracting clinical (as
 opposed to administrative) data. If lab data are crucial for your
 research question, keep in mind that the effective data timeline for
@@ -732,14 +818,14 @@ your analyses is determined by lab data coverage (rather than
 <li>For some hospitals/tables, data timelines may be interrupted. For
 example, at site 8, lab data are not covered continuously. The
 <code>additional_info</code> column may contain some information that
-can help interpretation. For example, for site 8 lab data, the table
-states that this “Hospital provides specialized care”. It’s possible
-that lab testing is not performed on a routine basis at specialized
-hospitals and that the % of encounters with lab tests is generally very
-low even for time periods that are shown as “covered” in the timeline
-plot (remember that a single <code>genc_id</code> with lab data is
-sufficient for data coverage to be shown as <code>TRUE</code> in this
-plot). In other words, the gaps in the data timeline might not
+can help interpret these scenarios. For example, for site 8 lab data,
+the table states that this “Hospital provides specialized care”. It’s
+possible that lab testing is not performed on a routine basis at
+specialized hospitals and that the % of encounters with lab tests is
+generally very low even for time periods that are shown as “covered” in
+the timeline plot (remember that a single <code>genc_id</code> with lab
+data is sufficient for data coverage to be shown as <code>TRUE</code> in
+this plot). In other words, the gaps in the data timeline might not
 necessarily reflect a data extraction issue, but rather could be an
 indicator of specialized clinical practice at this site. Therefore, it
 is important to inspect overall data volume for sites with interrupted
@@ -1238,20 +1324,23 @@ This can be achieved by setting the <code>plot_coverage</code> input to
 time and decide how to handle time periods/hospitals with low coverage
 in their analyses.</p>
 <p><strong style="color:red;">WARNING: </strong> When plotting data
-coverage, your cohort input should only be pre-filtered for the
-hospitals and overall timelines of interest. You <strong>should
-not</strong> apply any other cohort inclusion/exclusion criteria (e.g.,
-diagnosis codes etc.). This is to ensure that the coverage plots are
-representative of the overall GEMINI data holdings, and are not skewed
-by any project-specific cohort inclusion/exclusion steps.</p>
+coverage, we recommend running the <code><a href="../reference/data_coverage.html">data_coverage()</a></code> function
+on the whole adult medicine/ICU cohort. While you may pre-filter the
+cohort for hospitals and time periods of interest, you <strong>should
+not</strong> apply any additional, encounter-level cohort
+inclusion/exclusion criteria (e.g., diagnosis codes etc.) at this point.
+This is to ensure that the coverage plots are representative of the
+overall GEMINI data holdings, and are not skewed by any project-specific
+cohort inclusion/exclusion steps.</p>
 <p><br></p>
-<p>Let’s plot coverage for the transfusion table for patients discharged
-since April 2017:</p>
+<p>Let’s plot coverage for the transfusion table for all encounters in
+the medicine/ICU cohort discharged since April 2017:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot coverage (% genc_ids with entry in table)</span></span>
 <span><span class="va">coverage</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/data_coverage.html">data_coverage</a></span><span class="op">(</span></span>
 <span>  dbcon <span class="op">=</span> <span class="va">db</span>,</span>
-<span>  cohort <span class="op">=</span> <span class="va">admdad_subset</span>,</span>
+<span>  cohort <span class="op">=</span> <span class="va">cohort_subset</span>, <span class="co"># optional: only include encounters since Apr 2017</span></span>
+<span>  cohort_type <span class="op">=</span> <span class="st">"adult"</span>, <span class="co"># ensure cohort_type aligns with cohort input if provided</span></span>
 <span>  table <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"transfusion"</span><span class="op">)</span>,</span>
 <span>  plot_timeline <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  plot_coverage <span class="op">=</span> <span class="cn">TRUE</span></span>
@@ -1344,15 +1433,17 @@ patient cohorts separately (see cohort flags like <code>gim</code> or
 here (rather than transfusion month). This can potentially mask issues
 related to the extraction of transfusion products that were transfused
 during certain time periods. We therefore recommend plotting coverage by
-the relevant clinical date-time variable (i.e., issue_date_time for
-transfusions) in addition to the plots by discharge_date_time. Note that
-this is currently not supported by data_coverage() but can easily be
-achieved using Rgemini::plot_over_time() (e.g., time_var would be
-issue_date_time in the case of transfusions). This may show a more
-abrupt drop in data coverage and could indicate issues with data storage
-in the hospital’s EHR (e.g., system outage) rather than data extraction
-issues (which are typically related to discharge_date_time since GEMINI
-data are pulled by discharge date).</li>
+the relevant clinical date-time variable (i.e.,
+<code>issue_date_time</code> for transfusions) in addition to the plots
+by <code>discharge_date_time</code>. Note that this is currently not
+supported by <code><a href="../reference/data_coverage.html">data_coverage()</a></code> but can easily be achieved
+using <code><a href="../reference/plot_over_time.html">Rgemini::plot_over_time()</a></code> (e.g.,
+<code>time_var</code> would be <code>issue_date_time</code> in the case
+of transfusions). This may show a more abrupt drop in data coverage and
+could indicate issues with data storage in the hospital’s EHR/data
+warehouse (e.g., system outage) rather than data extraction issues
+(which are typically related to <code>discharge_date_time</code> since
+GEMINI data are pulled by discharge date).</li>
 </ol>
 </li>
 </ul>
@@ -1570,7 +1661,7 @@ providing <code>hospital_label</code> (e.g., letters A-E instead of
 <p>For example, let’s say our <code>admdad_subset</code> table contains
 a user-created label (<code>hosp_label</code>) and hospital grouping
 variable (<code>hosp_type</code>). We can now provide these variable
-names as inputs to <code>data_coverage</code>:
+names as inputs to <code><a href="../reference/data_coverage.html">data_coverage()</a></code>:
 <code>hospital_label</code> will change the labels of hospitals on the
 y-axis of the timeline plot whereas <code>hospital_group</code> will
 color code hospitals according to their category. We can also customize
@@ -1579,6 +1670,7 @@ the color scheme by providing a <code>colors</code> input:</p>
 <code class="sourceCode R"><span><span class="va">coverage</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/data_coverage.html">data_coverage</a></span><span class="op">(</span></span>
 <span>  dbcon <span class="op">=</span> <span class="va">db</span>,</span>
 <span>  cohort <span class="op">=</span> <span class="va">admdad_subset</span>,</span>
+<span>  cohort_type <span class="op">=</span> <span class="st">"adult"</span>,</span>
 <span>  table <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"admdad"</span><span class="op">)</span>,</span>
 <span>  plot_timeline <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  plot_coverage <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -1618,6 +1710,7 @@ the user-specified dates. Note that the coverage plot (see <a href="#coverage_pl
 <span><span class="va">coverage</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/data_coverage.html">data_coverage</a></span><span class="op">(</span></span>
 <span>  db <span class="op">=</span> <span class="va">dbcon</span>,</span>
 <span>  cohort <span class="op">=</span> <span class="va">admdad_subset</span>,</span>
+<span>  cohort_type <span class="op">=</span> <span class="st">"adult"</span>,</span>
 <span>  table <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lab"</span><span class="op">)</span>,</span>
 <span>  plot_timeline <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  plot_coverage <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -1649,7 +1742,7 @@ supported on HPC4Health due to vulnerabilities associated with the
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

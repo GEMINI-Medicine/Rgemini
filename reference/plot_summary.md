@@ -113,7 +113,7 @@ characteristics for each individual variable, such as:
 
 ``` r
 # simulate GEMINI data table
-admdad <- dummy_ipadmdad(
+admdad <- gemSim::dummy_admdad(
   n = 10000,
   n_hospitals = 20,
   time_period = c(2015, 2022)

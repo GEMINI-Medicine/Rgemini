@@ -217,6 +217,7 @@ inside the buffer period, `census` and `capacity_ratio` are returned as
 ## Examples
 
 ``` r
+
 ## calculate census of all in-patient admissions (ipadm):
 if (FALSE) { # \dontrun{
 drv <- dbDriver("PostgreSQL")

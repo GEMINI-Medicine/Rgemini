@@ -25,6 +25,7 @@ a ticket on HPC4Health.
 All other users can install the package from GitHub using the following:
 
 ``` r
+
 remotes::install_github("GEMINI-Medicine/Rgemini", dependencies = TRUE)
 ```
 
@@ -59,6 +60,7 @@ Some functions require access to the GEMINI database. With access, the
 functions can be used as follows:
 
 ``` r
+
 library(Rgemini)
 
 # establish DB connection

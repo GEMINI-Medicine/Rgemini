@@ -84,7 +84,32 @@ A list with 2 items:
 
 ``` r
 # create dummy data
-my_data <- Rgemini::dummy_ipadmdad(10000, n_hospitals = 5)
+my_data <- gemSim::dummy_admdad(10000, n_hospitals = 5)
+#> Warning: replacing previous import ‘data.table::isoyear’ by ‘lubridate::isoyear’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘lubridate::year’ by ‘data.table::year’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘lubridate::wday’ by ‘data.table::wday’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘lubridate::quarter’ by ‘data.table::quarter’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘lubridate::yday’ by ‘data.table::yday’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘lubridate::isoweek’ by ‘data.table::isoweek’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘lubridate::week’ by ‘data.table::week’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘lubridate::mday’ by ‘data.table::mday’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘lubridate::minute’ by ‘data.table::minute’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘lubridate::isoyear’ by ‘data.table::isoyear’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘lubridate::hour’ by ‘data.table::hour’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘lubridate::month’ by ‘data.table::month’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘lubridate::second’ by ‘data.table::second’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘data.table::wday’ by ‘lubridate::wday’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘data.table::second’ by ‘lubridate::second’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘data.table::isoweek’ by ‘lubridate::isoweek’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘data.table::yday’ by ‘lubridate::yday’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘data.table::hour’ by ‘lubridate::hour’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘data.table::year’ by ‘lubridate::year’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘data.table::month’ by ‘lubridate::month’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘data.table::week’ by ‘lubridate::week’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘data.table::isoyear’ by ‘lubridate::isoyear’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘data.table::minute’ by ‘lubridate::minute’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘data.table::mday’ by ‘lubridate::mday’ when loading ‘gemSim’
+#> Warning: replacing previous import ‘data.table::quarter’ by ‘lubridate::quarter’ when loading ‘gemSim’
 
 # convert to data.table for easy filtering
 my_data <- data.table::setDT(my_data)
@@ -112,18 +137,18 @@ cohort_data <- my_cohort[[1]]
 
 # print table with N (%) at each inclusion/exclusion step
 print(my_cohort[[2]])
-#>             Cohort creation step Overall N (%)            1           2
-#>     <char>                <char>        <char>       <char>      <char>
-#> 1: Incl. 1 All GEMINI encounters         10000         1991        2022
-#> 2: Incl. 2       Gender = Female  4852 (48.5%) 1053 (52.9%) 956 (47.3%)
-#> 3: Incl. 3              Age > 65  3309 (68.2%)  647 (61.4%) 705 (73.7%)
-#> 4: Excl. 1     In-hospital death  -218 (-6.6%)  -59 (-9.1%) -55 (-7.8%)
-#> 5:                  Final cohort          3091          588         650
+#>             Cohort creation step Overall N (%)           1           2
+#>     <char>                <char>        <char>      <char>      <char>
+#> 1: Incl. 1 All GEMINI encounters         10000        2059        2008
+#> 2: Incl. 2       Gender = Female  4713 (47.1%) 881 (42.8%) 979 (48.8%)
+#> 3: Incl. 3              Age > 65  2986 (63.4%) 510 (57.9%) 745 (76.1%)
+#> 4: Excl. 1     In-hospital death  -203 (-6.8%) -43 (-8.4%) -34 (-4.6%)
+#> 5:                  Final cohort          2783         467         711
 #>               3           4           5
 #>          <char>      <char>      <char>
-#> 1:         2032        1990        1965
-#> 2: 1020 (50.2%) 860 (43.2%)   963 (49%)
-#> 3:  703 (68.9%) 633 (73.6%) 621 (64.5%)
-#> 4:    -42 (-6%) -31 (-4.9%)   -31 (-5%)
-#> 5:          661         602         590
+#> 1:         1996        1933        2004
+#> 2: 1047 (52.5%) 863 (44.6%) 943 (47.1%)
+#> 3:  662 (63.2%)   518 (60%) 551 (58.4%)
+#> 4:  -62 (-9.4%)   -26 (-5%) -38 (-6.9%)
+#> 5:          600         492         513
 ```

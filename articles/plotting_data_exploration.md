@@ -27,22 +27,24 @@ functions that allow for quick data inspection like
 ## Set-up
 
 The plotting examples shown below are based on variables from the
-“ipadmdad” table. Typically, you would query this table from the GEMINI
+“admdad” table. Typically, you would query this table from the GEMINI
 database, but for the purpose of this vignette, we’ll create some dummy
 data using
-[`Rgemini::dummy_ipadmdad()`](https://gemini-medicine.github.io/Rgemini/reference/dummy_ipadmdad.md).
-Here, we are simulating a subset of “ipadmdad” variables for 50,000
+[`gemSim::dummy_admdad()`](https://gemini-medicine.github.io/GEMINI-data-simulation/reference/dummy_admdad.html).
+Here, we are simulating a subset of “admdad” variables for 50,000
 encounters from 12 different hospitals and with discharge dates ranging
 from fiscal years 2018 to 2022:
 
 ``` r
+
 library(Rgemini)
+library(gemSim)
 library(ggplot2)
 library(dplyr)
 library(data.table)
 
 set.seed(999)
-ipadmdad <- dummy_ipadmdad(n = 50000, n_hospitals = 12, time_period = c(2018, 2022)) %>%
+admdad <- dummy_admdad(n = 50000, n_hospitals = 12, time_period = c(2018, 2022)) %>%
   data.table()
 ```
 
@@ -53,7 +55,7 @@ ipadmdad <- dummy_ipadmdad(n = 50000, n_hospitals = 12, time_period = c(2018, 20
 First, let’s use the
 [`plot_summary()`](https://gemini-medicine.github.io/Rgemini/reference/plot_summary.md)
 function to explore the dataset and gain a better understanding of the
-distributions of `ipadmdad` variables in our dummy cohort.
+distributions of `admdad` variables in our dummy cohort.
 
 ### Default plot
 
@@ -67,7 +69,8 @@ variables and % for categorical/character variables. Missing values are
 excluded from all plots and summary statistics.
 
 ``` r
-plot_summary(data = ipadmdad)
+
+plot_summary(data = admdad)
 ```
 
 ![](plotting_data_exploration_files/figure-html/unnamed-chunk-2-1.png)
@@ -79,14 +82,16 @@ explicitly specifying which variables you want to include in the summary
 plot by providing `plot_vars` as a character vector input:
 
 ``` r
-plot_summary(ipadmdad, plot_vars = c("discharge_disposition", "number_of_alc_days"))
+
+plot_summary(admdad, plot_vars = c("discharge_disposition", "number_of_alc_days"))
 ```
 
 … or you could select the variables implicitly by specifying the subset
 of relevant columns like this:**\***
 
 ``` r
-plot_summary(ipadmdad[, .(discharge_disposition, number_of_alc_days)])
+
+plot_summary(admdad[, .(discharge_disposition, number_of_alc_days)])
 ```
 
 ![](plotting_data_exploration_files/figure-html/unnamed-chunk-4-1.png)
@@ -116,8 +121,8 @@ subplot. This can be achieved by providing the variables to be plotted
 as a `list` to specify additional attributes, such as:
 
 - **Variable class:** For example, discharge disposition is of type
-  `numeric` in “ipadmdad”. However, in reality, discharge disposition is
-  a categorical variable so users can specify `class = "character"` to
+  `numeric` in “admdad”. However, in reality, discharge disposition is a
+  categorical variable so users can specify `class = "character"` to
   create a more appropriate plot.
 - **Sorting by frequency (*for categorical variables*):** Categories can
   be sorted according to the frequency of each category level. In the
@@ -136,8 +141,9 @@ as a `list` to specify additional attributes, such as:
 For example:
 
 ``` r
+
 plot_summary(
-  ipadmdad,
+  admdad,
   plot_vars = list(
     `Discharge disposition` = list(plot_var = "discharge_disposition", class = "character", sort = "desc"),
     `# Days in ALC` = list(plot_var = "number_of_alc_days", binwidth = 1, breaks = seq(0, 7, 1))
@@ -159,8 +165,9 @@ grouping variable, such as `"hospital_num"`.
 For example, here we plot gender separately for each hospital:
 
 ``` r
+
 plot_summary(
-  ipadmdad,
+  admdad,
   plot_vars = "gender",
   facet_group = "hospital_num"
 )
@@ -202,8 +209,9 @@ Finally, users can control the following plot characteristics:
 For example:
 
 ``` r
+
 plot_summary(
-  data = ipadmdad[, .(age, gender, alc_service_transfer_flag)],
+  data = admdad[, .(age, gender, alc_service_transfer_flag)],
   prct = TRUE,
   show_stats = FALSE,
   color = "lightgrey",
@@ -256,8 +264,9 @@ function plots the mean of a user-specified `plot_var` (e.g., `age`) by
 hospital and month. For example:
 
 ``` r
+
 plot_over_time(
-  data = ipadmdad,
+  data = admdad,
   plot_var = "age"
 )
 ```
@@ -325,8 +334,9 @@ which category/factor level to plot (by default, the function plots the
 example, to plot the percentage of female encounters:
 
 ``` r
+
 plot_over_time(
-  data = ipadmdad,
+  data = admdad,
   plot_var = "gender",
   plot_cat = "F"
   # func = "%" # not required in this case because gender is a character variable, so the function infers that func should be "%"
@@ -350,8 +360,9 @@ plot the percentage of encounters where
 hospitalizations that resulted in in-hospital death):
 
 ``` r
+
 plot_over_time(
-  data = ipadmdad,
+  data = admdad,
   plot_var = "discharge_disposition",
   func = "%",
   plot_cat = c(7, 72, 73, 74)
@@ -366,14 +377,15 @@ We can also simply plot the number of rows per month \* hospital by
 specifying `func = "n"`. This is a great way to check for potential data
 availability issues (e.g., time periods with 0 rows might reflect gaps
 in data availability). In our example here, the number of rows
-corresponds to the number of unique encounters in `ipadmdad`, but
+corresponds to the number of unique encounters in `admdad`, but
 depending on the table you provide as `data` input, the count of rows
 might reflect other variables, such as total number of pharmacy orders,
 lab tests etc.
 
 ``` r
+
 plot_over_time(
-  data = ipadmdad,
+  data = admdad,
   func = "n"
 )
 ```
@@ -396,8 +408,9 @@ that are either `NA`, `""`, or `" "`. Let’s plot the % of encounters
 with missing ALC flag and rename the y-axis title to `"% Missing ALC"`:
 
 ``` r
+
 plot_over_time(
-  data = ipadmdad,
+  data = admdad,
   plot_var = "alc_service_transfer_flag",
   func = "na"
 ) + labs(y = "% Missing ALC flag")
@@ -421,8 +434,9 @@ For example, we could plot the number of encounters that were discharged
 each fiscal year:
 
 ``` r
+
 plot_over_time(
-  data = ipadmdad,
+  data = admdad,
   func = "n",
   # time_var = "discharge_date_time", # default
   time_int = "fisc_year"
@@ -436,8 +450,9 @@ plot_over_time(
 … or the number of encounters that were admitted each season\*:
 
 ``` r
+
 plot_over_time(
-  data = ipadmdad,
+  data = admdad,
   func = "n",
   time_var = "admission_date_time",
   time_int = "season"
@@ -467,11 +482,12 @@ prior to running the function and then provide it as the `time_int`
 input:
 
 ``` r
+
 library(lubridate)
-ipadmdad[, my_date := as.Date(ymd_hm(admission_date_time))]
+admdad[, my_date := as.Date(ymd_hm(admission_date_time))]
 
 plot_over_time(
-  data = ipadmdad[my_date >= "2020-04-01" & my_date <= "2020-04-30", ],
+  data = admdad[my_date >= "2020-04-01" & my_date <= "2020-04-30", ],
   func = "n",
   time_int = "my_date"
 )
@@ -491,8 +507,9 @@ will be shown as individual lines (default:
 `line_group = "hospital_num"`):
 
 ``` r
+
 plot_over_time(
-  ipadmdad,
+  admdad,
   plot_var = "age",
   facet_group = NULL # ,
   # line_group = "hospital_num" # default
@@ -520,14 +537,15 @@ academic vs. community hospitals. For illustration purposes, a random
 plots:
 
 ``` r
+
 # assign (random) hospital grouping variable
-ipadmdad[, hospital_type := sample(
+admdad[, hospital_type := sample(
   c("Academic", "Community"),
   prob = c(.4, .6), 1, replace = TRUE
 ), by = hospital_num]
 
 plot_over_time(
-  ipadmdad,
+  admdad,
   plot_var = "age",
   color_group = "hospital_type",
   show_overall = FALSE
@@ -556,8 +574,9 @@ different color palette from
 here:
 
 ``` r
+
 plot_over_time(
-  ipadmdad[hospital_num <= 6, ],
+  admdad[hospital_num <= 6, ],
   plot_var = "age",
   color_group = "hospital_num",
   facet_group = NULL,
@@ -578,8 +597,9 @@ site). This means that larger hospitals will contribute more to the
 average than smaller hospitals:
 
 ``` r
+
 plot_over_time(
-  ipadmdad,
+  admdad,
   plot_var = "age",
   color_group = "hospital_type",
   facet_group = NULL
@@ -598,8 +618,9 @@ annotations highlighting the onset of the first COVID-19 wave in March
 2020:
 
 ``` r
+
 plot_over_time(
-  ipadmdad,
+  admdad,
   plot_var = "age",
   line_group = NULL,
   color_group = "hospital_type",
@@ -627,8 +648,9 @@ comparing different hospital types, we could instead specify
 in separate subplots:
 
 ``` r
+
 plot_over_time(
-  ipadmdad,
+  admdad,
   plot_var = "age",
   facet_group = "hospital_type",
   show_overall = TRUE
@@ -658,8 +680,9 @@ total number of encounters at each hospital). Here, we plot this in a 2
 x 6 facet plot with free y scales:
 
 ``` r
+
 plot_over_time(
-  ipadmdad,
+  admdad,
   func = "n",
   time_int = "season",
   nrow = 2,
@@ -695,8 +718,9 @@ cell with `gender == "O"` that has at least 6 data points, so results
 for gender = `"0"` are fully suppressed in this example:
 
 ``` r
+
 plot_over_time(
-  ipadmdad,
+  admdad,
   plot_var = "age",
   line_group = "gender",
   color_group = "gender",
@@ -735,8 +759,9 @@ this case, each month contributes equally to the trend line, regardless
 of number of data points).
 
 ``` r
+
 plot_over_time(
-  ipadmdad,
+  admdad,
   plot_var = "age",
   smooth_method = "auto"
 )
@@ -756,8 +781,9 @@ overall data points aggregated across the whole dataset) in a single
 plot. Here, we plot a linear trend for illustration purposes:
 
 ``` r
+
 plot_over_time(
-  ipadmdad,
+  admdad,
   plot_var = "age",
   facet_group = NULL,
   line_group = NULL,
@@ -781,8 +807,9 @@ packages/apply further customization to the plots.
 To retrieve the aggregated data, simply specify `return_data = TRUE`:
 
 ``` r
+
 res <- plot_over_time(
-  ipadmdad,
+  admdad,
   color_group = "hospital_type",
   func = "median",
   plot_var = "age",
@@ -801,17 +828,18 @@ here we grouped by `line_group = "hospital_num"` (default) and
 `color_group = "hospital_type"` so the output will look like this:
 
 ``` r
+
 knitr::kable(head(res[[1]]))
 ```
 
 | discharge_month | hospital_num | hospital_type | median_age |   n |
 |:----------------|-------------:|:--------------|-----------:|----:|
-| 2018-04-01      |            1 | Academic      |       73.0 |  73 |
-| 2018-04-01      |            2 | Community     |       73.0 |  73 |
-| 2018-04-01      |            3 | Academic      |       83.0 |  57 |
-| 2018-04-01      |            4 | Academic      |       73.0 |  71 |
-| 2018-04-01      |            5 | Community     |       68.5 |  78 |
-| 2018-04-01      |            6 | Community     |       78.0 |  73 |
+| 2018-01-01      |            1 | Academic      |       78.5 |  80 |
+| 2018-01-01      |            2 | Community     |       72.0 |  69 |
+| 2018-01-01      |            3 | Community     |       79.0 |  69 |
+| 2018-01-01      |            4 | Community     |       72.0 |  62 |
+| 2018-01-01      |            5 | Community     |       77.0 |  75 |
+| 2018-01-01      |            6 | Community     |       70.0 |  66 |
 
  
 
@@ -821,17 +849,18 @@ only groups by time interval and `color_group` (if any), such as
 `hospital_type` in our example:
 
 ``` r
+
 knitr::kable(head(res[[2]]))
 ```
 
 | discharge_month | hospital_type | median_age |   n |
 |:----------------|:--------------|-----------:|----:|
-| 2018-04-01      | Academic      |         80 | 335 |
-| 2018-04-01      | Community     |         76 | 500 |
-| 2018-05-01      | Academic      |         77 | 349 |
-| 2018-05-01      | Community     |         77 | 520 |
-| 2018-06-01      | Academic      |         77 | 363 |
-| 2018-06-01      | Community     |         75 | 473 |
+| 2018-01-01      | Academic      |         75 | 335 |
+| 2018-01-01      | Community     |         74 | 481 |
+| 2018-02-01      | Academic      |         73 | 308 |
+| 2018-02-01      | Community     |         76 | 456 |
+| 2018-03-01      | Academic      |         70 | 337 |
+| 2018-03-01      | Community     |         77 | 498 |
 
  
 
@@ -851,8 +880,9 @@ aesthetics. For example, if we apply `ggplotly` to the default
 the legend position has been moved to the top right:
 
 ``` r
+
 library(plotly)
-ggplotly(plot_over_time(data = ipadmdad, plot_var = "age"))
+ggplotly(plot_over_time(data = admdad, plot_var = "age"))
 ```
 
  
@@ -862,8 +892,9 @@ run `plotly::layout()` to achieve the desired aesthetics. For example,
 to move the “Discharge Month” label and change the legend position:
 
 ``` r
+
 # create plot
-my_plot <- plot_over_time(data = ipadmdad, plot_var = "age")
+my_plot <- plot_over_time(data = admdad, plot_var = "age")
 
 # adjust space for x-axis title
 my_plot <- my_plot + labs(x = "\nDischarge Month")

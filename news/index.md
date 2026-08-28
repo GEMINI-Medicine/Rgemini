@@ -1,8 +1,67 @@
 # Changelog
 
+## Rgemini `3.0.0`
+
+**Enhancements for `drm_cleandb_v5`/`gemini_h4h_template_v6`**
+
+- Updated
+  [`neighbourhood_ses()`](https://gemini-medicine.github.io/Rgemini/reference/neighbourhood_ses.md)
+  to handle updated database versions
+- Updated
+  [`n_rbc_transfusions()`](https://gemini-medicine.github.io/Rgemini/reference/n_rbc_transfusions.md)
+  to include validated data from sites 105 & 106 in calculations
+- Updated
+  [`data_coverage()`](https://gemini-medicine.github.io/Rgemini/reference/data_coverage.md)
+  to support cohort specific coverage checks for adult and paediatric
+  cohorts
+- Updated
+  [`mlaps()`](https://gemini-medicine.github.io/Rgemini/reference/mlaps.md)
+  calculation to exclude arterial blood gas point-of-care tests
+- Updated
+  [`neighbourhood_ses()`](https://gemini-medicine.github.io/Rgemini/reference/neighbourhood_ses.md)
+  to return `rurality` variable
+
+**New functions**:
+
+- Added
+  [`temp_table()`](https://gemini-medicine.github.io/Rgemini/reference/temp_table.md)
+  utility function that writes temporary tables to improve query
+  efficiency
+
+**New unit tests**
+
+- Added new unit tests for `find_db_table_name()`,
+  [`return_hospital_field()`](https://gemini-medicine.github.io/Rgemini/reference/return_hospital_field.md),
+  [`n_imaging()`](https://gemini-medicine.github.io/Rgemini/reference/n_imaging.md),
+  `n_rbc_transfusions`, `n_routine_bloodwork`
+
+**Miscellaneous**:
+
+- Updated
+  [`check_input()`](https://gemini-medicine.github.io/Rgemini/reference/check_input.md)
+  and functions with `dbcon` input to accommodate `RPostgres`,
+  `PostgreSQL`, and `odbc` connections
+- Changed DB input argument name in
+  [`loop_mlaps()`](https://gemini-medicine.github.io/Rgemini/reference/loop_mlaps.md)
+  from `db` to `dbcon`
+- Enhanced
+  [`find_db_tablename()`](https://gemini-medicine.github.io/Rgemini/reference/find_db_tablename.md)
+  to only search public schema
+- Updated
+  [`data_coverage()`](https://gemini-medicine.github.io/Rgemini/reference/data_coverage.md)
+  to make `cohort` input optional
+- Minor fix to
+  [`plot_theme()`](https://gemini-medicine.github.io/Rgemini/reference/plot_theme.md)
+  to ensure white plot background
+- Deprecated dummy functions that have been migrated to
+  [`gemSim`](https://github.com/GEMINI-Medicine/gemSim)
+- Minor bug fixes for
+  [`covid_surge_index()`](https://gemini-medicine.github.io/Rgemini/reference/covid_surge_index.md)
+
 ## Rgemini `2.0.0`
 
 - **Addition of RxNorm functions**:
+
   - [`rxnorm_query()`](https://gemini-medicine.github.io/Rgemini/reference/rxnorm_query.md)
     to identify drugs of interest from pharmacy table
   - [`prepare_pharm_for_validation()`](https://gemini-medicine.github.io/Rgemini/reference/prepare_pharm_for_validation.md)
@@ -22,7 +81,9 @@
           mappings
         - Pharmacy mapping DB no longer queried, but can be provided as
           `custom_lookup` input
+
 - **Other new functions**:
+
   - [`covid_surge_index()`](https://gemini-medicine.github.io/Rgemini/reference/covid_surge_index.md)
     function that calculates the COVID surge index by hospital-month
   - [`cci_group()`](https://gemini-medicine.github.io/Rgemini/reference/cci_group.md)
@@ -30,10 +91,14 @@
     subsections
   - [`cci_search()`](https://gemini-medicine.github.io/Rgemini/reference/cci_search.md)
     to identify CCI codes for interventions of interest
+
 - **Testing improvements:**
+
   - Unit tests are now also run in Python via rpy2 to ensure
     cross-language compatibility
+
 - **Bug fixes**
+
   - Fixed
     [`render_cell_suppression.strat()`](https://gemini-medicine.github.io/Rgemini/reference/render_cell_suppression.strat.md)
     to be compatible with table1 version 1.5.0
@@ -45,7 +110,9 @@
     for `hospital_num` class
   - Removed repeated warning messages in
     [`loop_mlaps()`](https://gemini-medicine.github.io/Rgemini/reference/loop_mlaps.md)
+
 - **Miscellaneous**:
+
   - Removed age exclusion in
     [`episodes_of_care()`](https://gemini-medicine.github.io/Rgemini/reference/episodes_of_care.md)
     to accommodate paeds cohort
@@ -62,6 +129,7 @@
 ## Rgemini `1.1.0`
 
 - **New functions:**
+
   - [`data_coverage()`](https://gemini-medicine.github.io/Rgemini/reference/data_coverage.md)
     function to facilitate data coverage checks
   - [`cohort_creation()`](https://gemini-medicine.github.io/Rgemini/reference/cohort_creation.md)
@@ -77,7 +145,9 @@
       to find the number of unique and common elements in two sets
     - [`create_ntiles()`](https://gemini-medicine.github.io/Rgemini/reference/create_ntiles.md)
       to bin numeric variables into user-specified quantiles
+
 - **Function enhancements:**
+
   - Added option to return readmission `genc_id` in
     [`readmission()`](https://gemini-medicine.github.io/Rgemini/reference/readmission.md)
     function
@@ -90,7 +160,9 @@
   - Enabled custom line color without specifying color grouping variable
     in
     [`plot_over_time()`](https://gemini-medicine.github.io/Rgemini/reference/plot_over_time.md)
+
 - **Documentation updates:**
+
   - Added pre-commit hooks: Run `styler` and check for
     [`browser()`](https://rdrr.io/r/base/browser.html) statements &
     large files
