@@ -95,4 +95,5 @@ reference:
   - matches("ni")
   - normalize_text
   - return_hospital_field
+  - temp_table
   - quiet

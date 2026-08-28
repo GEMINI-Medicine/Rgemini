@@ -6,31 +6,7 @@
 \usage{
 dummy_lab(id, omop, value, unit, mintime)
 }
-\arguments{
-\item{id}{(\code{numeric})\cr
-A single identifier that is repeated to match the length of \code{value}.}
-
-\item{omop}{(\code{character})\cr
-Codes corresponding to OMOP concept identifiers.}
-
-\item{value}{(\code{numeric})\cr
-Simulated result values for each lab test measurement.}
-
-\item{unit}{(\code{character})\cr
-Units corresponding to the particular lab test as defined by \code{omop}. It is repeated to match the length of \code{value}.}
-
-\item{mintime}{(\code{character})\cr
-In the format yyyy-mm-dd hh:mm. Earliest recorded test performed time.}
-}
-\value{
-(\code{data.table})\cr
-With the columns, \code{id}, \code{omop}, \code{value}, \code{unit}, and \code{collection_date_time} as described above.
-}
 \description{
-Designed to mimic the most important elements of the GEMINI lab table as defined in the
-\href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.
-}
-\examples{
-lab <- dummy_lab(1, 3024641, c(7, 8, 15, 30), "mmol/L", "2023-01-02 08:00")
-
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+Deprecated in Rgemini version 3.0.0.
 }

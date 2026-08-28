@@ -167,7 +167,10 @@ find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
   # if there is schema_name is public that means no materialized view
   if (schema_name == "public") {
     ## Find all table names and run search as defined above
-    tables <- dbListTables(dbcon)
+    tables <- dbGetQuery(
+      dbcon, "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public'"
+    )[[1]]
+
     table_name <- search_fn(tables)
 
     ## If none found, might be due to DB versions with foreign data wrappers
@@ -177,18 +180,18 @@ find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
         dbcon,
         "SELECT table_name from information_schema.tables
       WHERE table_type='FOREIGN' and table_schema='public';"
-      )$table_name
+      )[[1]]
       table_name <- search_fn(tables)
     }
   } else { # This is when there are materialized views under a given schema
-    dbSendQuery(dbcon, paste0("Set schema '", schema_name, "';")) # Set the right schema
+    dbExecute(dbcon, paste0("Set schema '", schema_name, "';")) # Set the right schema
 
     tables <- dbGetQuery(
       dbcon,
       "SELECT matviewname AS table_name,
        schemaname AS schema_name
     FROM pg_matviews;"
-    )$table_name
+    )[[1]]
     table_name <- search_fn(tables)
   }
 
@@ -202,7 +205,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
   # error if no table found
   if (length(table_name) == 0) {
     stop(paste0(
-      "No table corresponding to '", drm_table, " under schema '", schema_name,
+      "No table corresponding to '", drm_table, "' under schema '", schema_name,
       "' identified in database '", db_name, "'.
       Please make sure your database contains the relevant table/view."
     ))
@@ -212,7 +215,7 @@ find_db_tablename <- function(dbcon, drm_table, verbose = FALSE) {
   if (length(table_name) > 1) {
     stop(paste0(
       "Multiple tables/views corresponding to '", drm_table, "' under schema '", schema_name,
-      "' identified in database '", db_name, ": ",
+      "' identified in database '", db_name, "': ",
       paste0(table_name, collapse = ", "), ".
       Please ensure that the searched table/view name results in a unique match."
     ))
@@ -454,14 +457,13 @@ check_input <- function(arginput, argtype,
     ###### CHECK 1 (for all input types): Check if type is correct
     ## For DB connections
     if (any(grepl("dbi|con|posgre|sql", argtype, ignore.case = TRUE))) {
-      if (inherits(arginput, "OdbcConnection") || !grepl("PostgreSQL", class(arginput)[1])) {
+      if (!grepl("PostgreSQL|PqConnection", class(arginput)[1])) {
         stop(
           paste0(
             "Invalid user input in '",
             as.character(sys.calls()[[1]])[1], "': '",
-            argname, "' needs to be a valid PostgreSQL database connection.\n",
-            "Database connections established with `odbc` are currently not supported.\n",
-            "Instead, please use the following method to establish a DB connection:\n",
+            argname, "' needs to be a valid PostgreSQL/RPostgres/odbc database connection.\n",
+            "We recommend using the following method to establish a DB connection:\n",
             "drv <- dbDriver('PostgreSQL')\n",
             "dbcon <- DBI::dbConnect(drv, dbname = 'db_name', ",
             "host = 'domain_name.ca', port = 1234, ",
@@ -470,8 +472,14 @@ check_input <- function(arginput, argtype,
           ),
           call. = FALSE
         )
-      } else if (!RPostgreSQL::isPostgresqlIdCurrent(arginput)) {
-        # if PostgreSQL connection, make sure it's still active
+      } else if (!tryCatch( # check if DB connection is still active and can be queried
+        {
+          DBI::dbGetQuery(arginput, "SELECT 1") # minimal query as test
+          TRUE
+        },
+        error = function(e) FALSE
+      )) {
+        # if DB connection, make sure it's still active
         stop(
           paste0(
             "Please make sure your database connection is still active.\n",
@@ -1031,8 +1039,10 @@ create_ntiles <- function(x, n) {
 }
 
 
+#' @title
 #' Normalize string values
 #'
+#' @description
 #' This function performs a series of text cleaning and normalization on text data.
 #' For example, it is used in `prepare_pharm_for_validation()` to clean up RxNorm outputs for validation.
 #' The operations include:
@@ -1063,4 +1073,88 @@ normalize_text <- function(x, lemma = FALSE) {
     x <- textstem::lemmatize_words(x)
   }
   return(x)
+}
+
+
+#' @title
+#' Write temp tables
+#'
+#' @description
+#' This function writes temporary tables to the database to improve query
+#' efficiency.
+#' Temporary tables are automatically removed once the user disconnects from the
+#' database.
+#'
+#' @param dbcon (`DBIConnection`)\cr
+#' A database connection to any GEMINI database.
+#'
+#' @param data (`data.table` or `data.frame`)\cr
+#' Data table to be written to DB as temp table.
+#'
+#' @param table_name (`data.table` or `data.frame`)\cr
+#' Name of temporary table in DB (default = "rgemini_temp_table").
+#'
+#' @param analyze (`logical`)\cr
+#' Whether or not to use SQL Analyze statement to further improve
+#' query efficiency (recommended).
+#'
+#' @import DBI
+#' @export
+#' @examples
+#' \dontrun{
+#' temp_table(dbcon, data.table(genc_id = c(1, 2, 3)))
+#' }
+temp_table <- function(dbcon, data, table_name = "rgemini_temp_table", analyze = TRUE) {
+  # check inputs
+  check_input(dbcon, "DBI")
+  check_input(data, c("data.table", "data.frame"))
+  check_input(table_name, "character", length = 1)
+
+  # suppress notice message about temp table
+  quiet(dbExecute(dbcon, "SET client_min_messages TO WARNING"))
+
+  # show custom note if temp table already exists
+  # (unless default Rgemini temp table name is used to avoid repeat warnings
+  # when running Rgemini functions)
+  tbl_exist <- dbGetQuery(dbcon, paste0("
+    SELECT EXISTS (
+      SELECT 1
+      FROM pg_tables
+      WHERE schemaname LIKE 'pg_temp_%'
+      AND tablename = '", table_name, "');")) == TRUE
+  if (tbl_exist && table_name != "rgemini_temp_table") {
+    cat(paste0(
+      "\nNote: Temporary table '", table_name,
+      "' already exists and will be overwritten.\n"
+    ))
+  }
+
+  # drop temp table if it already exists (under temp tables)
+  quiet(dbExecute(dbcon, paste("Drop table if exists pg_temp.", table_name, ";")))
+
+  if (grepl("PostgreSQL", class(dbcon), ignore.case = TRUE) && !inherits(dbcon, "OdbcConnection")) {
+    dbWriteTable(
+      dbcon,
+      name = c("pg_temp", table_name),
+      value = data,
+      row.names = FALSE,
+      overwrite = TRUE,
+      temporary = TRUE
+    )
+  } else {
+    dbWriteTable(
+      dbcon,
+      name = table_name,
+      value = data,
+      row.names = FALSE,
+      overwrite = TRUE,
+      temporary = TRUE
+    )
+  }
+
+  # reset messages being printed
+  quiet(dbExecute(dbcon, "RESET client_min_messages"))
+
+  # run analyze
+  quiet(dbExecute(dbcon, paste("Analyze ", table_name)))
 }

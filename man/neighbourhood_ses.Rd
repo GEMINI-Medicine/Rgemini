@@ -29,27 +29,38 @@ columns:
 \item The user-provided census year: \code{census_year} (2016 or 2021)
 \item DA the encounter resides in (based on PCCF+): \code{da_uid}
 \item Neighbourhood-level income (continuous):
+\itemize{
 \item \code{atippe} (neighbourhood after tax income per single person equivalent)
 \item \code{btippe} (neighbourhood before tax income per single person equivalent)
+}
 \item Neighbourhood-level income (quintiles from PCCF+):
+\itemize{
 \item \code{qnatippe} and \code{qnbtippe}: Quintiles of \code{atippe} and \code{btippe} calculated
 based on \emph{national} income distribution
 \item \code{qaatippe} and \code{qabtippe}: Quintiles of \code{atippe} and \code{btippe} calculated
 based on distribution within a given community (based on census metropolitan
 area, census agglomeration, or residual area within each province).
+}
 \item \% visible minorities: \code{vismin_pct}
 \item \% with immigrant status: \code{immsta_pct}
 \item \% with post-secondary education:
+\itemize{
 \item Including all respondents > 15 years of age: \code{ed_15over_postsec_pct}
 \item Only including respondents between 25-64 years: \code{ed_25to64_postsec_pct}
+}
+\item \code{rurality} (based on  PCCF+): TRUE if neighbourhood is classified as rural (i.e. \code{csize} = 5)
 \item Ontario Marginalization Index (continuous):
+\itemize{
 \item If \code{census_year} = 2021: \code{households_dwellings}, \code{material_resources},
-\code{age_labourforce}, \code{racialized_NC_pop}
+\code{age_labourforce}, \code{racialized_nc_pop}
 \item If \code{census_year} = 2016: \code{instability}, \code{deprivation}, \code{dependency},
 \code{ethniccon}
+}
 \item Ontario Marginalization Index (quintiles):
+\itemize{
 \item All ON-Marg variables are additionally returned as quintiles, as indicated
 by the suffix \verb{_q} (e.g., \code{households_dwellings_q})
+}
 }
 }
 \description{
@@ -79,24 +90,38 @@ The \code{neighbourhood_ses()} function currently returns the following census
 variables:
 \itemize{
 \item \href{https://www12.statcan.gc.ca/census-recensement/2021/ref/dict/az/definition-eng.cfm?ID=pop123}{\strong{Income}}:
+\itemize{
 \item Statistics Canada sources information about household income from the Canadian Revenue Agency
 \item PCCF+ provides an income per person equivalent (IPPE) by adjusting household income by household size
 \item Both continuous income and national/community quintiles are returned
+}
 \item \href{https://www12.statcan.gc.ca/census-recensement/2021/ref/dict/az/Definition-eng.cfm?ID=pop038}{\strong{Education}}:
+\itemize{
 \item Indicates a person's highest level of education: Based on the long-form census questionnaire,
 which is only administered to 25\% of households
 \item The function returns the \% of respondents with a post-secondary certificate, diploma, or degree
+}
 \item \href{https://www12.statcan.gc.ca/census-recensement/2021/ref/98-500/006/98-500-x2021006-eng.cfm}{\strong{Visible minorities}}:
+\itemize{
 \item Indicates whether a person identifies as a visible minority, defined as follows by
 the Employment Equity Act: “persons, other than Aboriginal peoples, who are non-Caucasian in
 race or non-white in colour” (e.g., Black, South Asian, Chinese, Latin American etc.)
 \item Based on the long-form census questionnaire, which is only administered
 to 25\% of households
+}
 \item \href{https://www12.statcan.gc.ca/census-recensement/2021/ref/dict/az/Definition-eng.cfm?ID=pop148}{\strong{Immigrant status}}:
+\itemize{
 \item Indicates whether a person is, or has ever been, a landed immigrant or permanent resident
 in Canada. This indludes those who have obtained Canadian citizenship by naturalization.
 \item In 2021 census: Sourced from Immigration, Refugees and Citizenship Canada
 \item In 2016 census: Based on the long-form questionnaire (25\% of households)
+}
+\item \href{https://publications.gc.ca/collections/Collection/Statcan/21-006-X/21-006-XIE2001003.pdf}{\strong{Rurality}}:
+\itemize{
+\item Indicates whether a neighbourhood is in a town or municipality outside the commuting zone of urban centres with population 10,000 or more
+\item Derived from the community size variable (csize = 5) from Statistics Canada's 2021 PCCF+ linkage
+\item Only available for census year 2021
+}
 }
 }
 
@@ -161,14 +186,20 @@ neighbourhood_ses_table <- neighbourhood_ses(dbcon, cohort, 2021)
 \references{
 \itemize{
 \item \strong{Statistics Canada Census}
+\itemize{
 \item 2021 Census: https://www12.statcan.gc.ca/census-recensement/2021/ref/index-eng.cfm
 \item 2016 Census: https://www12.statcan.gc.ca/census-recensement/2016/ref/index-eng.cfm
+}
 \item \strong{Ontario Maginalization Index}
+\itemize{
 \item ON-Marg 2021: https://www.publichealthontario.ca/-/media/documents/o/2017/on-marg-userguide.pdf
 \item ON-Marg 2016: https://www.publichealthontario.ca/-/media/documents/U/2018/userguide-on-marg.pdf
 \item Additional information from Public Health Ontario: https://www.publichealthontario.ca/-/media/Event-Presentations/2023/09/ontario-marginalization-index-updates-products.pdf?rev=07baae2569164c17abaa18464075aa20&sc_lang=en
+}
 \item \strong{PCCF+}
+\itemize{
 \item PCCF+ Reference Guide: https://library.carleton.ca/sites/default/files/2023-03/PCCF\%2BUserguide-2021.pdf
 \item Measuring Health Inequalities - A Toolkit: https://www.cihi.ca/sites/default/files/document/toolkit-area-level-measurement-pccf-en.pdf
+}
 }
 }

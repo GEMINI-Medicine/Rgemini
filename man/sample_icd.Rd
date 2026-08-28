@@ -6,50 +6,7 @@
 \usage{
 sample_icd(n = 1, source = "comorbidity", dbcon = NULL, pattern = NULL)
 }
-\arguments{
-\item{n}{(\code{integer})\cr Number of ICD codes to simulate.}
-
-\item{source}{(\code{string})\cr The source of the ICD coding to sample from.
-Default to "comorbidity" the 2011 version of ICD-10 codes implemented in
-the R \href{https://ellessenne.github.io/comorbidity/index.html}{comorbidity} package.
-If \code{source} is \code{icd_lookup}, ICD-10-CA codes will be sampled from the
-\code{lookup_icd10_ca_description} table in the GEMINI database,
-see details in the \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI Data Repository Dictionary}.}
-
-\item{dbcon}{(\code{DBIConnection})\cr
-A database connection to any GEMINI database. Required when \code{source} is \code{icd_lookup}.}
-
-\item{pattern}{(\code{string})\cr A valid regex expression that specifies the
-desired pattern that the returned ICD codes should be matched with.}
-}
-\value{
-(\code{vector})\cr A vector of ICD diagnostic codes.
-}
 \description{
-This function simulates ICD-10 diagnosis codes at random or by user specified pattern.
-}
-\examples{
-### Simulate 100 ICD-10 codes based on the 2011 version.
-\dontrun{
-sample_icd(100, source = "comorbidity")
-}
-
-### Simulate 100 ICD-10 codes starting with "C2" or "E10" based on the 2011 version.
-\dontrun{
-sample_icd(100, source = "comorbidity", pattern = "^C2|^E10")
-}
-
-### Simulate 50 ICD-10-CA codes based on codes found in the `lookup_icd10_ca_description` table
-\dontrun{
-drv <- dbDriver("PostgreSQL")
-dbcon <- DBI::dbConnect(drv,
-  dbname = "db",
-  host = "domain_name.ca",
-  port = 1234,
-  user = getPass("Enter user:"),
-  password = getPass("password")
-)
-sample_icd(50, source = "icd_lookup", dbcon = dbcon)
-}
-
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+Deprecated in Rgemini version 3.0.0.
 }

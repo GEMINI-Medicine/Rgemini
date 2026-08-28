@@ -46,16 +46,17 @@ The functions introduced here can be used to complement other (base R) functions
 
 # Set-up
 
-The plotting examples shown below are based on variables from the "ipadmdad" table. Typically, you would query this table from the GEMINI database, but for the purpose of this vignette, we'll create some dummy data using `Rgemini::dummy_ipadmdad()`. Here, we are simulating a subset of "ipadmdad" variables for 50,000 encounters from 12 different hospitals and with discharge dates ranging from fiscal years 2018 to 2022:
+The plotting examples shown below are based on variables from the "admdad" table. Typically, you would query this table from the GEMINI database, but for the purpose of this vignette, we'll create some dummy data using `gemSim::dummy_admdad()`. Here, we are simulating a subset of "admdad" variables for 50,000 encounters from 12 different hospitals and with discharge dates ranging from fiscal years 2018 to 2022:
 
 ```{r}
 library(Rgemini)
+library(gemSim)
 library(ggplot2)
 library(dplyr)
 library(data.table)
 
 set.seed(999)
-ipadmdad <- dummy_ipadmdad(n = 50000, n_hospitals = 12, time_period = c(2018, 2022)) %>%
+admdad <- dummy_admdad(n = 50000, n_hospitals = 12, time_period = c(2018, 2022)) %>%
   data.table()
 ```
 
@@ -64,14 +65,14 @@ ipadmdad <- dummy_ipadmdad(n = 50000, n_hospitals = 12, time_period = c(2018, 20
 
 # Summary plots {#plot_summary}
 
-First, let's use the `plot_summary()` function to explore the dataset and gain a better understanding of the distributions of `ipadmdad` variables in our dummy cohort.
+First, let's use the `plot_summary()` function to explore the dataset and gain a better understanding of the distributions of `admdad` variables in our dummy cohort.
 
 ## Default plot
 
 By default, `plot_summary()` creates histograms/barplots for all relevant variables in the `data` input (ignoring any encounter/patient/physician IDs and date-time variables). It will also show some basic descriptive stats, such as % missing (`NA`/`""`/`" "`), as well as median [Q1, Q3] for continuous variables and % for categorical/character variables. Missing values are excluded from all plots and summary statistics.
 
 ```{r, fig.height = 7, fig.width = 7.5}
-plot_summary(data = ipadmdad)
+plot_summary(data = admdad)
 ```
 
 &nbsp;
@@ -79,13 +80,13 @@ plot_summary(data = ipadmdad)
 If your `data` input contains a large number of variables, we recommend explicitly specifying which variables you want to include in the summary plot by providing `plot_vars` as a character vector input:
 
 ```{r, eval = FALSE, fig.height = 4, fig.width = 7.5}
-plot_summary(ipadmdad, plot_vars = c("discharge_disposition", "number_of_alc_days"))
+plot_summary(admdad, plot_vars = c("discharge_disposition", "number_of_alc_days"))
 ```
 
 ... or you could select the variables implicitly by specifying the subset of relevant columns like this:<strong style="color:red;">*</strong>
 
 ```{r, fig.height = 4, fig.width = 7.5}
-plot_summary(ipadmdad[, .(discharge_disposition, number_of_alc_days)])
+plot_summary(admdad[, .(discharge_disposition, number_of_alc_days)])
 ```
 
 &nbsp;
@@ -101,7 +102,7 @@ In general, date-time variables should be avoided in `plot_summary()` unless the
 
 The default plots provide a quick and easy way of exploring the data, but you may want to have finer control over the characteristics of each subplot. This can be achieved by providing the variables to be plotted as a `list` to specify additional attributes, such as:
 
-- **Variable class:** For example, discharge disposition is of type `numeric` in "ipadmdad". However, in reality, discharge disposition is a categorical variable so users can specify `class = "character"` to create a more appropriate plot.
+- **Variable class:** For example, discharge disposition is of type `numeric` in "admdad". However, in reality, discharge disposition is a categorical variable so users can specify `class = "character"` to create a more appropriate plot.
 - **Sorting by frequency (*for categorical variables*):** Categories can be sorted according to the frequency of each category level. In the example below, we sort discharge disposition by descending frequency.
 - **Histogram bins & breaks (*for continuous variables*):** For example, we may want to plot ALC days with `binwidth = 1` and only show data points up to 7 days by specifying `breaks = seq(0, 7, 1)`.
 - **Normal distribution (*for continuous variables*):** By default, `plot_summary` will show medians [Q1, Q3] for continuous variables. For normally distributed variables, users can specify `normal = TRUE` to obtain means [SD] instead.
@@ -111,7 +112,7 @@ For example:
 
 ```{r, fig.height = 4, fig.width = 7.5}
 plot_summary(
-  ipadmdad,
+  admdad,
   plot_vars = list(
     `Discharge disposition` = list(plot_var = "discharge_disposition", class = "character", sort = "desc"),
     `# Days in ALC` = list(plot_var = "number_of_alc_days", binwidth = 1, breaks = seq(0, 7, 1))
@@ -130,7 +131,7 @@ For example, here we plot gender separately for each hospital:
 
 ```{r}
 plot_summary(
-  ipadmdad,
+  admdad,
   plot_vars = "gender",
   facet_group = "hospital_num"
 )
@@ -160,7 +161,7 @@ For example:
 
 ```{r fig.height = 4, fig.width = 7.5}
 plot_summary(
-  data = ipadmdad[, .(age, gender, alc_service_transfer_flag)],
+  data = admdad[, .(age, gender, alc_service_transfer_flag)],
   prct = TRUE,
   show_stats = FALSE,
   color = "lightgrey",
@@ -193,7 +194,7 @@ By default, the `plot_over_time()` function plots the mean of a user-specified `
 
 ```{r}
 plot_over_time(
-  data = ipadmdad,
+  data = admdad,
   plot_var = "age"
 )
 ```
@@ -232,7 +233,7 @@ For categorical variables, the function plots percentages (`func = "prct"`). Use
 
 ```{r}
 plot_over_time(
-  data = ipadmdad,
+  data = admdad,
   plot_var = "gender",
   plot_cat = "F"
   # func = "%" # not required in this case because gender is a character variable, so the function infers that func should be "%"
@@ -247,7 +248,7 @@ If we wanted to plot `discharge_disposition`, which is of class `integer`, the f
 
 ```{r}
 plot_over_time(
-  data = ipadmdad,
+  data = admdad,
   plot_var = "discharge_disposition",
   func = "%",
   plot_cat = c(7, 72, 73, 74)
@@ -257,11 +258,11 @@ plot_over_time(
 
 &nbsp;
 
-We can also simply plot the number of rows per month * hospital by specifying `func = "n"`. This is a great way to check for potential data availability issues (e.g., time periods with 0 rows might reflect gaps in data availability). In our example here, the number of rows corresponds to the number of unique encounters in `ipadmdad`, but depending on the table you provide as `data` input, the count of rows might reflect other variables, such as total number of pharmacy orders, lab tests etc.
+We can also simply plot the number of rows per month * hospital by specifying `func = "n"`. This is a great way to check for potential data availability issues (e.g., time periods with 0 rows might reflect gaps in data availability). In our example here, the number of rows corresponds to the number of unique encounters in `admdad`, but depending on the table you provide as `data` input, the count of rows might reflect other variables, such as total number of pharmacy orders, lab tests etc.
 
 ```{r}
 plot_over_time(
-  data = ipadmdad,
+  data = admdad,
   func = "n"
 )
 ```
@@ -276,7 +277,7 @@ Finally, `plot_over_time()` can also be used to plot the percentage of missing d
 
 ```{r}
 plot_over_time(
-  data = ipadmdad,
+  data = admdad,
   plot_var = "alc_service_transfer_flag",
   func = "na"
 ) + labs(y = "% Missing ALC flag")
@@ -293,7 +294,7 @@ For example, we could plot the number of encounters that were discharged each fi
 
 ```{r}
 plot_over_time(
-  data = ipadmdad,
+  data = admdad,
   func = "n",
   # time_var = "discharge_date_time", # default
   time_int = "fisc_year"
@@ -306,7 +307,7 @@ plot_over_time(
 
 ```{r}
 plot_over_time(
-  data = ipadmdad,
+  data = admdad,
   func = "n",
   time_var = "admission_date_time",
   time_int = "season"
@@ -326,10 +327,10 @@ Note that users can in principle specify any custom time interval as long as thi
 
 ```{r}
 library(lubridate)
-ipadmdad[, my_date := as.Date(ymd_hm(admission_date_time))]
+admdad[, my_date := as.Date(ymd_hm(admission_date_time))]
 
 plot_over_time(
-  data = ipadmdad[my_date >= "2020-04-01" & my_date <= "2020-04-30", ],
+  data = admdad[my_date >= "2020-04-01" & my_date <= "2020-04-30", ],
   func = "n",
   time_int = "my_date"
 )
@@ -343,7 +344,7 @@ In all plots shown above, individual hospitals are shown in different subplots. 
 
 ```{r fig.height = 4, fig.width = 6}
 plot_over_time(
-  ipadmdad,
+  admdad,
   plot_var = "age",
   facet_group = NULL # ,
   # line_group = "hospital_num" # default
@@ -362,13 +363,13 @@ Users can apply an additional layer of grouping based on color. For example, you
 
 ```{r}
 # assign (random) hospital grouping variable
-ipadmdad[, hospital_type := sample(
+admdad[, hospital_type := sample(
   c("Academic", "Community"),
   prob = c(.4, .6), 1, replace = TRUE
 ), by = hospital_num]
 
 plot_over_time(
-  ipadmdad,
+  admdad,
   plot_var = "age",
   color_group = "hospital_type",
   show_overall = FALSE
@@ -385,7 +386,7 @@ Another application of `color_group` could be to plot all individual hospitals i
 
 ```{r fig.height = 4, fig.width = 6}
 plot_over_time(
-  ipadmdad[hospital_num <= 6, ],
+  admdad[hospital_num <= 6, ],
   plot_var = "age",
   color_group = "hospital_num",
   facet_group = NULL,
@@ -399,7 +400,7 @@ Similarly, we could plot all academic & community hospitals in a single plot and
 
 ```{r fig.height = 4, fig.width = 6}
 plot_over_time(
-  ipadmdad,
+  admdad,
   plot_var = "age",
   color_group = "hospital_type",
   facet_group = NULL
@@ -412,7 +413,7 @@ If this plot is too busy and you simply want to illustrate the aggregated result
 
 ```{r fig.height = 4, fig.width = 6}
 plot_over_time(
-  ipadmdad,
+  admdad,
   plot_var = "age",
   line_group = NULL,
   color_group = "hospital_type",
@@ -432,7 +433,7 @@ Instead of using color coding to add grouping variables, we can also specify a `
 
 ```{r, fig.height = 4, fig.width = 8}
 plot_over_time(
-  ipadmdad,
+  admdad,
   plot_var = "age",
   facet_group = "hospital_type",
   show_overall = TRUE
@@ -453,7 +454,7 @@ Users can provide additional input arguments that are passed to `lemon::facet_re
 
 ```{r fig.width = 9, fig.height = 4}
 plot_over_time(
-  ipadmdad,
+  admdad,
   func = "n",
   time_int = "season",
   nrow = 2,
@@ -476,7 +477,7 @@ When applying multiple grouping variables (e.g., to illustrate interactions), th
 
 ```{r warning=TRUE, fig.height = 4, fig.width = 8}
 plot_over_time(
-  ipadmdad,
+  admdad,
   plot_var = "age",
   line_group = "gender",
   color_group = "gender",
@@ -498,7 +499,7 @@ To facilitate visualization of time trends, users can specify a smoothing method
 
 ```{r}
 plot_over_time(
-  ipadmdad,
+  admdad,
   plot_var = "age",
   smooth_method = "auto"
 )
@@ -514,7 +515,7 @@ You could also only show the overall, aggregated trend line (plus overall data p
 
 ```{r}
 plot_over_time(
-  ipadmdad,
+  admdad,
   plot_var = "age",
   facet_group = NULL,
   line_group = NULL,
@@ -532,7 +533,7 @@ To retrieve the aggregated data, simply specify `return_data = TRUE`:
 
 ```{r}
 res <- plot_over_time(
-  ipadmdad,
+  admdad,
   color_group = "hospital_type",
   func = "median",
   plot_var = "age",
@@ -569,7 +570,7 @@ It can be useful to apply `plotly::ggplotly()` to create interactive plots that 
 
 ```{r}
 library(plotly)
-ggplotly(plot_over_time(data = ipadmdad, plot_var = "age"))
+ggplotly(plot_over_time(data = admdad, plot_var = "age"))
 ```
 
 &nbsp;
@@ -578,7 +579,7 @@ You can apply any necessary adjustments to the returned ggplot and/or run `plotl
 
 ```{r}
 # create plot
-my_plot <- plot_over_time(data = ipadmdad, plot_var = "age")
+my_plot <- plot_over_time(data = admdad, plot_var = "age")
 
 # adjust space for x-axis title
 my_plot <- my_plot + labs(x = "\nDischarge Month")
