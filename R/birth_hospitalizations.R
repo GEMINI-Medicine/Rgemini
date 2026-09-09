@@ -34,13 +34,13 @@ birth_hospitalizations <- function(dbcon, cohort, include_er, healthy_birth) {
 
   ## add birth_hospitalization flag
   res[, birth_hospitalization := ifelse(!genc_id %in% diagnoses$genc_id, NA, # if no diagnosis code at all for genc_id, set flag to NA
-      ifelse(genc_id %in% diagnoses[grepl("Z38", diagnosis_code, ignore.case = TRUE)]$genc_id & genc_id %in% admdad[paeds_age_weeks == 0]$genc_id, TRUE, FALSE) # if a diagnosis code is present
+    ifelse(genc_id %in% diagnoses[grepl("Z38", diagnosis_code, ignore.case = TRUE)]$genc_id & genc_id %in% admdad[paeds_age_weeks == 0]$genc_id, TRUE, FALSE) # if a diagnosis code is present
   )]
 
-#   if(healthy_birth==TRUE){
-#     ## template code to make healthy birth variable
-#     res[, healthy_birth := ]
-#   }
+  #   if(healthy_birth==TRUE){
+  #     ## template code to make healthy birth variable
+  #     res[, healthy_birth := ]
+  #   }
 
   ## output
   return(res)
