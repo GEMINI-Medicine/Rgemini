@@ -68,7 +68,6 @@
 #'
 #' McAlister FA et al. JAMA Network Open, 2023.
 #' https://doi.org/10.1001/jamanetworkopen.2023.23035
-
 covid_surge_index <- function(dbcon, gim_only = FALSE, include_er = FALSE) {
   ### pull adult all-med + ICU encounters from 2019 onwards
   ## get admdad table name
