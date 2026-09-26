@@ -2,7 +2,7 @@
 
 Common plotting theme that can be applied to any ggplot object. The
 theme is based on
-[`ggthemes::theme_foundation()`](http://jrnold.github.io/ggthemes/reference/theme_foundation.md),
+[`ggthemes::theme_foundation()`](https://jrnold.github.io/ggthemes/reference/theme_foundation.html),
 with some additional features.
 
 ## Usage
@@ -17,14 +17,14 @@ plot_theme(base_size = 12, base_family = "sans", show_grid = NULL, ...)
 
   (`numeric`)  
   Numeric input specifying the base font size, which will be passed to
-  [`ggthemes::theme_foundation()`](http://jrnold.github.io/ggthemes/reference/theme_foundation.md).
+  [`ggthemes::theme_foundation()`](https://jrnold.github.io/ggthemes/reference/theme_foundation.html).
 
 - base_family:
 
   (`character`)  
   Base font family (e.g., "sans", "mono", "serif"). Run `windowsFonts()`
   to check for available options. Input will be passed to
-  [`ggthemes::theme_foundation()`](http://jrnold.github.io/ggthemes/reference/theme_foundation.md).
+  [`ggthemes::theme_foundation()`](https://jrnold.github.io/ggthemes/reference/theme_foundation.html).
 
 - show_grid:
 

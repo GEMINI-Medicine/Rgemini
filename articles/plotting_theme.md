@@ -19,7 +19,7 @@ additional customization based on their needs (see section
 
 [`Rgemini::plot_theme()`](https://gemini-medicine.github.io/Rgemini/reference/plot_theme.md)
 adds a simple theme to any `ggplot` figures. The theme is based on
-[`ggthemes::theme_foundation()`](http://jrnold.github.io/ggthemes/reference/theme_foundation.md),
+[`ggthemes::theme_foundation()`](https://jrnold.github.io/ggthemes/reference/theme_foundation.html),
 with some additional tweaks, and users can easily adjust the theme as
 needed. By default,
 [`plot_theme()`](https://gemini-medicine.github.io/Rgemini/reference/plot_theme.md)
@@ -70,7 +70,7 @@ my_plot +
 
 [`plot_theme()`](https://gemini-medicine.github.io/Rgemini/reference/plot_theme.md)
 accepts inputs specifying the font size/type (which are passed to
-[`ggthemes::theme_foundation()`](http://jrnold.github.io/ggthemes/reference/theme_foundation.md)).
+[`ggthemes::theme_foundation()`](https://jrnold.github.io/ggthemes/reference/theme_foundation.html)).
 Users can also specify whether to show major/minor grid lines. For
 example:
 

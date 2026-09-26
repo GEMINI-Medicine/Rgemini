@@ -28,11 +28,10 @@ documentation for more detailed information.
 
 ### Design Overview
 
-![\<div style='color:grey; font-size:12px; margin: 0px 0px 0px
-20px'\>Input-Output Flow Diagram of the Pharmacy Mapping Workflow. Items
-in orange denote steps requiring analyst or SME engagement. Dashed lines
+![Input-Output Flow Diagram of the Pharmacy Mapping Workflow. Items in
+orange denote steps requiring analyst or SME engagement. Dashed lines
 indicate internal GEMINI
-operations.\</div\>](figures/pharmacy_mapping/overall_design.png)
+operations.](figures/pharmacy_mapping/overall_design.png)
 
 Input-Output Flow Diagram of the Pharmacy Mapping Workflow. Items in
 orange denote steps requiring analyst or SME engagement. Dashed lines
