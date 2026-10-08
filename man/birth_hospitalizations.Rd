@@ -44,7 +44,7 @@ or \code{paeds_age_weeks} is missing (flag cannot be determined).
 \description{
 Flag encounters corresponding to a birth hospitalization.
 An encounter is flagged \code{TRUE} if it has at least one diagnosis code
-containing \code{"Z38"} in the \code{ipdiagnosis} table (or, if
+starting with \code{"Z38"} in the \code{ipdiagnosis} table (or, if
 \code{include_er = TRUE}, both \code{ipdiagnosis} and
 \code{erdiagnosis} tables), and a paediatric age in
 weeks of 0 (\code{paeds_age_weeks = 0}) in the \code{admdad} table.
