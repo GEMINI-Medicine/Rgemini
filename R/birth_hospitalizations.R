@@ -4,7 +4,7 @@
 #' @description
 #' Flag encounters corresponding to a birth hospitalization.
 #' An encounter is flagged `TRUE` if it has at least one diagnosis code
-#' containing `"Z38"` in the `ipdiagnosis` table (or, if
+#' starting with `"Z38"` in the `ipdiagnosis` table (or, if
 #' `include_er = TRUE`, both `ipdiagnosis` and
 #' `erdiagnosis` tables), and a paediatric age in
 #' weeks of 0 (`paeds_age_weeks = 0`) in the `admdad` table.
@@ -59,9 +59,11 @@
 birth_hospitalizations <- function(dbcon, cohort, include_er = FALSE, healthy_birth = FALSE) {
   ## check that cohort contains genc_ids
   check_input(cohort, c("data.table", "data.frame"), colnames = c("genc_id"))
+  check_input(include_er, "logical")
+  check_input(healthy_birth, "logical")
 
   ## create temp table of cohort
-  temp_table(dbcon, cohort)
+  temp_table(dbcon, cohort[, .(genc_id)])
 
   ## identify actual DB table names
   ## (HPC datacuts may use `_subset`-suffixed table names)
@@ -116,17 +118,27 @@ birth_hospitalizations <- function(dbcon, cohort, include_er = FALSE, healthy_bi
     data.table()
 
   ## add birth_hospitalization flag
-  res[, birth_hospitalization := ifelse(!genc_id %in% diagnoses$genc_id, NA, # if no diagnosis code at all for genc_id, set flag to NA
-    ifelse(genc_id %in% diagnoses[grepl("^Z38", diagnosis_code, ignore.case = TRUE)]$genc_id & genc_id %in% admdad[paeds_age_weeks == 0]$genc_id, TRUE, FALSE) # if a diagnosis code is present
+  res[, birth_hospitalization := ifelse(!genc_id %in% diagnoses$genc_id,
+    NA, # if no diagnosis code at all for genc_id, set flag to NA
+    ifelse(genc_id %in% diagnoses[grepl("^Z38", diagnosis_code,
+      ignore.case = TRUE
+    )]$genc_id &
+      genc_id %in% admdad[paeds_age_weeks == 0]$genc_id, TRUE,
+    FALSE
+    ) # if a diagnosis code is present
   )]
 
   ## for encounters with missing paeds_age_weeks, set flags to NA
-  res[genc_id %in% admdad[is.na(paeds_age_weeks)]$genc_id, birth_hospitalization := NA]
+  res[
+    genc_id %in% admdad[is.na(paeds_age_weeks)]$genc_id,
+    birth_hospitalization := NA
+  ]
 
   #   if(healthy_birth==TRUE){
   #     ## template code to make healthy birth variable
   #     res[, healthy_birth := ]
-  #     res[genc_id %in% admdad[is.na(paeds_age_weeks)]$genc_id, healthy_birth := NA]
+  #     res[genc_id %in% admdad[is.na(paeds_age_weeks)]$genc_id,
+  # healthy_birth := NA]
   #   }
 
   ## output
