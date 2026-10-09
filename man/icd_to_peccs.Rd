@@ -11,45 +11,51 @@ icd_to_peccs(dbcon, dxtable)
 A database connection to any GEMINI database.}
 
 \item{dxtable}{(\code{data.frame} | \code{data.table})
-Table containing ICD-10-CA diagnosis codes of interest. Typically, this refers to the \code{ipdiagnosis} table, which
-contains the CIHI in-patient diagnoses for each encounter (see
+Table containing ICD-10-CA diagnosis codes of interest. Typically, this
+refers to the \code{ipdiagnosis} table, which contains the CIHI in-patient
+diagnoses for each encounter (see
 \href{https://geminimedicine.ca/the-gemini-database/}{GEMINI database schema}).
 
-If a different type of diagnosis table is provided as input (e.g., \code{erdiagnosis}), please make sure the table
-contains a column named \code{diagnosis_code} (\code{character}) where each row refers to a single, alphanumeric diagnosis
-code consisting of 3-7 characters. In addition to \code{diagnosis_code}, ensure the table contains both \code{genc_id} and
-\code{diagnosis_type}.
+If a different type of diagnosis table is provided as input (e.g.,
+\code{erdiagnosis}), please make sure the table contains a column named
+\code{diagnosis_code} (\code{character}) where each row refers to a single,
+alphanumeric diagnosis code consisting of 3-7 characters.
+In addition to \code{diagnosis_code}, ensure the table contains both \code{genc_id}
+and \code{diagnosis_type}.
 
-Note, each encounter may have multiple rows, referring to diagnosis codes of different types. However, typically,
-each encounter should only have a single MRDx.}
+Note, each encounter may have multiple rows, referring to diagnosis codes of
+different types. However, typically, each encounter should only have a
+single MRDx.}
 }
 \value{
 \code{data.table}
-This function returns a table containing the ICD-10-CA diagnosis codes of interest, together with their
-corresponding PECCS-CA category.
-For each row in the output table, the following variables are returned:
+This function returns the mapped M-type diagnosis of the encounters. The
+columns included in the inputted \code{dxtable} along with the following
+variables:
 \itemize{
-\item \code{diagnosis_code}: ICD-10-CA code
 \item \code{diagnosis_code_desc}: description of the ICD-10-CA code
 \item \code{peccs_ca_code}: PECCS-CA category code
 \item \code{peccs_ca_category_description}: description of the PECCS-CA category
 }
 }
 \description{
-PECCS-CA (Pediatric Clinical Classification System) provides a grouping of individual ICD-10-CA diagnosis codes
-into broader, clinically meaningful disease categories.
+PECCS-CA (Pediatric Clinical Classification System) provides a grouping of
+individual ICD-10-CA diagnosis codes into broader, clinically meaningful
+disease categories.
 
-This function returns the PECCS-CA mapping for each ICD-10-CA diagnosis in the \code{dxtable} input.
+This function returns the PECCS-CA mapping for each ICD-10-CA diagnosis in
+the \code{dxtable} input.
 
-The function will only return the PECCS-CA category for the most responsible discharge diagnosis
-(MRDx). This function uses the M-type diagnosis as MRDx.
+The function will only return the PECCS-CA category for the most responsible
+discharge diagnosis (MRDx). This function uses the M-type diagnosis as MRDx.
 }
 \note{
-For some diagnosis codes, \code{peccs_ca_code} will be \code{NA} (\code{peccs_ca_category_description = 'Unmapped'}), which
-indicates that the diagnosis code has not been mapped to any PECCS-CA category yet.
+For some diagnosis codes, \code{peccs_ca_code} will be \code{NA}
+(\code{peccs_ca_category_description = 'Unmapped'}), which
+indicates that the diagnosis code has not been mapped to any PECCS-CA
+category yet.
 
-Encounters with a missing diagnosis code are returned with \code{diagnosis_code = NA} and
-\code{peccs_ca_category_description = 'Missing diagnosis code'}.
+Encounters with a missing diagnosis code are returned with \code{diagnosis_code = NA} and \code{peccs_ca_category_description = 'Missing diagnosis code'}.
 }
 \examples{
 \dontrun{
