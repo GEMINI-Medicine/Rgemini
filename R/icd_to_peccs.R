@@ -1,13 +1,15 @@
 #' @title Identify PECCS-CA categories for ICD-10-CA diagnosis codes
 #'
 #' @description
-#' PECCS-CA (Pediatric Clinical Classification System) provides a grouping of individual ICD-10-CA diagnosis codes
-#' into broader, clinically meaningful disease categories.
+#' PECCS-CA (Pediatric Clinical Classification System) provides a grouping of
+#' individual ICD-10-CA diagnosis codes into broader, clinically meaningful
+#' disease categories.
 #'
-#' This function returns the PECCS-CA mapping for each ICD-10-CA diagnosis in the `dxtable` input.
+#' This function returns the PECCS-CA mapping for each ICD-10-CA diagnosis in
+#' the `dxtable` input.
 #'
-#' The function will only return the PECCS-CA category for the most responsible discharge diagnosis
-#' (MRDx). This function uses the M-type diagnosis as MRDx.
+#' The function will only return the PECCS-CA category for the most responsible
+#' discharge diagnosis (MRDx). This function uses the M-type diagnosis as MRDx.
 #'
 #' @concept diagnoses, PECCS-CA, ICD-10
 #'
@@ -15,33 +17,38 @@
 #' A database connection to any GEMINI database.
 #'
 #' @param dxtable (`data.frame` | `data.table`)
-#' Table containing ICD-10-CA diagnosis codes of interest. Typically, this refers to the `ipdiagnosis` table, which
-#' contains the CIHI in-patient diagnoses for each encounter (see
+#' Table containing ICD-10-CA diagnosis codes of interest. Typically, this
+#' refers to the `ipdiagnosis` table, which contains the CIHI in-patient
+#' diagnoses for each encounter (see
 #' [GEMINI database schema](https://geminimedicine.ca/the-gemini-database/)).
 #'
-#' If a different type of diagnosis table is provided as input (e.g., `erdiagnosis`), please make sure the table
-#' contains a column named `diagnosis_code` (`character`) where each row refers to a single, alphanumeric diagnosis
-#' code consisting of 3-7 characters. In addition to `diagnosis_code`, ensure the table contains both `genc_id` and
-#' `diagnosis_type`.
+#' If a different type of diagnosis table is provided as input (e.g.,
+#' `erdiagnosis`), please make sure the table contains a column named
+#' `diagnosis_code` (`character`) where each row refers to a single,
+#' alphanumeric diagnosis code consisting of 3-7 characters.
+#' In addition to `diagnosis_code`, ensure the table contains both `genc_id`
+#' and `diagnosis_type`.
 #'
-#' Note, each encounter may have multiple rows, referring to diagnosis codes of different types. However, typically,
-#' each encounter should only have a single MRDx.
+#' Note, each encounter may have multiple rows, referring to diagnosis codes of
+#' different types. However, typically, each encounter should only have a
+#' single MRDx.
 #'
 #' @return `data.table`
-#' This function returns a table containing the ICD-10-CA diagnosis codes of interest, together with their
-#' corresponding PECCS-CA category.
-#' For each row in the output table, the following variables are returned:
-#' - `diagnosis_code`: ICD-10-CA code
+#' This function returns the mapped M-type diagnosis of the encounters. The
+#' columns included in the inputted `dxtable` along with the following
+#' variables:
 #' - `diagnosis_code_desc`: description of the ICD-10-CA code
 #' - `peccs_ca_code`: PECCS-CA category code
 #' - `peccs_ca_category_description`: description of the PECCS-CA category
 #'
 #' @note
-#' For some diagnosis codes, `peccs_ca_code` will be `NA` (`peccs_ca_category_description = 'Unmapped'`), which
-#' indicates that the diagnosis code has not been mapped to any PECCS-CA category yet.
+#' For some diagnosis codes, `peccs_ca_code` will be `NA`
+#' (`peccs_ca_category_description = 'Unmapped'`), which
+#' indicates that the diagnosis code has not been mapped to any PECCS-CA
+#' category yet.
 #'
-#' Encounters with a missing diagnosis code are returned with `diagnosis_code = NA` and
-#' `peccs_ca_category_description = 'Missing diagnosis code'`.
+#' Encounters with a missing diagnosis code are returned with `diagnosis_code =
+#' NA` and `peccs_ca_category_description = 'Missing diagnosis code'`.
 #'
 #' @import DBI
 #'
@@ -85,12 +92,20 @@ icd_to_peccs <- function(dbcon, dxtable) {
           Please refer to the function documentation for more details.")
   }
 
-  ## warn users that the function ONLY uses type-M diagnoses
-  warning("This function only returns PECCS codes for M-type diagnoses", immediate. = TRUE)
+  ## inform users that the function ONLY uses type-M diagnoses
+  message("\nNote: This function only returns PECCS codes for M-type diagnoses")
 
   ## load lookup table from db
-  peccs_lookup <- dbGetQuery(dbcon, "select * from lookup_icd10_ca_to_peccs") %>%
-    data.table()
+  ## errors here (e.g., missing table, dead connection) are intentionally not
+  ## caught: they stop the function and the original DBI error is printed
+  peccs_lookup <- dbGetQuery(dbcon, "select * from lookup_icd10_ca_to_peccs") %>% data.table()
+
+  ## stop if lookup table is empty
+  if (nrow(peccs_lookup) == 0) {
+    stop("The PECCS lookup table (lookup_icd10_ca_to_peccs) is empty.
+          The function cannot continue without mappings.
+          Please check the database version.", call. = FALSE)
+  }
 
   ## align lookup column names with GEMINI diagnosis table conventions
   setnames(peccs_lookup,
@@ -101,7 +116,6 @@ icd_to_peccs <- function(dbcon, dxtable) {
   #######  Prepare data  #######
   ## clean up dxtable
   dxtable <- coerce_to_datatable(dxtable)
-
 
   ## set empty values to NA
   dxtable[dxtable == ""] <- NA
@@ -164,16 +178,8 @@ icd_to_peccs <- function(dbcon, dxtable) {
   dxtable_final[is.na(diagnosis_code), peccs_ca_category_description := "Missing diagnosis code"]
 
   ## Return all columns contained in original dxtable input
-  # if genc_id/diagnosis_type exist, put them first for clarity
-  if ("diagnosis_type" %in% names(dxtable_final)) {
-    setcolorder(dxtable_final, c("diagnosis_type", setdiff(names(dxtable_final), "diagnosis_type")))
-    dxtable_final <- dxtable_final[order(diagnosis_type)]
-  }
-  if ("genc_id" %in% names(dxtable_final)) {
-    setcolorder(dxtable_final, c("genc_id", setdiff(names(dxtable_final), "genc_id")))
-    dxtable_final <- dxtable_final[order(genc_id)]
-  }
-
+  setcolorder(dxtable_final, c("genc_id", setdiff(names(dxtable_final), "genc_id")))
+  dxtable_final <- dxtable_final[order(genc_id)]
 
   return(dxtable_final)
 }
