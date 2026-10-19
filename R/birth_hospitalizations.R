@@ -1,11 +1,11 @@
 #' @title
-#' Birth Hospitalizations flag
+#' Derive Birth Hospitalizations flag
 #'
 #' @description
 #' Flag encounters corresponding to a birth hospitalization.
 #' An encounter is flagged `TRUE` if it has at least one diagnosis code
 #' starting with `"Z38"` in the `ipdiagnosis` table (or, if
-#' `include_er = TRUE`, both `ipdiagnosis` and
+#' `include_er = TRUE`, either `ipdiagnosis` or
 #' `erdiagnosis` tables), and a paediatric age in
 #' weeks of 0 (`paeds_age_weeks = 0`) in the `admdad` table.
 #'
@@ -59,11 +59,16 @@
 birth_hospitalizations <- function(dbcon, cohort, include_er = FALSE, healthy_birth = FALSE) {
   ## check that cohort contains genc_ids
   check_input(cohort, c("data.table", "data.frame"), colnames = c("genc_id"))
+  ## confirm other inputs are correct
   check_input(include_er, "logical")
   check_input(healthy_birth, "logical")
+  check_input(dbcon, "DBI")
+
+  ## convert to data.table
+  cohort <- coerce_to_datatable(cohort)
 
   ## create temp table of cohort
-  temp_table(dbcon, cohort[, .(genc_id)])
+  temp_table(dbcon, unique(cohort[, .(genc_id)]))
 
   ## identify actual DB table names
   ## (HPC datacuts may use `_subset`-suffixed table names)
