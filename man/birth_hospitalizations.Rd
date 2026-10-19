@@ -2,7 +2,7 @@
 % Please edit documentation in R/birth_hospitalizations.R
 \name{birth_hospitalizations}
 \alias{birth_hospitalizations}
-\title{Birth Hospitalizations flag}
+\title{Derive Birth Hospitalizations flag}
 \usage{
 birth_hospitalizations(
   dbcon,
@@ -45,7 +45,7 @@ or \code{paeds_age_weeks} is missing (flag cannot be determined).
 Flag encounters corresponding to a birth hospitalization.
 An encounter is flagged \code{TRUE} if it has at least one diagnosis code
 starting with \code{"Z38"} in the \code{ipdiagnosis} table (or, if
-\code{include_er = TRUE}, both \code{ipdiagnosis} and
+\code{include_er = TRUE}, either \code{ipdiagnosis} or
 \code{erdiagnosis} tables), and a paediatric age in
 weeks of 0 (\code{paeds_age_weeks = 0}) in the \code{admdad} table.
 }
