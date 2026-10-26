@@ -135,9 +135,14 @@ n_imaging <- function(dbcon,
     dcast(., genc_id ~ modality_mapped, length, fill = 0) %>%
     janitor::clean_names() %>% # spread
     setnames(old = mapped_values, new = output_vars_names[1:6], skip_absent = TRUE) %>%
-    .[, n_img_ct_mri_us_derived := rowSums(.SD),
-      .SDcols = c("n_img_ct_derived", "n_img_mri_derived", "n_img_us_derived")
-    ] %>%
+ { cols_exist <- intersect(
+      c("n_img_ct_derived", "n_img_mri_derived", "n_img_us_derived"),
+      names(.)  )
+    .[, n_img_ct_mri_us_derived := rowSums(.SD, na.rm = TRUE),
+      .SDcols = cols_exist
+    ] # only sum columns that exist
+    .
+  } %>%
     dplyr::select(any_of(c("genc_id", output_vars_names)))
 
   # merge with input cohort
