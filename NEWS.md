@@ -1,3 +1,9 @@
+# `develop`
+
+**Bug fixes**
+
+* Small bug fix in `n_imaging` to work for cohorts where a modality is unavailable
+
 # Rgemini `3.0.0`
 
 **Enhancements for `drm_cleandb_v5`/`gemini_h4h_template_v6`**
