@@ -136,15 +136,15 @@ n_imaging <- function(dbcon,
     janitor::clean_names() %>% # spread
     setnames(old = mapped_values, new = output_vars_names[1:6], skip_absent = TRUE) %>%
     {
-    # create columns for missing modalities
-    for (n in output_vars_names[1:6]) {
-      if (!n %in% names(.)) .[, (n) := 0L]
-    }
-    .
-  } %>%
-      .[, n_img_ct_mri_us_derived := rowSums(.SD, na.rm = TRUE),
-        .SDcols = c("n_img_ct_derived", "n_img_mri_derived", "n_img_us_derived")
-      ] %>%
+      # create columns for missing modalities
+      for (n in output_vars_names[1:6]) {
+        if (!n %in% names(.)) .[, (n) := 0L]
+      }
+      .
+    } %>%
+    .[, n_img_ct_mri_us_derived := rowSums(.SD, na.rm = TRUE),
+      .SDcols = c("n_img_ct_derived", "n_img_mri_derived", "n_img_us_derived")
+    ] %>%
     dplyr::select(any_of(c("genc_id", output_vars_names)))
 
   # merge with input cohort
